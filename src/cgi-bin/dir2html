@@ -1,0 +1,78 @@
+#!/bin/bash
+
+usage()
+{
+    cat <<EOF
+usage: dir2html -url URL -ext EXT /PATH/TO/DIR/
+
+  If -url is not specified it is set $BASILISK_URL (if defined) or to
+  http://basilisk.fr
+
+  The EXT extension (typically .html) is added to page links.
+EOF
+    exit 1
+}
+
+export BASILISK=${PWD%%/cgi-bin}
+export BASILISK_URL=http://$HTTP_HOST
+
+ext=""
+dir=$REQUEST_URI
+while test $# -gt 0; do
+    case $1 in
+	-url)
+	    shift
+	    BASILISK_URL="$1"
+	    ;;
+	-ext)
+	    shift
+	    ext="$1"
+	    ;;
+	-*)
+	    usage
+	    ;;
+	*/) dir="$1" ;;
+    esac
+    shift
+done
+
+if test -z "$dir"; then
+    usage
+fi
+
+if test -z "$BASILISK_URL"; then
+    BASILISK_URL="http://basilisk.fr"
+fi
+
+dirpreproc()
+{
+    path="/"
+    echo -n "<a class=\"updir\" href=\"$path\">"/"</a>"
+    for d in `echo $1 | sed 's/\// /g'`; do
+	path=$path$d"/"
+	echo -n "<a class=\"updir\" href=\"$path\">"$d/"</a>"
+    done
+    echo '<ul class="index">'
+    darcs show files --no-pending --no-directories | grep '^\.'$1'[^/]*$' | \
+	sed -e 's|^\.\(.*\)/\([^/]*\)\.page$|<li class="page"><a href="\1/\2">\2</a></li>|g' \
+	    -e 's|^\.\(.*\)/\([^/]*\)$|<li class="upload"><a href="\1/\2">\2</a></li>|g'
+    darcs show files --no-pending --no-files | grep '^\.'$1'[^/]*$' | \
+	sed 's|^\.\(.*\)/\([^/]*\)$|<li class="folder"><a href="\1/\2/">\2</a></li>|g'
+    echo '</ul>'
+}
+
+PREPROC="dirpreproc $dir"
+
+if test -n "$REQUEST_URI"; then
+    echo -e "Content-type: text/html\n"
+fi
+
+$PREPROC | pandoc -f markdown -s --preserve-tabs                \
+	   -V wikititle=Basilisk				\
+	   -V base=http://basilisk.fr				\
+	   -V pagetitle=Contents 			        \
+	   -V wikiupload=true					\
+	   -V sitenav=true					\
+	   -V usecache=true					\
+	   --template=$BASILISK/templates/page.static	 	\
+    | sed 's/__ESCAPEDDOLLAR__/$$/g'

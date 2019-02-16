@@ -1,0 +1,3 @@
+COPYING.tags:	\
+	./common.h \
+

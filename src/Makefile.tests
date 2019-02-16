@@ -1,0 +1,80 @@
+# Automatically generated using 'make Makefile.tests'
+# DO NOT EDIT, edit 'Makefile' instead
+ALLTESTS = \
+	bview-server.c \
+	qplot.c \
+
+plots: \
+	mtrace/plot.png \
+	profiling/plot.png \
+	speed/plot.png \
+	bview-server/plots \
+
+TESTS = \
+
+SPECIAL_TESTS = \
+
+ALLPAGES = \
+	AUTHORS.page \
+	COMPATIBILITY.page \
+	COPYING.page \
+	Contributing.page \
+	INSTALL.page \
+	README.cadna.page \
+	README.mtrace.page \
+	README.page \
+	README.paraver.page \
+	README.server.page \
+	README.trace.page \
+	TODO.page \
+	Tips.page \
+	advection.h.page \
+	all-mach.h.page \
+	axi.h.page \
+	axistream.h.page \
+	bcg.h.page \
+	bview-client.py.page \
+	bview-server.c.page \
+	bview.page \
+	compressible.h.page \
+	conservation.h.page \
+	contact.h.page \
+	curvature.h.page \
+	diffusion.h.page \
+	discharge.h.page \
+	distance.h.page \
+	draw.h.page \
+	elevation.h.page \
+	embed.h.page \
+	fene-p.h.page \
+	fractions.h.page \
+	geometry.h.page \
+	green-naghdi.h.page \
+	heights.h.page \
+	hele-shaw.h.page \
+	iforce.h.page \
+	input.h.page \
+	log-conform.h.page \
+	maxruntime.h.page \
+	momentum.h.page \
+	multilayer.h.page \
+	output.h.page \
+	poisson.h.page \
+	profiling.h.page \
+	radial.h.page \
+	reduced.h.page \
+	references.bib.page \
+	run.h.page \
+	runge-kutta.h.page \
+	saint-venant-implicit.h.page \
+	saint-venant.h.page \
+	spherical.h.page \
+	tag.h.page \
+	tension.h.page \
+	tracer.h.page \
+	two-phase.h.page \
+	utils.h.page \
+	view.h.page \
+	viscosity-embed.h.page \
+	vof.h.page \
+

@@ -1,0 +1,572 @@
+diff -rupN highlighting-kate-0.5.3.9//highlighting-kate.cabal highlighting-kate-0.5.3.9-basilisk//highlighting-kate.cabal
+--- highlighting-kate-0.5.3.9//highlighting-kate.cabal	2013-05-08 15:14:54.000000000 +1200
++++ highlighting-kate-0.5.3.9-basilisk//highlighting-kate.cabal	2013-06-28 16:40:39.000000000 +1200
+@@ -149,6 +149,7 @@ Library
+   else
+     Build-depends:   regex-pcre-builtin
+   Build-Depends:     parsec, mtl, blaze-html >= 0.4.2 && < 0.7
++  Build-Depends:     regex-compat, blaze-markup
+   Exposed-Modules:   Text.Highlighting.Kate
+                      Text.Highlighting.Kate.Syntax
+                      Text.Highlighting.Kate.Types
+@@ -204,6 +205,7 @@ Library
+                      Text.Highlighting.Kate.Syntax.Julia
+                      Text.Highlighting.Kate.Syntax.Latex
+                      Text.Highlighting.Kate.Syntax.Lex
++                     Text.Highlighting.Kate.Syntax.LiterateC
+                      Text.Highlighting.Kate.Syntax.LiterateCurry
+                      Text.Highlighting.Kate.Syntax.LiterateHaskell
+                      Text.Highlighting.Kate.Syntax.Lua
+diff -rupN highlighting-kate-0.5.3.9//Text/Highlighting/Kate/Format/HTML.hs highlighting-kate-0.5.3.9-basilisk//Text/Highlighting/Kate/Format/HTML.hs
+--- highlighting-kate-0.5.3.9//Text/Highlighting/Kate/Format/HTML.hs	2013-05-08 15:14:54.000000000 +1200
++++ highlighting-kate-0.5.3.9-basilisk//Text/Highlighting/Kate/Format/HTML.hs	2013-06-28 16:40:39.000000000 +1200
+@@ -9,6 +9,8 @@
+    Portability : portable
+ 
+ Formatters that convert a list of annotated source lines to HTML.
++
++Modified by Stephane Popinet to allow escaping of HTML tags.
+ -}
+ 
+ module Text.Highlighting.Kate.Format.HTML (
+@@ -20,6 +22,8 @@ import Text.Blaze.Html
+ #else
+ import Text.Blaze
+ #endif
++import Text.Blaze.Internal (preEscapedString)
++import Text.Regex
+ import qualified Text.Blaze.Html5 as H
+ import qualified Text.Blaze.Html5.Attributes as A
+ import Data.Monoid
+@@ -37,16 +41,31 @@ import Data.List (intersperse)
+ formatHtmlInline :: FormatOptions -> [SourceLine] -> Html
+ formatHtmlInline opts = (H.code ! A.class_ (toValue $ unwords
+                                                     $ "sourceCode" : codeClasses opts))
+-                                . mconcat . intersperse (toHtml "\n")
++                                . mconcat . intersperse (escapeHtml "\n")
+                                 . map (sourceLineToHtml opts)
+ 
+ tokenToHtml :: FormatOptions -> Token -> Html
+-tokenToHtml _ (NormalTok, txt)  = toHtml txt
++tokenToHtml _ (NormalTok, txt)  = escapeHtml txt
+ tokenToHtml opts (toktype, txt) =
+   if titleAttributes opts
+      then sp ! A.title (toValue $ show toktype)
+      else sp
+-   where sp = H.span ! A.class_ (toValue $ short toktype) $ toHtml txt
++   where sp = H.span ! A.class_ (toValue $ short toktype) $ escapeHtml txt
++
++escapeHtml :: String -> Html
++escapeHtml x = preEscapedString $ replacelt $ replacegt $ escapegt $ escapelt x
++
++escapegt :: String -> String
++escapegt x = subRegex (mkRegex "([^\\])>") x "\\1&gt;"
++
++escapelt :: String -> String
++escapelt x = subRegex (mkRegex "([^\\])<") x "\\1&lt;"
++
++replacegt :: String -> String
++replacegt x = subRegex (mkRegex "[\\]>") x ">"
++
++replacelt :: String -> String
++replacelt x = subRegex (mkRegex "[\\]<") x "<"
+ 
+ short :: TokenType -> String
+ short KeywordTok        = "kw"
+@@ -89,9 +108,9 @@ formatHtmlBlock opts ls = container ! A.
+                      $ H.pre
+                      $ mapM_ lineNum [startNum..(startNum + length ls - 1)]
+          lineNum n = if lineAnchors opts
+-                        then (H.a ! A.id (toValue nStr) ! A.href (toValue $ "#" ++ nStr) $ toHtml $ show n)
+-                              >> toHtml "\n"
+-                        else toHtml $ show n ++ "\n"
++                        then (H.a ! A.id (toValue nStr) ! A.href (toValue $ "#" ++ nStr) $ escapeHtml $ show n)
++                              >> escapeHtml "\n"
++                        else escapeHtml $ show n ++ "\n"
+            where nStr = show n
+ -- | Returns CSS for styling highlighted code according to the given style.
+ styleToCss :: Style -> String
+diff -rupN highlighting-kate-0.5.3.9//Text/Highlighting/Kate/Syntax/LiterateC.hs highlighting-kate-0.5.3.9-basilisk//Text/Highlighting/Kate/Syntax/LiterateC.hs
+--- highlighting-kate-0.5.3.9//Text/Highlighting/Kate/Syntax/LiterateC.hs	1970-01-01 12:00:00.000000000 +1200
++++ highlighting-kate-0.5.3.9-basilisk//Text/Highlighting/Kate/Syntax/LiterateC.hs	2013-06-28 16:40:39.000000000 +1200
+@@ -0,0 +1,255 @@
++{- This module was generated from data in the Kate syntax
++   highlighting file literate-c.xml, version 1.44, by  -}
++
++module Text.Highlighting.Kate.Syntax.LiterateC
++          (highlight, parseExpression, syntaxName, syntaxExtensions)
++where
++import Text.Highlighting.Kate.Types
++import Text.Highlighting.Kate.Common
++import qualified Text.Highlighting.Kate.Syntax.Doxygen
++import qualified Text.Highlighting.Kate.Syntax.Alert
++import Text.ParserCombinators.Parsec hiding (State)
++import Control.Monad.State
++import Data.Char (isSpace)
++import qualified Data.Set as Set
++
++-- | Full name of language.
++syntaxName :: String
++syntaxName = "LiterateC"
++
++-- | Filename extensions for this language.
++syntaxExtensions :: String
++syntaxExtensions = "*.c;*.h"
++
++-- | Highlight source code using this syntax definition.
++highlight :: String -> [SourceLine]
++highlight input = evalState (mapM parseSourceLine $ lines input) startingState
++
++parseSourceLine :: String -> State SyntaxState SourceLine
++parseSourceLine = mkParseSourceLine parseExpression
++
++-- | Parse an expression using appropriate local context.
++parseExpression :: KateParser Token
++parseExpression = do
++  (lang,cont) <- currentContext
++  result <- parseRules (lang,cont)
++  optional $ do eof
++                updateState $ \st -> st{ synStPrevChar = '\n' }
++                pEndLine
++  return result
++
++startingState = SyntaxState {synStContexts = [("LiterateC","Normal")], synStLineNumber = 0, synStPrevChar = '\n', synStPrevNonspace = False, synStCaseSensitive = True, synStKeywordCaseSensitive = True, synStCaptures = []}
++
++pEndLine = do
++  updateState $ \st -> st{ synStPrevNonspace = False }
++  context <- currentContext
++  contexts <- synStContexts `fmap` getState
++  if length contexts >= 2
++    then case context of
++      ("LiterateC","Normal") -> return ()
++      ("LiterateC","String") -> (popContext) >> pEndLine
++      ("LiterateC","Region Marker") -> (popContext) >> pEndLine
++      ("LiterateC","Commentar 1") -> (popContext) >> pEndLine
++      ("LiterateC","Commentar 2") -> return ()
++      ("LiterateC","AfterHash") -> (popContext) >> pEndLine
++      ("LiterateC","Preprocessor") -> (popContext) >> pEndLine
++      ("LiterateC","Define") -> (popContext) >> pEndLine
++      ("LiterateC","Commentar/Preprocessor") -> return ()
++      ("LiterateC","Outscoped") -> return ()
++      ("LiterateC","Outscoped intern") -> return ()
++      _ -> return ()
++    else return ()
++
++withAttribute attr txt = do
++  when (null txt) $ fail "Parser matched no text"
++  updateState $ \st -> st { synStPrevChar = last txt
++                          , synStPrevNonspace = synStPrevNonspace st || not (all isSpace txt) }
++  return (attr, txt)
++
++list_keywords = Set.fromList $ words $ "break case continue default do else enum extern for goto if inline return sizeof struct switch typedef union while"
++list_types = Set.fromList $ words $ "auto char const double float int long register restrict short signed static unsigned void volatile int8_t int16_t int32_t int64_t uint8_t uint16_t uint32_t uint64_t wchar_t _Imaginary _Complex _Bool"
++list_basilisk_types = Set.fromList $ words $ "scalar tensor vector"
++
++regex_'23'5cs'2aif'5cs'2b0'5cs'2a'24 = compileRegex "#\\s*if\\s+0\\s*$"
++regex_'5c'5c'3c'5b'5e'5c'5c'3e'5d'2a'5c'5c'3e = compileRegex "\\\\<[^\\\\>]*\\\\>"
++regex_'23'5cs'2aif'28'3f'3adef'7cndef'29'3f'28'3f'3d'5cs'2b'5cS'29 = compileRegex "#\\s*if(?:def|ndef)?(?=\\s+\\S)"
++regex_'23'5cs'2aendif = compileRegex "#\\s*endif"
++regex_'23'5cs'2adefine'2e'2a'28'28'3f'3d'5c'5c'29'29 = compileRegex "#\\s*define.*((?=\\\\))"
++regex_'23'5cs'2a'28'3f'3ael'28'3f'3ase'7cif'29'7cinclude'28'3f'3a'5fnext'29'3f'7cdefine'7cundef'7cline'7cerror'7cwarning'7cpragma'29 = compileRegex "#\\s*(?:el(?:se|if)|include(?:_next)?|define|undef|line|error|warning|pragma)"
++regex_'23'5cs'2b'5b0'2d9'5d'2b = compileRegex "#\\s+[0-9]+"
++regex_'23'5cs'2aif = compileRegex "#\\s*if"
++regex_'23'5cs'2ael'28'3f'3ase'7cif'29 = compileRegex "#\\s*el(?:se|if)"
++
++parseRules ("LiterateC","Normal") =
++  (((pDetectSpaces >>= withAttribute NormalTok))
++   <|>
++   ((pFirstNonSpace >> pRegExpr regex_'23'5cs'2aif'5cs'2b0'5cs'2a'24 >>= withAttribute OtherTok) >>~ pushContext ("LiterateC","Outscoped"))
++   <|>
++   ((pFirstNonSpace >> lookAhead (pDetectChar False '#') >> pushContext ("LiterateC","AfterHash") >> currentContext >>= parseRules))
++   <|>
++   ((pFirstNonSpace >> pString False "//BEGIN" >>= withAttribute RegionMarkerTok) >>~ pushContext ("LiterateC","Region Marker"))
++   <|>
++   ((pFirstNonSpace >> pString False "//END" >>= withAttribute RegionMarkerTok) >>~ pushContext ("LiterateC","Region Marker"))
++   <|>
++   ((pKeyword " \n\t.():!+,-<=>%&*/;?[]^{|}~\\'\"" list_keywords >>= withAttribute KeywordTok))
++   <|>
++   ((pKeyword " \n\t.():!+,-<=>%&*/;?[]^{|}~\\'\"" list_types >>= withAttribute DataTypeTok))
++   <|>
++   ((pKeyword " \n\t.():!+,-<=>%&*/;?[]^{|}~\\'\"" list_basilisk_types >>= withAttribute DataTypeTok))
++   <|>
++   ((pDetectIdentifier >>= withAttribute NormalTok))
++   <|>
++   ((pDetectChar False '{' >>= withAttribute NormalTok))
++   <|>
++   ((pDetectChar False '}' >>= withAttribute NormalTok))
++   <|>
++   ((pRegExpr regex_'5c'5c'3c'5b'5e'5c'5c'3e'5d'2a'5c'5c'3e >>= withAttribute NormalTok))
++   <|>
++   (withChildren (pFloat >>= withAttribute FloatTok) ((pAnyChar "fF" >>= withAttribute FloatTok)))
++   <|>
++   ((pHlCOct >>= withAttribute BaseNTok))
++   <|>
++   ((pHlCHex >>= withAttribute BaseNTok))
++   <|>
++   (withChildren (pInt >>= withAttribute DecValTok) (((pString False "ULL" >>= withAttribute DecValTok))
++                                                     <|>
++                                                     ((pString False "LUL" >>= withAttribute DecValTok))
++                                                     <|>
++                                                     ((pString False "LLU" >>= withAttribute DecValTok))
++                                                     <|>
++                                                     ((pString False "UL" >>= withAttribute DecValTok))
++                                                     <|>
++                                                     ((pString False "LU" >>= withAttribute DecValTok))
++                                                     <|>
++                                                     ((pString False "LL" >>= withAttribute DecValTok))
++                                                     <|>
++                                                     ((pString False "U" >>= withAttribute DecValTok))
++                                                     <|>
++                                                     ((pString False "L" >>= withAttribute DecValTok))))
++   <|>
++   ((pHlCChar >>= withAttribute CharTok))
++   <|>
++   ((pDetectChar False '"' >>= withAttribute StringTok) >>~ pushContext ("LiterateC","String"))
++   <|>
++   ((Text.Highlighting.Kate.Syntax.Doxygen.parseExpression))
++   <|>
++   ((pDetect2Chars False '/' '/' >>= withAttribute CommentTok) >>~ pushContext ("LiterateC","Commentar 1"))
++   <|>
++   ((pDetect2Chars False '/' '*' >>= withAttribute CommentTok) >>~ pushContext ("LiterateC","Commentar 2"))
++   <|>
++   ((pAnyChar ":!%&()+,-/.*<=>?[]|~^;" >>= withAttribute NormalTok))
++   <|>
++   (currentContext >>= \x -> guard (x == ("LiterateC","Normal")) >> pDefault >>= withAttribute NormalTok))
++
++parseRules ("LiterateC","String") =
++  (((pLineContinue >>= withAttribute StringTok))
++   <|>
++   ((pHlCStringChar >>= withAttribute CharTok))
++   <|>
++   ((pDetectChar False '"' >>= withAttribute StringTok) >>~ (popContext))
++   <|>
++   (currentContext >>= \x -> guard (x == ("LiterateC","String")) >> pDefault >>= withAttribute StringTok))
++
++parseRules ("LiterateC","Region Marker") =
++  (currentContext >>= \x -> guard (x == ("LiterateC","Region Marker")) >> pDefault >>= withAttribute RegionMarkerTok)
++
++parseRules ("LiterateC","Commentar 1") =
++  (((pLineContinue >>= withAttribute CommentTok))
++   <|>
++   ((Text.Highlighting.Kate.Syntax.Alert.parseExpression >>= ((withAttribute CommentTok) . snd)))
++   <|>
++   (currentContext >>= \x -> guard (x == ("LiterateC","Commentar 1")) >> pDefault >>= withAttribute CommentTok))
++
++parseRules ("LiterateC","Commentar 2") =
++  (((pDetect2Chars False '*' '/' >>= withAttribute CommentTok) >>~ (popContext))
++   <|>
++   ((Text.Highlighting.Kate.Syntax.Alert.parseExpression >>= ((withAttribute CommentTok) . snd)))
++   <|>
++   (currentContext >>= \x -> guard (x == ("LiterateC","Commentar 2")) >> pDefault >>= withAttribute CommentTok))
++
++parseRules ("LiterateC","AfterHash") =
++  (((pFirstNonSpace >> pRegExpr regex_'23'5cs'2aif'28'3f'3adef'7cndef'29'3f'28'3f'3d'5cs'2b'5cS'29 >>= withAttribute OtherTok) >>~ pushContext ("LiterateC","Preprocessor"))
++   <|>
++   ((pFirstNonSpace >> pRegExpr regex_'23'5cs'2aendif >>= withAttribute OtherTok) >>~ pushContext ("LiterateC","Preprocessor"))
++   <|>
++   ((pFirstNonSpace >> pRegExpr regex_'23'5cs'2adefine'2e'2a'28'28'3f'3d'5c'5c'29'29 >>= withAttribute OtherTok) >>~ pushContext ("LiterateC","Define"))
++   <|>
++   ((pFirstNonSpace >> pRegExpr regex_'23'5cs'2a'28'3f'3ael'28'3f'3ase'7cif'29'7cinclude'28'3f'3a'5fnext'29'3f'7cdefine'7cundef'7cline'7cerror'7cwarning'7cpragma'29 >>= withAttribute OtherTok) >>~ pushContext ("LiterateC","Preprocessor"))
++   <|>
++   ((pFirstNonSpace >> pRegExpr regex_'23'5cs'2b'5b0'2d9'5d'2b >>= withAttribute OtherTok) >>~ pushContext ("LiterateC","Preprocessor"))
++   <|>
++   (currentContext >>= \x -> guard (x == ("LiterateC","AfterHash")) >> pDefault >>= withAttribute ErrorTok))
++
++parseRules ("LiterateC","Preprocessor") =
++  (((pLineContinue >>= withAttribute OtherTok))
++   <|>
++   ((pRangeDetect '"' '"' >>= withAttribute OtherTok))
++   <|>
++   ((pRangeDetect '<' '>' >>= withAttribute OtherTok))
++   <|>
++   ((Text.Highlighting.Kate.Syntax.Doxygen.parseExpression >>= ((withAttribute OtherTok) . snd)))
++   <|>
++   ((pDetect2Chars False '/' '*' >>= withAttribute CommentTok) >>~ pushContext ("LiterateC","Commentar/Preprocessor"))
++   <|>
++   ((pDetect2Chars False '/' '/' >>= withAttribute CommentTok) >>~ pushContext ("LiterateC","Commentar 1"))
++   <|>
++   (currentContext >>= \x -> guard (x == ("LiterateC","Preprocessor")) >> pDefault >>= withAttribute OtherTok))
++
++parseRules ("LiterateC","Define") =
++  (((pLineContinue >>= withAttribute OtherTok))
++   <|>
++   (currentContext >>= \x -> guard (x == ("LiterateC","Define")) >> pDefault >>= withAttribute OtherTok))
++
++parseRules ("LiterateC","Commentar/Preprocessor") =
++  (((pDetect2Chars False '*' '/' >>= withAttribute CommentTok) >>~ (popContext))
++   <|>
++   (currentContext >>= \x -> guard (x == ("LiterateC","Commentar/Preprocessor")) >> pDefault >>= withAttribute CommentTok))
++
++parseRules ("LiterateC","Outscoped") =
++  (((pDetectSpaces >>= withAttribute CommentTok))
++   <|>
++   ((Text.Highlighting.Kate.Syntax.Alert.parseExpression >>= ((withAttribute CommentTok) . snd)))
++   <|>
++   ((pDetectIdentifier >>= withAttribute CommentTok))
++   <|>
++   ((pDetectChar False '"' >>= withAttribute StringTok) >>~ pushContext ("LiterateC","String"))
++   <|>
++   ((Text.Highlighting.Kate.Syntax.Doxygen.parseExpression >>= ((withAttribute CommentTok) . snd)))
++   <|>
++   ((pDetect2Chars False '/' '/' >>= withAttribute CommentTok) >>~ pushContext ("LiterateC","Commentar 1"))
++   <|>
++   ((pDetect2Chars False '/' '*' >>= withAttribute CommentTok) >>~ pushContext ("LiterateC","Commentar 2"))
++   <|>
++   ((pFirstNonSpace >> pRegExpr regex_'23'5cs'2aif >>= withAttribute CommentTok) >>~ pushContext ("LiterateC","Outscoped intern"))
++   <|>
++   ((pFirstNonSpace >> pRegExpr regex_'23'5cs'2ael'28'3f'3ase'7cif'29 >>= withAttribute OtherTok) >>~ (popContext))
++   <|>
++   ((pFirstNonSpace >> pRegExpr regex_'23'5cs'2aendif >>= withAttribute OtherTok) >>~ (popContext))
++   <|>
++   (currentContext >>= \x -> guard (x == ("LiterateC","Outscoped")) >> pDefault >>= withAttribute CommentTok))
++
++parseRules ("LiterateC","Outscoped intern") =
++  (((pDetectSpaces >>= withAttribute CommentTok))
++   <|>
++   ((Text.Highlighting.Kate.Syntax.Alert.parseExpression >>= ((withAttribute CommentTok) . snd)))
++   <|>
++   ((pDetectIdentifier >>= withAttribute CommentTok))
++   <|>
++   ((pDetectChar False '"' >>= withAttribute StringTok) >>~ pushContext ("LiterateC","String"))
++   <|>
++   ((Text.Highlighting.Kate.Syntax.Doxygen.parseExpression >>= ((withAttribute CommentTok) . snd)))
++   <|>
++   ((pDetect2Chars False '/' '/' >>= withAttribute CommentTok) >>~ pushContext ("LiterateC","Commentar 1"))
++   <|>
++   ((pDetect2Chars False '/' '*' >>= withAttribute CommentTok) >>~ pushContext ("LiterateC","Commentar 2"))
++   <|>
++   ((pFirstNonSpace >> pRegExpr regex_'23'5cs'2aif >>= withAttribute CommentTok) >>~ pushContext ("LiterateC","Outscoped intern"))
++   <|>
++   ((pFirstNonSpace >> pRegExpr regex_'23'5cs'2aendif >>= withAttribute CommentTok) >>~ (popContext))
++   <|>
++   (currentContext >>= \x -> guard (x == ("LiterateC","Outscoped intern")) >> pDefault >>= withAttribute CommentTok))
++
++parseRules ("Doxygen", _) = Text.Highlighting.Kate.Syntax.Doxygen.parseExpression
++parseRules ("Alerts", _) = Text.Highlighting.Kate.Syntax.Alert.parseExpression
++
++parseRules x = parseRules ("LiterateC","Normal") <|> fail ("Unknown context" ++ show x)
+diff -rupN highlighting-kate-0.5.3.9//xml/literate-c.xml highlighting-kate-0.5.3.9-basilisk//xml/literate-c.xml
+--- highlighting-kate-0.5.3.9//xml/literate-c.xml	1970-01-01 12:00:00.000000000 +1200
++++ highlighting-kate-0.5.3.9-basilisk//xml/literate-c.xml	2013-06-28 16:40:39.000000000 +1200
+@@ -0,0 +1,221 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<!DOCTYPE language SYSTEM "language.dtd">
++<language name="LiterateC" section="Sources"
++          version="1.44" kateversion="2.4"
++          indenter="cstyle"
++          extensions="*.c;*.h"
++          mimetype="text/x-csrc;text/x-c++src;text/x-chdr"
++          priority="5">
++<!--
++##########################################################################
++## Fixes by Sebastian Pipping (webmaster@hartwork.org)
++##
++## NOTE: Keep in sync with C highlighter! (c.xml)
++##########################################################################
++-->
++  <highlighting>
++    <list name="keywords">
++      <item> break </item>
++      <item> case </item>
++      <item> continue </item>
++      <item> default </item>
++      <item> do </item>
++      <item> else </item>
++      <item> enum </item>
++      <item> extern </item>
++      <item> for </item>
++      <item> goto </item>
++      <item> if </item>
++      <item> inline </item>
++      <item> return </item>
++      <item> sizeof </item>
++      <item> struct </item>
++      <item> switch </item>
++      <item> typedef </item>
++      <item> union </item>
++      <item> while </item>
++    </list>
++    <list name="types">
++      <item> auto </item>
++      <item> char </item>
++      <item> const </item>
++      <item> double </item>
++      <item> float </item>
++      <item> int </item>
++      <item> long </item>
++      <item> register </item>
++      <item> restrict </item>
++      <item> short </item>
++      <item> signed </item>
++      <item> static </item>
++      <item> unsigned </item>
++      <item> void </item>
++      <item> volatile </item>
++      <item> int8_t </item>
++      <item> int16_t </item>
++      <item> int32_t </item>
++      <item> int64_t </item>
++      <item> uint8_t </item>
++      <item> uint16_t </item>
++      <item> uint32_t </item>
++      <item> uint64_t </item>
++      <item> wchar_t </item>
++      <item> _Imaginary </item>
++      <item> _Complex </item>
++      <item> _Bool </item>
++    </list>
++    <list name="basilisk types">
++      <item> scalar </item>
++      <item> tensor </item>
++      <item> vector </item>
++      <item> symmetric </item>
++      <item> staggered </item>
++      <item> event </item>
++    </list>
++    <list name="basilisk keywords">
++      <item> foreach </item>
++      <item> foreach_face </item>
++      <item> foreach_vertex </item>
++      <item> foreach_dimension </item>
++    </list>
++    <contexts>
++      <context attribute="Normal Text" lineEndContext="#stay" name="Normal">
++        <DetectSpaces />
++	<RegExpr attribute="Preprocessor" context="Outscoped" String="#\s*if\s+0\s*$" beginRegion="PP" firstNonSpace="true" />
++        <DetectChar context="AfterHash" char="#" firstNonSpace="true" lookAhead="true" />
++        <StringDetect attribute="Region Marker" context="Region Marker" String="//BEGIN" beginRegion="Region1" firstNonSpace="true" />
++        <StringDetect attribute="Region Marker" context="Region Marker" String="//END" endRegion="Region1" firstNonSpace="true" />
++        <keyword attribute="Keyword" context="#stay" String="keywords"/>
++        <keyword attribute="Keyword" context="#stay" String="basilisk keywords"/>
++        <keyword attribute="Data Type" context="#stay" String="types"/>
++        <keyword attribute="Data Type" context="#stay" String="basilisk types"/>
++        <DetectIdentifier />
++        <DetectChar attribute="Symbol" context="#stay" char="{" beginRegion="Brace1" />
++        <DetectChar attribute="Symbol" context="#stay" char="}" endRegion="Brace1" />
++	<!-- <Detect2Chars attribute="RawHtml" context="#stay"  -->
++	<!-- 	      char="\\" char1="&lt;"/> -->
++	<!-- <Detect2Chars attribute="RawHtml" context="#pop" -->
++	<!-- 	      char="\\" char1="&gt;"/> -->
++	<RegExpr attribute="RawHtml" context="#stay" String="\\&lt;[^\\&gt;]*\\&gt;"/>
++        <Float attribute="Float" context="#stay">
++          <AnyChar String="fF" attribute="Float" context="#stay"/>
++        </Float>
++        <HlCOct attribute="Octal" context="#stay"/>
++        <HlCHex attribute="Hex" context="#stay"/>
++        <Int attribute="Decimal" context="#stay" >
++          <StringDetect attribute="Decimal" context="#stay" String="ULL" insensitive="TRUE"/>
++          <StringDetect attribute="Decimal" context="#stay" String="LUL" insensitive="TRUE"/>
++          <StringDetect attribute="Decimal" context="#stay" String="LLU" insensitive="TRUE"/>
++          <StringDetect attribute="Decimal" context="#stay" String="UL" insensitive="TRUE"/>
++          <StringDetect attribute="Decimal" context="#stay" String="LU" insensitive="TRUE"/>
++          <StringDetect attribute="Decimal" context="#stay" String="LL" insensitive="TRUE"/>
++          <StringDetect attribute="Decimal" context="#stay" String="U" insensitive="TRUE"/>
++          <StringDetect attribute="Decimal" context="#stay" String="L" insensitive="TRUE"/>
++        </Int>
++        <HlCChar attribute="Char" context="#stay"/>
++        <DetectChar attribute="String" context="String" char="&quot;"/>
++        <IncludeRules context="##Doxygen" />
++        <Detect2Chars attribute="Comment" context="Commentar 1" char="/" char1="/"/>
++        <Detect2Chars attribute="Comment" context="Commentar 2" char="/" char1="*" beginRegion="Comment"/>
++        <AnyChar attribute="Symbol" context="#stay" String=":!%&amp;()+,-/.*&lt;=&gt;?[]|~^&#59;"/>
++      </context>
++
++      <context attribute="String" lineEndContext="#pop" name="String">
++        <LineContinue attribute="String" context="#stay"/>
++        <HlCStringChar attribute="String Char" context="#stay"/>
++        <DetectChar attribute="String" context="#pop" char="&quot;"/>
++      </context>
++
++      <context attribute="Region Marker" lineEndContext="#pop" name="Region Marker">
++      </context>
++
++      <context attribute="Comment" lineEndContext="#pop" name="Commentar 1">
++        <LineContinue attribute="Comment" context="#stay"/>
++        <IncludeRules context="##Alerts" />
++      </context>
++
++      <context attribute="Comment" lineEndContext="#stay" name="Commentar 2">
++        <Detect2Chars attribute="Comment" context="#pop" char="*" char1="/" endRegion="Comment"/>
++        <IncludeRules context="##Alerts" />
++      </context>
++
++      <context attribute="Error" lineEndContext="#pop" name="AfterHash">
++        <!-- define, elif, else, endif, error, if, ifdef, ifndef, include, include_next, line, pragma, undef, warning -->
++        <RegExpr attribute="Preprocessor" context="Preprocessor" String="#\s*if(?:def|ndef)?(?=\s+\S)" insensitive="true" beginRegion="PP" firstNonSpace="true" />
++        <RegExpr attribute="Preprocessor" context="Preprocessor" String="#\s*endif" insensitive="true" endRegion="PP" firstNonSpace="true" />
++        <RegExpr attribute="Preprocessor" context="Define" String="#\s*define.*((?=\\))" insensitive="true" firstNonSpace="true" />
++        <RegExpr attribute="Preprocessor" context="Preprocessor" String="#\s*(?:el(?:se|if)|include(?:_next)?|define|undef|line|error|warning|pragma)" insensitive="true" firstNonSpace="true" />
++        <RegExpr attribute="Preprocessor" context="Preprocessor" String="#\s+[0-9]+" insensitive="true" firstNonSpace="true" />
++      </context>
++
++      <context attribute="Preprocessor" lineEndContext="#pop" name="Preprocessor">
++        <LineContinue attribute="Preprocessor" context="#stay"/>
++        <RangeDetect attribute="Prep. Lib" context="#stay" char="&quot;" char1="&quot;"/>
++        <RangeDetect attribute="Prep. Lib" context="#stay" char="&lt;" char1="&gt;"/>
++        <IncludeRules context="##Doxygen" />
++        <Detect2Chars attribute="Comment" context="Commentar/Preprocessor" char="/" char1="*" beginRegion="Comment2" />
++        <Detect2Chars attribute="Comment" context="Commentar 1" char="/" char1="/" />
++      </context>
++
++      <context attribute="Preprocessor" lineEndContext="#pop" name="Define">
++        <LineContinue attribute="Preprocessor" context="#stay"/>
++      </context>
++
++      <context attribute="Comment" lineEndContext="#stay" name="Commentar/Preprocessor">
++        <Detect2Chars attribute="Comment" context="#pop" char="*" char1="/" endRegion="Comment2" />
++      </context>
++
++      <context attribute="Comment" lineEndContext="#stay" name="Outscoped" >
++        <DetectSpaces />
++        <IncludeRules context="##Alerts" />
++        <DetectIdentifier />
++        <DetectChar attribute="String" context="String" char="&quot;"/>
++        <IncludeRules context="##Doxygen" />
++        <Detect2Chars attribute="Comment" context="Commentar 1" char="/" char1="/"/>
++        <Detect2Chars attribute="Comment" context="Commentar 2" char="/" char1="*" beginRegion="Comment"/>
++        <RegExpr attribute="Comment" context="Outscoped intern" String="#\s*if" beginRegion="PP" firstNonSpace="true" />
++        <RegExpr attribute="Preprocessor" context="#pop" String="#\s*el(?:se|if)" firstNonSpace="true" />
++        <RegExpr attribute="Preprocessor" context="#pop" String="#\s*endif" endRegion="PP" firstNonSpace="true" />
++      </context>
++
++      <context attribute="Comment" lineEndContext="#stay" name="Outscoped intern">
++        <DetectSpaces />
++        <IncludeRules context="##Alerts" />
++        <DetectIdentifier />
++        <DetectChar attribute="String" context="String" char="&quot;"/>
++        <IncludeRules context="##Doxygen" />
++        <Detect2Chars attribute="Comment" context="Commentar 1" char="/" char1="/"/>
++        <Detect2Chars attribute="Comment" context="Commentar 2" char="/" char1="*" beginRegion="Comment"/>
++        <RegExpr attribute="Comment" context="Outscoped intern" String="#\s*if" beginRegion="PP" firstNonSpace="true" />
++        <RegExpr attribute="Comment" context="#pop" String="#\s*endif" endRegion="PP" firstNonSpace="true" />
++      </context>
++    </contexts>
++    <itemDatas>
++      <itemData name="Normal Text"  defStyleNum="dsNormal" spellChecking="false"/>
++      <itemData name="Keyword"      defStyleNum="dsKeyword" spellChecking="false"/>
++      <itemData name="Data Type"    defStyleNum="dsDataType" spellChecking="false"/>
++      <itemData name="Decimal"      defStyleNum="dsDecVal" spellChecking="false"/>
++      <itemData name="Octal"        defStyleNum="dsBaseN" spellChecking="false"/>
++      <itemData name="Hex"          defStyleNum="dsBaseN" spellChecking="false"/>
++      <itemData name="Float"        defStyleNum="dsFloat" spellChecking="false"/>
++      <itemData name="RawHtml"      defStyleNum="dsNormal" spellChecking="false"/>
++      <itemData name="Char"         defStyleNum="dsChar" spellChecking="false"/>
++      <itemData name="String"       defStyleNum="dsString"/>
++      <itemData name="String Char"  defStyleNum="dsChar"/>
++      <itemData name="Comment"      defStyleNum="dsComment"/>
++      <itemData name="Symbol"       defStyleNum="dsNormal" spellChecking="false"/>
++      <itemData name="Preprocessor" defStyleNum="dsOthers" spellChecking="false"/>
++      <itemData name="Prep. Lib"    defStyleNum="dsOthers" spellChecking="false"/> <!--,Qt::darkYellow,Qt::yellow,false,false)); -->
++      <itemData name="Alert"        defStyleNum="dsAlert" spellChecking="false"/>
++      <itemData name="Region Marker" defStyleNum="dsRegionMarker" spellChecking="false"/>
++      <itemData name="Error"        defStyleNum="dsError" spellChecking="false"/>
++    </itemDatas>
++  </highlighting>
++  <general>
++    <comments>
++      <comment name="singleLine" start="//" />
++      <comment name="multiLine" start="/*" end="*/" />
++    </comments>
++    <keywords casesensitive="1" additionalDeliminator="'&quot;" />
++  </general>
++</language>

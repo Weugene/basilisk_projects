@@ -1,0 +1,52 @@
+#!/bin/bash
+
+debug()
+{
+    echo -e "Content-type: text/plain\n"
+    env
+}
+
+urldecode()
+{
+    sed -e 's/%\([0-9A-F][0-9A-F]\)/\\\\\x\1/g' -e 's/+/ /g' | xargs echo -e
+}
+
+BASILISK_WIKI=/home/popinet/basilisk-wiki
+export BASILISK=${PWD%%/cgi-bin}
+export BASILISK_URL=http://$HTTP_HOST
+
+STRING=`sed 's/patterns=\(.*\)&.*/\1/'`
+
+searchrepo()
+{
+    cd $1 && \
+	darcs show files --no-pending --no-directories -0 | \
+	    xargs -0 grep -I "`echo $2 | urldecode`" | head -n 1000
+}
+
+searchpreproc()
+{
+    if [ -z "$1" ]; then
+	echo "### No match found for ''"
+    else
+	(
+	    searchrepo $BASILISK/..   $1
+	    searchrepo $BASILISK_WIKI $1
+	) | awk -v string="`echo $1 | urldecode`" -f $BASILISK/cgi-bin/search.awk
+    fi
+}
+
+PREPROC="searchpreproc $STRING"
+
+echo -e "Content-type: text/html\n"
+
+$PREPROC | iconv -f utf-8 -t utf-8 -c |                         \
+            pandoc -f markdown -s --preserve-tabs               \
+	   -V wikititle=Basilisk				\
+	   -V base=http://basilisk.fr				\
+	   -V pagetitle="Search results" 			\
+	   -V wikiupload=true					\
+	   -V sitenav=true					\
+	   -V usecache=true					\
+	   --template=$BASILISK/templates/page.static	 	\
+    | sed 's/__ESCAPEDDOLLAR__/$$/g'

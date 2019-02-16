@@ -1,0 +1,34 @@
+The CodeBlock plugin requires patching highlighting-kate and
+reinstalling pandoc and gitit. This can be done with
+
+~~~bash
+set -e
+( cd ~/local/src && tar xzf ~/.cabal/packages/hackage.haskell.org/highlighting-kate/0.5.3.9/highlighting-kate-0.5.3.9.tar.gz )
+KATE=$HOME/local/src/highlighting-kate-0.5.3.9/
+cat highlighting-kate.patch | (cd $KATE && patch -p1 )
+cabal install HXT
+(cd $KATE && runghc ParseSyntaxFiles.hs xml)
+(cd $KATE && cabal install -fexecutable --force-reinstalls)
+cabal install --reinstall pandoc gitit
+~~~
+
+On Debian 7, the last line should be replaced with
+
+~~~bash
+cabal install --reinstall pandoc-1.11.1 gitit-0.10.3.1
+~~~
+
+You may also need to do
+
+~~~bash
+ghc-pkg hide monads-tf
+~~~
+
+before
+
+~~~bash
+make clean && make
+make clean && make
+~~~
+
+Yes, you need to do this twice for some weird Haskell reason.

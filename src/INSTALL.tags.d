@@ -1,0 +1,3 @@
+INSTALL.tags:	\
+	./common.h \
+

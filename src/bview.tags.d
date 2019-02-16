@@ -1,0 +1,3 @@
+bview.tags:	\
+	./common.h \
+

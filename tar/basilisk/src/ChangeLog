@@ -1,0 +1,4425 @@
+Thu Jan  3 19:19:51 CET 2019  Stephane Popinet <popinet@basilisk.fr>
+  * Removed useless boundary condition for VOF
+
+Thu Jan  3 18:50:26 CET 2019  Stephane Popinet <popinet@basilisk.fr>
+  * Added embedded boundary conditions for pf, as suggested by Antoon van Hooft
+
+Thu Jan  3 18:46:08 CET 2019  Stephane Popinet <popinet@basilisk.fr>
+  * Memory tracing now works also with OpenMP
+
+Thu Jan  3 18:45:29 CET 2019  Stephane Popinet <popinet@basilisk.fr>
+  * Further fixes for "mirror" function in 2D
+
+Thu Jan  3 18:41:59 CET 2019  Stephane Popinet <popinet@basilisk.fr>
+  * Cosmetics
+
+Wed Jan  2 17:32:46 CET 2019  Stephane Popinet <popinet@basilisk.fr>
+  tagged release 18-12-21
+
+Fri Dec 21 09:19:30 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * 3D contact angles
+
+Thu Dec 20 09:53:49 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * 3D sessile drop test case
+
+Thu Dec 20 08:38:16 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Fixed Weber number for Wen Yang's example
+
+Wed Dec 19 19:55:09 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Option for "buffered" dumps
+  
+  This can be used to interactively visualise dumps with bview.
+
+Tue Dec 18 18:13:44 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Cosmetics
+
+Tue Dec 18 12:37:27 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * allocated() macro checks bounds for grid/multigrid.h
+
+Tue Dec 18 12:16:32 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Fixed normal orientations for symmetries in bview
+  
+  Note that the normal orientations for the mirror() operators are now the
+  correct ones. This means that the normal parameters of old codes will need
+  to be adjusted.
+
+Tue Dec 18 11:56:16 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Updated README.server configuration
+
+Tue Dec 18 11:55:39 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * qcc correctly rotates allocated()/neighbor() etc... with foreach_dimension(2)
+
+Tue Dec 18 11:54:40 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * qcc was not checking the name of begin_/end_ blocks properly
+
+Thu Nov 29 18:04:54 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * VOF normals can be optionally computed using height functions (rather than MYC)
+  
+  This is used in particular to improve the contact angle condition.
+
+Wed Dec 12 09:13:45 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  tagged release 18-12-12
+
+Wed Dec 12 09:12:30 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Workaround for bug in SVG font sizes in gnuplot > 5
+
+Tue Dec 11 20:51:41 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Older versions of pandoc do not like 'eqnarray'
+
+Tue Dec 11 18:40:00 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Updated test cases references
+
+Tue Dec 11 18:07:37 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * New example "Flow in a rotating bottom-driven cylindrical container"
+
+Tue Dec 11 17:04:42 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Boundary layer on a rotating disk
+
+Tue Dec 11 16:39:55 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Azimuthal velocity for axisymmetric flows
+
+Mon Dec 10 17:16:03 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * isoline() function can draw n regularly-spaced isolines
+
+Mon Dec 10 17:09:13 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Axisymmetric stream function
+
+Sat Dec  1 17:38:13 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Fine tuning for SVG figures
+
+Sat Dec  1 15:12:52 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Gnuplot uses SVG by default (rather than PNG)
+
+Thu Nov 29 17:43:09 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Docs on ptrace and SSH multiplexing
+
+Wed Nov 28 15:34:37 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Contact angle (in 2D)
+
+Mon Nov 26 20:21:10 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Cosmetics
+
+Mon Nov 26 20:20:56 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Bview can do isolines (in 2D)
+
+Sun Nov 25 11:08:23 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Workaround for bug in the "gallium" OSMesa driver
+
+Mon Nov 19 09:29:57 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Documentation on how to install OSMesa from source
+
+Fri Nov 16 17:27:11 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Starting flow around a cylinder
+
+Fri Nov 16 17:15:39 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Double projection option for the centered Navier-Stokes solver
+
+Fri Nov 16 17:12:44 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Advection with embedded boundaries
+
+Thu Nov 15 11:26:24 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Fixed floating-point issue in perfs.h
+
+Mon Nov 12 17:54:25 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Improved wavelet() and inverse_wavelet() functions
+
+Fri Nov  9 19:08:39 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Bview can draw basic "vectors" (in 2D only)
+
+Fri Nov  9 19:04:27 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Cosmetics
+
+Fri Nov  9 19:04:16 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Minor fix for distance() function
+
+Fri Nov  9 18:22:12 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  tagged release 18-10-25
+
+Fri Nov  9 18:14:09 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * remove_droplets() was not counting cells properly
+
+Fri Nov  9 18:08:49 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Search script avoids binary files
+
+Thu Oct 25 21:26:49 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * New function remove_droplets()
+
+Thu Sep 20 22:48:04 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Embedded boundaries for Poisson equations and Stokes flows
+
+Thu Sep 20 14:55:39 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Default makefile makes links when creating tag files
+
+Tue Sep 18 15:34:52 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Added macros for CSG of implicit surfaces
+
+Sat Sep 15 15:17:51 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * dump() can be called without arguments
+
+Fri Sep 14 18:05:30 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * New hydrostatic balance test with refined solids
+
+Thu Sep 13 17:49:57 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * output_ppm() understands a negative spread value (as automatic min/max)
+
+Thu Sep 13 17:46:45 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Bview also watches dump files.
+
+Wed Sep 12 19:41:55 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * New test case: Stokes flow past a periodic array of cylinders
+
+Mon Sep  3 15:51:16 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * draw_vof() must reset prolongation properly
+
+Wed Aug 29 10:01:23 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * New test case: Wannier flow between excentric rotating cylinders
+
+Wed Aug 29 10:00:46 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * New test case: Couette flow between rotating cylinders
+
+Wed Aug 29 09:27:25 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * New test case: Poiseuille flow in a periodic channel inclined at 45 degrees
+
+Tue Aug 28 19:52:52 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * New test case: Poisson equation on complex domains
+
+Tue Aug 28 12:18:08 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Avoid divide-by-zero for facet_normal()
+
+Tue Aug 28 12:17:10 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Added missing restriction() after restore for bview
+
+Tue Aug 28 12:16:15 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * New function line_center()
+  
+  Fills the coordinates *p* of the centroid of the fraction *a* of a
+  square cell lying under the line $(m,alpha)$.
+
+Fri Apr 13 08:34:31 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * refine-axi tests the centered Navier-Stokes implementation
+
+Fri Jul 13 14:56:06 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Added missing reduction operation for interface_area()
+
+Thu Jul 12 13:11:50 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Fixed 'linear = true' bug due to 'filled' option of draw_vof()
+
+Tue Jul 10 17:43:17 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Avoid divide-by-zero in colormap
+
+Tue Jul 10 17:35:29 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Updated references for reduced gravity test cases
+
+Tue Jul 10 16:56:29 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Two-phase flow around RV Tangaroa
+
+Tue Jul 10 15:17:36 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Maximum runtime is defined to within 5 minutes
+
+Tue Jul 10 15:14:26 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * bview 8 and 9 keys rotate view clockwise or anti-clockwise
+
+Tue Jul 10 14:52:59 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * bview can be customised with $HOME/.bview.py
+
+Mon Jul  9 14:12:49 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * draw_vof() can optionally fill with a solid color
+
+Mon Jul  9 14:10:41 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Isotropic example runs on Irene
+
+Sun Jul  8 19:34:42 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Tracing of tag() function
+
+Sun Jul  8 19:34:15 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * More robust bound checks for colormap
+
+Sun Jul  8 19:33:41 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Position of VOF interfaces checks that height functions are not too far
+
+Fri Jun 22 09:34:44 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Stability constraint takes into account multiple surface tensions
+
+Thu Jun 21 11:43:51 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Fixed boundary conditions for diffusion
+
+Thu Jun 21 11:43:18 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * bview understands a negative spread as min and max autoscaling
+
+Thu Jun 21 11:42:27 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Cosmetics
+
+Thu Jun 21 11:37:27 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Tracers tied to a VOF fraction can be advected using first-order upwind
+
+Thu Jun 21 11:36:47 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Added end-of-timestep hook for all-mach solver
+
+Wed May  9 21:12:28 CEST 2018  Frederik Brasz <cfbrasz@gmail.com>
+  * Zoom-dependent offset for cells in bview
+
+Fri May  4 11:57:19 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Minor fixes for default Makefile
+
+Fri May  4 11:55:49 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * bview uses a more portable way of checking for file changes (thanks to JMF)
+
+Thu Apr 26 14:14:23 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Better field info when restoring files with bview
+
+Thu Apr 26 14:10:28 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * draw_vof() can optionally use face fractions
+
+Thu Apr 12 19:27:46 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Generic Runge-Kutta time integrator
+
+Thu Apr 12 17:35:32 CEST 2018  Jose Lopez-Herrera <jose.lopez.herrera.s@gmail.com>
+  * Balci solver is not in the main branch
+
+Wed Apr 11 16:21:41 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Conserving option can be compiled with metric
+  
+  but may not be consistent. This needs further testing.
+
+Wed Apr 11 15:40:41 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Updated reference for axi tests
+
+Wed Apr 11 14:16:48 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Updated axiadvection test reference
+
+Wed Apr 11 12:23:52 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Refinement of face velocity field was inaccurate when combined with axisymmetry
+
+Tue Apr 10 10:58:19 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * tau_p can be used to store Psi
+  
+  This saves the allocation of a symmetric tensor field.
+
+Tue Apr 10 10:34:40 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Improvements to the documentation of viscoelastic models
+
+Mon Apr  9 18:24:14 CEST 2018  Jose Lopez-Herrera <jose.lopez.herrera.s@gmail.com>
+  * Changes on the introduction of log-conform.h 
+
+Fri Apr  6 12:22:57 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Simplified time-splitting for log-conform model
+
+Thu Apr  5 17:20:57 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Log-conform formulation uses local (symmetric) tensors
+
+Wed Apr  4 23:04:41 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * MPI buffer allocation was incorrect in multigrid-mpi.h
+
+Tue Apr  3 09:33:56 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Cosmetics for viscoelastic models
+
+Mon Apr  2 18:54:49 CEST 2018  Jose Lopez-Herrera <jose.lopez.herrera.s@gmail.com>
+  * fixing some details in vis test cases
+
+Mon Apr  2 18:48:40 CEST 2018  Jose Lopez-Herrera <jose.lopez.herrera.s@gmail.com>
+  * Soff[] and IMPLICIT removed. Text improved.
+
+Sat Mar 31 11:17:59 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Improvements to the falling viscoelastic drop case
+
+Sat Mar 31 11:16:06 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * box() drawing function takes notics, lw, lc as optional arguments.
+
+Fri Mar 30 19:50:38 CEST 2018  Jose Lopez-Herrera <jose.lopez.herrera.s@gmail.com>
+  * Impact of a viscoelastic drop on a solid
+
+Fri Mar 30 19:08:17 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Fixed aspect ratio for draw_string()
+
+Fri Mar 30 13:16:28 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Simplified interface to diagonalization function
+
+Fri Mar 30 12:45:11 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Improved documentation for log_conform.h
+
+Fri Mar 30 12:18:17 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Variables must be as local as possible
+  
+  This is very important for clarity but also to avoid conflicting
+  writes when using OpenMP.
+
+Fri Mar 30 09:57:22 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Reference and cosmetics for the lid-driven Oldroyd-B case
+
+Fri Mar 30 09:57:03 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Reference and cosmetics for the viscoelastic drop case
+
+Fri Mar 30 09:03:45 CEST 2018  Jose Lopez-Herrera <jose.lopez.herrera.s@gmail.com>
+  * Lid-driven cavity filled with an Oldroyd-B fluid
+
+Thu Mar 29 17:46:41 CEST 2018  Jose Lopez-Herrera <jose.lopez.herrera.s@gmail.com>
+  * Viscoelastic 2D drop in a Couette Newtonian shear flow
+
+Thu Mar 29 17:43:46 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * FENE-P Poiseuille flow test case
+
+Thu Mar 29 17:32:32 CEST 2018  Jose Lopez-Herrera <jose.lopez.herrera.s@gmail.com>
+  * FENE-P model
+
+Thu Mar 29 17:31:53 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Various documentation and formatting fixes for the log conformation model
+
+Wed Mar 28 17:11:22 CEST 2018  Wojciech Aniszewski <aniszewski@dalembert.upmc.fr>
+  * Cosmetics and minor fixes for draw_string.
+  
+  draw_string() now uses the Basilisk convention for arguments (such as lc[]) and comments.
+
+Thu Mar 29 11:26:17 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Added reference for Oldroyd-B Poiseuille and cosmetics
+
+Thu Mar 29 10:12:36 CEST 2018  Jose Lopez-Herrera <jose.lopez.herrera.s@gmail.com>
+  * Transient planar poiseuille flow for a viscoelastic Oldroyd-B fluid
+
+Thu Mar 29 10:11:46 CEST 2018  Jose Lopez-Herrera <jose.lopez.herrera.s@gmail.com>
+  * Log-conformation method for some constitutive models
+
+Thu Mar 29 09:26:59 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Fixed movie inclusion for isotropic example
+
+Thu Mar 15 10:38:50 CET 2018  Wojciech Aniszewski <aniszewski@dalembert.upmc.fr>
+  * bview: draw_string() can now take more arguments
+  
+  Current arguments are str: string, fg: vector of foreground
+     color (RGB), pos: position, 0 bottom left, 1 top left,
+     2 top right, 3 bottom right (default 0)
+     
+
+Wed Mar 14 18:41:25 CET 2018  Wojciech Aniszewski <aniszewski@dalembert.upmc.fr>
+  * draw_string creation for bview
+  
+
+Wed Mar 14 13:04:43 CET 2018  bderembl <bruno.deremble@ens.fr>
+  * update poisson.i
+  
+
+Wed Apr 11 12:53:44 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  tagged release 18-03-28
+
+Wed Mar 28 17:33:25 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Emacs mode for Basilisk C
+
+Wed Mar 28 16:00:07 CEST 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Updated rising bubble example
+
+Fri Mar 23 14:04:35 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Web server can handle url with spaces
+
+Thu Mar 22 17:37:36 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Web search recognises regular expressions and is not spooked by non-utf-8 stuff
+
+Wed Mar 21 13:19:57 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Search engine for web site
+
+Wed Mar 21 09:56:55 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Directory listing should work again
+
+Mon Mar 19 20:42:06 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Line numbers in source codes for pandoc <= 1.11
+
+Mon Mar 19 19:59:21 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Parsing for pandoc 1.11 include headers
+
+Mon Mar 19 19:23:54 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Tag generation tolerates mismatched {}
+
+Mon Mar 19 15:30:58 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Fixed proxying
+
+Mon Mar 19 13:31:24 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Proxy server setup
+
+Sun Mar 18 19:02:51 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * codeblock plugin fixes
+
+Sun Mar 18 12:40:16 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * C89 compatibility for literate-c
+
+Sun Mar 18 12:19:46 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Dynamic web site configuration
+
+Fri Mar 16 13:17:32 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Literate-c plugin escapes strings
+
+Fri Mar 16 12:52:16 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Cosmetics
+
+Fri Mar 16 12:51:27 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * qcc could hang on unterminated comments
+
+Fri Mar 16 12:50:41 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * MPI can be initialised externally (when basilisk is used as a module)
+
+Fri Mar 16 12:42:26 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * HTML page generation
+
+Thu Mar 15 18:09:13 CET 2018  bderembl <bruno.deremble@ens.fr>
+  * MPI support for python
+  
+
+Thu Mar 15 15:58:42 CET 2018  bderembl <bruno.deremble@ens.fr>
+  * install page modif
+  
+
+Fri Mar 16 11:30:37 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Added coding style guidelines
+
+Tue Mar 13 13:05:48 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Fixed C99/C89 incompatibility in qcc
+
+Tue Mar 13 12:29:46 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Minor fixes for turbulence.py
+
+Tue Mar 13 11:32:56 CET 2018  bderembl <bruno.deremble@ens.fr>
+  * changes for turbulence.py
+  
+
+Tue Mar 13 10:28:24 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Various fixes for Python modules
+
+Tue Mar 13 09:59:08 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Fixed detection of OpenMP and MPI conflict in qcc
+
+Mon Mar 12 21:12:27 CET 2018  bderembl <bruno.deremble@ens.fr>
+  * python 3 compatibility
+  
+
+Mon Mar 12 12:20:33 CET 2018  Quentin Magdelaine <quentinmagdelaine@gmail.com>
+  * Fractions are properly computed in marginal cases
+
+Fri Mar  9 08:31:43 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Better diagnostics for open_image()
+
+Mon Mar 12 13:28:54 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * New page on contributing
+
+Wed Mar  7 17:30:11 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Simpler interface for creating animations
+
+Wed Mar  7 14:45:05 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Basilisk View understands line widths
+
+Wed Mar  7 09:30:12 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * qcc automatically turns off OpenMP if MPI is used
+
+Tue Mar  6 18:32:14 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Fixed colors for performance plots
+
+Tue Mar  6 18:29:34 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Module to control the maximum runtime
+
+Tue Mar  6 16:07:47 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * New travelling() function for camera motion in Basilisk View
+
+Tue Mar  6 16:07:10 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Facet and line colors can be changed in Basilisk view
+
+Tue Mar  6 11:12:33 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Several improvements to the isotropic example
+
+Tue Mar  6 11:11:35 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * bview can do isosurfaces
+
+Thu Mar  1 14:33:52 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * More robust oscillation reference file
+
+Thu Mar  1 13:57:59 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Fixed linked to swasi video
+
+Thu Mar  1 11:08:17 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * The tag() function should now deal properly with different refinement levels
+
+Wed Feb 28 18:25:54 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Symmetric global tensors
+
+Wed Feb 28 17:14:10 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * bview-server defaults to one sample (for speed).
+
+Wed Feb 28 15:35:51 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Added missing tangential velocity BC for the atomisation example
+
+Wed Feb 28 15:33:23 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Added results on mesu for isotropic example
+  
+  Note that the agreement between basilisk and hit3d is much better than
+  before. This is due to this patch:
+  
+  Author: Stephane Popinet <popinet@basilisk.fr>
+  Date:   Mon Jun 13 11:52:03 CEST 2016
+    * Fixed BCG advection scheme (thanks to Andres Castillo Castellanos)
+
+Wed Feb 28 14:54:59 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * SWASI example
+
+Wed Feb 28 14:36:47 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Changed syntax of ppm2mp4 so that standard MP4 can be generated
+  
+  The new syntax is 'ppm2mp4 [OPTIONS] FILE', rather than
+  'ppm2mp4 [OPTIONS] > FILE'.
+
+Wed Feb 28 13:10:59 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Optional coordinate mapping for Basilisk View
+
+Wed Feb 28 11:47:41 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Improved installation instructions
+
+Wed Feb 28 11:17:02 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Various minor fixes for different handling of NaNs in recent gcc/libc
+
+Tue Feb 27 18:30:49 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Fixed type casting which was confusing gcc > 6
+
+Tue Feb 27 12:19:30 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Radial/cylindrical coordinates
+
+Mon Feb 26 18:37:24 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * restore() was not computing depth properly for multigrid + MPI
+
+Fri Feb 16 17:36:45 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  tagged release 18-02-16
+
+Fri Feb 16 16:51:50 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Script for remote monitoring
+
+Fri Feb 16 15:35:52 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * output_field() writes n + 1 records, so that the entire domain is covered
+
+Fri Feb 16 15:35:04 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * New translate() and mirror() drawing commands
+
+Fri Feb 16 15:16:34 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Added '1' and '4' shortcuts to set the # of samples in the bview client
+
+Fri Feb 16 14:59:46 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * qcc supports begin_... end_... blocks
+
+Fri Feb 16 14:59:06 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * ppm2ogv script streams the data
+
+Fri Feb 16 14:15:15 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * pipes are only opened on master process
+
+Thu Feb 15 16:01:20 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Changed default settings for multigrid solver
+
+Thu Feb 15 16:00:43 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Profiling graphs kill gnuplot properly at exit
+
+Thu Feb 15 12:13:11 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Support for inlined python plots
+
+Tue Feb 13 20:44:37 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Tracing depends on inclusion of MPI header in the correct order
+
+Tue Feb 13 13:43:45 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Improved built-in profiling
+
+Tue Feb 13 11:03:41 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Explicit viscous term (not used)
+
+Tue Feb 13 08:51:29 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Improved ppm2... scripts
+
+Mon Feb 12 18:43:08 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Fixed missing environment variables for -autolink
+
+Wed Feb  7 11:40:16 CET 2018  berny@dalembert.upmc.fr
+  * improve bview mouse zoom wheel on macOS
+
+Mon Feb 12 15:45:02 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Periodic boundaries on trees (also works with adaptation and MPI)
+
+Thu Feb  8 15:02:06 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Better ssh error reporting for runtest
+
+Thu Feb  8 15:01:15 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * MPI_Sendrecv seems to be slower than the older option
+
+Thu Feb  8 15:00:17 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Multigrid MPI uses MPI_Sendrecv rather than non-blocking send/blocking receive
+
+Tue Feb  6 20:43:21 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * autolink option for qcc used in default Makefile
+
+Mon Jan 29 15:33:00 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for incorrect check of foreach... end_foreach... in @def
+
+Fri Jan 26 22:03:30 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for remote execution of CADNA tests
+
+Fri Jan 26 19:53:49 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for incorrect deallocation of events at exit
+
+Fri Jan 26 19:52:49 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Support for CADNA: a library for the diagnostic of floating-point errors
+
+Thu Jan 25 11:37:37 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Added pointer casts for compatibility with C++
+
+Sun Jan 21 16:04:42 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Added volume fraction clamping in geometry.h
+
+Sun Jan 21 16:04:16 CET 2018  Stephane Popinet <popinet@basilisk.fr>
+  * Various minor fixes for bview
+
+Wed Dec 20 15:49:46 CET 2017  Stephane Popinet <popinet@basilisk.fr>
+  * More consistent restriction/prolongation for momentum-conserving advection
+
+Wed Dec 20 15:44:07 CET 2017  Stephane Popinet <popinet@basilisk.fr>
+  * Rising bubble test case also tests reduced gravity
+
+Wed Dec 20 10:30:29 CET 2017  Stephane Popinet <popinet@basilisk.fr>
+  * Simplified key bindings for bview client
+
+Mon Dec 18 10:08:29 CET 2017  Stephane Popinet <popinet@basilisk.fr>
+  * Optimisation for inviscid two-phase flows
+
+Mon Dec 18 09:58:28 CET 2017  Stephane Popinet <popinet@basilisk.fr>
+  * The Rayleigh-Taylor test case uses the momentum-conserving solver
+
+Sat Dec 16 19:15:41 CET 2017  Stephane Popinet <popinet@basilisk.fr>
+  * New script ppm2ogv
+
+Fri Aug 25 13:20:38 CEST 2017  Stephane Popinet <popinet@basilisk.fr>
+  * A simple momentum-conserving variant for the N-S solver
+
+Sat Dec 16 18:22:12 CET 2017  Stephane Popinet <popinet@basilisk.fr>
+  * Updated test cases for surface tension
+
+Sat Dec 16 17:15:07 CET 2017  Stephane Popinet <popinet@basilisk.fr>
+  * Reduced gravity
+
+Wed Dec 13 10:21:38 CET 2017  Stephane Popinet <popinet@basilisk.fr>
+  * Generic interfacial force implementation
+
+Fri Dec 15 16:35:20 CET 2017  Stephane Popinet <popinet@basilisk.fr>
+  * Fixes for documentation of biew on Macs
+
+Fri Dec 15 15:01:23 CET 2017  berny@dalembert.upmc.fr
+  * macOS installation instruction for bview
+
+Wed Dec 13 20:19:51 CET 2017  Stephane Popinet <popinet@basilisk.fr>
+  * Removed hard limit on maximum number of variables declared in qcc
+
+Wed Dec 13 10:14:58 CET 2017  Stephane Popinet <popinet@basilisk.fr>
+  * Improved bview documentation
+
+Mon Dec 11 18:57:50 CET 2017  Stephane Popinet <popinet@basilisk.fr>
+  * input_gfs() can optionally read all fields listed in the GFS file
+
+Mon Dec 11 18:51:30 CET 2017  Stephane Popinet <popinet@basilisk.fr>
+  * The surface associated with distance is deleted when distance is deleted
+
+Sun Dec 10 18:41:35 CET 2017  Stephane Popinet <popinet@basilisk.fr>
+  * Documentation for utility functions
+
+Sun Dec 10 13:12:01 CET 2017  Stephane Popinet <popinet@basilisk.fr>
+  * The atomisation example uses Basilisk View
+
+Sat Dec  9 17:34:03 CET 2017  Stephane Popinet <popinet@basilisk.fr>
+  * Cosmetics for bview
+
+Sat Dec  9 17:33:39 CET 2017  Stephane Popinet <popinet@basilisk.fr>
+  * qcc knows other types than scalar, vector, tensor
+  
+  This makes it more robust, however its type system is still very primitive.
+
+Fri Dec  8 09:22:01 CET 2017  Stephane Popinet <popinet@basilisk.fr>
+  * New script 'bppm' to display a stream of PPM images
+
+Thu Dec  7 19:24:05 CET 2017  Stephane Popinet <popinet@basilisk.fr>
+  * bview cleans up child processes properly
+
+Thu Dec  7 13:58:06 CET 2017  Stephane Popinet <popinet@basilisk.fr>
+  * Minor bug fixes for fractions
+
+Thu Dec  7 13:57:46 CET 2017  Stephane Popinet <popinet@basilisk.fr>
+  * Bug fixes for parallel dump/restore
+
+Thu Dec  7 13:57:17 CET 2017  Stephane Popinet <popinet@basilisk.fr>
+  * Updated Basilisk View documentation
+
+Tue Dec  5 20:31:56 CET 2017  Stephane Popinet <popinet@basilisk.fr>
+  * restore() can work with a different number of variables
+
+Tue Dec  5 19:29:36 CET 2017  Stephane Popinet <popinet@basilisk.fr>
+  * Basilisk View
+
+Sat Dec  2 18:03:24 CET 2017  Stephane Popinet <popinet@basilisk.fr>
+  * 3D VOF facets and interfacial area
+
+Tue Oct  3 16:42:59 CEST 2017  Stephane Popinet <popinet@basilisk.fr>
+  * Removed "faststart" option for ppm2mp4.
+  
+  This seems not to work on older ffmpeg versions.
+
+Fri Sep  1 18:48:29 CEST 2017  Stephane Popinet <popinet@basilisk.fr>
+  * Changed the dump file format
+  
+  It now includes variable names and domain origin and scale
+
+Fri Sep 29 19:39:55 CEST 2017  Stephane Popinet <popinet@basilisk.fr>
+  * Fixed test cases for new default limiter in compressible solver.
+
+Fri Sep 29 19:19:06 CEST 2017  Stephane Popinet <popinet@basilisk.fr>
+  * New script ppm2mp4.
+
+Fri Sep 29 15:57:32 CEST 2017  Stephane Popinet <popinet@basilisk.fr>
+  * Conservation.h now uses a pure minmod limiter by default.
+  
+  The old behaviour can be recovered by setting theta = 1.3.
+
+Sun Jul  2 13:33:15 CEST 2017  Stephane Popinet <popinet@basilisk.fr>
+  * Updated TODO
+
+Sat Jul  1 18:38:27 CEST 2017  Stephane Popinet <popinet@basilisk.fr>
+  * Fixed silly spherical metric bug
+
+Sat Jul  1 16:13:22 CEST 2017  Stephane Popinet <popinet@basilisk.fr>
+  * Fixed boundary condition on lambda for diffusion solver
+
+Wed Jun 28 16:01:36 CEST 2017  Stephane Popinet <popinet@basilisk.fr>
+  * Published axisymmetric Poiseuille test case
+
+Wed Jun 28 12:33:17 CEST 2017  Stephane Popinet <popinet@basilisk.fr>
+  * Fixed wiki stuff in Makefiles
+
+Tue Jun 27 14:24:53 CEST 2017  Stephane Popinet <popinet@basilisk.fr>
+  * Updated for wiki compatibility
+
+Mon Jun 26 17:23:24 CEST 2017  Stephane Popinet <popinet@basilisk.fr>
+  * Make sure metric is defined before other fields
+
+Mon Jun 26 08:56:05 CEST 2017  Stephane Popinet <popinet@basilisk.fr>
+  * Updated test case references
+
+Sun Jun 25 18:59:24 CEST 2017  Stephane Popinet <popinet@basilisk.fr>
+  * .n,.t,.r are recognized in boundary definitions
+
+Sun Jun 25 17:04:08 CEST 2017  Stephane Popinet <popinet@basilisk.fr>
+  * Event loop stops at the last event
+
+Sun Jun 25 12:58:21 CEST 2017  Stephane Popinet <popinet@basilisk.fr>
+  * Minor syntax fix for fraction()
+
+Sun Jun 25 12:58:02 CEST 2017  Stephane Popinet <popinet@basilisk.fr>
+  * Fixed tag() function
+
+Sat Jun 24 18:40:50 CEST 2017  Stephane Popinet <popinet@basilisk.fr>
+  * adapt_wavelet() was not resetting user flags properly
+
+Thu May 25 13:07:34 CEST 2017  Stephane Popinet <popinet@basilisk.fr>
+  * Fixed foreach_boundary() when BGHOSTS = 2
+
+Mon May 15 14:51:50 CEST 2017  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for round-off error when transporting VOF tracers
+
+Tue Apr 18 17:33:17 CEST 2017  Stephane Popinet <popinet@basilisk.fr>
+  * Fixed curvature calculation combined with masking
+
+Tue Apr 18 14:42:36 CEST 2017  Stephane Popinet <popinet@basilisk.fr>
+  * Viscous term for momentum-conserving formulation
+
+Tue Apr 18 14:13:46 CEST 2017  Stephane Popinet <popinet@basilisk.fr>
+  * Bubble example uses clamping
+
+Tue Apr 18 11:13:44 CEST 2017  Stephane Popinet <popinet@basilisk.fr>
+  * Fixed marginal case for fractions()
+
+Tue Apr 18 11:11:28 CEST 2017  Stephane Popinet <popinet@basilisk.fr>
+  * Added missing header for distance.h
+
+Sat Apr 15 18:41:40 CEST 2017  Stephane Popinet <popinet@basilisk.fr>
+  * ppm2gif can use a -s option to rescale
+
+Fri Mar 31 08:18:32 CEST 2017  Stephane Popinet <popinet@basilisk.fr>
+  * Momentum-conserving two-phase flow formulation
+
+Fri Apr  7 17:10:42 CEST 2017  Stephane Popinet <popinet@basilisk.fr>
+  * The multigrid solver tunes dynamically the number of relaxations
+  
+  This significantly improves the robustness of the solver, in
+  particular for large density/viscosity ratios.
+
+Fri Apr  7 17:10:10 CEST 2017  Stephane Popinet <popinet@basilisk.fr>
+  * Updated atomisation example for new setup on occigen
+
+Sun Apr  2 18:37:23 CEST 2017  Stephane Popinet <popinet@basilisk.fr>
+  * Rising bubble test case 2
+
+Sun Apr  2 18:34:58 CEST 2017  Stephane Popinet <popinet@basilisk.fr>
+  * Filtering option for two-phase solver
+
+Fri Mar 31 14:31:35 CEST 2017  Stephane Popinet <popinet@basilisk.fr>
+  * Simplified rising bubble test case
+
+Thu Mar 30 17:55:01 CEST 2017  Stephane Popinet <popinet@basilisk.fr>
+  * The VOF scheme can transport associated tracers
+
+Tue Mar 28 20:54:09 CEST 2017  Stephane Popinet <popinet@basilisk.fr>
+  * Cosmetics
+
+Tue Mar 28 20:50:56 CEST 2017  Stephane Popinet <popinet@basilisk.fr>
+  * Added MINLEVEL as a multigrid option
+
+Tue Mar 28 14:45:52 CEST 2017  Stephane Popinet <popinet@basilisk.fr>
+  * Distance function to an STL surface / vector curve
+
+Tue Mar 28 14:31:16 CEST 2017  Stephane Popinet <popinet@basilisk.fr>
+  * Renamed coarsen() method restriction()
+
+Fri Mar 10 11:32:29 CET 2017  Stephane Popinet <popinet@basilisk.fr>
+  * Fixed bug for scalar names containing 'face'
+
+Wed Mar  8 17:35:34 CET 2017  Stephane Popinet <popinet@basilisk.fr>
+  * Cosmetics
+
+Wed Mar  8 17:34:41 CET 2017  Stephane Popinet <popinet@basilisk.fr>
+  * Independent tangential boundary conditions in 3D
+
+Wed Mar  8 17:04:57 CET 2017  Stephane Popinet <popinet@basilisk.fr>
+  * More generic script for atomisation
+
+Wed Mar  8 17:03:41 CET 2017  Stephane Popinet <popinet@basilisk.fr>
+  * Simplified viscosity.h
+
+Wed Mar  8 17:03:06 CET 2017  Stephane Popinet <popinet@basilisk.fr>
+  * Option to control the minimum number of iterations of the multigrid solver
+
+Mon Mar  6 18:22:13 CET 2017  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for const declaration
+
+Fri Feb  3 13:52:09 CET 2017  Stephane Popinet <popinet@basilisk.fr>
+  * Clarified installation instructions
+
+Fri Jan 20 18:36:41 CET 2017  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for periodic boundaries on trees at level 0
+
+Fri Jan 20 15:38:59 CET 2017  Stephane Popinet <popinet@basilisk.fr>
+  * Test case for 2 ghost cells on root level
+
+Fri Jan 20 10:12:54 CET 2017  Stephane Popinet <popinet@basilisk.fr>
+  * Added missing kdtquery link
+
+Wed Dec 14 15:06:22 CET 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Minor fix for MPI macro in examples
+
+Wed Nov 30 13:30:11 CET 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Fixes for python modules
+
+Wed Oct 26 14:16:43 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * refine() now only takes a single argument (the condition)
+
+Wed Oct 26 12:19:21 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Global fields are initialised at zero by default
+
+Sun Oct 23 17:25:38 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Added droplet counting to atomisation example
+
+Fri Oct 21 21:49:02 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Index reduction for tag() function
+
+Fri Oct 21 11:26:44 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Max runtime needs to be global in parallel
+
+Thu Oct 20 21:35:38 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Updated references for a few tests + Makefile fix
+
+Thu Oct 20 19:43:18 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * MPI restore() for trees
+
+Thu Oct 13 18:42:13 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Documentation fixes for bubble example
+
+Wed Oct 12 21:13:55 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Added quotes for runtest
+  
+  This should fix the problem with gdb test on Macs.
+
+Wed Oct 12 21:13:04 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * New bubble example
+
+Mon Sep 26 10:48:15 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * qcc looks for header files in current directory first
+  
+  This allows overloading of default header files.
+
+Fri Sep  9 15:43:57 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Fixed periodic boundaries on root level for multigrid
+
+Fri Sep  9 15:43:49 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * MPI_File... operations are horribly slow, replace them with standard operations
+
+Fri Sep  9 12:19:53 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Improved oscillation test
+
+Fri Sep  9 12:19:32 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Fixed generation of static lists
+
+Mon Jun 20 11:29:45 CEST 2016  Geoffroy Kirstetter <geoffroy.kirstetter@gmail.com>
+  * New test "Lake flowing into itself"
+
+Tue Jun 14 12:05:06 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Fixed prolongation for elevation conservation with saint-venant.h
+
+Tue Jun 14 12:04:00 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Fixed point location for multigrid
+
+Mon Jun 13 17:56:56 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Convert "nodata" to transparent when converting to png from output_ppm()
+
+Mon Jun 13 15:34:56 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Minor improvements to the tsunami example
+
+Mon Jun 13 15:21:19 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * KML file generation for tsunami example
+
+Mon Jun 13 11:52:03 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Fixed BCG advection scheme (thanks to Andres Castillo Castellanos)
+
+Sat Jun 11 15:17:30 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * output_gauges() works in parallel
+  
+  Thanks to the new function interpolate_array().
+
+Fri Jun 10 11:24:34 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Fixed orientation of input_grd()
+
+Wed Jun  8 20:40:05 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Tagging of connected neighborhoods
+
+Wed Jun  8 20:39:44 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Consistent default indexing of coarse/fine operators
+
+Wed Jun  8 15:48:32 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Fixed makefile for madsen test case
+
+Wed Jun  8 14:58:36 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Major fix for parallel reduction clauses
+  
+  They are now handled entirely by the preprocessor and only for the
+  outermost foreach() loop.
+
+Tue Jun  7 11:27:24 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Fixes for multigrid-mpi
+  
+  Note that a default grid is not initialised automatically anymore i.e. it is
+  necessary to call init_grid() before doing anything.
+
+Sun Jun  5 12:44:53 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Minor fixes
+
+Fri Jun  3 19:48:56 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * dump/restore works with multigrid MPI
+
+Wed Jun  1 15:52:36 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Fixes for Hele-Shaw
+
+Sat May 28 19:05:51 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Consistent foreach_boundary() for cartesian, multigrid and tree
+
+Sat May 28 17:18:31 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * discharge() uses foreach_boundary()
+  
+  Note that the function has also been renamed eta_b(). It will not work
+  with Cartesian grids (use multigrid instead). The hydrograph()
+  function has been removed.
+
+Sat May 28 17:17:51 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * New "river source" test case
+
+Sat May 28 15:23:27 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Fixed tips
+
+Fri May 27 11:03:23 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Doc for non-cubic MPI domains
+
+Thu May 26 17:42:07 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Cosmetics
+
+Thu May 26 17:40:02 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * On trees boundary conditions need to be applied on all vector components simultaneously
+
+Thu May 26 14:54:58 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for periodic boundaries on multigrid
+
+Tue May 24 10:50:46 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Simplified (a lot) multigrid boundary conditions
+
+Fri May 20 16:17:02 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for divide-by-zero in mycs()
+
+Fri May 20 09:56:37 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Cosmetics
+
+Wed May 18 16:47:15 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Doc fixes
+
+Wed May 18 15:22:31 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Minor fixes
+
+Wed May 18 13:57:17 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  tagged Release 16-05-18
+
+Wed May 18 13:54:53 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * output_gfs() can use file pointers with MPI
+
+Wed May 18 13:53:55 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Reference file for atomisation example
+
+Wed May 18 13:44:27 CEST 2016  Francesco De Vita <fnc.devita@gmail.com>
+  * Convergence for wind-driven test case
+
+Wed May 18 13:12:03 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * When generating tags or dependencies qcc only warns if included files are missing
+
+Wed May 18 11:40:43 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Forced isotropic turbulence example
+
+Wed May 18 10:34:42 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Updated installation instructions
+
+Wed May 18 09:53:41 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Atomisation example
+
+Tue May 17 18:18:01 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for buffer overflow in qcc
+
+Tue May 17 16:29:16 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Cosmetics
+
+Tue May 17 12:27:20 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Minor fixes
+
+Tue May 17 12:26:06 CEST 2016  Francesco De Vita <fnc.devita@gmail.com>
+  * Vertical velocity for multilayer Saint-Venant solver
+
+Tue May 17 12:23:15 CEST 2016  Francesco De Vita <fnc.devita@gmail.com>
+  * Wind-driven lake test case
+
+Mon May 16 11:54:46 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Merge 1D, 2D, 3D multigrid implementations
+
+Sat May 14 16:51:13 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * dimension can be specified as -Ddimension=2 in qcc
+
+Fri May 13 10:53:59 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * MPI-parallel multigrid
+
+Fri May 13 08:21:33 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Symbolic links to pages in Makefile
+
+Thu May 12 19:12:02 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * The top and bottom layers can have variable coefficients
+
+Thu May 12 19:10:35 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Fixed sign of fluxes between layers in multilayer solver
+
+Thu May 12 17:08:54 CEST 2016  Francesco De Vita <fnc.devita@gmail.com>
+  * Multiple layers transcritical test case
+
+Wed May 11 13:22:31 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Fixed multiple warnings at compilation
+
+Wed May 11 12:23:24 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Makefile fix for itags in sandbox/
+
+Wed May 11 11:12:04 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * More cosmetics
+
+Wed May 11 10:03:09 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Cosmetics
+
+Wed May 11 09:58:39 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Merge multilayer Saint-Venant with the single layer solver
+
+Wed May 11 09:20:27 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Further qcc fixes for '-lineno' option and Makefile dependencies
+
+Sun May  8 19:24:08 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Cleanup of multilayer Saint-Venant solver
+
+Sat May  7 14:07:19 CEST 2016  Francesco De Vita <fnc.devita@gmail.com>
+  * Higuera test case
+
+Sat May  7 14:06:49 CEST 2016  Francesco De Vita <fnc.devita@gmail.com>
+  * Multi-layer Saint-Venant solver
+
+Sat May  7 10:18:25 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Fixed sphere example
+
+Fri May  6 16:59:39 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Remotely-run test cases can use extra files of the form TEST.*
+
+Fri May  6 16:26:25 CEST 2016  Jose Lopez-Herrera <jose.lopez.herrera.s@gmail.com>
+  * Taylor droplet EHD test case
+
+Fri May  6 15:27:02 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Fixed reference for tensor_bc test case
+
+Fri May  6 15:20:54 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Minor fixes to electrohydro docs and tests
+
+Fri May  6 14:47:11 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Important fix for axisymmetric metric and adaptation
+
+Fri May  6 14:30:54 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for -nolineno option of qcc
+  
+  This means Makefile dependencies should now work as intended.
+
+Fri May  6 13:03:15 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * adapt_wavelet() coarsens cells deeper than maxlevel
+
+Wed May  4 18:21:47 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Published stress.h.page
+
+Wed Feb 17 12:08:48 CET 2016  Stephane Popinet <popinet@basilisk.fr>
+  * New tensor boundary conditions test case
+
+Wed May  4 17:04:44 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Cleaned up EHD code and test cases
+
+Wed May 28 17:50:40 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Published pnp.h.page, debye.c.page
+
+Wed May  4 14:53:59 CEST 2016  Jose Lopez-Herrera <jose.lopez.herrera.s@gmail.com>
+  * EHD axisymmetric stresses convergence test
+
+Wed May  4 14:31:48 CEST 2016  Jose Lopez-Herrera <jose.lopez.herrera.s@gmail.com>
+  * Axisymmetric conducting column test case
+
+Tue Feb 16 19:50:33 CET 2016  Jose Lopez-Herrera <jose.lopez.herrera.s@gmail.com>
+  * New Electrostatic in planar layers test case
+
+Tue Feb 16 16:05:27 CET 2016  Jose Lopez-Herrera <jose.lopez.herrera.s@gmail.com>
+  * New charged column test case
+
+Tue Feb 16 15:00:46 CET 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Updated tips for compiling on supercomputers
+
+Tue Feb 16 14:54:14 CET 2016  Stephane Popinet <popinet@basilisk.fr>
+  * New Tips page
+
+Tue May  3 19:41:19 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Cosmetics
+
+Tue May  3 18:02:58 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Spurious current test case depends on detail of Poisson relaxation
+
+Mon May  2 17:31:43 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for darcs dependency generation
+
+Mon May  2 12:53:27 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  tagged release 16-05-02
+
+Mon May  2 12:36:26 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Kuramoto-Sivashinski test case
+
+Mon May  2 12:08:08 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Fix input_gfs() for vector rotation
+
+Mon May  2 12:00:36 CEST 2016  Geoffroy Kirstetter <geoffroy.kirstetter@gmail.com>
+  * New function input_grd()
+
+Mon May  2 10:47:57 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Minor fixes for examples
+
+Mon May  2 10:43:41 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Fix vector orientation for N- to Z-ordering in GfsView
+
+Sun May  1 18:45:31 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * New implementation for restriction of masked cells
+
+Sat Apr 30 17:23:06 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Optimisation of boundary conditions for "full trees"
+  
+  Full trees are trees with the same resolution as a regular Cartesian
+  grid. In this case restrictions on coarser levels are not
+  necessary. Performance gains are significant in particular for MPI
+  and/or Poisson solves.
+
+Tue Apr 19 11:51:19 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Grid size is stored rather than recomputed
+
+Sun Apr 17 20:22:36 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for paraver tracing
+
+Sun Apr 17 20:08:02 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Fixes for bitree
+
+Sun Apr 17 18:31:12 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Documentation for built-in profiling
+
+Sun Apr 17 16:50:46 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * New fraction() convenience macro
+
+Sun Apr 17 16:19:14 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Adaptive 3D explosion
+
+Sun Apr 17 14:39:15 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Rename quadtree to tree everywhere
+  
+  This reflects the fact that the tree implementation is (almost)
+  dimension-independent.
+
+Sun Apr 17 13:59:20 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Simplify plots in debug mode
+
+Sun Apr 17 13:57:39 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * restriction() is now a method
+  
+  It does something only on multigrids, as trees apply boundary
+  conditions on all levels by default.
+
+Sun Apr 17 13:33:56 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Default Makefile uses code striping
+
+Sat Apr 16 16:24:04 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Do not use restriction halos anymore
+
+Wed Apr  6 16:53:18 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Updated MPI and load-balancing test cases
+
+Wed Apr  6 16:39:20 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Changed boundary condition for acceleration in navier-stokes/centered.h
+
+Wed Apr  6 16:38:27 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Simplified mpi runtest
+
+Mon Apr  4 16:10:05 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Cosmetics for Saint-Venant
+
+Mon Apr  4 13:45:26 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Reference results on occigen for atomisation
+
+Sat Apr  2 20:45:32 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Option to control leaf MPI balancing
+
+Sat Apr  2 19:57:59 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * New 'randomap' random colormap
+
+Sat Apr  2 18:53:09 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Option to control the minimum number of elements per MPI process
+
+Sat Apr  2 16:01:29 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Performance statistics are collected in the 'perf' structure
+
+Sat Apr  2 15:37:49 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Minor optimizations of load-balancing
+
+Sat Apr  2 10:48:12 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Optimisation and cleanup of load-balancing
+
+Fri Apr  1 11:51:30 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Load-balancing does not need check_pid()
+
+Fri Apr  1 11:18:23 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * 2D atomisation works with load-balancing and face velocity/quadtree checks
+
+Thu Mar 31 15:42:38 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * check_pid() and co are turned off by default
+  
+  They can be turned back on by defining DEBUGCOND in quadtree-mpi.h
+
+Thu Mar 31 13:18:02 CEST 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Load-balancing works for 2D atomisation on 1536 cores!
+
+Sat Mar 26 11:14:52 CET 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Parallel bump2D test case
+
+Sat Mar 26 11:12:20 CET 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Robust 3D MPI requires several tricks
+  
+  Prolongation needs to be turned off for boundary conditions and cell
+  coarsening needs to be recursive.
+
+Sat Mar 26 11:02:03 CET 2016  Stephane Popinet <popinet@basilisk.fr>
+  * -catch option automatically calls gdb on exceptions
+
+Sat Mar 26 11:01:13 CET 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Generalised local_prolongation() function to 3D
+
+Sat Mar 26 10:59:56 CET 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for layer deallocation in 3D
+
+Sun Mar 20 19:38:08 CET 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Load-balancing does not rely on 'nans' anymore
+
+Sat Mar 19 14:49:25 CET 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Cleanup of new load-balancing implementation
+
+Sat Mar 19 12:22:00 CET 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Yet another version of load-balancing... (but this one really works!)
+
+Sat Feb 20 19:15:41 CET 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Other fixes for load-balancing (REVIEW)
+
+Fri Feb 19 14:13:24 CET 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Load-balancing works without trick for Saint-Venant (REVIEW)
+
+Wed Feb 17 17:27:40 CET 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Atomisation example
+
+Sun Feb 14 12:46:17 CET 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Load-balancing works with rborder (REVIEW)
+
+Fri Feb 12 17:36:13 CET 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Load-balancing works!
+
+Fri Feb 12 16:46:39 CET 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Load-balancing (youkaidi youkaida)
+
+Fri Feb 12 11:18:10 CET 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Load balancing (it doesn't stop)
+
+Thu Feb 11 18:16:05 CET 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Load-balancing (always)
+
+Thu Feb 11 11:58:39 CET 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Load-balancing (again) (REVIEW)
+
+Sat Feb  6 17:26:12 CET 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Updated test references for new N-ordering
+
+Sat Feb  6 16:21:59 CET 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for traversal of non-local vertices
+
+Sat Feb  6 16:15:09 CET 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Built-in function tracing
+
+Fri Jan 29 19:08:17 CET 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Load-balancing 3 (REVIEW)
+
+Fri Jan 22 10:54:59 CET 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Load-balancing 2 (REVIEW)
+
+Thu Jan 21 21:29:31 CET 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Fixed bounding boxes for SVG graphics
+
+Tue Jan 12 08:56:59 CET 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Removed useless remote_leaf cell tag
+
+Thu Jan  7 18:06:41 CET 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Dynamic load-balancing (REVIEW)
+
+Mon Jan  4 12:15:12 CET 2016  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for sandboxed runs of *.[ch].page tests
+
+Tue Dec  8 09:57:25 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Phase inversion example (REVIEW)
+
+Fri Dec 18 12:40:36 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for VOF and Poisson warning output in parallel
+
+Fri Dec 18 10:24:47 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Reduction operations for foreach_face(x,..)
+
+Fri Dec 18 10:16:29 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for MPI refinement dependency
+
+Wed Dec 16 13:39:08 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for incorrect buffering when using MPI_Isend()
+
+Tue Dec 15 11:40:22 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Optional Jacobi relaxation for Poisson and viscosity
+
+Mon Dec 14 20:43:34 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * MPI buffers are named for debugging
+
+Sun Dec 13 16:13:25 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Debugging in 3D
+
+Sun Dec 13 15:28:59 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Bug fix for foreach_halo()
+
+Mon Dec  7 15:06:53 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Pressure BC for Navier-Stokes use acceleration rather than velocity
+
+Thu Dec  3 15:34:05 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * output_cells() in 3D
+
+Mon Nov 30 22:19:00 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Floating-point exceptions now work with OpenMP
+
+Mon Nov 30 22:17:35 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Balanced surface tension on quad/octrees
+
+Fri Nov 27 16:01:31 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Minor improvement for stencil debugging
+
+Thu Nov 26 10:04:53 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Biquadratic refinement (not used yet)
+
+Thu Nov 26 10:03:11 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for axisymmetric curvature calculation
+
+Tue Nov 24 17:03:10 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * mpeg() macro
+
+Tue Nov 24 17:00:55 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Various fixes for dump()/restore() and output_gfs()
+
+Tue Nov 24 16:59:32 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Fixed round-off error for VOF volume computation
+
+Fri Nov 20 19:25:13 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Makefile fix for 3D dependencies
+
+Fri Nov 20 19:24:49 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Curvature on octrees
+
+Fri Nov 13 16:20:32 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Remote parallel jobs take queue size into account
+
+Fri Nov 13 14:53:41 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for capillary test case (when run remotely)
+
+Fri Nov 13 10:50:27 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Definition of foreach_edge() and foreach_neighbor() for multigrid3D
+
+Fri Nov 13 09:50:18 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Use one layer of boundary ghost cells by default on quadtrees
+
+Wed Nov 11 20:02:57 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Parabola fitting for curvature in 3D
+
+Wed Nov 11 17:22:15 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Added missing plot file for curvature test
+
+Wed Nov 11 16:55:56 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Curvature test case
+
+Wed Nov 11 11:18:49 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Parabolic fit of centroids
+
+Mon Nov  9 11:42:19 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * "Mixed heights" parabola fit curvature
+
+Sun Nov  8 12:00:32 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Consistent height functions
+
+Wed Nov  4 14:36:40 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for restriction of face vector fields on masked domains
+
+Wed Nov  4 13:46:55 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Boundary conditions for 5x5 stencils on quad/octrees
+
+Tue Oct  6 16:20:21 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Cosmetics
+
+Mon Sep 21 16:41:07 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Added JCP reference for Green-Naghdi
+
+Sat Sep 12 14:40:46 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * dump()/restore() header includes depth
+
+Sat Sep 12 09:56:25 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * output_gfs()/input_gfs(), dump()/restore() now work for multigrids
+
+Wed Sep  9 11:37:08 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for myc() and zero normal components
+
+Mon Sep  7 10:20:45 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Randomise seed for MPI
+
+Sat Sep  5 12:16:41 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for spaces in vector/tensor components
+  
+  A similar bug probably remains in other special cases (e.g. v . n[top] etc...)
+
+Thu Sep  3 19:20:55 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Makefile fix for .3D.tst
+
+Wed Sep  2 13:44:25 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Cosmetics
+
+Wed Sep  2 10:23:13 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Scaling results on Occigen in 3D rather than Curie in 2D
+
+Wed Sep  2 09:11:42 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Preliminary HF-curvature implementation in 3D
+
+Tue Sep  1 20:41:59 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Boundary conditions for vector and face fields on octrees
+
+Tue Sep  1 19:58:56 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Vortex shedding behind a sphere
+
+Tue Sep  1 16:42:26 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * output_gfs() works in parallel
+
+Tue Sep  1 11:57:43 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for periodic BCs on vector fields on octrees
+
+Mon Aug 31 17:56:06 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * face vector refinement in 3D
+
+Mon Aug 31 16:36:38 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for rotations of lists of vector components
+
+Thu Aug 27 11:19:27 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Volume fraction initialisation in 3D
+
+Sat Aug 15 21:52:42 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Cosmetics
+
+Fri Aug 14 10:37:43 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * dump() works in parallel
+
+Thu Aug 13 16:43:35 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Safety checks for mpi-laplacian benchmark
+
+Thu Aug 13 16:32:48 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Standard I/O file pointers are opened "on demand" for parallel programs
+
+Thu Aug 13 12:24:22 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Test case for 3D poisson solver with refinement
+
+Thu Aug 13 11:39:42 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Fixed minor memory leaks
+
+Thu Aug 13 11:31:59 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Multigrid solver needs the global depth in parallel
+
+Wed Aug 12 23:39:40 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Options for controlling the output of MTRACE
+
+Wed Aug 12 23:39:08 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * MPI does not require a global depth
+  
+  The maximum depth of bordering cells is sufficient.
+
+Wed Aug 12 21:02:55 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * -catch option work with MPI
+
+Tue Aug 11 15:25:36 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Memory tracing
+
+Tue Aug 11 13:08:34 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Python modules can be compiled with OpenMP
+  
+  but this does not run yet....
+
+Tue Aug 11 13:07:44 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Cosmetics for bitrees
+
+Tue Aug 11 12:48:50 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Scalars are properly typed (they are not just int's)
+
+Tue Aug 11 10:46:56 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Bitree is implemented using the generic tree
+
+Tue Aug 11 09:27:04 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * mpi_laplacian limits the runtime
+
+Mon Aug 10 18:03:53 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Optimisation of cache sizes for quadtrees
+
+Mon Aug 10 17:43:09 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Use foreach_neighbor()/foreach_child() (almost) everywhere
+
+Mon Aug 10 17:26:53 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * mpi-laplacian reference results on occigen
+
+Mon Aug 10 17:25:43 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * mpi_boundary_refine() only refines cells with local neighbors
+
+Mon Aug 10 15:24:48 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * qcc supports nested foreach_child() loops
+
+Sun Aug  9 16:48:07 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Make sure that foreach_leaf() only traverses local cells
+
+Thu Aug  6 17:09:38 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Octree works with MPI
+
+Wed Aug  5 20:24:30 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Simplified (and more robust) tree boundary conditions
+
+Fri Jul 10 18:42:49 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * 3D VOF
+
+Fri Jul 10 16:15:34 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Octree implementation
+
+Fri Jul 10 16:12:12 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Dump/restore functions save the time
+
+Fri Jul 10 15:18:26 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Disable FPEs when using OpenMP
+  
+  OpenMP threads do not necessarily inherit the FPE settings of the master thread.
+
+Fri Jul 10 10:14:14 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Tangential/normal BC should also work with multigrid3D
+
+Mon Jul  6 15:47:04 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  tagged release 15-07-06
+
+Mon Jul  6 15:14:37 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Metric for the all-Mach solver
+
+Fri May  1 19:59:08 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Simplified metric implementation
+
+Tue Jun 23 15:20:19 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Implicit Saint-Venant is well-balanced on quadtrees
+
+Tue Jun 23 14:57:42 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for timestep and stability
+
+Tue Jun  9 17:52:41 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * The all-Mach/Saint-Venant solver now works for wetting-drying.
+
+Mon Jun  8 17:54:39 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Various fixes for the all Mach solver
+
+Mon Jun  8 12:24:02 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * New "all Mach" solver. Implicit Saint-Venant is a particular case.
+
+Mon Jun  1 19:36:31 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Link to implicit SV in docs
+
+Mon Jun  1 19:32:27 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * First version of implicit Saint-Venant solver
+  
+  Flat-bottom only for the moment.
+
+Sat May 30 14:39:18 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * qcc fix for lists and dimensions
+
+Fri May  1 15:13:47 CEST 2015  pyl <pyl@ccr.jussieu.fr>
+  * The SAG equation test case
+
+Fri May  1 12:55:06 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Remove -D_GNU_SOURCE from C preproc when generating source
+  
+  To improve portability of the generated code.
+
+Fri May  1 10:54:46 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Axisymmetric rising bubble test case
+
+Fri May  1 10:54:17 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Axisymmetric Poiseuille flow
+
+Wed Apr 29 16:42:40 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Axisymmetric viscous terms
+
+Tue Apr 28 11:06:47 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Rising bubble test case (and generalisation of surface tension/acceleration)
+
+Mon Apr 27 21:13:31 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Navier-Stokes solver now works in 3D
+
+Wed Apr 15 16:55:36 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Bell-Collela-Glaz advection now works in 3D
+
+Wed Apr 15 11:05:51 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * New utility ppm2gif and automatic pipe closure
+
+Wed Apr 15 11:05:35 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Improved BCG advection scheme
+
+Tue Apr 14 21:49:58 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Taylor-Green vortex test case
+
+Mon Apr 13 10:41:38 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * 3D multigrid implementation
+
+Mon Apr 13 10:16:56 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  tagged release-13-4-15
+
+Sun Apr 12 19:18:47 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Lego boundaries are only coarsened if the shape of the boundary is not affected
+
+Sun Apr 12 18:10:10 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * One-dimensional grids are now truly one-dimensional
+  
+  And as a consequence many generic functions have been made
+  dimension-independent (i.e. they should also work in 3D).
+
+Sun Apr 12 18:09:05 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Poisson equation works in 3D
+
+Sun Apr 12 18:06:42 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Compressible scheme in 3D and explosion test case
+
+Sun Apr 12 18:05:43 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * System-of-conservation laws now work in 3D
+
+Thu Apr  9 18:15:05 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Preprocessor support for 3 dimensions
+
+Wed Apr  8 11:23:31 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Support for expansion of foreach_dimension() in macros
+
+Tue Apr  7 11:11:52 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * New 'none' keyword for mask()
+
+Wed Apr  1 16:31:35 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Periodic boundary conditions
+
+Mon Mar 30 18:06:29 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Test case: shock reflection by a cylinder
+
+Mon Mar 30 18:00:13 CEST 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Von Karman vortex street example
+
+Thu Mar 26 16:40:50 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Improved adaptivity when combining multiple fields
+
+Wed Mar 25 14:27:30 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * General "Lego" boundaries
+
+Sat Mar 14 18:01:16 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for parallel refinement of face vector fields
+
+Thu Mar 12 14:14:46 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Fixed bitree for new implementation of quadtree-common.h
+
+Thu Mar 12 14:14:28 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for python modules
+
+Thu Mar 12 09:33:25 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Optimised locate() function on quadtrees
+
+Wed Mar 11 14:52:40 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Centered Navier-Stokes solver works in MPI
+
+Wed Mar 11 14:49:40 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Parallel outputs
+
+Wed Mar 11 13:58:45 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Static files are opened only on proc 0 in parallel
+
+Wed Mar 11 13:25:39 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Restricted scope of non-constant fields
+
+Tue Mar 10 18:46:44 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Several bug fixes for face vector fields in parallel
+
+Thu Mar  5 22:10:35 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Support for performance tracing with Paraver
+
+Fri Feb 27 19:49:33 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * More bug fixes for MPI and new 'bump2Dp' test case
+
+Fri Feb 27 16:08:49 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Various bug fixes for MPI
+
+Fri Feb 27 15:10:35 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Minor fixes for FPEs on OSX
+
+Tue Feb 24 13:49:22 CET 2015  Geoffroy Kirstetter <geoffroy.kirstetter@gmail.com>
+  * fix SIGFPE signals for OSX
+
+Thu Feb 26 19:16:25 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Bug fix for predictor-corrector in 'trash' mode
+
+Thu Feb 26 17:03:50 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Coarsening and adaptivity with MPI
+  
+  The mesh synchronisation between processes has been modified with the
+  introduction of refinement and coarsening caches.
+
+Thu Feb 26 11:41:03 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Simplified output_ppm() in parallel, using a collective communication
+
+Tue Feb 17 15:56:57 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Updated mpi-laplacian and results on Curie
+
+Tue Feb 17 11:04:32 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Replaced MPI_Probe with a message for mpi_boundary_match()
+
+Tue Feb 17 10:52:53 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Fixed parallel halo restriction
+  
+  Introducing "remote leaves" to properly take into account remote sub-domains.
+
+Mon Feb 16 14:39:15 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Quadtrees use simple memory pools
+  
+  This improves performances for the mpi-laplacian parallel benchmark
+  quite a bit. It may also be more generally useful i.e. to minimise
+  memory fragmentation in adaptive simulations.
+
+Mon Feb 16 14:07:54 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Improved debugging output
+
+Fri Feb 13 11:30:56 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for -source and -D flags
+
+Fri Feb 13 11:30:36 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Non-blocking receives
+  
+  This seems to improve performance a bit (see curie/ results for 14 levels)
+
+Fri Feb 13 09:27:52 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Improved docs
+
+Thu Feb 12 17:08:36 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for getrusage and Posix systems (e.g. OSX)
+
+Wed Feb 11 17:40:23 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * MPI boundary conditions for face vector fields
+
+Sun Feb  8 21:38:33 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for terrain and MPI
+
+Sun Feb  8 19:30:56 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Parallel output_ppm() function
+
+Sat Feb  7 18:38:31 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Several fixes for parallel flux formulation
+
+Thu Feb  5 18:12:34 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Parallel implementation for boundary_flux()
+
+Tue Feb  3 14:36:21 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Removal of cells without neighbors for parallel subdomains
+
+Tue Feb  3 09:41:11 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Cleaned up new implicit send/receive parallel buffers implementation
+
+Mon Feb  2 19:46:58 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * 1st parallel version without explicit send/receive buffer synchronisation
+  
+  This still includes the old version for debugging purposes
+
+Wed Jan 28 10:57:50 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * More generic debug_mpi() function
+
+Tue Jan 27 11:59:24 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Quadtree parallelization does not copy common banches
+  
+  i.e. cells are owned by only one process. This greatly improves the scalability
+  of the restriction/Poisson solver.
+
+Tue Jan 27 11:49:21 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Rolled back overlapping communications
+
+Tue Jan 27 11:48:43 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Preliminary test of overlapping communications
+
+Tue Jan 27 10:35:20 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Documentation for mpi-laplacian and results on Curie
+
+Fri Jan 23 17:46:21 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Adjacency matrix for MPI quadtree
+
+Thu Jan 22 15:28:59 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * mpi-laplacian does multiple loops
+
+Wed Jan 21 10:52:28 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Simplified interface for refine_cell()
+
+Sun Jan 18 20:54:46 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Improved memory management for removal of partially-filled quadtree layers
+
+Sun Jan 18 16:48:43 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Children data memory is allocated once for all siblings
+
+Fri Jan 16 21:01:21 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Quadtree uses double pointer indirection for the cartesian pointer array
+
+Fri Jan 16 19:53:03 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for small memory leak in CacheLevel
+
+Wed Jan 14 16:31:09 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Consistent treatment of inactive cells for parallel subdomains
+
+Tue Jan 13 20:16:22 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * The codes conform strictly to the C99 standard
+
+Sat Jan 10 19:26:00 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Optimisation of mpi_boundary_match()
+  
+  Only "border" cells are traversed i.e. this should scale as O(N)
+  rather than O(N^2).
+
+Fri Jan  9 15:56:42 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Optimisation of MPI buffers
+  
+  We now use independent buffers for prolongation and restriction.
+
+Tue Dec 23 18:36:50 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Support for Paje trace generation
+
+Mon Dec 22 16:42:15 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * foreach_send() for overlapping communications and calculations
+
+Mon Dec 22 10:55:48 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Added MPI and memory stats to timer
+
+Mon Dec 22 10:55:23 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for restriction of non-doubles
+
+Sun Dec 21 18:52:15 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Fixed leaking MPI_Requests
+
+Sun Dec 21 17:37:46 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * New 'mpi-laplacian' benchmark
+
+Fri Dec 19 18:45:06 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Dump/restore functions
+
+Mon Dec 15 16:01:47 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Improved MPI buffering (receive)
+
+Mon Dec 15 16:00:37 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Improved MPI buffering
+
+Sun Dec 14 22:32:26 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Optimised MPI neighbors
+
+Sat Dec 13 19:05:18 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * MPI profiling
+
+Fri Dec 12 15:50:00 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Parallel mesh refinement works (for refinement only)
+
+Wed Dec 10 16:47:23 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Growing arrays
+
+Fri Dec  5 16:16:06 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Parallel mesh refinement
+
+Wed Feb 11 19:37:43 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  tagged release 11-2-15
+
+Wed Feb 11 18:26:45 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Rolled back -D_GNU_SOURCE fix
+
+Fri Jan  9 14:33:26 CET 2015  Stephane Popinet <popinet@basilisk.fr>
+  * Various fixes for multiple river inflows
+
+Mon Jan  5 09:57:04 CET 2015  Geoffroy Kirstetter <geoffroy.kirstetter@gmail.com>
+  * discharge + testcase 
+
+Sun Dec 14 16:26:11 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for -catch option in runtest
+
+Sat Dec 13 18:57:24 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for 'last_point' declaration
+
+Fri Dec 12 15:52:30 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for -D_GNU_SOURCE and -source qcc option
+
+Fri Dec 12 15:51:38 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Simplified launching of MPI test cases
+
+Sun Dec 14 16:25:33 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for corner traversal in grid/multigrid
+
+Mon Dec  1 09:45:29 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for 32 bits overflow of array sizes
+
+Wed Nov 19 18:00:30 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Doc fixes for madsen example
+
+Wed Nov 19 15:34:36 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Minor typos
+
+Wed Nov 19 15:34:20 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Updated bitree for new grid structure
+
+Wed Nov 19 15:33:52 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Breakup into solitons example
+
+Thu Oct  2 16:45:28 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  tagged release 2-10-14
+
+Thu Oct  2 16:42:17 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * New function input_gfs() can be used to restart simulations
+
+Thu Oct  2 16:08:11 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Restart option for the tsunami example
+
+Wed Oct  1 14:42:05 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * New function input_gfs()
+
+Wed Oct  1 08:52:12 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Moved signalling NaNs to common header file
+
+Fri Sep 26 11:22:59 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  tagged release 26-09-14
+
+Fri Sep 26 08:55:29 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Spherical coordinates
+
+Fri Sep 26 08:48:19 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Documentation for axisymmetric advection test case
+
+Thu Sep 25 19:25:09 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Re-ordered VOF in N-S solver
+
+Thu Sep 25 18:02:43 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Variable viscosity implementation uses the discrete stress tensor
+
+Thu Sep 25 17:47:52 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * 'first' option for events
+
+Thu Sep 25 15:55:10 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * "Circular dam break on a sphere" test case
+
+Thu Sep 25 12:34:07 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Tsunami example uses spherical coordinates
+
+Mon Sep 22 20:19:46 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Metric terms for the Saint-Venant solver.
+
+Sun Sep 21 19:06:23 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Axisymmetric surface tension term
+
+Thu Sep 18 10:37:52 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Axisymmetric metric.
+
+Wed Sep 10 21:13:16 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Cosmetics for surface tension test cases
+
+Wed Sep 10 10:47:23 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Minor fixes for surface tension
+
+Wed Sep 24 20:56:59 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Simplified prolongation of face vectors
+
+Mon Sep 22 17:16:10 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * The predictor-corrector scheme allocates extra intermediate fields
+
+Tue Sep  9 16:15:30 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Surface tension documentation
+
+Tue Sep  9 15:12:40 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Various fixes for surface tension test cases docs
+
+Tue Sep  9 12:48:15 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  tagged release 9-9-2014
+
+Tue Sep  9 12:43:48 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Documentation for surface tension test cases.
+
+Tue Sep  9 10:34:31 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * MPI fixes for merge with stable branch
+
+Tue Sep  9 10:11:00 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * MPI test cases pass with dynamic quadtrees
+  
+  But deallocation is not done etc...
+
+Mon Sep  8 19:37:03 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Tracers are defined at t - dt/2
+
+Mon Sep  8 17:38:21 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Curvature is only defined on the interface.
+  
+  Face values of the curvature (for surface tension) only use values on
+  the interface.
+
+Mon Sep  8 17:30:18 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for terrain test case.
+
+Mon Sep  8 17:25:21 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Spurious currents test case
+
+Wed Sep  3 18:34:15 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Capillary wave test case
+
+Wed Sep  3 10:18:46 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Surface tension and drop oscillation test case
+
+Tue Sep  2 15:37:41 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Multigrid uses two ghost layers for 5x5 stencil
+
+Tue Sep  2 11:12:42 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * MPI test cases work (with static quadtrees only).
+
+Tue Sep  2 09:53:55 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Merge with main branch
+
+Mon Sep  1 18:09:24 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * 1D multigrid works with new implementation
+
+Mon Sep  1 16:56:49 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Boundary conditions for 5x5 stencils
+
+Mon Sep  1 15:22:37 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Face vector prolongation works with dynamic 5x5 stencil
+
+Mon Sep  1 15:10:06 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Removed obsolete 'fghost' cell flag.
+
+Mon Sep  1 12:01:29 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Okada faults are defined with a maximum of 20 refinement iterations
+
+Mon Sep  1 11:01:29 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * All test cases pass with the new 5x5 stencil implementation
+
+Fri Aug 29 17:22:08 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Replaced ffmpeg with libav-tools
+
+Thu Aug 28 16:53:48 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Test case for restriction of face vectors
+
+Fri Aug  1 11:35:20 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Height functions implementation
+
+Mon May 19 19:09:12 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Adaptation/wavelets use the prolongation method
+
+Fri May 16 22:02:21 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * benchmark results with 5x5 stencils
+
+Fri May 16 21:45:01 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Tsunami benchmark results on heyward
+
+Thu May 15 19:20:22 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Updated reference files
+
+Thu May 15 19:08:20 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for prolongation/refinement in Saint-Venant
+
+Thu May 15 18:57:45 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for prolongation/refinement in conservation.h
+
+Thu May 15 18:44:51 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Dynamic allocation works with 5x5 stencils
+
+Thu May 15 18:43:46 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * New function timer_elapsed()
+
+Thu May 15 14:15:23 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * New benchmark for quadtree MPI Poisson solver
+
+Wed May 14 21:05:53 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Face traversal uses pre-computed flags rather than retest
+
+Wed May 14 16:55:32 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * MPI face traversal
+
+Wed May 14 16:50:55 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Simplified faces.plot
+
+Tue May 13 22:56:19 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * MPI boundaries (almost) work with 5x5 stencil
+  
+  The "almost" is because non-local halos cannot use 5x5 stencils yet.
+
+Tue May 13 22:31:10 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Minor fixes for test cases
+
+Mon May 12 19:48:27 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Boundary conditions for halo prolongation are applied on all cells at
+  the target depth
+
+Mon May 12 19:42:43 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Fixed missing active leaves
+
+Mon May 12 19:41:11 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * VOF fractions computation for 4-siblings BCs
+
+Mon May 12 18:24:42 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Replaced zero() with none()
+
+Fri May  9 21:27:01 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Implementation of "4 siblings" halos
+  
+  Always uses halo formed by groups of 4 siblings. This gives 5x5
+  stencils but with the flexibility to choose the number of ghost
+  layers. It also simplifies refinement and prepares the ground for
+  simpler MPI parallelism.
+
+Fri May  9 21:01:11 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * runtest launches gdb/gnuplot when used with the -catch option
+
+Fri May  9 20:59:08 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Cosmetics
+
+Fri May  9 20:57:16 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Macro foreach_child_direction()
+
+Fri May  9 20:51:06 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * New list_print() function
+
+Wed May  7 09:32:44 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Fixes for merge of 5x5 stencil
+
+Tue May  6 22:12:15 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * First version of 5x5 stencil
+
+Wed May  7 08:36:27 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Support for local/remote cells
+
+Tue May  6 10:50:49 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for merge with stable branch
+
+Mon May  5 14:58:42 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Portable MPI source code generation
+
+Mon May  5 12:12:35 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for broken OpenMP reductions
+
+Mon May  5 11:00:33 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Simplified valgrind/mpirun tests
+
+Sun May  4 19:26:55 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * MPI reduction operations
+
+Sun May  4 11:51:13 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for ghost cells neighbors in mpi_partitioning()
+
+Sun May  4 10:23:55 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Checks for boundary conditions on levels
+
+Sun May  4 10:08:33 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * qcc is compiled using standard CC (not CC99)
+  
+  This allows decoupling between target compiler (e.g. mpicc) and code
+  generation.
+
+Sun May  4 09:32:08 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Parallel Z-indexing
+
+Sat May  3 21:22:50 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Support for MPI tests
+
+Sat May  3 20:53:55 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Simplified quadtree foreachs
+
+Sat May  3 20:34:38 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * MPI parallel restriction
+
+Fri May  2 21:25:17 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Massive restructuring for preliminary MPI implementation
+
+Wed Apr 30 13:07:11 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * qcc is compiled with C99
+  
+  Otherwise "NaNs" are not supported (because the GNU_SOURCE flag is not taken
+  into account).
+
+Tue Mar  4 20:57:13 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Restructured foreach_halo..() traversals
+
+Tue Mar  4 19:52:50 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * qcc compiles with C89
+
+Fri Feb 21 14:33:06 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * MPI implementation for leaf cells only
+
+Thu Feb 20 10:19:10 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Preliminary mpi implementation
+
+Tue Sep  9 10:13:08 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  tagged release 28-8-2014
+
+Thu Aug 28 16:55:31 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * ppm2mpeg uses avconv or ffmpeg
+
+Sat Jul 19 19:26:38 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Improved memory usage of Green-Naghdi solver
+
+Fri Jul 18 11:51:14 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Well-balancing for Green-Naghdi
+
+Fri Jul 18 10:25:06 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Lake-at-rest test case for Green-Naghdi
+
+Fri Jul 18 10:14:18 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Various minor fixes for bar test case
+
+Fri Jul 18 10:10:59 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Terrain was not working with non-quadtree grids
+
+Fri Jul 18 10:10:28 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Bug fix for gerris output
+
+Fri Jul 18 10:09:44 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Fixed plot border for shoal example
+
+Wed Jul 16 12:20:38 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Shoaling waves example
+
+Tue Jul 15 15:27:19 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Cleanup of conical.c
+
+Tue Jul 15 14:45:41 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Reference file for bar test case
+
+Tue Jul 15 14:32:25 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Fixes for conical test case
+
+Tue Jul 15 14:02:53 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Fixes for changes in multigrid interface
+
+Tue Jul 15 12:51:08 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Conical island test case with GN
+
+Mon Jul 14 11:24:52 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Simplified residul functions for generic multigrid
+
+Fri Jul 11 14:29:21 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Fixed graphics of bar.c
+
+Fri Jul 11 14:00:59 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for events with mixed t and i
+
+Fri Jul 11 09:58:47 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Doc fixes
+
+Thu Jul 10 17:07:55 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Green-Naghdi should now work in 2D
+
+Thu Jul 10 16:59:57 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Binary tree implementation
+
+Thu Jul 10 16:04:03 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Wave propagation over a bar
+
+Thu Jul 10 12:04:24 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Unified soliton formulations
+
+Thu Jul 10 11:47:34 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Solitary wave on a beach
+
+Thu Jul  3 14:44:32 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Documentation fixes
+
+Thu Jul  3 11:56:38 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Solitary wave overtopping a seawall test case
+
+Thu Jul  3 11:36:13 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Topographic terms for Green-Naghdi
+
+Thu Jul  3 11:00:16 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Simplified inlined gnuplot script
+
+Thu Jun 26 21:41:30 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Doc fix
+
+Thu Jun 26 16:00:35 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Simpler formulation for the Green-Naghdi solver.
+  
+  This is based on Bonneton et al, 2011 rather than Le M[_<U+00E9>_]tayer et al,
+  2010 and is just an additional source term for the Saint-Venant
+  solver.
+
+Thu Jun 26 14:53:11 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Optional source terms for Saint-Venant solver
+
+Wed Jun 25 19:06:19 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  tagged tagged release 25/06/14
+
+Wed Jun 25 19:01:38 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Even more doc fixes
+
+Wed Jun 25 18:56:51 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * More doc fixes
+
+Wed Jun 25 18:46:14 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Doc fixes for Green-Naghdi
+
+Wed Jun 25 18:16:26 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Green-Naghdi solver
+
+Wed Jun 25 16:42:21 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Undular bore test case
+
+Wed Jun 25 15:51:05 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Cosmetics
+
+Wed Jun 25 11:42:12 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * 1D multigrid implementation
+
+Wed Jun 18 19:23:13 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Output for Gerris simulation format
+
+Wed Jun 18 15:48:44 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Added braces to avoid "dangling else" warnings
+
+Tue Jun 10 21:51:13 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Comment on inline plots
+
+Tue Jun 10 19:21:15 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Cosmetics for debye test case
+
+Tue Jun  3 10:21:41 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Added checksum for failed tests
+
+Mon Jun  2 18:48:47 CEST 2014  Jose Lopez-Herrera <jose.lopez.herrera.s@gmail.com>
+  * backlash lacked in debye.c doc
+
+Mon Jun  2 09:22:23 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Cosmetic changes for debye.c
+
+Thu May 29 21:33:42 CEST 2014  jose.lopez.herrera.s@gmail.com
+  * debye.c doc enlarged
+
+Wed May 28 18:02:08 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Links to electrohydro
+
+Wed May 28 17:44:03 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Simplified debye.c doc
+
+Tue May 20 16:33:36 CEST 2014  Jose Lopez-Herrera <jose.lopez.herrera.s@gmail.com>
+  * docs added to debye.c
+
+Tue May 20 16:27:11 CEST 2014  Jose Lopez-Herrera <jose.lopez.herrera.s@gmail.com>
+  * Analytical curves added to debye.plot
+
+Sun May 25 21:42:54 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Fixed stream.h doc
+
+Sun May 25 11:57:14 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for itags and python files
+
+Tue May 20 09:56:25 CEST 2014  Emily Lane <Emily.Lane@niwa.co.nz>
+  * Okada can initialise in flat geometries
+
+Tue May 20 09:49:30 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for memory leak in field names
+
+Mon May 19 14:40:07 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Cosmetics for pnp.h docs
+
+Fri May 16 19:07:15 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for Okada and new attributes
+
+Fri May 16 17:59:30 CEST 2014  Jose Lopez-Herrera <jose.lopez.herrera.s@gmail.com>
+  * Ohmic conduction flux and Debye test case
+
+Fri May 16 17:57:36 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for lists of constant fields
+
+Fri May 16 00:29:26 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Support for extensible scalar attributes
+
+Tue May  6 19:52:39 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Improved FPE debugging
+
+Tue May  6 10:37:02 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Cleaned up refine_none/coarsen_none
+
+Tue May  6 09:37:44 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Logging of remote gnuplot messages
+
+Sat May  3 19:46:03 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Simplified foreach_level_or_leaf()
+
+Fri May  2 13:09:22 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for dependencies on assembly files
+
+Fri May  2 10:50:23 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Removed obsolete saint-venant2.h tests
+
+Thu May  1 15:18:03 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Simplified homogeneous boundary conditions
+
+Tue Apr 29 16:11:26 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Added missing interface file
+
+Tue Apr 29 13:24:58 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Literate python example documentation
+
+Tue Apr 29 12:42:15 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Error checks for ssh connections in runtest
+
+Tue Apr 29 12:13:39 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Origin() and size() methods
+
+Tue Apr 29 10:44:15 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * run() method can be used with or without grid initialisation
+
+Mon Apr 28 21:20:06 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Link to Poisson problem in python
+
+Mon Apr 28 21:12:19 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Python example for a Poisson problem
+
+Mon Apr 28 20:59:35 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Python support for scalar creation/deletion
+
+Mon Apr 28 15:00:35 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Install doc for Basilisk + python
+
+Mon Apr 28 14:52:34 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Documentation for turbulence.py
+
+Mon Apr 28 14:48:56 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Reverted checksuming of source files
+  
+  This was breaking the dependency checking on header files.
+
+Mon Apr 28 12:29:29 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Cleanup of python interface
+
+Fri Apr 18 07:02:32 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Cleanup of python interface
+
+Fri Apr 18 06:51:40 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Decaying turbulence example in python
+
+Thu Apr 17 20:59:22 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Numpy interface to interpolation functions
+
+Thu Apr 17 20:50:39 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Cartesian1D and multigrid tolerate points located "just" outside
+
+Wed Apr 16 17:34:08 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Events registration does inheritance
+
+Wed Apr 16 15:47:23 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Several fixes for the python module
+
+Tue Apr 15 21:10:47 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Python interface overloads = to set the field function
+
+Tue Apr 15 17:15:54 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for _XOPEN_SOURCE feature test macro
+
+Tue Apr 15 16:58:22 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Support for python modules
+
+Tue Apr 15 16:52:21 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for name clash of 'clone()'
+
+Tue Apr 15 11:21:02 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * main() is wrapped with init_solver()/free_solver()
+
+Mon Apr 14 20:03:29 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Events are dynamically registered
+
+Mon Apr 14 18:24:38 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Inlined plots can omit plot name
+
+Mon Apr 14 11:44:10 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Link to 2D turbulence example
+
+Sat Feb  8 18:04:43 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Link from examples to running test cases
+
+Mon Apr 14 11:24:23 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for incorrect source list length in bcg.h
+
+Mon Apr 14 10:26:10 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Simplified turbulence example
+
+Sun Apr 13 11:30:11 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * More doc on client/server
+
+Sun Apr 13 10:15:00 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Removed reference file for tsunami example
+
+Sun Apr 13 10:05:22 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * New cool_warm and gray colormaps
+
+Sun Apr 13 09:18:10 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Links to VTK and facets outputs
+
+Sun Apr 13 08:50:51 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Added link to test cases
+
+Thu Apr 10 17:03:36 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Fixed image table
+
+Thu Apr 10 12:29:58 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Fixed absolute link to tarball
+
+Mon Apr  7 12:39:14 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for old-style dependencies
+
+Sun Apr 13 06:19:47 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * New Ginzburg-Landau example
+
+Sat Apr 12 17:18:46 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Decaying turbulence example
+
+Sat Apr 12 16:30:08 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Simplified animated gif generation for life.c
+
+Sat Apr 12 15:02:25 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Killing gdb also kills the child process
+
+Sun Apr  6 14:34:27 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Allow "FE_OVERFLOW" floating-point exception
+
+Fri Apr  4 09:09:57 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Cleanup tsp PID
+
+Fri Apr  4 15:43:03 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Typo
+
+Fri Apr  4 15:41:47 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Documentation for inline plots
+
+Thu Apr  3 18:59:50 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Duplicate tsp processes are killed
+
+Thu Apr  3 17:10:42 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for .ctst .tst remote runs
+
+Thu Apr  3 10:25:58 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for missing '\n' at end of program
+
+Thu Apr  3 09:54:38 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Inlined gnuplot plots
+
+Thu Apr  3 09:19:45 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Inlined gnuplot plots
+
+Wed Apr  2 22:57:29 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Literate C plugins kills multiple running instances
+
+Wed Apr  2 22:22:15 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Inlined gnuplot plots
+
+Wed Apr  2 22:21:11 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Makefile.defs checksums both test.c and test.s
+
+Wed Apr  2 11:36:22 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Improved support for inlined gnuplot
+
+Tue Apr  1 13:45:27 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Gnuplot figures are included directly in explosion.c
+
+Tue Apr  1 13:01:18 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Support for gnuplot in Literate C pages
+
+Mon Mar 31 15:32:59 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Images associated with .plot.page are generated by runtest
+
+Mon Mar 31 21:16:58 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Doc for setting up a Basilisk server
+
+Mon Mar 31 18:37:20 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * GDB is used to catch runtime error
+
+Mon Mar 31 12:09:39 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Proper indentation of documentation comments
+
+Tue Mar 11 08:52:47 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Added input function name
+
+Tue Mar 11 08:51:51 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Fixed links to ouput functions
+
+Tue Mar 11 08:49:58 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Added output function names
+
+Sun Mar 30 17:34:50 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Fixes for Makefile.defs (for wiki)
+
+Sun Mar 30 17:55:57 CEST 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Remote jobs timeout after 1 hour
+
+Fri Mar 28 15:29:49 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Hook for diffusion of tracers
+
+Fri Mar 14 15:17:52 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Added comment for install on 32 bits systems
+
+Mon Mar 10 15:16:27 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Modernised 'atmosphere' solver
+
+Mon Mar 10 11:37:45 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Removed .chksum
+  
+  The idea was to avoid failed tests being rerun when nothing has changed in
+  the code, but this didn't take into account more complex dependencies such
+  as compilation flags etc...
+
+Mon Mar 10 11:17:41 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Consistent pressure boundary conditions for N-S solver
+
+Fri Mar  7 23:25:04 CET 2014  jose.lopez.herrera.s@gmail.com
+  * misprint at vof.h corrected
+
+Fri Mar  7 20:56:25 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Pressure BCs are tricky when adapting the mesh
+
+Fri Mar  7 20:47:18 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Several bug fixes for constant fields
+
+Fri Mar  7 15:40:13 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * New variables are set to not (const)
+
+Fri Mar  7 15:38:53 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Boundary conditions can access (const) fields
+
+Tue Mar  4 21:01:18 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Utility function to compute vorticity
+
+Tue Mar  4 19:59:30 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for old Saint-Venant solver
+
+Tue Mar  4 19:56:50 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * update_cache() is now a macro
+
+Tue Mar  4 17:26:35 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Updated reaction-diffusion equation doc
+
+Tue Mar  4 17:17:19 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Additional 'density term' for the diffusion solver
+
+Mon Mar  3 20:49:13 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Link to explosion test case
+
+Mon Mar  3 20:44:03 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Formatting fixes for explosion.c
+
+Mon Mar  3 20:58:14 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Link to compressible gas dynamics solver
+
+Mon Mar  3 20:41:04 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Documentation fixes for compressible solver
+
+Mon Mar  3 19:23:04 CET 2014  Jose-Maria Fullana <fullana@ida.upmc.fr>
+  * Explosion test case for compressible gas dynamics
+
+Mon Mar  3 15:45:07 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for memory leak in automatic variables
+
+Fri Feb 21 11:38:58 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Makefile.deps depends on Makefile.tests
+
+Fri Feb 21 11:29:29 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Makefile.tests needs to know about .c.page
+
+Fri Feb 21 11:07:52 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * runtest ignores time differences on remote host
+
+Fri Feb 21 11:07:02 CET 2014  Jose-Maria Fullana <fullana@ida.upmc.fr>
+  * Fixed right/left mixup in conservation.h
+
+Wed Feb 19 09:40:55 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Fixed links for src/README
+
+Tue Feb 18 15:45:14 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for conservation.h with openmp
+
+Tue Feb  4 09:33:53 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Removed NZ locale from gnuplot files
+
+Mon Feb 17 17:45:57 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for tags generation of code blocks
+
+Mon Feb 17 16:39:01 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Restructured source code doc
+
+Mon Feb 17 16:19:29 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Documentation for output functions
+
+Mon Feb 17 11:01:33 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Cleanup of warnings within Makefile
+
+Fri Feb 14 21:50:53 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Better error status reporting in runtest
+
+Fri Feb 14 21:48:21 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * rt.ref had been removed by mistake
+
+Fri Feb 14 19:20:02 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Various improvements to 'runtest'
+
+Fri Feb 14 15:40:49 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Improved support for remote execution
+
+Fri Feb 14 15:40:21 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * qcc can generate standalone C source file
+
+Fri Feb 14 15:39:07 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * KDT is a library
+
+Thu Feb 13 11:42:47 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * New 'vertex' keyword
+
+Thu Feb 13 11:08:45 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * The tolerance for the projection is the relative change in volume
+  
+  This is identical to the tolerance used in Gerris. Note that this is in
+  practice much larger than the previous version.
+
+Thu Feb 13 10:04:41 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for function calls within optional arguments
+
+Thu Feb 13 09:42:03 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Use SVG images instead of PNG
+
+Wed Feb 12 21:08:37 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Cleaner formatting of events when using '-events'
+
+Wed Feb 12 19:19:27 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * qcc ensures that all header files are included only once
+
+Mon Feb 10 15:29:59 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Option to use shasum on macosx
+
+Mon Feb 10 15:33:09 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Alternative to using wget for installation
+
+Sat Feb  8 17:54:47 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Documentation on running and creating test cases
+
+Sat Feb  8 15:29:45 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Link to conservation law solver
+
+Sat Feb  8 12:49:37 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Tests and examples do not use the obsolete parameters() function
+
+Sat Feb  8 10:09:38 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Link to all tests
+
+Fri Feb  7 19:47:25 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Index for examples
+
+Fri Feb  7 19:06:30 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Link to tutorial
+
+Tue Feb  4 14:16:00 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Added make installation requirement
+
+Thu Jan 23 18:58:12 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Added benchmark results for 'mesu'
+
+Mon Nov 25 15:20:47 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * added flex dependency
+
+Sat Feb  8 09:57:18 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Index file for tests
+
+Thu Feb  6 09:49:00 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * -catch option turns trashing on
+
+Fri Feb  7 19:19:49 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * VTK files use field names
+
+Fri Feb  7 19:18:54 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Removed parameters() function
+  
+  Just set the parameters in main() instead.
+
+Fri Feb  7 19:18:11 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * qcc -tags also works for wiki pages
+
+Tue Jan 14 12:02:56 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Fixed streamfunction-vorticity doc
+
+Mon Jan 13 13:39:30 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Level of refinement image for 'reversed' test
+
+Mon Jan 13 12:14:27 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Support for "include tags" (itags)
+
+Mon Jan 13 09:48:14 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Fixed links to images for stream.c
+
+Fri Jan 10 12:14:40 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * documented stream.c
+
+Fri Jan 10 11:53:57 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Documented vortex.c
+
+Fri Jan 10 11:02:17 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * tests.sh manages links between pages and sources
+
+Fri Jan 10 09:46:31 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Notes on multirate
+
+Fri Jan 10 09:14:21 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Tests do not use TRASH by default
+
+Thu Jan  9 17:17:48 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Fixed parsing of homogeneous BCs
+
+Thu Jan  9 17:16:50 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Changed 'density' to 'properties' in NS/centered.h
+
+Thu Jan  9 09:30:39 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Check for hydrostatic balance in Poiseuille test case
+
+Tue Jan  7 18:22:06 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * output_ppm() uses ImageMagick to optionally support many bitmap formats
+
+Tue Jan  7 17:55:36 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * The MAC N-S solver only deals with unit density
+  
+  This is consistent with the treatment of viscous terms. For variable density
+  Navier-Stokes one should use the centered N-S solver.
+
+Tue Jan  7 17:41:48 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for terrain using multiple databases
+
+Tue Jan  7 12:09:27 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Implicit viscosity solver takes timestep into account
+
+Tue Jan  7 12:06:27 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Documentation for centered N-S solver
+
+Tue Jan  7 12:05:25 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Projection takes timestep into account
+
+Tue Jan  7 12:00:19 CET 2014  Stephane Popinet <popinet@basilisk.fr>
+  * Generalised source terms for BCG scheme
+
+Thu Dec 12 23:09:27 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Simplified source/pressure gradient for centered NS solver
+
+Thu Dec 12 16:51:19 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Multigrid solver needs restriction for BCs on quadtrees
+  
+  Otherwise using inconsistent coarse values when interpolating on the fine
+  mesh can break convergence.
+
+Thu Dec 12 15:18:36 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Pressure/acceleration correction is required before solving for viscous terms
+
+Wed Dec 11 15:13:49 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Exponential filtering for timestep.h
+  
+  This smoothes the (increases) of the timestep over 10 iterations.
+
+Sun Dec  8 15:03:12 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Acceleration terms for centered N-S solver
+
+Sat Dec  7 10:24:35 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Fixed rotation of lists of vector components
+
+Sat Dec  7 10:24:12 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Fields now have a name
+
+Fri Dec  6 21:36:24 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Minor fix for maybe constants
+
+Fri Dec  6 10:46:21 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Bug fix for multigrid trash() method
+
+Fri Dec  6 10:45:20 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Time 't' and iteration 'i' are constants in events
+
+Wed Dec  4 20:35:35 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * More statistics for multigrid solver
+
+Wed Dec  4 20:35:18 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Re-ordered the events for the generic run() loop
+
+Sat Dec 21 17:39:45 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * added 1D arterial flow to Jose's contributions
+
+Sat Dec 21 17:37:54 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Cosmetics for 1D arterial flow test case
+
+Sat Dec 21 16:35:34 CET 2013  Jose-Maria Fullana <fullana@ida.upmc.fr>
+  * 1D arterial flow test case
+
+Sat Dec 21 15:45:44 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Simplified and generalised predictor/corrector scheme
+
+Wed Dec  4 12:54:14 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for variable argument calls with structures
+
+Tue Dec  3 16:35:48 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Rayleigh-Taylor instability test case
+
+Tue Dec  3 15:21:43 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Support for ASCII PGM files
+
+Tue Dec  3 10:42:36 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * PGM import function
+
+Mon Dec  2 20:02:33 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Limited support for function parameters shadowing global fields
+
+Mon Dec  2 17:57:15 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Support for variable viscosity
+
+Mon Dec  2 13:26:31 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * CFL check for VOF scheme
+
+Mon Dec  2 13:25:33 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * timestep() function now uses a face velocity field
+
+Mon Dec  2 13:24:51 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * New '-events' option for qcc
+
+Mon Dec  2 13:23:34 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Methods for new scalars need to be properly (re)initialised
+
+Sat Nov 30 12:42:55 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Preliminary implementation of implicit viscosity
+
+Fri Nov 29 15:36:33 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for scoping of 'for (scalar s...'
+
+Fri Nov 29 15:36:07 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Generalised multigrid solver to lists of fields
+
+Fri Nov 29 13:52:03 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Lid-driven cavity test case uses both the centered and the MAC N-S solver
+
+Fri Nov 29 13:33:13 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Support for explicit automatic variables
+
+Thu Nov 28 22:05:47 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Fractions computation takes optional arguments
+
+Thu Nov 28 21:38:41 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Replaced 'staggered' with 'face'
+
+Thu Nov 28 20:12:52 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Support for boundary conditions for local fields
+
+Thu Nov 28 11:31:51 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * foreach_dimension() should not rotate ghost cell indices
+
+Wed Nov 27 19:29:39 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for function calls with optional parameters
+
+Wed Nov 27 19:05:52 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * cosmetics
+
+Wed Nov 27 18:19:30 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Documentation for reversed VOF advection test case
+
+Wed Nov 27 16:47:30 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Fixed biblio
+
+Wed Nov 27 16:34:38 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Documentation for the VOF advection scheme
+
+Wed Nov 27 14:09:01 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Documentation for volume fraction tests
+
+Wed Nov 27 14:08:04 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Centered Navier-Stokes solver
+
+Mon Nov 25 19:08:29 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for constant fields
+
+Fri Nov 22 20:57:13 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Scripts for speed history
+
+Fri Nov 22 16:48:41 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for adaptivity and multiply-refined cells (due to 2:1 constraint)
+
+Tue Nov 26 22:23:12 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Documentation for fractions.h
+
+Tue Nov 26 18:59:51 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Documentation for geometry.h
+
+Tue Nov 26 18:55:01 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Figure for square geometry
+
+Tue Nov 26 15:12:28 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * qcc recognises typedef tags
+
+Fri Nov 22 16:39:49 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  tagged release 22/11/13
+
+Fri Nov 22 16:38:25 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Renamed 'dotest' 'runtest' to fix conflict with wiki
+
+Fri Nov 22 16:28:53 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Adaptive VOF test cases
+
+Wed Nov 20 17:35:03 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Cosmetics for mac solver
+
+Wed Nov 20 12:09:52 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Velocity field is defined from streamfunction in test cases (to ensure exact non-divergence)
+
+Wed Nov 20 12:08:33 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Fixes for foreach_child()
+
+Wed Nov 20 12:07:57 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Default for outputs is stdout
+
+Wed Nov 20 12:07:36 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * VOF is adaptive
+
+Mon Nov 18 17:50:06 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Mixed Youngs-Centered normal
+
+Mon Nov 18 15:49:40 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Shifted origin of VOF cells
+
+Mon Nov 18 11:06:03 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * More fixes for line numbers in qcc
+
+Sat Nov 16 14:54:06 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Fractions from geometry
+
+Sat Nov 16 13:17:07 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * VOF rotation test case
+
+Sat Nov 16 13:03:34 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Fraction initialisation
+
+Fri Nov 15 18:53:37 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Distributes rotate.c in tarball
+
+Fri Nov 15 18:52:51 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Cleaned up 'trash'
+
+Fri Nov 15 17:22:46 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * VOF alternates sweep directions
+
+Fri Nov 15 17:03:28 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Restructured 'foreach_dimension'
+
+Fri Nov 15 16:07:03 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for line number reporting in qcc
+
+Thu Nov 14 21:41:51 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Time-reversed advection test case for VOF
+
+Thu Nov 14 21:36:04 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Initial VOF implementation
+
+Thu Nov 14 16:01:17 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Replaced 'maybe const' with '(const)'
+
+Wed Nov 13 20:47:50 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Added Jose's contributions
+
+Wed Nov 13 19:54:18 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for timestep computation from events
+
+Wed Nov 13 19:43:47 CET 2013  Jose-Maria Fullana <fullana@ida.upmc.fr>
+  * Brusselator: example of reaction-diffusion equation
+
+Wed Nov 13 18:35:35 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for line numbers in foreach_face() etc...
+
+Wed Nov 13 18:35:28 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Support for global constant fields
+
+Wed Nov 13 15:17:28 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Minor fix for Poisson solver
+
+Wed Nov 13 13:50:32 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Generalised Poisson-Helmholtz solver
+
+Fri Nov  8 20:25:59 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Fixed Pena reference
+
+Fri Nov  8 19:17:07 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Added Pena et al to biblio.
+
+Fri Nov  8 20:10:15 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for repeated end events
+
+Fri Nov  8 20:09:56 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Fix when running tests locally
+
+Thu Nov  7 21:37:04 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Added figure for MAC solver
+
+Thu Nov  7 19:34:25 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Added reference to Harlow 1965
+
+Thu Nov  7 17:40:37 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Documentation for MAC Navier-Stokes solver
+
+Thu Nov  7 15:44:10 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Added link
+
+Thu Nov  7 15:43:12 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Added Jose as contributor
+
+Thu Nov  7 15:58:32 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Minor improvement for life.c
+
+Thu Nov  7 15:55:31 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Doc for run.h
+
+Thu Nov  7 15:08:31 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Doc for Conway's game of life
+
+Thu Nov  7 15:19:13 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * qcc switches off optimization when '-catch' is on
+
+Thu Nov  7 11:21:52 CET 2013  Jose-Maria Fullana <fullana@ida.upmc.fr>
+  * Conways' game of life
+
+Wed Nov  6 14:04:06 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Cosmetics
+
+Tue Nov  5 19:44:21 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Generic time loop for advection and N-S solver
+
+Tue Nov  5 18:04:56 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * 'end' events
+
+Tue Nov  5 15:55:09 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Divergence-free refinement for staggered vectors
+
+Mon Nov  4 18:04:24 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Formatting fixes for lid example
+
+Mon Nov  4 17:54:49 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Dirichlet boundary conditions for staggered vector fields
+
+Mon Nov  4 14:37:33 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for overloading boundary conditions
+
+Mon Nov  4 14:07:01 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Bug fix for functions with optional/named arguments
+
+Sat Nov  2 12:04:24 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Function for 'new staggered vector'
+
+Thu Oct 31 22:57:44 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * More robust foreach() nesting
+
+Thu Oct 31 22:32:59 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Generalised Poisson solver to Poisson-Helmholtz
+
+Thu Oct 31 20:39:29 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Added missing staggered keywords
+
+Thu Oct 31 17:44:16 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Support for staggered boundary conditions
+
+Thu Oct 31 16:35:48 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Test case for staggered adaptivity
+
+Wed Oct 30 13:08:25 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Config file for Mac OSX
+
+Wed Oct 30 08:38:41 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for portability of signaling nans
+
+Tue Oct 29 19:12:09 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Documented BCG scheme
+
+Tue Oct 29 17:37:51 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Documented tracer.h
+
+Tue Oct 29 17:29:41 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Documented advection solver
+
+Tue Oct 29 17:11:31 CET 2013  Stephane Popinet <popinet@basilisk.fr>
+  * added BCG 89 in biblio
+
+Thu Oct 24 16:48:12 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Generalised MAC Navier-Stokes solver to variable density
+
+Thu Oct 24 12:14:48 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * More flexible tracer advection
+
+Thu Oct 24 11:31:59 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Optional debugging messages for events
+
+Wed Oct 23 11:40:00 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Resized bump2D plots
+
+Wed Oct 23 11:27:51 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Documented bump2D1.c test case
+
+Tue Oct 22 13:09:54 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Added Kurganov references
+
+Tue Oct 22 13:01:10 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Documented generic conservation laws scheme
+
+Tue Oct 22 10:54:13 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Solver for systems of conservation laws works in 2D
+
+Sun Oct 20 21:07:08 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Generic Poisson solver interface
+
+Tue Oct 15 21:14:21 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Simplified velocity from streamfunction
+
+Tue Oct 15 21:14:17 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Re-using assembly files breaks depency checking
+
+Tue Oct 15 19:36:00 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Documentation for Hele-Shaw flow solver
+
+Tue Oct 15 18:45:56 CEST 2013  popinet <popinet@basilisk.fr>
+  * Documentation for the Poisson solvers
+
+Tue Oct 15 17:16:14 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Tags for Navier-Stokes solvers
+
+Tue Oct 15 17:06:42 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Documented the streamfunction--vorticity solver.
+
+Tue Oct 15 14:37:24 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Renamed navier-stokes1.h navier-stokes/mac.h
+
+Sun Oct 13 10:06:40 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Hele-Shaw solver works with adaptivity
+
+Fri Oct 11 21:32:53 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Test case for variable-resolution, variable-coefficients Poisson equation
+
+Fri Oct 11 19:59:13 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * qcc trick for static FILE pointers
+
+Fri Oct 11 19:13:00 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Modernised 'atmosphere' solver
+
+Fri Oct 11 19:12:06 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Simplified initial conditions for various solvers
+
+Thu Oct 10 12:56:55 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Much simplified streamfunction/vorticity Navier-Stokes solver
+
+Thu Oct 10 12:56:51 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Hele-Shaw flow solver and example
+
+Wed Oct  9 13:35:01 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Multigrid solver for Poisson equation with variable coefficients
+
+Wed Oct  9 12:08:49 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Test case for Poisson equation with variable coefficients
+
+Wed Oct  9 09:49:22 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Automatic homogeneous boundary conditions for Poisson solver
+
+Mon Oct  7 17:22:40 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Remove leftover warnings in tests
+
+Mon Oct  7 16:32:10 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Explicit initialisation of mgstats structure
+
+Mon Oct  7 15:31:09 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Replace 'delta' (grid spacing) with 'Delta'
+
+Mon Oct  7 14:44:40 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Generic Poisson solver and BCG scheme
+
+Sun Oct  6 17:10:20 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Streamfunction/vorticity Navier-Stokes solver (adaptive of course)
+
+Fri Oct  4 21:49:37 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Compilation reuses assembly file if found
+
+Fri Oct  4 12:39:28 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * The advection scheme is adaptive
+
+Fri Oct  4 10:21:15 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Adaptive advection test case
+
+Wed Oct  2 12:22:01 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Improved portability for 32-bits systems
+
+Mon Sep 30 21:46:03 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Generalisation of boundary_tangent() to quadtrees
+
+Mon Sep 30 10:56:52 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Generalisation of foreach_vertex() to quadtrees.
+
+Sat Sep 28 15:20:15 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Cleaned up boundary conditions in Navier-Stokes
+
+Sat Sep 28 13:50:49 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Updated ponds test case reference
+
+Sat Sep 28 12:54:58 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Generalisation/simplification of Navier-Stokes solver using new iterator 
+  foreach_vertex()
+
+Sat Sep 28 11:38:21 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * interpolate() takes field staggering into account
+
+Thu Sep 26 15:38:10 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * New method boundary_tangent()
+
+Wed Sep 25 13:31:47 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Updated ponds test case reference
+
+Mon Sep 23 08:56:36 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Fix for incompatible function name and dash
+
+Wed Sep 25 12:30:28 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Changed 'speed' tests into standard tests
+
+Tue Aug  6 02:24:04 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Improved dotest
+
+Tue Aug  6 01:56:57 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * clarified tutorial for catching FPEs
+
+Wed Jul 31 04:08:08 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Fixed for tsunami figures
+
+Wed Jul 31 03:53:28 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for adaptive refinement of Okada faults
+
+Fri Jul 26 05:07:11 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Bug fix for BCs in "atmosphere" solver
+
+Thu Jul 25 04:57:18 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Updated doc: examples are now in subdirectories
+
+Thu Jul 25 03:15:38 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Parallel tsunami benchmark
+
+Thu Jul 25 01:45:07 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Some compilers (i.e. xlc) bug when combining C99 for loops and openmp
+
+Wed Jul 24 04:17:52 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * ppm2mpeg "works" even without ffmpeg
+
+Wed Jul 24 04:15:34 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Tsunami benchmark
+
+Fri Jul 12 10:36:26 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Fixed qsort() function call in kdt
+
+Fri Jul 12 01:10:37 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Fix for remote tests
+
+Thu Jul 11 04:54:12 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Remote tests are run in the background
+
+Thu Jul 11 00:40:57 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Doc on tracking FPE
+
+Wed Jul 10 11:22:21 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Tests live in their own directory
+
+Sat Jul  6 06:30:03 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * Makefile uses md5sum to check for changes in executables
+  
+  This allows ignoring changes in formatting, comments etc... and avoids
+  rebuilding/reruning the tests.
+  
+
+Mon Jul  8 07:58:11 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Replaced _n with NN to avoid conflict with some system libraries
+
+Fri Jul  5 07:17:45 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * qcc enables FPE when _GNU_SOURCE is set
+
+Fri Jul  5 05:43:30 CEST 2013  Stephane Popinet <popinet@basilisk.fr>
+  * added link to sourceforge page
+
+Fri Jul  5 05:30:43 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * More portable script for generating Makefile.tests
+
+Thu Jul  4 02:36:06 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * added references
+
+Thu Jul  4 02:34:15 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * fix in tsunami.plot
+
+Thu Jul  4 02:15:43 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * bibtex references
+
+Wed Jul  3 07:31:18 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Fixed dimensioning of 'delta'
+
+Wed Jul  3 01:46:31 CEST 2013  popinet <s.popinet@gmail.com>
+  * added ImageMagick to useful packages
+
+Wed Jul  3 01:10:58 CEST 2013  popinet <s.popinet@gmail.com>
+  * documented lid-driven cavity test
+
+Wed Jul  3 01:11:39 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Minor fix for lid-driven cavity plot
+
+Tue Jul  2 05:52:35 CEST 2013  popinet <s.popinet@gmail.com>
+  * Added movies
+
+Tue Jul  2 02:21:23 CEST 2013  popinet <s.popinet@gmail.com>
+  * Minor plotting changes
+
+Tue Jul  2 02:20:55 CEST 2013  popinet <s.popinet@gmail.com>
+  * documented laplacian.c test case
+
+Tue Jul  2 02:18:06 CEST 2013  popinet <s.popinet@gmail.com>
+  * more info on how to run the test suite
+
+Mon Jul  1 23:17:37 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Commented tsunami.plot
+
+Tue Jul  2 06:08:12 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * make ppm2mpeg executable
+
+Mon Jul  1 00:36:51 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * AUTHORS and COPYING files
+
+Mon Jul  1 07:04:52 CEST 2013  popinet <s.popinet@gmail.com>
+  * Proper basilisk site url
+
+Mon Jul  1 07:18:59 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Changed font size for tsunami graphs
+
+Fri Jun 28 09:45:39 CEST 2013  popinet <s.popinet@gmail.com>
+  * Basilisk has moved to new site
+
+Fri Jun 28 04:56:03 CEST 2013  popinet <s.popinet@gmail.com>
+  * Added images to tsunami doc
+
+Fri Jun 28 00:34:32 CEST 2013  popinet <s.popinet@gmail.com>
+  * Improved installation instructions
+
+Thu Jun 27 11:59:21 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * ppm2mpeg is distributed with basilisk
+
+Thu Jun 27 08:03:32 CEST 2013  popinet <s.popinet@gmail.com>
+  * Improved example README
+
+Thu Jun 27 04:47:29 CEST 2013  popinet <s.popinet@gmail.com>
+  * Updated installation instructions
+
+Thu Jun 27 06:49:53 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Option to exclude .c files from tests
+
+Thu Jun 27 04:45:41 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Makefile.tests is required in src/
+
+Thu Jun 27 02:52:35 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Fixed predist
+
+Thu Jun 27 02:15:23 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Restructured/generalised Makefile.defs
+
+Tue Jun 25 02:54:45 CEST 2013  popinet <s.popinet@gmail.com>
+  * doc for conservation of elevation
+
+Wed Jun 26 23:16:56 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Option for memory-buffered KDT
+
+Tue Jun 25 01:39:36 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Adjusted precision of test cases references
+
+Tue Jun 25 00:55:42 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Changed char to int in Cell
+  
+  Architectures such as IBM power6 seem to be incredibly sensitive to
+  data alignement. This small change lead to a x10 speed improvement on
+  the power6!
+
+Mon Jun 24 03:15:11 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Portability improvements for the Portland compiler
+
+Mon Jun 24 00:44:54 CEST 2013  Emily Lane <Emily.Lane@niwa.co.nz>
+  * output_grd()
+
+Fri Jun 21 09:11:58 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * qcc does not process system header files
+
+Thu Jun 20 03:01:03 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * New @def keyword for multiline macros
+
+Thu Jun 20 00:51:04 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * New 'exe' target to separate compilation and runs
+
+Thu Jun 20 00:37:24 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Further portability improvements for Event "arrays"
+
+Thu Jun 20 06:09:34 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Fix for 'scalar [ ]' syntax
+
+Wed Jun 19 07:13:59 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Improved portability
+  
+  For fussy compilers such as xlc.
+
+Tue Jun 18 08:12:03 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Tsunami example documentation
+
+Tue Jun 18 04:09:04 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * qcc can create tag files
+
+Thu Jun 13 12:52:03 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * make diff excludes empty directories
+
+Thu Jun 13 12:49:59 CEST 2013  popinet <s.popinet@gmail.com>
+  * new doc format
+
+Tue Jun 11 00:47:02 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Filtering of wiki patches
+
+Mon Jun 10 07:19:46 CEST 2013  popinet <s.popinet@gmail.com>
+  * doc for radiation BC and gauges
+
+Mon Jun 10 06:46:33 CEST 2013  popinet <s.popinet@gmail.com>
+  * Various documentation fixes
+
+Mon Jun 10 07:46:29 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Stricter code blocks syntax
+
+Mon Jun 10 04:23:13 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Support for 'literate programming'
+
+Mon Jun 10 04:17:37 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Improved documentation
+
+Sun Jun  9 07:17:09 CEST 2013  Stephane Popinet <popinet@users.sf.net>
+  * Source code now lives in /src
+
+Sat Jun  8 23:19:14 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Option for iterative Okada fault reconstruction
+
+Sat Jun  8 12:33:08 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Cleanup of obsolete files
+
+Sat Jun  8 05:50:20 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Option for dynamic of static memory allocation in quadtree
+
+Fri Jun  7 23:59:29 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Dynamic data allocation for quadtree grid
+
+Sat Jun  8 01:51:48 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Leaf cache
+
+Fri Jun  7 23:58:20 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Faults are dynamically refined in tsunami example
+
+Fri Jun  7 04:00:31 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Updated INSTALL and README
+
+Fri Jun  7 03:13:22 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Improved and simplified wavelet adaptivity
+
+Fri Jun  7 00:56:10 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Fix for Point function declarations in qcc
+
+Tue Jun  4 08:42:19 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * output_ppm() uses standard deviation to autoscale
+
+Tue Jun  4 07:18:46 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Tide example
+
+Tue Jun  4 02:30:09 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * output_ppm() uses OpenMP parallelism
+
+Tue Jun  4 01:23:29 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Masking option for output_ppm()
+
+Sun Jun  2 11:43:39 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * qcc uses pre-processed file
+
+Fri May 31 06:53:43 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Events are named
+
+Fri May 31 05:10:47 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Tide gauges plot for tsunami example
+
+Fri May 31 04:26:46 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Wave gauges
+
+Fri May 31 03:37:55 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Saint-Venant solver uses auxilliary variable 'eta'
+
+Wed May 29 06:49:09 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Lake-at-rest for variable resolution
+
+Tue May 28 01:43:35 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Adaptivity for tsunami example
+
+Mon May 27 23:06:48 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Simplified syntax for functions with struct arguments
+
+Mon May 27 07:00:38 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Compiler support for assigments in function calls
+
+Mon May 27 05:00:50 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Configuration for the Intel compiler
+
+Mon May 27 03:11:15 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Tide gauges for tsunami example
+
+Mon May 27 01:43:49 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Okada fault model
+
+Mon May 27 01:37:06 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Terrain works with openmp
+
+Mon May 27 00:38:04 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Generalised Makefile.defs
+
+Sat May 25 08:03:39 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * 2004 tsunami example
+
+Sat May 25 07:51:47 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * output_ppm()
+
+Fri May 24 01:22:14 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Conical island test case uses adaptivity with elevation reconstruction
+
+Fri May 24 01:15:29 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Dependencies fix
+
+Fri May 24 01:14:04 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Preliminary VTK export function
+
+Thu May 23 10:18:26 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Balanced 2nd-order bathymetry reconstruction for Saint-Venant
+
+Thu May 23 09:24:10 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Lake-at-rest with an emerging island
+
+Wed May 22 10:23:39 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Runup on a conical island
+
+Wed May 22 03:26:47 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Terrain module works (water-depth conservation mode only)
+
+Tue May 21 10:14:05 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Reformulation of generic predictor/corrector scheme
+
+Tue May 21 06:53:56 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Use a flux-form formulation for Saint-Venant (rather than tendencies)
+  
+  The main reason for this change is that the flux-form formulation
+  parallelises easily, which is not the case for the previous
+  "tendencies" formulation which requires concurrent access to
+  tendencies. This is unfortunate since the tendencies formulation is
+  significantly simpler (in serial) and uses less memory.
+
+Fri May 17 07:06:26 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Preliminary KDT terrain implementation
+
+Fri May 17 04:59:51 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Parallel reduction for foreach_face()
+
+Fri May 17 03:25:54 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Generic predictor/corrector time-integration
+
+Thu May 16 23:37:01 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Clearer Makefile configuration
+
+Thu May 16 08:44:12 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Generalised use of automatic variables
+
+Thu May 16 04:48:45 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Automatic fields
+
+Wed May 15 07:24:56 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Various fixes for dynamic field allocation
+
+Wed May 15 02:35:46 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Solver for system of conservation laws uses a central-upwind formulation
+
+Wed May 15 01:18:28 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Dynamic scalar allocation
+
+Mon May 13 14:05:52 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Preliminary implementation of generic solver for conservation laws
+
+Mon May 13 11:41:47 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * New function foreach_child()
+
+Mon May 13 07:47:28 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Fixed cloning
+
+Mon May 13 06:14:26 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Simplified treatment of identifiers in qcc
+
+Mon May 13 04:14:58 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Syntax for scalar methods
+
+Mon May 13 01:55:16 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Simplified list syntax
+
+Sat May 11 15:44:06 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * More flexible scalar lists
+
+Sat May 11 15:43:49 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * gradient() method for scalars
+
+Sat May 11 10:33:22 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * New and updated test cases
+
+Fri May 10 05:59:28 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Saint-Venant solver uses depth and speed as primary variables
+  
+  ..rather than momentum. This is much more robust when wetting/drying.
+
+Fri May 10 03:44:12 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Checks for vanishing timestep
+
+Thu May  9 06:48:09 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Removed DX, delta is the dimensional cell size
+
+Thu May  9 06:43:53 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * New 'hump' test case
+
+Thu May  9 04:23:17 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Minor makefile improvements
+
+Thu May  9 01:47:24 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Fixed boundary conditions for predictor/corrector in Saint-Venant
+
+Thu May  9 00:09:32 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Balancing for fine/coarse Saint-Venant
+
+Mon May  6 06:30:18 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Lake-at-rest test case
+
+Mon May  6 01:35:50 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Option to catch FPEs and display debugging info
+
+Thu May  2 11:11:01 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * New multigrid method boundary_restriction()
+
+Thu May  2 09:53:02 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Improved adaptation for Saint-Venant solver
+
+Thu May  2 08:08:11 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * trash() method
+
+Thu May  2 04:34:46 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * More fixes for boundary corners
+
+Thu May  2 03:38:49 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Various minor fixes
+
+Thu May  2 00:14:51 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Fixed dependency generation
+
+Wed May  1 14:16:07 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Scalar lists "polymorphism" for boundary()
+
+Wed May  1 08:10:34 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Better error reporting for events
+
+Wed May  1 07:27:50 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Updated tests
+
+Wed May  1 06:46:28 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Various fixes for corner boundaries
+
+Wed May  1 05:52:52 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Support NaN-trapping of uninitialised data
+
+Wed May  1 05:47:06 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Introduced methods for each grid class
+
+Tue Apr 30 07:16:15 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Per-variable 'refine' method + wavelet refinement/coarsening fix
+
+Tue Apr 30 07:10:25 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Boundary conditions for halos
+
+Mon Apr 29 15:17:02 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * locate() returns status in point
+
+Mon Apr 29 06:00:26 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Do not traverse coarse/fine faces
+
+Sun Apr 28 22:58:31 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * qcc option to track FPE
+
+Sun Apr 28 22:54:03 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * New 'bump2D' adaptive Saint-Venant test case
+
+Sun Apr 28 13:45:39 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Restructured boundary conditions
+
+Sun Apr 28 03:32:03 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Traversal of 'corner' boundary cells
+
+Sun Apr 28 02:30:19 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Linear interpolation option for output_field()
+
+Sat Apr 27 10:27:23 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Uses 'restriction' halos (together with 'interpolation' halos)
+
+Sat Apr 27 04:37:45 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * foreach_fine_to_coarse() and foreach_level() use caches in quadtree
+
+Fri Apr 26 09:08:24 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * neighbor() works within foreach_dimension()
+
+Fri Apr 26 08:11:12 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Removed halo flags
+
+Fri Apr 26 06:55:49 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Cache for halo cells
+
+Fri Apr 26 04:36:48 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Bug fix for boundary flux traversal
+
+Wed Apr 24 11:16:56 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * New macros is_leaf(), is_active(), is_halo()
+
+Wed Apr 24 02:04:47 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Refinement functions use lists of variables
+
+Tue Apr 23 07:26:40 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Variable declarations in "Point" functions
+
+Tue Apr 23 02:30:57 CEST 2013  Stephane Popinet <popinet@users.sf.net>
+  * x,y coordinates are set properly for boundaries
+
+Tue Apr 23 01:41:26 CEST 2013  Stephane Popinet <popinet@users.sf.net>
+  * 'circle' test case uses new flux formulation
+
+Mon Apr 22 09:50:57 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Advection solver uses new flux formulation
+
+Sun Apr 21 11:11:16 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Scalar and vector lists
+
+Sat Apr 20 07:47:18 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Restructured header files
+
+Sat Apr 20 03:17:33 CEST 2013  Stephane Popinet <popinet@users.sf.net>
+  * qcc processes include files in grid headers
+
+Fri Apr 19 10:18:34 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Boundary conditions for variable-resolution Saint-Venant
+
+Fri Apr 19 02:26:21 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * New function foreach_face()
+
+Thu Apr 18 22:16:02 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Various minor fixes
+
+Thu Apr 18 22:00:10 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Fixed foreach_boundary() for quadtree
+
+Thu Apr 18 04:46:15 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Use dimensional gradients
+
+Thu Apr 18 04:15:40 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Function-style prototype for events
+
+Thu Apr 18 03:36:35 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * 2D Saint-Venant solver
+
+Wed Apr 17 04:53:23 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Sign fix for saint-venant1.h
+
+Wed Apr 17 04:40:23 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * 'Dry' lake test case
+
+Wed Apr 17 04:31:24 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * New 'bump' test case
+
+Tue Apr 16 23:39:49 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Choice of Riemann solvers for Saint-Venant
+
+Tue Apr 16 08:09:12 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * 1D Cartesian grid
+
+Tue Apr 16 06:58:42 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * 'Parabola' test case for Saint-Venant solver
+
+Tue Apr 16 06:56:48 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Fixes for drying in Kurganov's Saint-Venant solver
+
+Mon Apr 15 23:13:44 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * 'Transcritical' test case for Saint-Venant
+
+Mon Apr 15 04:48:31 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Wet/dry treatment for Saint-Venant
+
+Mon Apr 15 01:57:51 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Saint-Venant solver
+
+Fri Apr 12 06:25:59 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Arrays in functions
+
+Thu Apr 11 02:42:28 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Fixed bcs for rotation test
+
+Thu Apr 11 02:21:49 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * quadtree cache is properly resized
+
+Thu Apr 11 02:20:51 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Flexible boundary conditions
+
+Wed Apr 10 00:52:55 CEST 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Quadtree implementation uses a cache index
+  
+  This speeds things up by a factor of two on regular Cartesian grids.
+
+Sun Mar 10 05:53:12 CET 2013  Stephane Popinet <popinet@users.sf.net>
+  * Conservative laplacian discretisation for 'circle' test
+  
+  This restores the second-order convergence rate for the solution but
+  degrades the convergence rate for the residual (since the residual and
+  relaxation operators are not consistent anymore).
+
+Sat Mar  9 04:20:11 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Advection test case uses normf() statsf()
+
+Fri Mar  8 09:38:21 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Reductions don't like structures
+
+Fri Mar  8 05:15:52 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * New utilities normf(), statsf()
+
+Fri Mar  8 05:14:33 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Added tolerance on how close events can be
+
+Fri Mar  8 05:12:43 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * qplot supports "-e" option of gnuplot
+
+Thu Mar  7 06:47:10 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Rotation test case
+
+Thu Mar  7 06:46:43 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Fix for line numbers in events array
+
+Thu Mar  7 05:25:14 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Adaptive advection example
+
+Thu Mar  7 04:47:44 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Fix for wavelet refinement
+
+Thu Mar  7 03:51:11 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Timing summary uses total number of cells
+
+Thu Mar  7 03:46:06 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Minor fix for lid plot
+
+Thu Mar  7 03:45:51 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Renamed event_action as event
+
+Thu Mar  7 03:43:22 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Conservative interpolations
+
+Thu Mar  7 00:31:10 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * coarsen() and refine() enforce 2:1 refinement
+
+Thu Mar  7 00:25:11 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * New utility output_cells()
+
+Thu Mar  7 00:18:11 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Added etags in Makefile
+
+Sun Mar  3 04:57:42 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Fix for order of vector indices
+
+Sat Mar  2 05:18:23 CET 2013  Stephane Popinet <popinet@users.sf.net>
+  * slow/fast tests
+
+Sat Mar  2 04:57:19 CET 2013  Stephane Popinet <popinet@users.sf.net>
+  * Support for multiple min|max reductions
+
+Sat Mar  2 04:25:37 CET 2013  Stephane Popinet <popinet@users.sf.net>
+  * 'advection' solver uses timers
+
+Sat Mar  2 03:54:05 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * 'lid' example works with OpenMP
+
+Sat Mar  2 03:53:05 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * New functions timer_start()/print()
+
+Sat Mar  2 03:07:47 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Workaround for lack of min|max reduction in OpenMP < 3.1
+
+Fri Mar  1 06:04:53 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Cosmetics for 'nonlinear'
+
+Fri Mar  1 06:04:30 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * OpenMP support for grid/multigrid.h (untested)
+
+Thu Feb 28 09:42:23 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Workaround for missing min|max reduction in OpenMP < 3.1
+
+Thu Feb 28 06:02:47 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Minor fix for test plots
+
+Thu Feb 28 06:02:24 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * OpenMP support for Cartesian grid
+
+Wed Feb 27 08:08:50 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * 'atmosphere' and 'navier-stokes' solvers use events
+
+Wed Feb 27 08:00:58 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Create 'dimension.h' in temporary directory
+
+Wed Feb 27 05:01:14 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * 'grid' is global
+
+Wed Feb 27 01:51:16 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * 'new vector' allocation
+
+Wed Feb 27 01:51:04 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Renamed 'var' to 'scalar'
+
+Wed Feb 27 00:51:35 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * foreach_dimension() uses vectors
+
+Tue Feb 26 23:46:50 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Simplified array expressions
+
+Tue Feb 26 07:39:30 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Fixed scopes of foreach_dimension()
+
+Tue Feb 26 05:36:25 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * foreach_dimension()
+
+Tue Feb 26 05:34:08 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * yylineno is unreliable
+
+Mon Feb 25 07:12:49 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Simplification of BCG scheme
+
+Mon Feb 25 02:43:18 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Slope limiting for BCG advection
+
+Mon Feb 25 02:15:37 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Convergence for time-reversed advection
+
+Sun Feb 24 23:53:50 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Fix for BCG advection
+
+Sun Feb 24 05:59:25 CET 2013  Stephane Popinet <popinet@users.sf.net>
+  * Advection solver uses events
+
+Sun Feb 24 05:31:01 CET 2013  Stephane Popinet <popinet@users.sf.net>
+  * Events
+
+Thu Feb 21 05:53:14 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Changed interface for restriction()
+
+Thu Feb 21 05:48:56 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * New 'advection' test
+
+Thu Feb 21 05:46:48 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * New 'advection' solver
+
+Thu Feb 21 05:45:56 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * New 'qplot' utility
+
+Thu Feb 21 05:45:34 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Fix for line numbers by qcc
+
+Thu Feb 21 05:45:06 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * New option to 'trash' variables not explicitly defined
+
+Wed Feb 20 06:19:18 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * v[...] syntax for qcc
+
+Wed Feb 20 06:08:44 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * output_field() takes a size argument
+
+Wed Feb 20 06:05:02 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Halos for staggered variables
+
+Tue Feb 19 03:52:18 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Simplified mg_cycle() interface
+
+Tue Feb 19 03:51:35 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * New method grid::locate()
+
+Tue Feb 19 03:49:23 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Fixed line numbers for qcc
+
+Mon Feb 18 23:35:07 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * C++-style 'new var' syntax
+
+Sat Feb 16 22:21:03 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Restructured 'atmosphere' and 'navier-stokes' solvers
+
+Sat Feb 16 22:18:18 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * qcc processes files in the correct order
+
+Fri Feb 15 03:18:21 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Dependency generation for qcc
+
+Fri Feb 15 02:02:15 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * 'new var' syntax
+
+Thu Feb 14 22:22:29 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Various improvements for endfor
+
+Thu Feb 14 08:05:40 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Improved endfor and syntax
+
+Thu Feb 14 07:33:21 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Navier-Stokes solvers and lid-driven cavity example
+
+Tue Feb 12 22:24:14 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Bilinear interpolation onto regular grids
+
+Sat Feb  2 00:20:05 CET 2013  Stephane Popinet <popinet@users.sf.net>
+  * Trick to turn off extended precision
+
+Tue Jan 29 11:52:25 CET 2013  Stephane Popinet <popinet@users.sf.net>
+  * Basic linear quadtree implementation
+  
+  The cache behaviour (of the Z-grid ordering) is indeed better than
+  that of the cartesian quadtree implementation, however it does not
+  seem to be significantly faster (when everything fits in cache) and
+  neighbor access (for the Laplacian) is very slow.
+
+Tue Jan 29 11:47:55 CET 2013  Stephane Popinet <popinet@users.sf.net>
+  * Removed foreach_redo() function for quadtree
+  
+  This did accelerate things but only when everything fitted in cache.
+
+Tue Jan 29 06:41:34 CET 2013  Stephane Popinet <popinet@users.sf.net>
+  * New function foreach_redo() in quadtree
+  
+  Does not seem to improve things much for the 'laplacian' test
+  case. Maybe at low enough resolutions. This could mean that cache
+  behaviour dominates.
+
+Tue Jan 29 04:59:51 CET 2013  Stephane Popinet <popinet@users.sf.net>
+  * Added elementary 'sum' operation to 'Laplacian' speed test
+
+Wed Jan 23 06:00:48 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Speed of Laplacian test case
+
+Wed Jan 23 01:23:18 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Generic multigrid cycle
+
+Wed Jan 23 00:52:01 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Variable refinement for Poisson solver
+
+Tue Jan 22 12:00:17 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Poisson solver and test case matches Gerris
+
+Tue Jan 22 06:51:05 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Fixed column.sh
+
+Tue Jan 22 06:39:07 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Updated Runge-Kutta interface
+
+Tue Jan 22 05:53:55 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Used endfor everywhere
+
+Mon Jan 21 23:14:30 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * New 'endfor' script
+
+Mon Jan 21 20:58:18 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Speed test for poisson
+
+Mon Jan 21 12:29:30 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * "Multigrid" grid now works with the Poisson solver
+
+Mon Jan 21 11:54:00 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Multigrid Poisson solver
+
+Mon Jan 21 04:44:30 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Generic makefile rules for test cases
+
+Mon Jan 21 03:32:12 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * 2nd-order Runge-Kutta test case
+
+Mon Jan 21 01:31:51 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Restructured interface and added support for Point functions
+
+Sun Jan 20 21:42:11 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Unified initial refinement
+
+Sun Jan 20 21:04:26 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Refinement
+
+Sun Jan 20 04:26:34 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Restructured quadtree
+
+Sun Jan 20 00:03:10 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Small fixes
+
+Sat Jan 19 23:17:52 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Runge-Kutta time integration
+
+Sat Jan 19 22:25:49 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Test cases cleanup
+
+Sat Jan 19 13:09:46 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Halo update
+
+Sat Jan 19 10:19:45 CET 2013  Stephane Popinet <popinet@users.sf.net>
+  * Halo speed test
+
+Sat Jan 19 05:12:33 CET 2013  Stephane Popinet <popinet@users.sf.net>
+  * Halo test case
+
+Fri Jan 18 06:06:23 CET 2013  Stephane Popinet <s.popinet@gmail.com>
+  * Wavelet coarsening
+
+Thu Jan 17 09:15:18 CET 2013  Stephane Popinet <popinet@users.sf.net>
+  * More consistent structures
+
+Thu Jan 17 06:27:28 CET 2013  Stephane Popinet <popinet@users.sf.net>
+  * Generic boundaries for quadtrees
+
+Thu Jan 17 03:16:26 CET 2013  Stephane Popinet <popinet@users.sf.net>
+  * Generic boundary conditions (Cartesian only for now)
+
+Wed Jan 16 21:18:11 CET 2013  Stephane Popinet <popinet@users.sf.net>
+  * Generalised number of ghost layers
+
+Wed Jan 16 13:05:02 CET 2013  Stephane Popinet <popinet@users.sf.net>
+  * Quadtree leaf traversal
+  
+  This incurs a ~18% speed penalty for the (cartesian) 'nonlinear' test.
+
+Wed Jan 16 12:00:42 CET 2013  Stephane Popinet <popinet@users.sf.net>
+  * Added a 'flags' field
+  
+  This simple change resulted in a 10% performance hit for the
+  atmosphere test case. Possibly due to cache miss weirdness.
+
+Wed Jan 16 07:53:57 CET 2013  Stephane Popinet <popinet@users.sf.net>
+  * Generalisation of coarse/fine operators
+
+Wed Jan 16 07:50:12 CET 2013  Stephane Popinet <popinet@users.sf.net>
+  * New macro foreach_condition()
+
+Wed Jan 16 03:16:33 CET 2013  Stephane Popinet <popinet@users.sf.net>
+  * Generalised iteration macros
+
+Wed Jan 16 00:20:38 CET 2013  Stephane Popinet <popinet@users.sf.net>
+  * First implementation of "multigrid" quadtree
+
+Wed Jan 16 00:18:32 CET 2013  Stephane Popinet <popinet@users.sf.net>
+  * Added IMAX parameter
+
+Tue Jan 15 02:44:17 CET 2013  Stephane Popinet <popinet@users.sf.net>
+  * Advection test
+
+Mon Jan 14 23:32:36 CET 2013  Stephane Popinet <popinet@users.sf.net>
+  * Optimised querying of neighbors at finest level for quadtree
+  
+  This speed things up by ~80%
+
+Mon Jan 14 23:20:32 CET 2013  Stephane Popinet <popinet@users.sf.net>
+  * Rolled back level storage
+
+Mon Jan 14 23:16:39 CET 2013  Stephane Popinet <popinet@users.sf.net>
+  * Store the cell level in linear quadtree
+  
+  This speed things up by about 30%
+
+Mon Jan 14 22:29:47 CET 2013  Stephane Popinet <popinet@users.sf.net>
+  * Linear quadtree version for atmosphere
+
+Mon Jan 14 11:30:15 CET 2013  Stephane Popinet <popinet@users.sf.net>
+  * Initial quadtree implementation
+
+Mon Jan 14 00:58:31 CET 2013  Stephane Popinet <popinet@users.sf.net>
+  * Stencils for ke and psi
+
+Mon Jan 14 00:08:01 CET 2013  Stephane Popinet <popinet@users.sf.net>
+  * Moved boundary conditions in separate file
+
+Sun Jan 13 23:43:50 CET 2013  Stephane Popinet <popinet@users.sf.net>
+  * Generic loops
+
+Sun Jan 13 22:37:18 CET 2013  Stephane Popinet <popinet@users.sf.net>
+  * Use local stencils
+
+Sun Jan 13 21:21:51 CET 2013  Stephane Popinet <popinet@users.sf.net>
+  * More generic stencils
+
+Sun Jan 13 13:07:45 CET 2013  Stephane Popinet <popinet@users.sf.net>
+  * More generic implementation
+  
+  A bit (20%) faster too.
+
+Sun Jan 13 11:05:48 CET 2013  Stephane Popinet <popinet@users.sf.net>
+  * Added timer
+
+Sun Jan 13 10:19:22 CET 2013  Stephane Popinet <popinet@users.sf.net>
+  * Initial revision

@@ -1,0 +1,135 @@
+#!/bin/sh
+
+usage()
+{
+    cat <<EOF
+usage: page2html -url URL -ext EXT -refresh SEC FILE.([ch]|page)
+
+  If -url is not specified it is set $BASILISK_URL (if defined) or to
+  http://basilisk.fr
+
+  The EXT extension (typically .html) is added to page links.
+EOF
+    exit 1
+}
+
+ext=""
+refresh=""
+while test $# -gt 0; do
+    case $1 in
+	-url)
+	    shift
+	    BASILISK_URL="$1"
+	    ;;
+	-ext)
+	    shift
+	    ext="$1"
+	    ;;
+	-refresh)
+	    shift
+	    refresh="-V refresh=$1"
+	    ;;
+	-*)
+	    usage
+	    ;;
+	*.page)  page="$1" ;;
+	*.[ch])  page="$1" ;;
+    esac
+    shift
+done
+
+if test -z "$page"; then
+    usage
+fi
+
+if test ! -f $page; then
+    echo "page2html: cannot access '$page'" >&2
+    exit 1
+fi
+
+if test -f $page.page; then
+    page=$page.page
+fi
+
+basename=`echo $page | sed 's/\.page$//'`
+title=""
+case $PWD in
+    $BASILISK*)
+	title=`echo $PWD | sed "s|$BASILISK|src|"`/
+	;;
+esac
+case $basename in
+    /*)
+	basename=`basename $basename`
+	page=`basename $page`
+	url=$basename
+	title=`echo $url | sed 's/%20/ /g'`
+	;;
+    *)
+	url=/$title$basename
+	title=$title`echo $basename | sed 's/%20/ /g'`
+	;;
+esac
+
+if test -z "$BASILISK_URL"; then
+    BASILISK_URL="http://basilisk.fr"
+fi
+
+cpreproc()
+{
+    echo ~~~ {.c .numberLines .lineAnchors}
+    cat $1
+    echo ~~~
+}
+
+cpostproc()
+{
+    # add anchors since the .lineAnchors does not seem to work
+    # with pandoc 1.17.2
+    sed -e 's|<pre>1$|<pre><a id="1" href="#1">1</a>|' \
+	-e 's|^ *\([0-9]*\)$|<a id="\1" href="#\1">\1</a>|g'
+}
+
+pagepreproc()
+{
+    $BASILISK/plugins/literate-c '???' $1 | sed 's/~~~literatec/~~~c/g'
+}
+
+pagepostproc()
+{
+    $BASILISK/plugins/codeblock "$BASILISK_URL" $1 $2
+}
+
+case $page in
+    *.page)
+	PREPROC="pagepreproc $basename"
+	POSTPROC="pagepostproc $basename $ext"
+	;;
+    *)
+	PREPROC="cpreproc $page"
+	POSTPROC="cpostproc"
+	;;
+esac
+
+# Test whether pandoc supports the --smart option
+if echo "" | pandoc --smart > /dev/null 2>&1; then
+    PANDOC="pandoc -f markdown --smart"
+else 
+    # assumes it works like this (i.e. it is a recent version)
+    PANDOC="pandoc -f markdown+smart"
+fi
+
+$PREPROC | $PANDOC -s --mathml --toc --preserve-tabs            \
+	   -V wikititle=Basilisk				\
+	   -V base=http://basilisk.fr				\
+	   -V pageUrl="$url"			                \
+	   -V pagetitle="$title" 			        \
+	   -V wikiupload=true					\
+	   -V sitenav=true					\
+	   -V pagetools=true					\
+	   -V usecache=true					\
+	   -V tabs=true                                         \
+	   $refresh                                             \
+	   --template=$BASILISK/templates/page.static	 	\
+    | sed 's/__ESCAPEDDOLLAR__/$$/g'			        \
+    | $POSTPROC

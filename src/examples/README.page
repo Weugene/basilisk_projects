@@ -1,0 +1,35 @@
+# Examples
+
+If you would like to run the examples, first read [*"Running and
+creating test cases (and
+examples)"*](/src/test/README#running-and-creating-test-cases-and-examples).
+
+* [The 2004 Indian Ocean tsunami](tsunami.c)
+* [Coupled reaction–diffusion equations: the Brusselator](brusselator.c)
+* [The complex Ginzburg--Landau equation](ginzburg-landau.c)
+* [Decaying two-dimensional turbulence](turbulence.c)
+* [Conway’s game of life](life.c)
+* [Periodic wave propagation over an ellipsoidal shoal](shoal.c)
+* [Breakup of a rectangular perturbation into a train of solitons](madsen.c)
+* [Bénard–von Kármán Vortex Street for flow around a cylinder at
+  Re=160](karman.c)
+* [Vortex shedding behind a sphere at Re=300](sphere.c)
+* [Atomisation of a pulsed liquid jet](atomisation.c)
+* [Bubble rising in a large tank](bubble.c)
+* [Forced isotropic turbulence in a triply-periodic box](isotropic.c)
+* [Distance field computation from a 3D model](distance.c)
+* [A Shallow Water Analogue for the Standing Accretion Shock
+  Instability](swasi.c)
+* [Two-phase flow around RV Tangaroa](tangaroa.c)
+* [Flow in a rotating bottom-driven cylindrical container](yang.c)
+
+## Python interface
+
+* [Decaying two-dimensional turbulence](turbulence.py)
+* [Poisson problem](poisson.py)
+
+## See also
+
+* [Test cases](/src/test/README)
+* [Examples by Pierre-Yves Lagrée](/sandbox/M1EMN/README)
+* [Examples (and more) by Antoon van Hooft](/sandbox/Antoonvh/README)

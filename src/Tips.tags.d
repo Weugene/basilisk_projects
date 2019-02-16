@@ -1,0 +1,30 @@
+Tips.tags:	\
+	./grid/multigrid3D.h \
+	./grid/multigrid3D.h \
+	./grid/multigrid3D.h \
+	./grid/multigrid.h \
+	./grid/foreach_cell.h \
+	./grid/neighbors.h \
+	./grid/multigrid-common.h \
+	./grid/multigrid-mpi.h \
+	./grid/cartesian-common.h \
+	./grid/events.h \
+	./grid/fpe.h \
+	./grid/multigrid.h \
+	./grid/foreach_cell.h \
+	./grid/neighbors.h \
+	./grid/multigrid-common.h \
+	./grid/multigrid-mpi.h \
+	./grid/cartesian-common.h \
+	./grid/events.h \
+	./grid/fpe.h \
+	./grid/multigrid.h \
+	./grid/foreach_cell.h \
+	./grid/neighbors.h \
+	./grid/multigrid-common.h \
+	./grid/multigrid-mpi.h \
+	./grid/cartesian-common.h \
+	./grid/events.h \
+	./grid/fpe.h \
+	/Users/weugene/basilisk/src/common.h \
+

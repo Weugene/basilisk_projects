@@ -1,0 +1,2 @@
+pull posthook sh src/darcs/filter-wiki.sh
+pull run-posthook

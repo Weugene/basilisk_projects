@@ -1,0 +1,213 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    $if(refresh)$
+    <meta http-equiv="refresh" content="$refresh$">
+    $endif$
+    $if(feed)$
+    <link href="$base$/_feed/" type="application/atom+xml" rel="alternate" title="Sitewide ATOM Feed" />
+    <link href="$base$/_feed$pageUrl$" type="application/atom+xml" rel="alternate" title="This page's ATOM Feed" />
+    $endif$
+    <title>$wikititle$ - $pagetitle$</title>
+    $if(printable)$
+    <link href="$base$/css/print.css" rel="stylesheet" media="all" type= "text/css" />
+    $else$
+    <link href="$base$/css/custom.css" rel="stylesheet" media="screen, projection" type="text/css" />
+    <link href="$base$/css/print.css" rel="stylesheet" media="print" type= "text/css" />
+    $endif$
+    <!--[if IE]><link href="$base$/css/ie.css" rel="stylesheet" media="screen, projection" type="text/css" /><![endif]-->
+    <link rel="stylesheet" href="$base$/css/codemirror.css"/>
+    <link rel="stylesheet" href="$base$/css/basilisk.css"/>
+    <link rel="stylesheet" href="$base$/codemirror/addon/display/fullscreen.css"/>
+    <link rel="stylesheet" href="$base$/codemirror/addon/fold/foldgutter.css" />
+    <script src="$base$/codemirror/lib/codemirror.js"></script>
+    <script src="$base$/codemirror/mode/clike/clike.js"></script>
+    <script src="$base$/codemirror/mode/markdown/markdown.js"></script>
+    <script src="$base$/codemirror/addon/display/fullscreen.js"></script>
+    <script src="$base$/codemirror/addon/edit/matchbrackets.js"></script>
+    <script src="$base$/codemirror/keymap/emacs.js"></script>
+    <script src="$base$/codemirror/addon/comment/comment.js"></script>
+    <script src="$base$/codemirror/addon/dialog/dialog.js"></script>
+    <script src="$base$/codemirror/addon/search/searchcursor.js"></script>
+    <script src="$base$/codemirror/addon/search/search.js"></script>
+
+    <script src="$base$/codemirror/addon/fold/foldcode.js"></script>
+    <script src="$base$/codemirror/addon/fold/foldgutter.js"></script>
+    <script src="$base$/codemirror/addon/fold/brace-fold.js"></script>
+    <script src="$base$/codemirror/addon/fold/xml-fold.js"></script>
+    <script src="$base$/codemirror/addon/fold/markdown-fold.js"></script>
+    <script src="$base$/codemirror/addon/fold/comment-fold.js"></script>
+  </head>
+  <body>
+    <div id="doc3" class="yui-t1">
+        <div id="yui-main">
+          <div id="maincol" class="yui-b">
+<div id="userbox">
+  <noscript>
+    <a href="$base$/_login">Login</a>
+    <a href="$base$/_logout">Logout</a>
+  </noscript>
+  &nbsp;
+  <a id="loginlink" class="login" href="$base$/_login">Login / Get an account</a>
+  <a id="logoutlink" class="login" href="$base$/_logout">Logout <span id="logged_in_user"></span></a>
+</div>
+$if(tabs)$
+<ul class="tabs">
+  <li class="selected">
+    <a href="$pageUrl$">view</a>
+  </li>
+</ul>
+$endif$
+<div id="content">
+  $if(revision)$
+    <h2 class="revision">Revision $revision$</h2>
+  $endif$
+  <h1 class="pageTitle"><a href="$pageUrl$">$pagetitle$</a></h1>
+  $if(messages)$
+<ul class="messages">
+</ul>
+  $endif$
+$if(toc)$
+<div id="$idprefix$TOC">
+$toc$
+</div>
+$endif$
+$body$
+  <script type="text/javascript">
+    CodeMirror.keyMap.emacs.Enter = "newlineAndIndent";
+    CodeMirror.extendMode("clike", {electricChars: "{};"});
+    var editor = 
+    	CodeMirror.fromTextArea(document.getElementById("editedText"), {
+          matchBrackets: true,
+          mode: "text/x-basiliskc",
+	  theme: "basilisk",
+          tabSize: 8,
+	  electricChars: true,
+	  lineWrapping: true,
+          foldGutter: true,
+          keyMap: "emacs",
+      	  extraKeys: {
+            "F11": function(cm) {
+              cm.setOption("fullScreen", !cm.getOption("fullScreen"));
+            },
+	    "Esc": function(cm) {
+              if (cm.getOption("fullScreen")) cm.setOption("fullScreen", false);
+            },
+	    "Ctrl-E": function(cm){ cm.foldCode(cm.getCursor()); }
+          },
+	  gutters: ["CodeMirror-foldgutter"]
+        });
+    editor.on("blur", function() {editor.save()});
+    update();
+    var pending;
+    editor.on("change", function() {
+	clearTimeout(pending);
+	pending = setTimeout(update, 400);
+    });
+    function looksLikeBasiliskC(code) {
+	return /^[/][*][*]$$/.test(code);
+    }
+    function update() {
+	editor.setOption("mode", looksLikeBasiliskC(editor.getValue()) ? 
+			 "text/x-basiliskc" : "markdown");
+    }
+  </script>
+</div>
+<div id="footer">powered by <a href="http://github.com/jgm/gitit/tree/master/">darcsit</a></div>
+          </div>
+        </div>
+        <div id="sidebar" class="yui-b first">
+<div id="logo">
+  <a href="$base$/" alt="site logo" title="Go to top page"><img src="$base$/img/logo.png" /></a>
+</div>
+          $if(sitenav)$
+<div class="sitenav">
+  <fieldset>
+    <legend>Site</legend>
+    <ul>
+      <li><a href="$base$/">Front page</a></li>
+      <li><a href="$base$/_index">All pages</a></li>
+      <li><a href="$base$/_activity">Recent activity</a></li>
+      $if(wikiupload)$
+        <li><a href="$base$/_upload">Upload a file</a></li>
+      $endif$
+      $if(feed)$
+      <li><a href="$base$/_feed/" type="application/atom+xml" rel="alternate" title="ATOM Feed">Atom feed</a> <img alt="feed icon" src="$base$/img/icons/feed.png"/></li>
+      $endif$
+      <li><a href="$base$/Help">Help</a></li>
+    </ul>
+    <form action="/_search" method="post" id="searchform">
+     <input type="text" name="patterns" id="patterns"/>
+     <input type="submit" name="search" id="search" value="Search"/>
+    </form>
+  </fieldset>
+  <fieldset>
+    <legend>Documentation</legend>
+    <ul>
+      <li><a href="$base$/Tutorial">Tutorial</a></li>
+      <li><a href="$base$/src/INSTALL">Installation</a></li>
+      <li><a href="$base$/Basilisk C">Basilisk C</a></li>
+      <li><a href="$base$/src/README">Solvers and functions</a></li>
+      <li><a href="$base$/src/examples/README">Examples</a></li>
+      <li><a href="http://groups.google.com/d/forum/basilisk-fr">User forum</a></li>
+    </ul>
+  </fieldset>
+  <fieldset>
+    <legend>Development</legend>
+    <ul>
+      <li><a href="$base$/src/">Source code</a></li>
+      <li><a href="https://hub.darcs.net/basilisk/basilisk/browse/src">Darcs Hub</a></li>
+      <li><a href="$base$/src/test/README">Test cases</a></li>
+      <li><a href="$base$/sandbox/bugs/README">Bug reports</a></li>
+      <li><a href="$base$/sandbox/">Play in the sandbox</a></li>
+    </ul>
+  </fieldset>
+</div>
+          $endif$
+          $if(pagetools)$
+<div class="pageTools">
+  <fieldset>
+    <legend>This page</legend>
+    <ul>
+      <li><a href="$pageUrl$?raw">Raw page source</a></li>
+    </ul>
+  </fieldset>
+</div>
+          $endif$
+          $if(markuphelp)$
+<div class="markupHelp">
+  $markuphelp$
+</div>
+          $endif$
+        </div>
+    </div>
+    $javascripts$
+$if(usecache)$
+<script type="text/javascript" src="$base$/js/jquery.hotkeys.js"></script>
+<script type="text/javascript">
+/* <![CDATA[ */
+     __ESCAPEDDOLLAR__(document).bind("keydown", "ctrl+r", function() {
+         __ESCAPEDDOLLAR__.post("$base$/_expire$pageUrl$");
+         return true;
+         });
+/* ]]> */
+</script>
+$endif$
+<script type="text/javascript">
+/* <![CDATA[ */
+  __ESCAPEDDOLLAR__.get("$base$/_user", {}, function(username, status) {
+     __ESCAPEDDOLLAR__("#logged_in_user").text(username);
+     if (username == "") {  // nobody logged in
+        __ESCAPEDDOLLAR__("#logoutlink").hide();
+        __ESCAPEDDOLLAR__("#loginlink").show();
+     } else {
+        __ESCAPEDDOLLAR__("#logoutlink").show();
+        __ESCAPEDDOLLAR__("#loginlink").hide();
+     };
+   });
+/* ]]> */
+</script>
+  </body>
+</html>

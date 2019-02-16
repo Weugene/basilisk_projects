@@ -1,0 +1,50 @@
+* [Apache Tutorial: Dynamic Content with
+  CGI](https://httpd.apache.org/docs/2.4/howto/cgi.html)
+
+~~~bash
+sudo a2enmod cgi
+sudo joe /etc/apache2/mods-enabled/cgid.conf
+
+# Socket for cgid communication
+ScriptSock ${APACHE_RUN_DIR}/cgisock
+# ScriptLog /var/log/apache2/cgi_log
+<IfModule mod_cgid.c>
+        <Directory /home/*/public_html/cgi-bin>
+		Options ExecCGI
+		SetHandler cgi-script   
+        </Directory>
+</IfModule>
+# vim: syntax=apache ts=4 sw=4 sts=4 sr noet
+
+sudo /etc/init.d/apache2 reload
+~~~
+
+# First try
+
+Setting the proper permissions
+
+~~~bash
+chmod -R g+w $BASILISK
+sudo adduser www-data popinet
+sudo adduser popinet www-data
+~~~
+
+i.e. www-data can now both write/overwrite in $BASILISK.
+
+# Second try: Using suexec to run cgi script as correct user
+
+[This page](https://www.digitalocean.com/community/tutorials/how-to-use-suexec-in-apache-to-run-cgi-scripts-on-an-ubuntu-vps) was useful
+
+~~~bash
+sudo apt-get install apache2-suexec-custom
+sudo a2enmod suexec proxy_http
+sudo chmod 755 $BASILISK/cgi-bin
+sudo chmod 700 $BASILISK/cgi-bin/page2html
+sudo chmod 700 $BASILISK/cgi-bin/ch2html
+~~~
+
+See [basilisk.conf]() and edit /etc/apache2/suexec/www-data
+
+~~~bash
+$BASILISK/cgi-bin 
+~~~
