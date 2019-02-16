@@ -1,3 +1,0 @@
-COMPATIBILITY.tags:	\
-	./common.h \
-

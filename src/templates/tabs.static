@@ -1,7 +1,0 @@
-$if(tabs)$
-<ul class="tabs">
-  <li class="selected">
-    <a href="$pageUrl$">view</a>
-  </li>
-</ul>
-$endif$

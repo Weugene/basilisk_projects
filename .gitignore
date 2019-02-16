@@ -1,8 +1,33 @@
 # data files
-out.*
+out*
 *.vtk
 log.*
-*.ppm
+*.log
 
-#excecutive files
+#excecutive and object files
 *.out
+*.o
+
+.DS_Store
+*.swp
+
+# archives
+*.rar
+*.zip
+*.tar
+*.gz
+*.bz2
+*.7z
+
+# images and documents
+*.png
+*.jpg
+*.pdf
+*.eps
+*.ps
+*.gif
+*.aux
+*.bbl
+*.blg
+*.toc
+*.ppm

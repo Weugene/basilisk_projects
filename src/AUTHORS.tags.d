@@ -1,3 +1,0 @@
-AUTHORS.tags:	\
-	./common.h \
-
