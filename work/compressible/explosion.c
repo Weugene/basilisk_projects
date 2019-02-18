@@ -9,6 +9,8 @@ compute volume fractions for the initial condition. */
 
 #if dimension == 2
 # define LEVEL 8
+#define MINLEVEL 4
+#define MAXLEVEL 10
 #else // 3D
 # define LEVEL 6
 #endif
@@ -21,7 +23,16 @@ int main() {
     foreach_dimension() {
         w.n[right] = neumann(0);
         w.n[left]  = neumann(0);
+////        w.n[top] = dirichlet(0);
+////        w.t[top] = dirichlet(0);
+////        w.n[bottom]  = dirichlet(0);
+////        w.t[bottom]  = dirichlet(0);
+//
     }
+//    bid circle;
+//    w.n[circle] = dirichlet(0);
+
+//    mask (sq(x - 0.5) + sq(y - 0.5) < sq(0.5) ? circle : none);
 
     /**
     The domain spans $[-1:1]\times[-1:1]\times[-1:1]$. */
@@ -38,24 +49,57 @@ Numerical Methods for Fluid Dynamics, 3rd Edition, Springer Ed.)
 Chapter 17 section 17.1.1 are given in terms of density ($\rho$),
 pression ($p$), velocity ($u$) both at the left and right side of the
 discontinuity placed at $R=0.4$. */
+struct MyCoord
+{
+    double x;
+    double y;
+    double z;
+//    struct MyCoord (double x_, double y_, double z_){
+//        x = x_;
+//        y = y_;
+//        z = z_;
+//    }
+};
+scalar f[], f1[], f2[], f3[], f4[], f5[], f6[], f7[], f8[], f9[];
+
+void bubble(const struct MyCoord c0, const double R, scalar ftmp) {
+    double x0=c0.x, y0=c0.y, z0=c0.z;
+    printf ("t = %g c0=%g,%g,%g\n", t, c0.x, c0.y, c0.z);
+    fraction (ftmp, sq(x-x0) + sq(y-y0) + sq(z-z0) - sq(R));
+    printf ("after\n");
+}
 
 event init (t = 0)
 {
-    double R = 0.2 ;
+    double R = 0.1 ;
     double rhoL = 1., rhoR = 0.125 ;
     double pL = 1.0,  pR = 0.1 ;
-
+//    struct MyCoord c0 = {0,0,0};
     /**
     To define an accurate (i.e. symmetrical) initial sphere of rayon
     $R$, we compute the volume fraction corresponding to the spherical
     interface. */
 
-    scalar f[], f1[], f2[];
-    fraction (f1, sq(x) + sq(y) + sq(z) - sq(R));
 
-    fraction (f2, sq(x-0.2) + sq(y) + sq(z) - sq(R));
+//    bubble(c0, R);
+//    f1[] = ftmp[];
+//    c0.x= 0.5;
+//    bubble(c0, R);
+//    f2[] = ftmp[];
+    fraction (f1, sq(x) + sq(y) + sq(z) - sq(R));
+    fraction (f2, sq(x-0.5) + sq(y) + sq(z) - sq(R));
+    fraction (f3, sq(x+0.5) + sq(y) + sq(z) - sq(R));
+    fraction (f4, sq(x) + sq(y-0.5) + sq(z) - sq(R));
+    fraction (f5, sq(x-0.5) + sq(y-0.5) + sq(z) - sq(R));
+    fraction (f6, sq(x+0.5) + sq(y-0.5) + sq(z) - sq(R));
+    fraction (f7, sq(x) + sq(y+0.5) + sq(z) - sq(R));
+    fraction (f8, sq(x-0.5) + sq(y+0.5) + sq(z) - sq(R));
+    fraction (f9, sq(x+0.5) + sq(y+0.5) + sq(z) - sq(R));
     foreach() {
-        f[] = f2[];
+//        f[] = f1[];
+
+        f[] = min(f1[],min(f2[],min(f3[],min(f4[],min(f5[],min(f6[],min(f7[],min(f8[],f9[]))))))));
+//        printf ("i = %d t = %g f1 = %g f2 = %g f = %g\n", i, t, f1[], f2[], f[]);
     }
     /**
     Left and right initial states for $\rho$, $\mathbf{w}$ and energy
@@ -71,42 +115,26 @@ event init (t = 0)
     theta = 1.3; // tune limiting from the default minmod
 }
 
-//event print (t = 0.25)
-//{
-//
-//    /**
-//    At $t=0.25$ we output the values of $\rho$ and the normal velocity
-//    $\mathbf{u}_n$ as functions of the radial coordinate. */
-//
-//    foreach() {
-//        double r = sqrt(sq(x) + sq(y) + sq(z));
-//        double wn = (w.x[]*x + w.y[]*y + w.z[]*z)/r;
-//        printf ("%g %g %g\n", r, rho[], wn/rho[]);
-//    }
-//
-//    /**
-//    For reference we also output a cross-section at $y=0$. */
-//
-//    for (double x = 0; x <= 1; x += 1e-2)
-//        fprintf (stderr, "%g %.4f %.4f\n", x,
-//                 interpolate (rho, x, 0.),
-//                 interpolate (w.x, x, 0.));
-//}
+
 event images (t+= 4./300.) {
     output_ppm (rho, linear = true);
+
     scalar l[];
     foreach()
     l[] = level;
     static FILE * fp = fopen ("grid.ppm", "w");
     output_ppm (l, fp, min = 0, max = LEVEL);
+
+//    static FILE * fprho = fopen ("out", "w");
+//    output_ppm (rho, fprho, min = 0, max = 1);
 }
 
 event adapt (i++) {
     adapt_wavelet ({rho}, (double []){4e-3}, maxlevel = LEVEL);
 }
 
-event end (t = 10) {
-    printf ("i = %d t = %g\n", i, t);
+event end (t = 1.3) {
+    //printf ("i = %d t = %g\n", i, t);
 }
 /**
 On trees, we adapt the mesh by controlling the error on the density
@@ -149,3 +177,25 @@ plot './cout' u 1:3 w p pt 7 ps 0.2 t '2D Cartesian',		  \
 ~~~
 
 */
+
+//event print (t = 0.25)
+//{
+//
+//    /**
+//    At $t=0.25$ we output the values of $\rho$ and the normal velocity
+//    $\mathbf{u}_n$ as functions of the radial coordinate. */
+//
+//    foreach() {
+//        double r = sqrt(sq(x) + sq(y) + sq(z));
+//        double wn = (w.x[]*x + w.y[]*y + w.z[]*z)/r;
+//        printf ("%g %g %g\n", r, rho[], wn/rho[]);
+//    }
+//
+//    /**
+//    For reference we also output a cross-section at $y=0$. */
+//
+//    for (double x = 0; x <= 1; x += 1e-2)
+//        fprintf (stderr, "%g %.4f %.4f\n", x,
+//                 interpolate (rho, x, 0.),
+//                 interpolate (w.x, x, 0.));
+//}
