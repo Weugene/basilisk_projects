@@ -6,7 +6,7 @@ compute volume fractions for the initial condition. */
 
 #include "compressible.h"
 #include "fractions.h"
-
+#include "vtk.h"
 #if dimension == 2
 # define LEVEL 8
 #define MINLEVEL 4
@@ -14,6 +14,8 @@ compute volume fractions for the initial condition. */
 #else // 3D
 # define LEVEL 6
 #endif
+
+static int iteration=0;
 
 int main() {
 
@@ -38,7 +40,7 @@ int main() {
     The domain spans $[-1:1]\times[-1:1]\times[-1:1]$. */
 
     origin (-1, -1, -1);
-    size (2.); //dimension of the problem!
+    size (2.); //size of the problem!
     init_grid (1 << LEVEL);
     run();
 }
@@ -114,10 +116,17 @@ event init (t = 0)
 
     theta = 1.3; // tune limiting from the default minmod
 }
-
+//
+//#include "view.h"
+//event image (t = end) {
+//    clear();
+//    draw_vof ("f");
+//    box();
+//    save ("image.ppm");
+//}
 
 event images (t+= 4./300.) {
-    output_ppm (rho, linear = true);
+//    output_ppm (rho, linear = true);
 
     scalar l[];
     foreach()
@@ -127,12 +136,30 @@ event images (t+= 4./300.) {
 
 //    static FILE * fprho = fopen ("out", "w");
 //    output_ppm (rho, fprho, min = 0, max = 1);
+//    char name[80];
+//    printf("iter=%d\n", iteration);
+//    sprintf(name, "list.vtk.%d", iteration++);
+//    printf("name %s", name);
+//    FILE * fplist = fopen (name, "w");
+//    output_vtk ({rho, w}, N, fplist,  true);
+
 }
 
-event adapt (i++) {
-    adapt_wavelet ({rho}, (double []){4e-3}, maxlevel = LEVEL);
-}
 
+event movie (t += 0.01; t <= 1.3) {
+    static FILE * fprho = popen ("ppm2mpeg > rho.mpg", "w");
+    output_ppm (rho, fprho, linear = true);
+    scalar wn[];
+    foreach(){
+        wn[]=0;
+        foreach_dimension(){
+            wn[]+=w.x[]*w.x[];
+        }
+        wn[]=sqrt(wn[]);
+    }
+    static FILE * fpw = popen ("ppm2mpeg > normvel.mpg", "w");
+    output_ppm (wn, fpw, linear = true);
+}
 event end (t = 1.3) {
     //printf ("i = %d t = %g\n", i, t);
 }

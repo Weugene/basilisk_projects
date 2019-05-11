@@ -1,17 +1,46 @@
 # data files
-out*
+out
 *.vtk
-log.*
+*.vtk.*
+*.pvtu
+*.vtu
+log
+log*
+log-*
 *.log
-
+*log
+.idea
+dump-*
+dump
+*.ply.*
+out-*
+par
+parout
+restart
+restart*
+perf
+ply
+snapshot-*
+data_cyl*
+diff
+f1
+f2
+f3
+mass
 #excecutive and object files
 *.out
 *.o
 
+#MAP
+*.pts
+*.kdt
+*.ga
+*.sum
+*.kml
 
 *.DS_Store
 *.swp
-
+.qcc*
 # archives
 *.rar
 *.zip
@@ -26,9 +55,11 @@ log.*
 *.pdf
 *.eps
 *.ps
-*.gif
+*.mp4
+*.avi
+#*.gif
 *.aux
 *.bbl
 *.blg
 *.toc
-*.ppm
+*.ppm*

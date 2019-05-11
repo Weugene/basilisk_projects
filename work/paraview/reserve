@@ -1,0 +1,156 @@
+/**
+# Two-phase flow around RV fiber
+
+This is an improved version of the [famous Gerris
+example](http://gerris.dalembert.upmc.fr/gerris/examples/examples/fiber.html),
+illustrating the combination of complex solid boundaries, air-water
+turbulent flows and reduced gravity approach.
+
+We use the centered Navier--Stokes solver, two-phase flow and the
+momentum-conserving option. Note that the momentum-conserving option
+is crucial to obtain stable solutions for this air-water density ratio
+configuration. */
+
+//#include "grid/octree.h"
+#include "grid/quadtree.h"
+#include "navier-stokes/centered.h"
+#include "two-phase.h"
+#include "navier-stokes/conserving.h"
+#include "tension.h"
+
+#if dimension == 3
+# include "lambda2.h"
+#endif
+#include "view.h"
+#include "vtk.h"
+#include "output_vtk.h"
+#include "maxruntime.h"
+#include "navier-stokes/perfs.h"
+
+int MAXLEVEL = 12;
+int LEVEL = 12;
+int file0 = 0;
+int file_step = 1000;
+
+# define MAXITER 1000000
+
+
+/**
+## Main function
+ */
+
+scalar fiber[], f0[];
+
+int main (int argc, char * argv[])
+{
+
+//    maxruntime (&argc, argv);
+//    if (argc > 1) {
+//        file0 = atoi(argv[1]);
+//    }
+//    if (argc > 2) {
+//        file_step = atoi(argv[2]); //convert from string to int
+//    }
+//    if (argc > 3) {
+//        L0 = atof(argv[3]); //convert from string to float
+//    }
+//    if (argc > 4) {
+//        LEVEL = atoi(argv[4]); //convert from string to int
+//    }
+    printf("input: init=%d step=%d\n", file0, file_step);
+    init_grid (64);
+
+    size (4);
+    origin (-L0/2.,-L0/2.,-L0/2.);
+    /**
+    We need to tell the code that both `fiber` and `f0` are volume
+    fraction fields. */
+
+    for (scalar s in {fiber,f0}) {
+        s.refine = s.prolongation = fraction_refine;
+    }
+
+    run();
+}
+
+/**
+## Initial conditions
+
+We can optionally restart, otherwise we open the STL file and
+initialize the corresponding fraction. We also initialize the `f0`
+field used for the inflow condition and set the initial water level
+and velocity field. */
+
+event init (i = 0) {
+    char name[80];
+    sprintf (name, "dump-0");
+    printf("init reading ... =%s\n", name);
+    restore (file = name);
+    printf("init is read\n");
+}
+
+
+/**
+## Animations
+
+We generate animations of the ship surface (as represented by the
+solid fraction) and of the air-water interface, colored with the
+height.
+ */
+//event movie (i += 1; i <= MAXITER)
+//{
+//
+//}
+
+
+event vtk_file (i += 1; i <= MAXITER)
+{
+    char named[80];
+    sprintf (named, "dump-%d", file0 + i*file_step);
+    printf("trying to read %s\n", named);
+    if(restore (file = named)) {
+        printf("begin of reading\n");
+        char name[80];
+        sprintf(name, "list.vtk.%d", i);
+        printf("name =%s\n", name);
+        FILE *fplist = fopen(name, "w");
+        scalar l[];
+        foreach() {
+            l[] = level;
+            printf("l=%d\n", l[]);
+        }
+        output_vtk({f, fiber, u.x, u.y, rhov, p, pf, l}, 1024, fplist, false);
+        printf("%s generated\n", name);
+    }else{
+        printf("end of reading\n");
+        return 777;
+    }
+}
+
+
+event grid_file (i += file_step){
+    scalar l[];
+    foreach()
+        l[] = level;
+    static FILE * fp = fopen ("grid.ppm", "w");
+    output_ppm (l, fp, min = 0, max = LEVEL, n=1024);
+}
+
+
+//#if DUMP
+//event snapshot (i += 1000)
+////event snapshot (i++)
+//{
+//  char name[80];
+//  sprintf (name, "dump-%d", i);
+//  scalar l2[];
+//
+////  lambda2 (u, l2);
+//  dump (file = name);
+//}
+//#endif
+
+
+
+
+

@@ -1,0 +1,14 @@
+# Automatically generated using 'make Makefile.tests'
+# DO NOT EDIT, edit 'Makefile' instead
+ALLTESTS = \
+	etopo2xyz.c \
+	tsunami.c \
+
+plots: \
+
+TESTS = \
+
+SPECIAL_TESTS = \
+
+ALLPAGES = \
+

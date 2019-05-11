@@ -1,0 +1,9 @@
+
+# Multigrid, 3000 steps, 4634.62 CPU, 1.309e+04 real, 1.2e+05 points.step/s, 6 var
+# 8 procs, MPI: min 1.3e+04 (96%) avg 1.3e+04 (97%) max 1.3e+04 (97%)
+
+# Multigrid, 3000 steps, 2480.9 CPU, 4690 real, 3.35e+05 points.step/s, 6 var
+# 8 procs, MPI: min 4.4e+03 (94%) avg 4.4e+03 (94%) max 4.4e+03 (94%)
+
+# Multigrid, 3000 steps, 272.547 CPU, 325.8 real, 4.83e+06 points.step/s, 6 var
+# 8 procs, MPI: min 1.4e+02 (42%) avg 1.6e+02 (49%) max 1.6e+02 (50%)
