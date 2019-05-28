@@ -1,0 +1,63 @@
+----------------------------------------------------------------
+Begin PBS Prologue Tue May 14 12:41:11 MSK 2019 1557826871
+Job ID:           6076305.mgmt-arkuda.skoltech.ru
+Username: e.sharaborin
+Group:            e.sharaborin
+Node(s):        htc-a1c02s11:ppn=10	
+End PBS Prologue Tue May 14 12:41:11 MSK 2019 1557826871
+----------------------------------------------------------------
+----------------------------------------------------------------
+Begin PBS Epilogue Tue May 14 17:43:46 MSK 2019 1557845026
+Job ID:           6076305.mgmt-arkuda.skoltech.ru
+Exit Code:      271
+Username: e.sharaborin
+Group:            e.sharaborin
+Job Name: Kasimov.sh
+Session:  27386
+Limits:           nodes=1:ppn=10,pmem=8000mb,walltime=20:00:00,neednodes=1:ppn=10
+Resources:        cput=41:04:37,vmem=2075844kb,walltime=05:02:30,mem=827168kb,energy_used=0
+Queue:            batch
+End PBS Epilogue Tue May 14 17:43:46 MSK 2019 1557845026
+----------------------------------------------------------------
+----------------------------------------------------------------
+Begin PBS Prologue Tue May 14 17:49:26 MSK 2019 1557845366
+Job ID:           6079593.mgmt-arkuda.skoltech.ru
+Username: e.sharaborin
+Group:            e.sharaborin
+Node(s):        hpc-a2c02s01:ppn=10	
+End PBS Prologue Tue May 14 17:49:26 MSK 2019 1557845366
+----------------------------------------------------------------
+----------------------------------------------------------------
+Begin PBS Epilogue Wed May 15 13:49:54 MSK 2019 1557917394
+Job ID:           6079593.mgmt-arkuda.skoltech.ru
+Exit Code:      -11
+Username: e.sharaborin
+Group:            e.sharaborin
+Job Name: Kasimov_lsigma.sh
+Session:  12368
+Limits:           nodes=1:ppn=10,pmem=8000mb,walltime=20:00:00,neednodes=1:ppn=10
+Resources:        cput=171:20:23,vmem=2193784kb,walltime=20:00:23,mem=894632kb,energy_used=0
+Queue:            batch
+End PBS Epilogue Wed May 15 13:49:54 MSK 2019 1557917394
+----------------------------------------------------------------
+----------------------------------------------------------------
+Begin PBS Prologue Wed May 15 15:50:52 MSK 2019 1557924652
+Job ID:           6087235.mgmt-arkuda.skoltech.ru
+Username: e.sharaborin
+Group:            e.sharaborin
+Node(s):        htc-a1c02s08:ppn=10	
+End PBS Prologue Wed May 15 15:50:52 MSK 2019 1557924652
+----------------------------------------------------------------
+----------------------------------------------------------------
+Begin PBS Epilogue Thu May 16 11:51:22 MSK 2019 1557996682
+Job ID:           6087235.mgmt-arkuda.skoltech.ru
+Exit Code:      -11
+Username: e.sharaborin
+Group:            e.sharaborin
+Job Name: Kasimov_lsigma.sh
+Session:  3055
+Limits:           nodes=1:ppn=10,pmem=8000mb,walltime=20:00:00,neednodes=1:ppn=10
+Resources:        cput=104:22:11,vmem=2075852kb,walltime=20:00:25,mem=832436kb,energy_used=0
+Queue:            batch
+End PBS Epilogue Thu May 16 11:51:22 MSK 2019 1557996682
+----------------------------------------------------------------

@@ -70,8 +70,8 @@ event init (t = 0) {
         foreach_vertex()
         phi[] = y - L0/4. + 0.001;
         fractions (phi, cs, fs);
-        u.n[embed] = dirichlet_embed (0.);
-        u.t[embed] = dirichlet_embed (0.);
+        u.n[embed] = dirichlet (0.);
+        u.t[embed] = dirichlet (0.);
     }
     boundary (all);
 }

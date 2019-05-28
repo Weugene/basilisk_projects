@@ -68,19 +68,6 @@
 
 
 
-/**
-# Atomisation of a pulsed liquid jet
-
-A dense cylindrical liquid jet is injected into a stagnant lighter
-phase (density ratio 1/27.84). The inflow velocity is modulated
-sinusoidally to promote the growth of primary shear
-instabilities. Surface tension is included and ultimately controls the
-characteristic scale of the smallest droplets.
-
-We solve the two-phase Navier--Stokes equations with surface
-tension. We need the *tag()* function to count the number of
-droplets. We generate animations online using Basilisk View. */
-
 #include "navier-stokes/centered.h"
 #include "two-phase.h"
 #include "tension.h"
@@ -93,7 +80,7 @@ number and the surface tension coefficient. */
 
 #define LEVEL 10
 #define length 0.1
-#define feps 0.0
+#define feps 0
 //#define ueps 0.01
 #define sharpness 4
 /**
@@ -161,7 +148,7 @@ int main (int argc, char * argv[])
 double front (double x, double y, double z)
 {
 //    double phi = HUGE;
-    return -pow(2*x-1, sharpness) - pow(20*y-10, sharpness) + pow(0.8,sharpness);
+    return -pow(2*x-1, sharpness) - pow(60*y-30, sharpness) + pow(0.8,sharpness);
 //    return min(phi, 0.2*0.5*(1.0 - tanh((fabs(y-L0/2.0) - 0.02)/0.01)) +0.0-x);
 
     //return min(phi, -fabs(y-0.5)+(length - x));
@@ -213,48 +200,64 @@ event logfile (i++) {
 /**
 We generate an animation using Basilisk View. */
 
-event movie (t += 1e-1; t <= 10)
+//event movie (t += 1e-1; t <= 10)
+//{
+//#if dimension == 2
+//  scalar omega[];
+//    vorticity (u, omega);
+//  view (tx = 0.5);
+//  clear();
+//  draw_vof ("f");
+//  squares ("omega", linear = true, spread = 10);
+//  box ();
+//#else // 3D
+//    scalar pid[];
+//    foreach()
+//    pid[] = fmod(pid()*(npe() + 37), npe());
+//    boundary ({pid}); // not used for the moment
+//    view (camera = "iso",
+//          fov = 14.5, tx = -0.418, ty = 0.288,
+//          width = 1600, height = 1200);
+//    clear();
+//    draw_vof ("f");
+//#endif // 3D
+//    save ("movie.mp4");
+//}
+
+//Output
+#include "output_fields/output_vtu_foreach.h"
+event vtk_file (t += 0.01; t <= 10)
 {
-#if dimension == 2
-  scalar omega[];
-    vorticity (u, omega);
-  view (tx = 0.5);
-  clear();
-  draw_vof ("f");
-  squares ("omega", linear = true, spread = 10);
-  box ();
-#else // 3D
-    scalar pid[];
-    foreach()
-    pid[] = fmod(pid()*(npe() + 37), npe());
-    boundary ({pid}); // not used for the moment
-    view (camera = "iso",
-          fov = 14.5, tx = -0.418, ty = 0.288,
-          width = 1600, height = 1200);
-    clear();
-    draw_vof ("f");
-#endif // 3D
-    save ("movie.mp4");
-}
-//Don't run in parallel!!! it does not work in parallel
-#if _MPI != 1
-event vtk_file (i += 100)
-{
-    char name[80];
-    sprintf(name, "list.vtk.%d", iteration++);
-    printf("name %s", name);
-    FILE * fplist = fopen (name, "w");
+    int nf = iteration;
     scalar l[];
     foreach()
-        l[] = level;
-    output_vtk ({f, u.x, u.y, rhov, p, l}, 512, fplist, false );
+    l[] = level;
+
+    char name[80], subname[80];
+    FILE *fp;
+    sprintf(name, "hs_%4.4d_n%3.3d.vtu", nf, pid());
+    fp = fopen(name, "w");
+
+    output_vtu_bin_foreach((scalar *) {f, rhov, p, l}, (vector *) {u}, 64, fp, false);
+    fclose(fp);
+    @if _MPI
+    if (pid() == 0) {
+        sprintf(name, "hs_%4.4d.pvtu", nf);
+        sprintf(subname, "hs_%4.4d", nf);
+        fp = fopen(name, "w");
+        output_pvtu_bin((scalar *) {f, rhov, p, l}, (vector *) {u}, 64, fp, subname);
+        fclose(fp);
+    }
+    MPI_Barrier(MPI_COMM_WORLD);
+    @endif
+
+    iteration++;
 }
-#endif
 /**
 We save snapshots of the simulation at regular intervals to
 restart or to post-process with [bview](/src/bview). */
 
-event snapshot (i += 500) {
+event snapshot (i += 1000) {
     char name[80];
     sprintf (name, "dump-%d", i);
     scalar pid[];

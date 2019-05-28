@@ -12,5 +12,5 @@ two_phase_new:
 #	./a.out > out 2> log
 #	mvlc movie.mp4
 	CC99='mpicc -std=c99' qcc $(CFLAGS)  -D_MPI=1  two_phase_new.c $(CINCL) $(CLIBS)
-	mpirun -np 5 ./a.out  > out 2> log
+	mpirun -np 10 ./a.out  > out 2> log
 #	mvlc movie.mp4

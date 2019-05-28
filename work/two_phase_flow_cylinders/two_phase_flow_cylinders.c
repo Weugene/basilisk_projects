@@ -555,7 +555,6 @@ event grid_file (i += 1000){
 
 #if DUMP
 event snapshot (i += 1000)
-//event snapshot (i++)
 {
   char name[80];
   sprintf (name, "dump-%d", i);

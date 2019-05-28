@@ -4,10 +4,12 @@ ALLTESTS = \
 	saint_venant.c \
 
 plots: \
+	saint_venant/plots.page \
 
 TESTS = \
 
 SPECIAL_TESTS = \
 
 ALLPAGES = \
+	saint_venant.c.page \
 

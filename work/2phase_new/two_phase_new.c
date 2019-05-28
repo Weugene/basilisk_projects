@@ -46,8 +46,8 @@ geometry), use reduced gravity and visualisation functions. */
 
 //#include "distance.h"
 #include "reduced.h"
-#include "vtk.h"
-#include "output_vtk.h"
+//#include "vtk.h"
+//#include "output_vtk.h"
 
 //#include "embed.h" (! remove)
 
@@ -101,16 +101,16 @@ maximum level. */
 //}
 
 
-int MAXLEVEL = 12;
-int LEVEL = 12;
-double FROUDE = 0.4;
+int MAXLEVEL = 10;
+int LEVEL = 10;
 double limMin, limMax;
 static int iteration=0;
 /**
 The density ratio is 1000 and the dynamic viscosity ratio 100. */
 #define RHOR 1000.
 #define MUR 100.
-
+#define feps 0.001
+#define uemax 0.01
 /**
 We try to replicate the results of [Cano-Lozano et al,
 2016](/src/references.bib#cano2016) (obtained with Gerris). Aside from
@@ -130,18 +130,9 @@ with $\rho$ the density of the outer fluid and $\sigma$ the surface
 tension coefficient.
 
  * We consider two bubbles studied by Cano-Lozano et al, 2016. */
+# define RE 100.25
+# define CA 0.1
 
-#if BUBBLE19
-// Bubble 19 of Cano-Lozano et al, P.R.Fluids, 2016
-# define Ga 100.8
-# define Bo 4.
-# define MAXTIME 82
-#else
-// Bubble 26 of Cano-Lozano et al, P.R.Fluids, 2016
-# define Ga 100.25
-# define Bo 10.
-# define MAXTIME 110
-#endif
 
 #define RandMinMax(limMin, limMax) (0.5*((limMin)+(limMax)) + 0.5*noise()*((limMax) - (limMin)))
 #if dimension>2
@@ -295,19 +286,13 @@ double bubbles (double x, double y, double z)
 //    return phi; // no front
 }
 
-
-//center.x = 0;
-//center.y = 0;
-//#if dimension > 2
-//    center.z = 0;
-//#endif
 coord center={0,0,0};
 const int Ncyl=7;
 double size_box;
 double R;//0.5
 double dist;
 
-double cylindersOy(double x, double y, double z, double Ox) {
+double cylindersOy(double x, double y, double z, double Ox, int Ncyl) {
     int icyl;
 //    We define the 2*Ncyl cylinders along the ,  and  axis.
     double cylinderX[Ncyl], tmp;
@@ -340,27 +325,16 @@ double geometry(double x, double y, double z) {
     const int Nlayer=4;
     int icyl;
     double dist = 0.5*L0/Nlayer;
-    double geom = cylindersOy(x, y, z, 0.0);
+    double geom = cylindersOy(x, y, z, 0.0, Ncyl);
 
     for (icyl=1; icyl<Nlayer; icyl++){
-
-        geom = max(cylindersOy(x, y, z, icyl*dist), geom);
+        geom = max(cylindersOy(x, y+dist/2.*(icyl%2), z, icyl*dist, Ncyl + icyl%2), geom);
     }
     double c = cubeF(x, y, z, center, size_box);
     return min(geom,c);
 }
 /**
 ## Main function
-
-We can change both the maximum level of refinement and the [Froude
-number](https://en.wikipedia.org/wiki/Froude_number) at runtime.
-
-[RV fiber](https://en.wikipedia.org/wiki/RV_fiber) is 70 metres
-long. If we assume that it moves at 20 knots (twice its actual cruise
-speed), this gives a Froude number of approx 0.4. */
-
-
-/**
 We need additional (fraction) fields for the ship geometry and for the
 (inflow) boundary condition. */
 
@@ -372,9 +346,6 @@ int main (int argc, char * argv[])
 //    if (argc > 1) {
 //        LEVEL = atoi(argv[1]); //convert from string to int
 //    }
-//    if (argc > 2) {
-//        FROUDE = atof(argv[2]);
-//    }
     periodic (top);
 #if dimension>2
     periodic (back);
@@ -382,9 +353,9 @@ int main (int argc, char * argv[])
     init_grid (64);
     rho1 = 1.;// water
     rho2 = 1./RHOR; // air
-    mu1 = 1./Ga;
-    mu2 = 1./(MUR*Ga);
-    f.sigma = 1./Bo;
+    mu1 = 1./RE;
+    mu2 = 1./(MUR*RE);
+    f.sigma = 1./CA;
 
 
     /**
@@ -410,10 +381,6 @@ int main (int argc, char * argv[])
         s.refine = s.prolongation = fraction_refine;
     }
 
-    /**
-    Since the ship length is one and the velocity one, the acceleration
-    of gravity is...*/
-    G.z = - 1./sq(FROUDE);
     run();
 }
 
@@ -479,7 +446,7 @@ event init (t = 0) {
             fraction(fiber, geometry (x, y, z));
             fraction(f0, bubbles (x, y, z));
 //            bubbles (f0, fs, -0.5*L0, -0.25*L0);
-        }while (adapt_wavelet({fiber, f0}, (double []){0.01, 0.01},
+        }while (adapt_wavelet({fiber, f0}, (double []){feps, feps},
                               maxlevel = MAXLEVEL, 2).nf != 0 && iteration <= 10);
 
         foreach() {
@@ -542,8 +509,8 @@ event velocity (i++) {
     boundary ((scalar *){u});
 }
 
-event logfile (i++)
-if (pid()==0) fprintf (stderr, "%d %g %d %d\n", i, t, mgp.i, mgu.i);
+//event logfile (i++)
+//if (pid()==0) fprintf (stderr, "%d %g %d %d\n", i, t, mgp.i, mgu.i);
 
 /**
 ## Animations
@@ -567,75 +534,59 @@ the top of the steep primary Kelvin waves is particularly noticeable.
 The computations above were done on the Irene supercomputer using 12
 levels of refinement. */
 
-event movie (t += 0.01; t <= 10)
-{
-#if dimension == 2
-view (tx = 0, width = 2048, height = 2048, samples = 4, bg = {0.3,0.4,0.6});
-    clear();
-    draw_vof ("f", edges = true);
-    draw_vof("fiber", edges = true);
-    box ();
-    save ("vof2D.mp4");
-#else // 3D
-clear();
-view (fov = 40,
-        quat = {0.5,0.1,0.2,0.8},
-        tx = 0, ty = 0,
-        width = 1600, height = 1600);
-draw_vof ("fiber");
-draw_vof ("f", linear = true);
-save ("movie.mp4");
-#endif
-
-//    static FILE * fpall = fopen ("all_fields", "w");
-//    output_ppm (f, fpall, min = 0, max = 1);
-
-//output_vtk_unstructured({f, fiber, u.x, u.y, rhov}, 1>>MAXLEVEL, fplist, false );
-//draw_vof ("fiber", fc = {0.5,0.5,0.5});//fiber is grey
-//draw_vof ("f", color = "Z", min = -0.1, max = 0.1, linear = true);
-//scalar l2[];
-//lambda2 (u, l2);
-//isosurface ("l2", -100);
-//save ("l2.mp4");
-}
-
-#if _MPI != 1
-event vtk_file (i += 100)
-{
-    char name[80];
-    sprintf(name, "list.vtk.%d", iteration++);
-    printf("name %s", name);
-    FILE * fplist = fopen (name, "w");
-//    output_vtk ({f, fiber, u.x, u.y, rhov}, 64, fplist, false );
-    output_vtk_unstructured ({f, fiber, u.x, u.y, rhov, p, pf}, 512, fplist, false );
-}
-#endif
-//event vtu_unstructured_file (i += 100)
+//event movie (t += 0.01; t <= 10)
 //{
-//    char name[80];
-//    sprintf(name, "list_vtu_bin.vtk.%d", iteration++);
-//    printf("name %s", name);
-//    FILE * fplist = fopen (name, "w");
-//    output_vtu_bin_foreach ({f, fiber, u.x, u.y, rhov, p, pf}, 512, fplist, false );
-//}
+//#if dimension == 2
+//view (tx = 0, width = 2048, height = 2048, samples = 4, bg = {0.3,0.4,0.6});
+//    clear();
+//    draw_vof ("f", edges = true);
+//    draw_vof("fiber", edges = true);
+//    box ();
+//    save ("vof2D.mp4");
+//#else // 3D
+//clear();
+//view (fov = 40,
+//        quat = {0.5,0.1,0.2,0.8},
+//        tx = 0, ty = 0,
+//        width = 1600, height = 1600);
+//draw_vof ("fiber");
+//draw_vof ("f", linear = true);
+//save ("movie.mp4");
+//#endif
 //
-//event output_vtu_ascii_foreach_file (i += 100)
-//{
-//    char name[80];
-//    sprintf(name, "list_vtu_bin.vtk.%d", iteration++);
-//    printf("name %s", name);
-//    FILE * fplist = fopen (name, "w");
-//    output_vtu_ascii_foreach ({f, fiber, u.x, u.y, rhov, p, pf}, 512, fplist, false );
 //}
 
-
-event grid_file (i += 1000){
+//Output
+#include "output_fields/output_vtu_foreach.h"
+event vtk_file (t += 0.05; t<100)
+{
+    int nf = iteration;
     scalar l[];
     foreach()
     l[] = level;
-    static FILE * fp = fopen ("grid.ppm", "w");
-    output_ppm (l, fp, min = 0, max = LEVEL, n=1024);
+
+    char name[80], subname[80];
+    FILE *fp;
+    sprintf(name, "hs_%4.4d_n%3.3d.vtu", nf, pid());
+    fp = fopen(name, "w");
+
+    output_vtu_bin_foreach((scalar *) {l, f, fiber, p}, (vector *) {u}, 64, fp, false);
+    fclose(fp);
+    @if _MPI
+    if (pid() == 0) {
+        sprintf(name, "hs_%4.4d.pvtu", nf);
+        sprintf(subname, "hs_%4.4d", nf);
+        fp = fopen(name, "w");
+        output_pvtu_bin((scalar *) {l, f, fiber, p}, (vector *) {u}, 64, fp, subname);
+        fclose(fp);
+    }
+    MPI_Barrier(MPI_COMM_WORLD);
+    @endif
+    fprintf (ferr, "iteration: %d\n", iteration); fflush (ferr);
+    iteration++;
 }
+
+
 
 
 #if DUMP
@@ -658,86 +609,14 @@ This computation is only feasible thanks to mesh adaptation, based
 both on volume fraction and velocity accuracy. */
 
 event adapt (i++) {
-    double uemax = 0.01;
+
     adapt_wavelet ({f,fiber,u},
-                   (double[]){0.005,0.01,uemax, uemax, uemax}, MAXLEVEL, 5);// maxlevel=MAXLEVEL, minlevel=5
+                   (double[]){feps, feps, uemax, uemax, uemax}, MAXLEVEL, 5);// maxlevel=MAXLEVEL, minlevel=5
     /*Simple outflow conditions (i.e. constant pressure) can lead to undesirable backflows.
      * This can be avoided by imposing a coarse mesh close to the outflow boundary, for example:*/
-    unrefine (x > 0.4*L0);
+//    unrefine (x > 0.4*L0);
 }
 
-/**
-## Running in parallel on Irene
-
-Running with MPI-parallelism is a bit more complicated than usual
-since the `distance()` function is not parallelised yet. A reasonably
-simple workaround is to first generate a restart/dump file on the
-local machine, without MPI, using something like:
-
-~~~bash
-CFLAGS=-DDUMP=1 make fiber.tst
-~~~
-
-(and also adjust the maximum level), then kill the running code (using
-Ctrl-C) and do:
-
-~~~bash
-qcc -source -D_MPI=1 fiber.c
-scp _fiber.c popinets@irene.ccc.cea.fr:/ccc/scratch/cont003/gen7325/popinets
-scp fiber/dump-0 popinets@irene.ccc.cea.fr:/ccc/scratch/cont003/gen7325/popinets/restart
-~~~
-
-then on irene (to run on 480 cores for 10 hours, with 12 levels of refinement):
-
-~~~bash
-ssh popinets@irene.ccc.cea.fr
-ccc_mpp -u popinets
-sed 's/WALLTIME/36000/g' run.sh | ccc_msub -n 480
-~~~
-
-with the following `run.sh` script
-
-~~~bash
-#!/bin/bash
-#MSUB -r fiber
-#MSUB -T WALLTIME
-#MSUB -@ popinet@basilisk.fr:begin,end
-#MSUB -o basilisk_%I.out
-#MSUB -e basilisk_%I.log
-#MSUB -q skylake
-#MSUB -A gen7760
-#MSUB -m scratch
-##MSUB -w
-
-set -x
-cd ${BRIDGE_MSUB_PWD}
-
-mpicc -Wall -std=c99 -O2 _fiber.c -o fiber -I$HOME -L$HOME/gl -lglutils -lfb_osmesa -lOSMesa -lGLU -lm
-ccc_mprun -n ${BRIDGE_MSUB_NPROC} ./fiber -m WALLTIME 12 0.4 \
-    2>> log-${BRIDGE_MSUB_NPROC} >> out-${BRIDGE_MSUB_NPROC}
-~~~
-
-### Generating MP4 movies
-
-Note that when running on Irene the [ffmpeg](https://www.ffmpeg.org/)
-MP4 encoder is not available and the logfile will contain the warning:
-
-~~~bash
-open_image(): cannot find 'ppm2mp4' or 'ffmpeg'/'avconv'
-  falling back to raw PPM outputs
-~~~
-
-The MP4 files defined above will be renamed `movie.mp4.ppm` and
-`l2.mp4.ppm`. As the extension indicates, these (large) files are now
-raw (uncompressed) PPM images. To convert them to compressed MP4, you
-will need to copy them to a machine where ffmpeg (and Basilisk) are
-installed (i.e. your local machine) and do:
-
-~~~bash
-ppm2mp4 movie.mp4 < movie.mp4.ppm
-ppm2mp4 l2.mp4 < l2.mp4.ppm
-~~~
-*/
 
 
 

@@ -27,6 +27,8 @@ f1
 f2
 f3
 mass
+*.sh.o*
+*.sh.e*
 #excecutive and object files
 *.out
 *.o
@@ -58,6 +60,7 @@ mass
 *.mp4
 *.avi
 #*.gif
+*.wmv
 *.aux
 *.bbl
 *.blg
