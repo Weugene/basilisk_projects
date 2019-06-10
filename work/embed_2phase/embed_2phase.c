@@ -32,7 +32,7 @@ Basilisk View. */
 #if dimension == 3
     # include "lambda2.h"
 #endif
-#include "contact.h"
+//#include "contact.h"
 #include "vof.h"
 scalar fiber[], f0[];
 vector h[];
@@ -48,7 +48,7 @@ geometry), use reduced gravity and visualisation functions. */
 //#include "distance.h"
 //#include "reduced.h"
 #include "vtk.h"
-#include "output_vtk.h"
+//#include "output_vtk.h"
 #include "view.h"
 
 
@@ -567,7 +567,7 @@ event snapshot (i += 1000)
 #endif
 event boundary_cond(){
     foreach()    {
-        if(fiber[]==1) h[].t = contact_angle(theta0 * pi / 180.);???
+        if(fiber[]==1) h[].t = contact_angle(theta0 * pi / 180.);//???
     }
 }
 /**

@@ -1,0 +1,22 @@
+bump_my.s:	\
+	/Users/weugene/basilisk/src/saint-venant.h \
+	/Users/weugene/basilisk/src/multilayer.h \
+	/Users/weugene/basilisk/src/predictor-corrector.h \
+	/Users/weugene/basilisk/src/riemann.h \
+	/Users/weugene/basilisk/src/elevation.h \
+	/Users/weugene/basilisk/src/utils.h \
+	/Users/weugene/basilisk/src/output.h \
+	/Users/weugene/basilisk/src/grid/quadtree.h \
+	/Users/weugene/basilisk/src/grid/tree.h \
+	/Users/weugene/basilisk/src/grid/mempool.h \
+	/Users/weugene/basilisk/src/grid/foreach_cell.h \
+	/Users/weugene/basilisk/src/grid/neighbors.h \
+	/Users/weugene/basilisk/src/grid/tree-common.h \
+	/Users/weugene/basilisk/src/grid/tree-mpi.h \
+	/Users/weugene/basilisk/src/grid/balance.h \
+	/Users/weugene/basilisk/src/grid/multigrid-common.h \
+	/Users/weugene/basilisk/src/grid/cartesian-common.h \
+	/Users/weugene/basilisk/src/grid/events.h \
+	/Users/weugene/basilisk/src/grid/fpe.h \
+	/Users/weugene/basilisk/src/common.h \
+

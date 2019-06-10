@@ -125,11 +125,11 @@ event movie (t += 0.1; t <= 1) {
     foreach() {
         l[] = level;
     }
-    static FILE * fpl   = popen ("/home/weugene/basilisk/src/ppm2gif > grid.gif", "w");
+    static FILE * fpl   = popen ("ppm2gif > grid.gif", "w");
     //    output_ppm (l, fpl, linear=true);
     output_ppm (l, fpl, min = 0, max = MAXLEVEL);
 
-    static FILE * fpmov = popen ("/home/weugene/basilisk/src/ppm2gif > A.gif", "w");
+    static FILE * fpmov = popen ("ppm2gif > A.gif", "w");
     output_ppm (A, fpmov, linear = false);
 
 
