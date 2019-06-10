@@ -108,7 +108,7 @@ scalar f0[];
 
 //u.n[right] = neumann(0);
 //u.t[right] = neumann(0);
-p[right]   = dirichlet(0);
+//p[right]   = dirichlet(0);
 //f[right]   = neumann(0);
 
 

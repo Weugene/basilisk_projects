@@ -15,24 +15,25 @@ $$
 We will use a Cartesian (multi)grid, the generic time loop and the
 time-implicit diffusion solver. */
 
-#include "grid/multigrid.h"
-#include "run.h"
-#include "diffusion.h"
-
+// #include "grid/multigrid.h"
+// #include "run.h"
+// #include "diffusion.h"
+#include "runge-kutta.h"
+//#include "grid/quadtree.h"
 /**
 We need scalar fields for the imaginary and real part of wave function. */
 
 scalar a[], b[];
+FILE * fp;
 
-
-double Mass = 1., ka = 4.5, A0 = 1.;
+double Mass = 1., ka = 4.5, A0 = 1., w0=.1;
 
 /**
 The generic time loop needs a timestep. We will store the statistics
 on the diffusion solvers in `mgd1` and `mgd2`. */
 
 double dt;
-mgstats mgd1, mgd2;
+// mgstats mgd1, mgd2;
 
 /**
 ## Parameters
@@ -42,11 +43,15 @@ implicit diffusion solver. */
 
 int main()
 {
-  N=1024;
+
+  N=256;
   init_grid (N);
-  size (N);
+  size (1);
   origin(-L0/2, -L0/2, -L0/2);
-  TOLERANCE = 1e-4;
+  foreach_dimension()
+    periodic (right);
+  fp = popen("ppm2mp4 movie.mp4", "w");
+  // TOLERANCE = 1e-4;
 
   run();
 }
@@ -56,14 +61,14 @@ int main()
 
 event init (i = 0)
 {
-
   foreach() {
-    double r2 = 0.0;
-    foreach_dimension(){r2 += x*x;}
+    double r2 = sq(x) + sq(y);
     a[] = A0 * exp(-r2 / (2.0*w0*w0));
     b[] = 0.0;
   }
   boundary ({a, b});
+  event ("vtk_file");
+  printf("dim=%d", dimension);
 }
 
 /**
@@ -79,30 +84,16 @@ event movie (i = 1; i += 10)
   foreach(){
     modulus[] = sqrt(a[]*a[] + b[]*b[]);
   }
-  output_ppm (modulus, linear = true, spread = 2, file = "f.ppm_");
-  fprintf (stderr, "%d %g %g %d %d\n", i, t, dt, mgd1.i, mgd2.i);
+  // output_ppm(modulus, fp = fp, n = 1024, box = {{X0, Y0},{10, 5}});
+  // output_ppm (modulus, linear = true, spread = 2, file = "f.ppm");
+  // output_ppm (modulus, linear = true, spread = 2, file = "f.ppm_");
 }
 
-/**
-We make a PNG image of the final "pseudo-stationary" solution. */
-
-event final (t = 3000)
-{
-  char name[80];
-  output_ppm (a, file = name, n = N, linear = true, spread = 2);
-}
 
 /**
 ## Time integration */
-
-event integration (i++)
-{
-  /**
-  We first set the timestep according to the timing of upcoming
-  events. We choose a maximum timestep of 1 which ensures the stability
-  for this example. */
-
-  dt = dtnext (1.);
+/**
+This function returns the right-hand-side of the equation */
 /**
   $$
   \partial_t a = -\frac{\nabla^2 b}{2M} + \frac12 kx^2 b
@@ -110,30 +101,57 @@ event integration (i++)
   $$
   \partial_t b = \frac{\nabla^2 a}{2M} - \frac12 kx^2 a
 $$*/
-  scalar r[];
+static void du (scalar * ul, double t, scalar * rhs)
+{
+  scalar a = ul[0], b = ul[1], a_rhs = rhs[0], b_rhs = rhs[1];
+  double r2, lap_a, lap_b;
+  foreach(){
+    r2 = sq(x) + sq(y); lap_a = 0; lap_b = 0;
+    foreach_dimension(){
+      lap_a += (a[1] - 2.0*a[] + a[-1])/sq(Delta);
+      lap_b += (b[1] - 2.0*b[] + b[-1])/sq(Delta);
+    }
+    a_rhs[] = 0.5*ka*r2*b[] - (0.5/Mass)*lap_b;
+    b_rhs[] =-0.5*ka*r2*a[] + (0.5/Mass)*lap_a;
+  }
+}
+event integration (i++)
+{
+  /**
+  We first set the timestep according to the timing of upcoming
+  events. We choose a maximum timestep of 1 which ensures the stability
+  for this example. */
 
-  foreach() {
-    double r2 = 0;
-    foreach_dimension(){r2 += x*x;}
-    r[] = 0.5*k*r2*b;
-  }
-  mgd1 = diffusion (a, dt, r = r);
-  foreach() {
-    r[] = k*kb*a[];
-  }
-  const face vector c[] = {0, 0};
-  mgd2 = diffusion (b, dt, c, r);
+  dt = dtnext (1.0e-4);
+  runge_kutta ({a, b}, t, dt, du, 2);
+  boundary({a,b});
 }
 
 /**
-## Results
+Output*/
+int iteration = 0;
+#include "output_fields/output_vtu_foreach.h"
+event vtk_file (t += 0.1; t<=1)
+{
+  int nf = iteration;
+  scalar l[];
+  scalar modulus[];
+  foreach(){
+    // l[] = level;
+    modulus[] = sqrt(sq(a[]) + sq(b[]));
+  }
 
-We get the following stable [Turing
-patterns](http://en.wikipedia.org/wiki/The_Chemical_Basis_of_Morphogenesis).
-
-|:------:|:-----:|:-----:|
-| ![](brusselator/mu-0.04.png) | ![](brusselator/mu-0.1.png) | ![](brusselator/mu-0.98.png) |
-| $\mu=0.04$                   |    $\mu=0.1$ (stripes)      |    $\mu=0.98$ (hexagons)     |
-
-  : [Animation of the transitions](brusselator/f.mp4)
-*/
+  char name[80], subname[80];
+  FILE *fp;
+  vector vec[];
+  sprintf(name, "hs_%4.4d_n%3.3d.vtu", nf, pid());
+  fp = fopen(name, "w");
+  output_vtu_bin_foreach((scalar *) {l, modulus, a, b}, (vector *){vec}, 64, fp, false);
+  fclose(fp);
+  sprintf(name, "hs_%4.4d.pvtu", nf);
+  sprintf(subname, "hs_%4.4d", nf);
+  fp = fopen(name, "w");
+  output_pvtu_bin((scalar *) {l, modulus, a, b}, (vector *){vec}, 64, fp, subname);
+  fclose(fp);
+  iteration++;
+}

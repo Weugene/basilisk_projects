@@ -11,16 +11,16 @@ double uemax = 0.01;
 
 u.n[left]  = dirichlet(1);
 u.n[right] = neumann(0);
-p[right]   = dirichlet(0);
+//p[right]   = dirichlet(0);
 f[left]    = dirichlet(1);
 
 bid cyls;
 u.t[cyls] = dirichlet(0);
 u.n[cyls] = dirichlet(0);
-FILE * fp;
+//FILE * fp;
 
 int main (){
-  fp = popen("ppm2mp4 movie.mp4", "w");
+//  fp = popen("ppm2mp4 movie.mp4", "w");
   L0 = 1.;
   init_grid(64);
   rho1 = 1., rho2 = 0.001;
@@ -36,7 +36,7 @@ int main (){
 }
 
 event init (t = 0) {
-  mask((sq(x-x0) + sq(y-y0))&&()&&() ? cyls : none);
+  mask((sq(x-0.5) + sq(y-0.5)) ? cyls : none);
   refine(level < LEVEL && x < 4 && y < 3);
   fraction (f, difference (Ln/2. - x, y - 1.));
   foreach() 
@@ -54,9 +54,9 @@ event adapt (i++)
 //  fflush(stdout);
 //}
 
-event mov (t += 0.025; t <= 5.){
-  output_ppm(f, fp = fp, n = 1024, box = {{X0, Y0},{10, 5}});
-}
+//event mov (t += 0.025; t <= 5.){
+//  output_ppm(f, fp = fp, n = 1024, box = {{X0, Y0},{10, 5}});
+//}
 
 int iteration = 0;
 //Output
