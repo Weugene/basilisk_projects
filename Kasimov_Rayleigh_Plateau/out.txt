@@ -1,0 +1,95 @@
+----------------------------------------------------------------
+Begin PBS Prologue Tue Apr 30 11:36:12 MSK 2019 1556613372
+Job ID:           5922353.mgmt-arkuda.skoltech.ru
+Username: e.sharaborin
+Group:            e.sharaborin
+Node(s):        hpc-a2c02s07:ppn=4	
+End PBS Prologue Tue Apr 30 11:36:12 MSK 2019 1556613372
+----------------------------------------------------------------
+WARNING: does not converge... WARNING: does not converge... WARNING: does not converge... WARNING: does not converge... WARNING: does not converge... WARNING: does not converge... WARNING: does not converge... WARNING: does not converge... ----------------------------------------------------------------
+Begin PBS Epilogue Tue Apr 30 11:46:52 MSK 2019 1556614012
+Job ID:           5922353.mgmt-arkuda.skoltech.ru
+Exit Code:      271
+Username: e.sharaborin
+Group:            e.sharaborin
+Job Name: Kasimov.sh
+Session:  18855
+Limits:           nodes=1:ppn=4,pmem=8000mb,walltime=20:00:00,neednodes=1:ppn=4
+Resources:        cput=00:42:20,vmem=1431476kb,walltime=00:10:35,mem=714136kb,energy_used=0
+Queue:            batch
+End PBS Epilogue Tue Apr 30 11:46:52 MSK 2019 1556614012
+----------------------------------------------------------------
+----------------------------------------------------------------
+Begin PBS Prologue Tue Apr 30 11:47:00 MSK 2019 1556614020
+Job ID:           5922410.mgmt-arkuda.skoltech.ru
+Username: e.sharaborin
+Group:            e.sharaborin
+Node(s):        htc-a1c01s04:ppn=4	
+End PBS Prologue Tue Apr 30 11:47:00 MSK 2019 1556614020
+----------------------------------------------------------------
+WARNING: does not converge... WARNING: does not converge... WARNING: does not converge... WARNING: does not converge... WARNING: does not converge... WARNING: does not converge... WARNING: does not converge... WARNING: does not converge... 
+===================================================================================
+=   BAD TERMINATION OF ONE OF YOUR APPLICATION PROCESSES
+=   PID 21041 RUNNING AT htc-a1c01s04
+=   EXIT CODE: 6
+=   CLEANING UP REMAINING PROCESSES
+=   YOU CAN IGNORE THE BELOW CLEANUP MESSAGES
+===================================================================================
+YOUR APPLICATION TERMINATED WITH THE EXIT STRING: Aborted (signal 6)
+This typically refers to a problem with your application.
+Please see the FAQ page for debugging suggestions
+----------------------------------------------------------------
+Begin PBS Epilogue Tue Apr 30 20:56:39 MSK 2019 1556646999
+Job ID:           5922410.mgmt-arkuda.skoltech.ru
+Exit Code:      6
+Username: e.sharaborin
+Group:            e.sharaborin
+Job Name: Kasimov.sh
+Session:  20994
+Limits:           nodes=1:ppn=4,pmem=8000mb,walltime=20:00:00,neednodes=1:ppn=4
+Resources:        cput=34:35:29,vmem=5557276kb,walltime=09:09:34,mem=5308340kb,energy_used=0
+Queue:            batch
+End PBS Epilogue Tue Apr 30 20:56:39 MSK 2019 1556646999
+----------------------------------------------------------------
+----------------------------------------------------------------
+Begin PBS Prologue Mon May 13 21:34:03 MSK 2019 1557772443
+Job ID:           6067277.mgmt-arkuda.skoltech.ru
+Username: e.sharaborin
+Group:            e.sharaborin
+Node(s):        hpc-a2c02s07:ppn=10	
+End PBS Prologue Mon May 13 21:34:03 MSK 2019 1557772443
+----------------------------------------------------------------
+----------------------------------------------------------------
+Begin PBS Epilogue Tue May 14 03:40:58 MSK 2019 1557794458
+Job ID:           6067277.mgmt-arkuda.skoltech.ru
+Exit Code:      271
+Username: e.sharaborin
+Group:            e.sharaborin
+Job Name: Kasimov.sh
+Session:  1443
+Limits:           nodes=1:ppn=10,pmem=8000mb,walltime=20:00:00,neednodes=1:ppn=10
+Resources:        cput=43:32:51,vmem=2285956kb,walltime=06:06:50,mem=855040kb,energy_used=0
+Queue:            batch
+End PBS Epilogue Tue May 14 03:40:58 MSK 2019 1557794458
+----------------------------------------------------------------
+----------------------------------------------------------------
+Begin PBS Prologue Tue May 14 03:42:13 MSK 2019 1557794533
+Job ID:           6071558.mgmt-arkuda.skoltech.ru
+Username: e.sharaborin
+Group:            e.sharaborin
+Node(s):        hpc-a2c02s02:ppn=10	
+End PBS Prologue Tue May 14 03:42:13 MSK 2019 1557794533
+----------------------------------------------------------------
+----------------------------------------------------------------
+Begin PBS Epilogue Tue May 14 23:42:50 MSK 2019 1557866570
+Job ID:           6071558.mgmt-arkuda.skoltech.ru
+Exit Code:      -11
+Username: e.sharaborin
+Group:            e.sharaborin
+Job Name: Kasimov.sh
+Session:  28686
+Limits:           nodes=1:ppn=10,pmem=8000mb,walltime=20:00:00,neednodes=1:ppn=10
+Resources:        cput=173:10:22,vmem=3326312kb,walltime=20:00:32,mem=2163716kb,energy_used=0
+Queue:            batch
+End PBS Epilogue Tue May 14 23:42:50 MSK 2019 1557866570
+----------------------------------------------------------------

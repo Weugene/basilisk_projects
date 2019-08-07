@@ -1,0 +1,87 @@
+[landau:17448] *** Process received signal ***
+[landau:17448] Signal: Segmentation fault (11)
+[landau:17448] Signal code:  (128)
+[landau:17448] Failing at address: (nil)
+[landau:17449] *** Process received signal ***
+[landau:17466] *** Process received signal ***
+[landau:17466] Signal: Segmentation fault (11)
+[landau:17466] Signal code:  (128)
+[landau:17466] Failing at address: (nil)
+[landau:17453] *** Process received signal ***
+[landau:17453] Signal: Segmentation fault (11)
+[landau:17453] Signal code:  (128)
+[landau:17453] Failing at address: (nil)
+[landau:17448] [ 0] /lib/x86_64-linux-gnu/libpthread.so.0(+0x12890)[0x7f41c67cc890]
+[landau:17448] [ 1] ./a.out(+0x34a32)[0x55cbb4f4fa32]
+[landau:17448] [ 2] ./a.out(+0x356dd)[0x55cbb4f506dd]
+[landau:17448] [ 3] ./a.out(+0x36640)[0x55cbb4f51640]
+[landau:17448] [ 4] ./a.out(+0x6ece)[0x55cbb4f21ece]
+[landau:17448] [ 5] /lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0xe7)[0x7f41c63eab97]
+[landau:17448] [ 6] ./a.out(+0x74fa)[0x55cbb4f224fa]
+[landau:17466] [ 0] /lib/x86_64-linux-gnu/libpthread.so.0(+0x12890)[0x7f4465fb2890]
+[landau:17466] [ 1] ./a.out(+0x34a32)[0x5571342dba32]
+[landau:17466] [ 2] ./a.out(+0x356dd)[0x5571342dc6dd]
+[landau:17466] [ 3] ./a.out(+0x36640)[0x5571342dd640]
+[landau:17466] [ 4] ./a.out(+0x6ece)[0x5571342adece]
+[landau:17466] [ 5] [landau:17453] [ 0] /lib/x86_64-linux-gnu/libpthread.so.0(+0x12890)[0x7ff2b9bbc890]
+[landau:17453] [ 1] ./a.out(+0x34a32)[0x56052310ca32]
+[landau:17453] [ 2] ./a.out(+0x356dd)[0x56052310d6dd]
+[landau:17453] [ 3] ./a.out(+0x36640)[0x56052310e640]
+[landau:17453] [ 4] ./a.out(+0x6ece)[0x5605230deece]
+[landau:17453] [ 5] /lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0xe7)[0x/lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0xe7)[0x7f4465bd0b97[landau:17448] *** End of error message ***
+7ff2b97dab97]
+[landau:17453] [ 6] ./a.out(+0x74fa)[0x5605230df4fa]
+[landau:17453] *** End of error message ***
+]
+[landau:17466] [ 6] ./a.out(+0x74fa)[landau:17450] *** Process received signal ***
+[landau:17451] *** Process received signal ***
+[0x5571342ae4fa]
+[landau:17466] *** End of error message ***
+[landau:17451] Signal: Segmentation fault (11)
+[landau:17451] Signal code:  (128)
+[landau:17451] Failing at address: (nil)
+[landau:17450] Signal: Segmentation fault (11)
+[landau:17450] Signal code:  (128)
+[landau:17450] Failing at address: (nil)
+[landau:17456] *** Process received signal ***
+[landau:17456] Signal: Segmentation fault (11)
+[landau:17456] Signal code:  (128)
+[landau:17456] Failing at address: (nil)
+[landau:17449] Signal: Segmentation fault (11)
+[landau:17449] Signal code:  (128)
+[landau:17449] Failing at address: (nil)
+[landau:17450] [ 0] /lib/x86_64-linux-gnu/libpthread.so.0(+0x12890)[0x7faf52d0a890]
+[landau:17450] [ 1] ./a.out(+0x34a32)[0x55b0b9c57a32[landau:17456] [ 0] /lib/x86_64-linux-gnu/libpthread.so.0(+0x12890)[0x7f88bc487890]
+[landau:17456] [ 1] ./a.out(+0x34a32)[0x557148b01a32]
+[landau:17456] [ 2] ./a.out(+0x356dd)[0x557148b026dd]
+[landau:17456] [ 3] ./a.out(+0x36640)[0x557148b03640]
+[landau:17456] [ 4] ./a.out(+0x6ece)[0x557148ad3ece]
+[landau:17456] [ 5] ]
+[landau:17450] [ 2] ./a.out(+0x356dd)[0x55b0b9c586dd]
+[landau:17450] [ 3] ./a.out(+0x36640)[0x55b0b9c59640]
+[landau:17450] [ 4] ./a.out(+0x6ece)[0x55b0b9c29ece]
+[landau:17450] [ 5] /lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0xe7)[0x7faf52928b97]
+[landau:17450] [ 6] ./a.out(+0x74fa)[0x55b0b9c2a4fa]
+[landau:17450] *** End of error message ***
+[landau:17451] [ 0] /lib/x86_64-linux-gnu/libpthread.so.0(+0x12890)[0x7f498b0f7890]
+[landau:17451] [ 1] ./a.out(+0x34a32)[0x55f52fde9a32]
+[landau:17451] /lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0xe7)[0x7f88bc0a5b97]
+[landau:17456] [ 6] ./a.out(+0x74fa)[0x557148ad44fa]
+[landau:17456] *** End of error message ***
+[ 2] ./a.out(+0x356dd)[0x55f52fdea6dd]
+[landau:17451] [ 3] ./a.out(+0x[landau:17449] [ 0] /lib/x86_64-linux-gnu/libpthread.so.0(+0x12890)[0x7f79f66ed890]
+[landau:17449] [ 1] ./a.out(+0x34a32)[0x55ca1a2a3a32]
+[landau:17449] [ 2] ./a.out(+0x356dd)[0x55ca1a2a46dd]
+[landau:17449] [ 3] ./a.out(+0x36640)[0x55ca1a2a5640]
+[landau:17449] [ 4] ./a.out(+0x6ece)[0x36640)[0x55f52fdeb640]
+[landau:17451] [ 4] ./a.out(+0x6ece)[0x55f52fdbbece]
+[landau:17451] [ 5] /lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0xe7)[0x7f498ad15b97]
+[landau:17451] [ 6] ./a.out(+0x74fa)[0x55f52fdbc4fa]
+[landau:17451] *** End of error message ***
+55ca1a275ece]
+[landau:17449] [ 5] /lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0xe7)[0x7f79f630bb97]
+[landau:17449] [ 6] ./a.out(+0x74fa)[0x55ca1a2764fa]
+[landau:17449] *** End of error message ***
+--------------------------------------------------------------------------
+mpirun noticed that process rank 3 with PID 0 on node landau exited on signal 11 (Segmentation fault).
+--------------------------------------------------------------------------
