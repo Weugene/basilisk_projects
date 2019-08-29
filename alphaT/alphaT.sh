@@ -8,6 +8,6 @@
 
 #PBS -q batch
 
-cd $HOME/basilisk/work/no_wetting_satur_straight
+cd $HOME/basilisk/work/alphaT
 mpirun -np 10 ./a.out
 

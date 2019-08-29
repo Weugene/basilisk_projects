@@ -1,109 +1,24 @@
-/**
-# Two-phase flow around RV fiber
-
-This is an improved version of the [famous Gerris
-example](http://gerris.dalembert.upmc.fr/gerris/examples/examples/fiber.html),
-illustrating the combination of complex solid boundaries, air-water
-turbulent flows and reduced gravity approach.
-
-We use the centered Navier--Stokes solver, two-phase flow and the
-momentum-conserving option. Note that the momentum-conserving option
-is crucial to obtain stable solutions for this air-water density ratio
-configuration. */
-
 //#include "grid/octree.h"
 #include "grid/quadtree.h"
-#include "navier-stokes/centered.h"// u, uf, p,  pf, g, mu=0, alphav=1, a=0(acceleration), rho=1,
-// stokes=false (No omit div(u by u)
-// incompressible NS.  generic time loop, a CFL-limited timestep,
-// the Bell-Collela-Glaz (BCG) advection scheme ( 2nd-order, unsplit, upwind scheme)
-// and the implicit viscosity solver
-/**
-We have two phases e.g. air and water. For large viscosity and density
-ratios, the harmonic mean for the viscosity tends to work better than
-the default arithmetic mean. We "overload" the default by defining the
-*mu()* macro before including the code for two phases. */
+#include "navier-stokes/centered.h"
 #define mu(f)  (1./(clamp(f,0,1)*(1./mu1 - 1./mu2) + 1./mu2))
-//#include "two-phase.h" //advection of tracer f. defined rhov, alphav. if FILTERED is defined, then sf - filtered values of f.
-//#include "navier-stokes/conserving.h" //???should add?
-/**
-We also need surface tension, and in 3D only we will use the
-$\lambda_2$ criterion of [Jeong and Hussain,
-1995](/src/references.bib#jeong1995) to display the vortices using
-Basilisk View. */
-/**
-## Boundary conditions on the ship
-
-We use a simple (but crude) imposition of $u=0$ in the solid. */
 scalar fiber[];
 
-#include "two-phase.h" //advection of tracer f. defined rhov, alphav. if FILTERED is defined, then sf - filtered values of f.
-#include "navier-stokes/conserving.h" //???should add?
+#include "two-phase.h"
+#include "navier-stokes/conserving.h"
 #include "tension.h"
-#if dimension == 3
-# include "lambda2.h"
-#endif
 #include "view.h"
 
-
-/**
-We also need to compute distance functions (to describe the ship
-geometry), use reduced gravity and visualisation functions. */
-
-//#include "distance.h"
 #include "reduced.h"
 
-
-//#include "embed.h" (! remove)
 
 /**
 On supercomputers we need to control the maximum runtime and we check
 performances. */
 
-//#include "maxruntime.h"
-//#include "navier-stokes/perfs.h"
+#include "maxruntime.h"
+#include "navier-stokes/perfs.h"
 
-/**
-## Importing the geometry
-
-This function computes the solid fraction given a pointer to an STL
-file, a tolerance (maximum relative error on distance) and a
-maximum level. */
-
-//void fraction_from_stl (scalar f, FILE * fp, double eps, int maxlevel)
-//{
-//
-//    /**
-//    We read the STL file and compute the bounding box of the model. */
-//
-//    coord * p = input_stl (fp);
-//    coord min, max;
-//    bounding_box (p, &min, &max);
-//    double maxl = -HUGE;
-//    foreach_dimension()
-//    if (max.x - min.x > maxl)
-//        maxl = max.x - min.x;
-//
-//    /**
-//    We initialize the distance field on the coarse initial mesh and
-//    refine it adaptively until the threshold error (on distance) is
-//    reached. */
-//
-//    scalar d[];
-//    distance (d, p);
-//    while (adapt_wavelet ({d}, (double[]){eps*maxl}, maxlevel, 5).nf);
-//
-//    /**
-//    We also compute the volume fraction from the distance field. We
-//    first construct a vertex field interpolated from the centered field
-//    and then call the appropriate VOF functions. */
-//
-//    vertex scalar phi[];
-//    foreach_vertex()
-//    phi[] = (d[] + d[-1] + d[0,-1] + d[-1,-1] +
-//             d[0,0,-1] + d[-1,0,-1] + d[0,-1,-1] + d[-1,-1,-1])/8.; //left bottom vertex
-//    fractions (phi, f);
-//}
 
 
 int MAXLEVEL = 12;
@@ -116,28 +31,8 @@ The density ratio is 1000 and the dynamic viscosity ratio 100. */
 #define MUR 100.
 #define feps 0.01
 #define uemax 0.01
-/**
-We try to replicate the results of [Cano-Lozano et al,
-2016](/src/references.bib#cano2016) (obtained with Gerris). Aside from
-the ratios above, there are two independent parameters which can be
-described by the Galilei number
-$$
-    Ga^2 = \frac{g D^3}{\nu^2}
-$$
-with $g$ the acceleration of gravity, $D$ the diameter of the bubble
-and $\nu$ the kinematic viscosity of the outer fluid; and the
-[Bond/Eötvös](https://en.wikipedia.org/wiki/E%C3%B6tv%C3%B6s_number)
-number
-$$
-    Bo = \frac{\rho g D^2}{\sigma}
-$$
-with $\rho$ the density of the outer fluid and $\sigma$ the surface
-tension coefficient.
-
- * We consider two bubbles studied by Cano-Lozano et al, 2016. */
 # define RE 100.25
 # define CA 10 //IT IS ANOTHER FOR NON SATURATED 0.1
-
 
 #define RandMinMax(limMin, limMax) (0.5*((limMin)+(limMax)) + 0.5*noise()*((limMax) - (limMin)))
 #if dimension>2
@@ -462,11 +357,11 @@ event init (t = 0) {
         boundary ({f, u.x, u.y}); //?
 #if dimension == 2
         view (tx = 0, width = 2048, height = 2048, samples = 4, bg = {0.3,0.4,0.6});
-  clear();
-  draw_vof ("f", edges = true);
-  draw_vof("fiber", edges = true);
-  box ();
-  save ("vof2D.png");
+        clear();
+        draw_vof ("f", edges = true);
+        draw_vof("fiber", edges = true);
+        box ();
+        save ("vof2D.png");
 #else // 3D
 //        view (fov = 20, camera = "iso",//quat = {-0.4,0.4,0.1,0.8},
 //                tx = 0, ty = 0,
@@ -514,49 +409,7 @@ event velocity (i++) {
 event logfile (i++)
 if (pid()==0) fprintf (fplog, "%d %g %d %d\n", i, t, mgp.i, mgu.i);
 
-/**
-## Animations
 
-We generate animations of the ship surface (as represented by the
-solid fraction) and of the air-water interface, colored with the
-height.
-
-Several classical features of ship wakes are recognisable: breaking
-bow wave, breaking stern divergent wave, turbulent boundary layer,
-Kelvin waves etc...
-
-![Evolution of the air-water interface](fiber/movie.mp4)(width="800" height="600")
-
-We also use the $\lambda_2$ criterion to display the turbulent
-vortical structures generated by the airflow. The air recirculation at
-the top of the steep primary Kelvin waves is particularly noticeable.
-
-![Turbulent vortical structures](fiber/l2.mp4)(width="800" height="600")
-
-The computations above were done on the Irene supercomputer using 12
-levels of refinement. */
-
-//event movie (t += 0.01; t <= 10)
-//{
-//#if dimension == 2
-//view (tx = 0, width = 2048, height = 2048, samples = 4, bg = {0.3,0.4,0.6});
-//    clear();
-//    draw_vof ("f", edges = true);
-//    draw_vof("fiber", edges = true);
-//    box ();
-//    save ("vof2D.mp4");
-//#else // 3D
-//clear();
-//view (fov = 40,
-//        quat = {0.5,0.1,0.2,0.8},
-//        tx = 0, ty = 0,
-//        width = 1600, height = 1600);
-//draw_vof ("fiber");
-//draw_vof ("f", linear = true);
-//save ("movie.mp4");
-//#endif
-//
-//}
 
 //Output
 #include "output_fields/output_vtu_foreach.h"

@@ -3,7 +3,7 @@ QCC_COMPILER = $(BASILISK)/qcc
 
 
 coalescence:
-	$(QCC_COMPILER) -Wall -O2 coalescence.c -lm -L$(BASILISK)/gl  $(OPENGLIBS)
+	$(QCC_COMPILER) -Wall -O2 coalescence.c -I/opt/local/include/GL -lm -L$(BASILISK)/gl  $(OPENGLIBS)
 	./a.out > out 2> log
 
 #	CC99='mpicc -std=c99' $(QCC_COMPILER) -Wall -O2 -D_MPI=1  coalescence.c -lm -L$(BASILISK)/gl $(OPENGLIBS)
