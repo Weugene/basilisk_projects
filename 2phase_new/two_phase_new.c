@@ -1,11 +1,4 @@
 /**
-# Two-phase flow around RV fiber
-
-This is an improved version of the [famous Gerris
-example](http://gerris.dalembert.upmc.fr/gerris/examples/examples/fiber.html),
-illustrating the combination of complex solid boundaries, air-water
-turbulent flows and reduced gravity approach.
-
 We use the centered Navier--Stokes solver, two-phase flow and the
 momentum-conserving option. Note that the momentum-conserving option
 is crucial to obtain stable solutions for this air-water density ratio
@@ -27,11 +20,6 @@ the default arithmetic mean. We "overload" the default by defining the
 #include "two-phase.h" //advection of tracer f. defined rhov, alphav. if FILTERED is defined, then sf - filtered values of f.
 #include "navier-stokes/conserving.h" //???should add?
 
-/**
-We also need surface tension, and in 3D only we will use the
-$\lambda_2$ criterion of [Jeong and Hussain,
-1995](/src/references.bib#jeong1995) to display the vortices using
-Basilisk View. */
 
 #include "tension.h"
 #if dimension == 3
@@ -40,9 +28,6 @@ Basilisk View. */
 #include "view.h"
 
 
-/**
-We also need to compute distance functions (to describe the ship
-geometry), use reduced gravity and visualisation functions. */
 
 //#include "distance.h"
 #include "reduced.h"
@@ -112,24 +97,7 @@ The density ratio is 1000 and the dynamic viscosity ratio 100. */
 #define feps 0.001
 #define uemax 0.01
 /**
-We try to replicate the results of [Cano-Lozano et al,
-2016](/src/references.bib#cano2016) (obtained with Gerris). Aside from
-the ratios above, there are two independent parameters which can be
-described by the Galilei number
-$$
-    Ga^2 = \frac{g D^3}{\nu^2}
-$$
-with $g$ the acceleration of gravity, $D$ the diameter of the bubble
-and $\nu$ the kinematic viscosity of the outer fluid; and the
-[Bond/Eötvös](https://en.wikipedia.org/wiki/E%C3%B6tv%C3%B6s_number)
-number
-$$
-    Bo = \frac{\rho g D^2}{\sigma}
-$$
-with $\rho$ the density of the outer fluid and $\sigma$ the surface
-tension coefficient.
-
- * We consider two bubbles studied by Cano-Lozano et al, 2016. */
+* We consider two bubbles studied by Cano-Lozano et al, 2016. */
 # define RE 100.25
 # define CA 0.1
 
@@ -356,8 +324,6 @@ int main (int argc, char * argv[])
     mu1 = 1./RE;
     mu2 = 1./(MUR*RE);
     f.sigma = 1./CA;
-
-
     /**
     The length of the ship is unity and the domain is five times
     larger. We change the origin so that the ship is not too close to
@@ -406,21 +372,8 @@ f[right]   = neumann(0.);//liquid
 /**
 Outflow uses standard Neumann/Dirichlet conditions.  */
 
-//u.n[top]  = neumann(0.);
-//p[top]    = dirichlet(0.);
-//pf[top]   = dirichlet(0.);
-
 /**
 Boundary conditions for the solid and fraction tracers. */
-
-//fiber[back] = 0;
-//f[back] = 1;
-
-/**
-Not sure whether this is really useful. */
-
-//uf.n[left] = 0.;
-//uf.n[right] = 0.;
 
 /**
 ## Initial conditions
