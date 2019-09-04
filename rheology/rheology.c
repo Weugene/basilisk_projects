@@ -48,7 +48,6 @@ geometry), use reduced gravity and visualisation functions. */
 //#include "vtk.h"
 //#include "output_vtk.h"
 
-//#include "embed.h" (! remove)
 
 /**
 On supercomputers we need to control the maximum runtime and we check
@@ -347,9 +346,10 @@ int main (int argc, char * argv[])
 
     rho1 = 1.;// water
     rho2 = 1./RHOR; // air
-//    mu = muv;
-    mu1 = 1./RE;
-    mu2 = 1./(MUR*RE);
+    mu = muv;
+
+//    mu1 = 1./RE;
+//    mu2 = 1./(MUR*RE);
     f.sigma = 1./CA;
 
 
@@ -486,11 +486,8 @@ event velocity (i++) {
 }
 
 event properties (i++)  {
-//    foreach_face() {
-//        muv.x[] = 1/RE;
-//        muv.x[] = (1*fm.x[]+0.01*(1-fm.x[]))/RE;
-//    }
-//    boundary ((scalar *){muv});
+    foreach_face()
+        muv.x[] = fm.x[]*0.125/160.;
     fprintf (ferr, "i: %d\n", i);
     fprintf (ferr, "iteration: %d\n", iteration);
     fflush (ferr);
