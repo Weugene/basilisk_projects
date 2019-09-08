@@ -1,7 +1,6 @@
 QCC_COMPILER = $(BASILISK)/qcc
 CFLAGS=-DDUMP=1 -Wall -O2
-CLIBS=-lm -L$(BASILISK)/gl 
-# $(OPENGLIBS)
+CLIBS=-lm -L$(BASILISK)/gl $(OPENGLIBS)
 CINCL=-I$(BASILISK)
 
 2phase_mask:
