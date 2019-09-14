@@ -1,0 +1,57 @@
+defaults (i = 0)
+init (i = 0)
+set_dtmax (i++,last)
+event stability (i++,last)
+
+//empty
+event vof (i++,last);
+event tracer_advection (i++,last);
+event tracer_diffusion (i++,last);
+event properties (i++,last)
+
+
+event properties (i++,last)
+event viscous_term (i++,last)
+
+event acceleration (i++,last)
+
+event projection (i++,last)
+event end_timestep (i++, last);
+
+
+#if TREE 
+	event adapt (i++,last) 
+	event ("properties");
+#endif
+
+
+#if TREE
+	event defaults (i = 0) //tracer.h
+#endif
+
+
+
+iteration: 218
+  set_dtmax                 src/navier-stokes/centered.h:209
+  stability                 src/vof.h:63
+  stability                 src/navier-stokes/centered.h:211
+  vof                       src/vof.h:312
+  vof                       src/navier-stokes/centered.h:221
+  tracer_advection          src/navier-stokes/centered.h:222
+  tracer_diffusion          src/navier-stokes/centered.h:223
+  properties                src/two-phase.h:59
+  properties                src/navier-stokes/centered.h:230
+  advection_term            src/navier-stokes/centered.h:307
+  viscous_term              src/navier-stokes/centered.h:337
+  acceleration              src/navier-stokes/centered.h:373
+  projection                src/navier-stokes/centered.h:416
+  end_timestep              src/navier-stokes/centered.h:431
+  adapt                     karman.c:255
+  adapt                     src/navier-stokes/centered.h:441
+  properties                src/two-phase.h:59
+  properties                src/navier-stokes/centered.h:230
+  advance_alpha_T           karman.c:151
+mg: i=218 t=1.63146 p=1 u=0 T=9
+
+events (i = 219, t = 1.63927)
+  vtk_file                  karman.c:212
