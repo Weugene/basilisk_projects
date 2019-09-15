@@ -28,6 +28,8 @@ advect the passive tracer *f*. */
 #define Teps 1e-2
 #define aeps 1e-2
 #define ueps 1e-2
+#undef SEPS
+#define SEPS 1e-10
 //scalar f[];
 scalar fs[]; //comment for 3-phase.h
 scalar T[]; //comment for 3-phase.h
@@ -97,7 +99,7 @@ double m_degree = 0.333;
 //double kappa1 = 1100, kappa2 = 0.02535, kappa3 = 1.11;//W/(m*K)
 double Cp1 = 1, Cp2 = 1, Cp3 = 1;//J/(kg*K)
 double kappa1 = 1, kappa2 = 0.001, kappa3 = 1;//W/(m*K)
-#define SEPS 1e-30
+
 
 event init (t = 0) {
     if (!restore (file = "restart")) {
@@ -156,7 +158,7 @@ void advection_upwind (scalar f, vector u, scalar df)
 }
 
 event stability (i++) {
-    double cfl;
+//    double cfl;
 //    foreach_face(x, reduction (max:cfl)) {
 //        cfl =
 //    }
@@ -168,27 +170,32 @@ event advance_alpha_T (i++,last){
 //average(thetav, f, fs, rho1*Cp1, rho2*Cp2, rho3*Cp3);
 foreach()      thetav[] = f[]*(rho1*Cp1 - rho2*Cp2) + rho2*Cp2 + fs[]*(rho3*Cp3 - rho2*Cp2);
 foreach_face() kappa.x[] = f[]*(kappa1 - kappa2) + kappa2 + fs[]*(kappa3 - kappa2);
-
+fprintf(stderr, "kappa, thetav done, grad will");
 scalar u_grad_scalar[], tmp[];
 advection_centered(T, u, u_grad_scalar);
 //    advection_upwind (T, u, u_grad_scalar);
+    fprintf(stderr, "grad adv done, tmp r will");
 foreach() {
     tmp[] = Arrhenius_const*pow(1-alpha_doc[], n_degree)*exp(-Ea_by_R/T[]);
     r[] = Htr*rho1*f[]*tmp[] - thetav[]*u_grad_scalar[];
 //    printf("thetav=%g\n",thetav[]);
 }
+    fprintf(stderr, "grad r tmp, diffusion will");
 mgT = diffusion (T, dt, D = kappa, r = r, theta = thetav);
 
 fprintf (stderr, "mg: i=%d t=%g p=%d u=%d T=%d\n", i, t, mgp.i, mgu.i, mgT.i); //number of iterations
 advection_centered(alpha_doc, u, u_grad_scalar);
+    fprintf(stderr, "diffusion and advec done, alpha_doc evol will");
 //    advection_upwind (alpha_doc, u, u_grad_scalar);
 foreach() {
 //    printf("thetav=%g\n",thetav[]);
 //    alpha_doc[] += dt*(tmp[] - u_grad_scalar[]);
-    alpha_doc[] = f[]*(alpha_doc[] + dt*(tmp[]*(1.0 + n_degree*alpha_doc[]/(1-alpha_doc[])+SEPS) - u_grad_scalar[]))/(1 + dt*tmp[]*n_degree/(1-alpha_doc[]+SEPS));
+    alpha_doc[] = f[]*(alpha_doc[] + dt*(tmp[]*(1.0 + n_degree*alpha_doc[]/(1-alpha_doc[]+SEPS)) - u_grad_scalar[]))/(1 + dt*tmp[]*n_degree/(1-alpha_doc[]+SEPS));
+    alpha_doc[] = clamp(alpha_doc[], 0.0, 1.0);
 }
-
+    fprintf(stderr, "alpha_doc done");
 boundary ((scalar*) {alpha_doc});
+    fprintf(stderr, "boundary...last");
 
 }
 /**
@@ -224,7 +231,7 @@ We produce animations of the vorticity and tracer fields... */
 static int iteration=0;
 #define OUTPUT_VARS (scalar *) {l, f, T, alpha_doc, thetav, r}, (vector *) {u, kappa}//be careful with kappa, mu. They can be const unity
 #include "output_fields/output_vtu_foreach.h"
-event vtk_file (i+=100)
+event vtk_file (t=0; t<end; t += 0.1)
 {
     int nf = iteration;
     scalar l[];
@@ -271,7 +278,7 @@ event adapt (i++) {
 adapt_wavelet ({f, T, alpha_doc, u}, (double[]){feps, Teps, aeps, ueps, ueps}, MAXLEVEL, MINLEVEL);
 }
 
-event stop(i = 100000);
+event stop(t=100);
 /**
 ## See also
 
