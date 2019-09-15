@@ -1,5 +1,5 @@
-#ifndef BASILISK_HEADER_2
-#define BASILISK_HEADER_2
+#ifndef BASILISK_HEADER_4
+#define BASILISK_HEADER_4
 #line 1 "./../src_local/three-phase-rheology.h"
 /**
 # Three-phase interfacial flows
@@ -56,17 +56,21 @@ Usually, it is assumed that mu1 is variable, mu2 and mu3 are not. For simplisity
  **/
 scalar alpha_doc[];
 scalar T[];
-double Eeta_by_Rg = 3636.45; //Kelvin
-double chi = 26.89;
+double Eeta_by_Rg = 5; //Kelvin
+double chi = 1;
 double alpha_gel = 0.8;
+#ifndef fpol
+#define fpol(alpha_doc, T) A*alpha_doc + B
+#endif
+
 #ifndef muf1
-//# define mupol(alpha_doc, T) (mu1*exp(Eeta_by_Rg/(T))*(alpha_gel/(alpha_gel-alpha_doc))^(fpol(alpha_doc, T)))
+//#define mupol(alpha_doc, T) (mu1*exp(Eeta_by_Rg/(T))*pow(alpha_gel/(alpha_gel-alpha_doc), fpol(alpha_doc, T)))
 #define muf1(alpha_doc, T) (mu1*exp(Eeta_by_Rg/T+chi*alpha_doc*alpha_doc))
 #endif
 
 #ifndef mu
-#define mu(f, fs, alpha_doc, T)  (clamp(f,0.,1.)*(mu1 - mu2) + mu2 + clamp(fs,0.,1.)*(mu3 - mu2))
-//#define mu(f, fs, alpha_doc, T)  (clamp(f,0.,1.)*(muf1(alpha_doc, T) - mu2) + mu2 + fs*(mu3 - mu2))
+//#define mu(f, fs, alpha_doc, T)  (clamp(f,0.,1.)*(mu1 - mu2) + mu2 + clamp(fs,0.,1.)*(mu3 - mu2))
+#define mu(f, fs, alpha_doc, T)  (clamp(f,0.,1.)*(muf1(alpha_doc, T) - mu2) + mu2 + fs*(mu3 - mu2))
 #endif
 
 /**
@@ -80,7 +84,6 @@ scalar sf[];
 #endif
 
 event properties (i++) {
-
   /**
   When using smearing of the density jump, we initialise *sf* with the
   vertex-average of *f*. */

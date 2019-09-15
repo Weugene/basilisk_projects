@@ -1,0 +1,139 @@
+
+events (i = 0, t = 0)
+  init                      events_order.c:11
+0**1.6=1e-48
+  example                   events_order.c:30
+example 4! i=0
+  example                   events_order.c:25
+example 3! i=0
+  example                   events_order.c:20
+example 2! i=0
+  example                   events_order.c:15
+example 1! i=0
+  exam                      events_order.c:36
+exam! i=0
+  ex                        events_order.c:41
+ex! i=0
+
+events (i = 1, t = 1e+30)
+  example                   events_order.c:30
+example 4! i=1
+  example                   events_order.c:25
+example 3! i=1
+  example                   events_order.c:20
+example 2! i=1
+  example                   events_order.c:15
+example 1! i=1
+  exam                      events_order.c:36
+exam! i=1
+  ex                        events_order.c:41
+ex! i=1
+
+events (i = 2, t = 1e+30)
+  example                   events_order.c:30
+example 4! i=2
+  example                   events_order.c:25
+example 3! i=2
+  example                   events_order.c:20
+example 2! i=2
+  example                   events_order.c:15
+example 1! i=2
+  exam                      events_order.c:36
+exam! i=2
+  ex                        events_order.c:41
+ex! i=2
+
+events (i = 3, t = 1e+30)
+  example                   events_order.c:30
+example 4! i=3
+  example                   events_order.c:25
+example 3! i=3
+  example                   events_order.c:20
+example 2! i=3
+  example                   events_order.c:15
+example 1! i=3
+  exam                      events_order.c:36
+exam! i=3
+  ex                        events_order.c:41
+ex! i=3
+
+events (i = 4, t = 1e+30)
+  example                   events_order.c:30
+example 4! i=4
+  example                   events_order.c:25
+example 3! i=4
+  example                   events_order.c:20
+example 2! i=4
+  example                   events_order.c:15
+example 1! i=4
+  exam                      events_order.c:36
+exam! i=4
+  ex                        events_order.c:41
+ex! i=4
+
+events (i = 5, t = 1e+30)
+  example                   events_order.c:30
+example 4! i=5
+  example                   events_order.c:25
+example 3! i=5
+  example                   events_order.c:20
+example 2! i=5
+  example                   events_order.c:15
+example 1! i=5
+  exam                      events_order.c:36
+exam! i=5
+  ex                        events_order.c:41
+ex! i=5
+
+events (i = 6, t = 1e+30)
+  example                   events_order.c:30
+example 4! i=6
+  example                   events_order.c:25
+example 3! i=6
+  example                   events_order.c:20
+example 2! i=6
+  example                   events_order.c:15
+example 1! i=6
+
+events (i = 7, t = 1e+30)
+  example                   events_order.c:30
+example 4! i=7
+  example                   events_order.c:25
+example 3! i=7
+  example                   events_order.c:20
+example 2! i=7
+  example                   events_order.c:15
+example 1! i=7
+
+events (i = 8, t = 1e+30)
+  example                   events_order.c:30
+example 4! i=8
+  example                   events_order.c:25
+example 3! i=8
+  example                   events_order.c:20
+example 2! i=8
+  example                   events_order.c:15
+example 1! i=8
+
+events (i = 9, t = 1e+30)
+  example                   events_order.c:30
+example 4! i=9
+  example                   events_order.c:25
+example 3! i=9
+  example                   events_order.c:20
+example 2! i=9
+  example                   events_order.c:15
+example 1! i=9
+
+events (i = 10, t = 1e+30)
+  example                   events_order.c:30
+example 4! i=10
+  example                   events_order.c:25
+example 3! i=10
+  example                   events_order.c:20
+example 2! i=10
+  example                   events_order.c:15
+example 1! i=10
+  stop                      events_order.c:45
+
+end events (i = 10, t = 1e+30)

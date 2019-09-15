@@ -1,3 +1,10 @@
+
+
+
+
+
+
+
 defaults (i = 0)
 init (i = 0)
 set_dtmax (i++,last)
@@ -55,3 +62,57 @@ mg: i=218 t=1.63146 p=1 u=0 T=9
 
 events (i = 219, t = 1.63927)
   vtk_file                  karman.c:212
+
+
+
+==========================================================
+new one 
+=====================================================
+events (i = 80670, t = 80.659)
+  set_dtmax                 ./../src_local/centered-weugene.h:209
+  stability                 karman.c:162
+  stability                 ./../src_local/vof.h:63
+  stability                 ./../src_local/centered-weugene.h:211
+  vof                       ./../src_local/vof.h:312
+  vof                       ./../src_local/centered-weugene.h:221
+  tracer_advection          ./../src_local/centered-weugene.h:222
+  properties                ./../src_local/three-phase-rheology.h:79
+  properties                ./../src_local/centered-weugene.h:229
+  tracer_diffusion          ./../src_local/centered-weugene.h:233
+  advection_term            ./../src_local/centered-weugene.h:308
+  viscous_term              ./../src_local/centered-weugene.h:338
+  acceleration              ./../src_local/centered-weugene.h:374
+  projection                ./../src_local/centered-weugene.h:417
+  end_timestep              karman.c:171
+kappa, thetav done, grad willgrad adv done, tmp r willgrad r tmp, diffusion willmg: i=80670 t=80.659 p=1 u=0 T=2
+diffusion and advec done, alpha_doc evol willalpha_doc doneboundary...last  end_timestep              ./../src_local/centered-weugene.h:432
+  adapt                     karman.c:278
+  adapt                     ./../src_local/centered-weugene.h:442
+  properties                ./../src_local/three-phase-rheology.h:79
+  properties                ./../src_local/centered-weugene.h:229
+
+events (i = 80671, t = 80.66)
+  set_dtmax                 ./../src_local/centered-weugene.h:209
+  stability                 karman.c:162
+  stability                 ./../src_local/vof.h:63
+  stability                 ./../src_local/centered-weugene.h:211
+  vof                       ./../src_local/vof.h:312
+  vof                       ./../src_local/centered-weugene.h:221
+  tracer_advection          ./../src_local/centered-weugene.h:222
+  properties                ./../src_local/three-phase-rheology.h:79
+  properties                ./../src_local/centered-weugene.h:229
+  tracer_diffusion          ./../src_local/centered-weugene.h:233
+  advection_term            ./../src_local/centered-weugene.h:308
+  viscous_term              ./../src_local/centered-weugene.h:338
+  acceleration              ./../src_local/centered-weugene.h:374
+  projection                ./../src_local/centered-weugene.h:417
+  end_timestep              karman.c:171
+kappa, thetav done, grad willgrad adv done, tmp r willgrad r tmp, diffusion willmg: i=80671 t=80.66 p=1 u=0 T=2
+diffusion and advec done, alpha_doc evol willalpha_doc doneboundary...last  end_timestep              ./../src_local/centered-weugene.h:432
+  adapt                     karman.c:278
+  adapt                     ./../src_local/centered-weugene.h:442
+  properties                ./../src_local/three-phase-rheology.h:79
+  properties                ./../src_local/centered-weugene.h:229
+
+
+

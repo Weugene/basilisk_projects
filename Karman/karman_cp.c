@@ -22,7 +22,7 @@ scalar alpha_doc[];
 scalar T[];
 scalar fs[];
 // #include "navier-stokes/perfs.h"
-#include "tracer.h"
+//#include "tracer.h" //THE PROBLEM HERE!!!  if you added two-phase
 //#include "diffusion.h"
 
 

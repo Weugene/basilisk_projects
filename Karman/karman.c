@@ -14,14 +14,19 @@ We use the centered Navier-Stokes solver, with embedded boundaries and
 advect the passive tracer *f*. */
 
 
-#include "navier-stokes/centered.h"
+#include "../src_local/centered-weugene.h"
 // #include "navier-stokes/perfs.h"
-#include "two-phase.h"
+//#include "two-phase.h"
+#include "../src_local/three-phase-rheology.h"
 //#include "tracer.h" //don't use it if you added two-phase
 #include "diffusion.h"
 
 
 #define MAXVEL 0.01
+//#define TMAX 400
+//#define TMIN 300
+#define TMAX 2
+#define TMIN 1
 #define MAXLEVEL 9
 #define MINLEVEL 4
 #define feps 1e-2
@@ -30,33 +35,28 @@ advect the passive tracer *f*. */
 #define ueps 1e-2
 #undef SEPS
 #define SEPS 1e-10
-//scalar f[];
-scalar fs[]; //comment for 3-phase.h
-scalar T[]; //comment for 3-phase.h
-scalar alpha_doc[]; //comment for 3-phase.h
+
 face vector kappa[];
-double rho3; //comment for 3-phase.h
-//scalar * tracers = {f}; //?
-//face vector muv[];
 
 int main() {
     L0 = 8.;
     origin (-L0/2, -L0/2.);
     N = 512;
     CFL = 0.1;
-    DT = 0.001;
-//    mu = muv;
+    DT = 1e-3;
+//    stokes = true;
+//    rho1 = 1140; rho2 = 1; rho3 = 2000;
+//    mu1 = 0.155; mu2 = 1.81e-5; mu3 = 1;
+    rho1 = 1; rho2 = 0.01; rho3 = 1;
+    mu1 = 1; mu2 = 0.01; mu3 = 1;
     run();
-    rho1=1; rho2=0.01; rho3=1;
-    mu1=1; mu2=0.1;
-
 }
 u.n[left]  = dirichlet(MAXVEL);
 p[left]    = neumann(0.);
 pf[left]   = neumann(0.);
 f[left]    = dirichlet(1);
 //f[left]    = dirichlet((fabs(y)<sin(0.5*pi*t))?0:1);
-T[left]    = dirichlet(1);
+T[left]    = dirichlet(TMIN);
 fs[left]   = dirichlet(0);
 alpha_doc[left] = neumann(0);
 
@@ -67,8 +67,8 @@ T[right]    = neumann(0);
 fs[right]   = neumann(0);
 alpha_doc[right] = neumann(0);
 
-#define UT_BC exp(-pow(x+L0/2.,2)/(2*pow(L0/10.,2)))
-#define T_BC 1.5+0.5*tanh(x/(L0/10))
+#define UT_BC exp(-pow(x + L0/2.,2)/(2*pow(L0/10.,2)))
+#define T_BC (0.5*(TMAX + TMIN) + 0.5*(TMAX - TMIN)*tanh(x/(L0/10)))
 u.n[top] = dirichlet(0);
 u.t[top] = neumann(0);
 //u.t[top] = dirichlet(UT_BC);
@@ -158,6 +158,7 @@ void advection_upwind (scalar f, vector u, scalar df)
 }
 
 event stability (i++) {
+    dtmax = 0.5/(Arrhenius_const*exp(-Ea_by_R/TMAX));
 //    double cfl;
 //    foreach_face(x, reduction (max:cfl)) {
 //        cfl =
@@ -166,35 +167,34 @@ event stability (i++) {
 
 mgstats mgT;
 scalar r[], thetav[];
-event advance_alpha_T (i++,last){
-//average(thetav, f, fs, rho1*Cp1, rho2*Cp2, rho3*Cp3);
-foreach()      thetav[] = f[]*(rho1*Cp1 - rho2*Cp2) + rho2*Cp2 + fs[]*(rho3*Cp3 - rho2*Cp2);
-foreach_face() kappa.x[] = f[]*(kappa1 - kappa2) + kappa2 + fs[]*(kappa3 - kappa2);
-fprintf(stderr, "kappa, thetav done, grad will");
-scalar u_grad_scalar[], tmp[];
-advection_centered(T, u, u_grad_scalar);
-//    advection_upwind (T, u, u_grad_scalar);
+event end_timestep (i++,last){
+    //average(thetav, f, fs, rho1*Cp1, rho2*Cp2, rho3*Cp3);
+    foreach()      thetav[] = f[]*(rho1*Cp1 - rho2*Cp2) + rho2*Cp2 + fs[]*(rho3*Cp3 - rho2*Cp2);
+    foreach_face() kappa.x[] = f[]*(kappa1 - kappa2) + kappa2 + fs[]*(kappa3 - kappa2);
+    fprintf(stderr, "kappa, thetav done, grad will");
+    scalar u_grad_scalar[], tmp[];
+    advection_centered(T, u, u_grad_scalar);
+    //    advection_upwind (T, u, u_grad_scalar);
     fprintf(stderr, "grad adv done, tmp r will");
-foreach() {
-    tmp[] = Arrhenius_const*pow(1-alpha_doc[], n_degree)*exp(-Ea_by_R/T[]);
-    r[] = Htr*rho1*f[]*tmp[] - thetav[]*u_grad_scalar[];
-//    printf("thetav=%g\n",thetav[]);
-}
+    foreach() {
+        tmp[] = Arrhenius_const*pow(1-alpha_doc[], n_degree)*exp(-Ea_by_R/T[]);
+        r[] = Htr*rho1*f[]*tmp[] - thetav[]*u_grad_scalar[];
+    //    printf("thetav=%g\n",thetav[]);
+    }
     fprintf(stderr, "grad r tmp, diffusion will");
-mgT = diffusion (T, dt, D = kappa, r = r, theta = thetav);
+    mgT = diffusion (T, dt, D = kappa, r = r, theta = thetav);
 
-fprintf (stderr, "mg: i=%d t=%g p=%d u=%d T=%d\n", i, t, mgp.i, mgu.i, mgT.i); //number of iterations
-advection_centered(alpha_doc, u, u_grad_scalar);
+    fprintf (stderr, "mg: i=%d t=%g p=%d u=%d T=%d\n", i, t, mgp.i, mgu.i, mgT.i); //number of iterations
+    advection_centered(alpha_doc, u, u_grad_scalar);
     fprintf(stderr, "diffusion and advec done, alpha_doc evol will");
-//    advection_upwind (alpha_doc, u, u_grad_scalar);
-foreach() {
-//    printf("thetav=%g\n",thetav[]);
-//    alpha_doc[] += dt*(tmp[] - u_grad_scalar[]);
-    alpha_doc[] = f[]*(alpha_doc[] + dt*(tmp[]*(1.0 + n_degree*alpha_doc[]/(1-alpha_doc[]+SEPS)) - u_grad_scalar[]))/(1 + dt*tmp[]*n_degree/(1-alpha_doc[]+SEPS));
-    alpha_doc[] = clamp(alpha_doc[], 0.0, 1.0);
-}
+    //    advection_upwind (alpha_doc, u, u_grad_scalar);
+    foreach() {
+    //    alpha_doc[] += dt*(tmp[] - u_grad_scalar[]);
+        alpha_doc[] = (alpha_doc[] + dt*(tmp[]*(1.0 + n_degree*alpha_doc[]/(1-alpha_doc[]+SEPS)) - u_grad_scalar[]))/(1 + dt*tmp[]*n_degree/(1-alpha_doc[]+SEPS));
+        alpha_doc[] = clamp(alpha_doc[], 0.0, 1.0);
+    }
     fprintf(stderr, "alpha_doc done");
-boundary ((scalar*) {alpha_doc});
+    boundary ((scalar*) {alpha_doc});
     fprintf(stderr, "boundary...last");
 
 }
@@ -229,9 +229,9 @@ We produce animations of the vorticity and tracer fields... */
 
 //Output
 static int iteration=0;
-#define OUTPUT_VARS (scalar *) {l, f, T, alpha_doc, thetav, r}, (vector *) {u, kappa}//be careful with kappa, mu. They can be const unity
+#define OUTPUT_VARS (scalar *) {l, f, T, alpha_doc, thetav, r, rho}, (vector *) {u, kappa, mu}//be careful with kappa, mu. They can be const unity
 #include "output_fields/output_vtu_foreach.h"
-event vtk_file (t=0; t<end; t += 0.1)
+event vtk_file (t += 0.1)
 {
     int nf = iteration;
     scalar l[];
