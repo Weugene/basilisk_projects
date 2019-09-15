@@ -21,6 +21,7 @@ advect the passive tracer *f*. */
 #include "diffusion.h"
 
 
+#define MAXVEL 0.01
 #define MAXLEVEL 9
 #define MINLEVEL 4
 #define feps 1e-2
@@ -39,17 +40,20 @@ double rho3; //comment for 3-phase.h
 int main() {
     L0 = 8.;
     origin (-L0/2, -L0/2.);
-    N = 64;
+    N = 512;
+    CFL = 0.1;
+    DT = 0.001;
 //    mu = muv;
     run();
-    rho1=1; rho2=0.1; rho3=1;
+    rho1=1; rho2=0.01; rho3=1;
     mu1=1; mu2=0.1;
 
 }
-u.n[left]  = dirichlet(1);
+u.n[left]  = dirichlet(MAXVEL);
 p[left]    = neumann(0.);
 pf[left]   = neumann(0.);
 f[left]    = dirichlet(1);
+//f[left]    = dirichlet((fabs(y)<sin(0.5*pi*t))?0:1);
 T[left]    = dirichlet(1);
 fs[left]   = dirichlet(0);
 alpha_doc[left] = neumann(0);
@@ -80,7 +84,7 @@ f[bottom] = neumann(0);
 
 /**
 The top and bottom walls are free-slip and the cylinder is no-slip. */
-double Htr = 0;
+double Htr = 1;
 //double Arrhenius_const = 4.53e+7;//1/s
 //double Ea_by_R = 72900/8.314;// Kelvin
 double Arrhenius_const = 10;//1/s
@@ -92,7 +96,8 @@ double m_degree = 0.333;
 //double Cp1 = 1100, Cp2 = 1006, Cp3 = 840;//J/(kg*K)
 //double kappa1 = 1100, kappa2 = 0.02535, kappa3 = 1.11;//W/(m*K)
 double Cp1 = 1, Cp2 = 1, Cp3 = 1;//J/(kg*K)
-double kappa1 = 1, kappa2 = 0.1, kappa3 = 1;//W/(m*K)
+double kappa1 = 1, kappa2 = 0.001, kappa3 = 1;//W/(m*K)
+#define SEPS 1e-30
 
 event init (t = 0) {
     if (!restore (file = "restart")) {
@@ -102,8 +107,12 @@ event init (t = 0) {
             foreach()
             {
                 T[] = 1;
-                f[] = (sq(x) + sq(y) - sq(1) > 0) ? 1 : 0;
-                u.x[] = 1;
+                f[] = (sq(x) + sq(y) - sq(0.6) > 0 &&
+                       sq(x+1) + sq(y-2) - sq(0.25) > 0 &&
+                       sq(x+3) + sq(y-1) - sq(0.3) > 0 &&
+                       sq(x+2) + sq(y) - sq(0.3) > 0 &&
+                       sq(x+3) + sq(y+3) - sq(0.4) > 0) ? 1 : 0;
+                u.x[] = MAXVEL;
             }
             boundary ({f, T, u});
         }while (adapt_wavelet({f, T, u}, (double []){feps, Teps, ueps, ueps},
@@ -146,33 +155,39 @@ void advection_upwind (scalar f, vector u, scalar df)
 //    boundary ((scalar*) {df});
 }
 
+event stability (i++) {
+    double cfl;
+//    foreach_face(x, reduction (max:cfl)) {
+//        cfl =
+//    }
+}
 
 mgstats mgT;
+scalar r[], thetav[];
 event advance_alpha_T (i++,last){
-
-scalar r[], theta[];
-
-average(theta, f, fs, rho1*Cp1, rho2*Cp2, rho3*Cp3);
-foreach_face(){
-    kappa.x[] = f[]*(kappa1 - kappa2) + kappa2 + fs[]*(kappa3 - kappa2);
-}
+//average(thetav, f, fs, rho1*Cp1, rho2*Cp2, rho3*Cp3);
+foreach()      thetav[] = f[]*(rho1*Cp1 - rho2*Cp2) + rho2*Cp2 + fs[]*(rho3*Cp3 - rho2*Cp2);
+foreach_face() kappa.x[] = f[]*(kappa1 - kappa2) + kappa2 + fs[]*(kappa3 - kappa2);
 
 scalar u_grad_scalar[], tmp[];
 advection_centered(T, u, u_grad_scalar);
 //    advection_upwind (T, u, u_grad_scalar);
 foreach() {
     tmp[] = Arrhenius_const*pow(1-alpha_doc[], n_degree)*exp(-Ea_by_R/T[]);
-    r[] = Htr*rho1*f[]*tmp[] - theta[]*u_grad_scalar[];
+    r[] = Htr*rho1*f[]*tmp[] - thetav[]*u_grad_scalar[];
+//    printf("thetav=%g\n",thetav[]);
 }
-mgT = diffusion (T, dt, D = kappa, r = r, theta = theta);
+mgT = diffusion (T, dt, D = kappa, r = r, theta = thetav);
 
 fprintf (stderr, "mg: i=%d t=%g p=%d u=%d T=%d\n", i, t, mgp.i, mgu.i, mgT.i); //number of iterations
 advection_centered(alpha_doc, u, u_grad_scalar);
 //    advection_upwind (alpha_doc, u, u_grad_scalar);
 foreach() {
+//    printf("thetav=%g\n",thetav[]);
 //    alpha_doc[] += dt*(tmp[] - u_grad_scalar[]);
-    alpha_doc[] = (alpha_doc[] + dt*(tmp[]*(1.0 + n_degree*alpha_doc[]/(1-alpha_doc[])) - u_grad_scalar[]))/(1 + dt*tmp[]*n_degree/(1-alpha_doc[]));
+    alpha_doc[] = f[]*(alpha_doc[] + dt*(tmp[]*(1.0 + n_degree*alpha_doc[]/(1-alpha_doc[])+SEPS) - u_grad_scalar[]))/(1 + dt*tmp[]*n_degree/(1-alpha_doc[]+SEPS));
 }
+
 boundary ((scalar*) {alpha_doc});
 
 }
@@ -207,9 +222,9 @@ We produce animations of the vorticity and tracer fields... */
 
 //Output
 static int iteration=0;
-#define OUTPUT_VARS (scalar *) {l, f, T, alpha_doc}, (vector *) {u}//be careful with kappa, mu. They can be const unity
+#define OUTPUT_VARS (scalar *) {l, f, T, alpha_doc, thetav, r}, (vector *) {u, kappa}//be careful with kappa, mu. They can be const unity
 #include "output_fields/output_vtu_foreach.h"
-event vtk_file (i++)
+event vtk_file (i+=100)
 {
     int nf = iteration;
     scalar l[];
@@ -256,7 +271,7 @@ event adapt (i++) {
 adapt_wavelet ({f, T, alpha_doc, u}, (double[]){feps, Teps, aeps, ueps, ueps}, MAXLEVEL, MINLEVEL);
 }
 
-event stop(i = 10000);
+event stop(i = 100000);
 /**
 ## See also
 

@@ -1,4 +1,4 @@
-CFLAGS=-DDUMP=1 -Wall -O2 -events -E
+CFLAGS=-DDUMP=1 -Wall -O2 -events
 CLIBS=-lm -L$(BASILISK)/gl  $(OPENGLIBS)
 
 karman:

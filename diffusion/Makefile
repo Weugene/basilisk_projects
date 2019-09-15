@@ -1,8 +1,4 @@
-#CFLAGS += -O2
-#include $(BASILISK)/Makefile.defs
-QCC_COMPILER = /home/weugene/basilisk/src/qcc
-CC99='/opt/intel/compilers_and_libraries_2018.2.199/linux/mpi/intel64/bin//mpicc -std=c99'
-#-L$BASILISK/gl  -lGLU -lGLEW -lGL -lX11 #-lglutils
+QCC_COMPILER = qcc
 diffusion:
 	$(QCC_COMPILER)  -O2    diffusion.c -lm
 	./a.out > out 2> log
