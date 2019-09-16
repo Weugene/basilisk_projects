@@ -53,7 +53,7 @@ Usually, it is assumed that mu1 is variable, mu2 and mu3 are not. For simplisity
  **/
 scalar alpha_doc[];
 scalar T[];
-double Eeta_by_Rg = 5; //Kelvin
+double Eeta_by_Rg = 0.1; //Kelvin
 double chi = 1;
 double alpha_gel = 0.8;
 #ifndef fpol

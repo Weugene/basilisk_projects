@@ -61,7 +61,7 @@ f[left]    = dirichlet(1);
 //f[left]    = dirichlet((fabs(y)<sin(0.5*pi*t))?0:1);
 T[left]    = dirichlet(TMIN);
 fs[left]   = dirichlet(0);
-alpha_doc[left] = 0;//dirichlet(0);
+alpha_doc[left] = 0;
 
 u.n[right] = neumann(0.);
 p[right]   = dirichlet(0.);
@@ -177,7 +177,6 @@ event end_timestep (i++,last){
     foreach()      thetav[] = f[]*(rho1*Cp1 - rho2*Cp2) + rho2*Cp2 + fs[]*(rho3*Cp3 - rho2*Cp2);
     foreach_face() kappa.x[] = f[]*(kappa1 - kappa2) + kappa2 + fs[]*(kappa3 - kappa2);
     fprintf(stderr, "kappa, thetav done, grad will");
-
     advection_centered(T, u, u_grad_scalar);
     //    advection_upwind (T, u, u_grad_scalar);
     fprintf(stderr, "grad adv done, tmp r will");
@@ -195,7 +194,6 @@ event end_timestep (i++,last){
     //    advection_upwind (alpha_doc, u, u_grad_scalar);
     foreach() {
     //    alpha_doc[] += dt*(tmp[] - u_grad_scalar[]);
-        u_grad_scalar[]=0;
         alpha_doc[] = (alpha_doc[] + dt*(tmp[]*(1.0 + n_degree*alpha_doc[]/(1-alpha_doc[]+SEPS)) - u_grad_scalar[]))/(1 + dt*tmp[]*n_degree/(1-alpha_doc[]+SEPS));
         alpha_doc[] = clamp(alpha_doc[], 0.0, 1.0);
     }
@@ -282,9 +280,7 @@ We adapt according to the error on the embedded geometry, velocity and
 tracer fields. */
 
 event adapt (i++) {
-    adapt_wavelet ({f, T, alpha_doc, u}, (double[]){feps, Teps, aeps, ueps, ueps}, MAXLEVEL, MINLEVEL);
-    unrefine (x > 0.45*L0 && x<-0.45*L0);
-
+adapt_wavelet ({f, T, alpha_doc, u}, (double[]){feps, Teps, aeps, ueps, ueps}, MAXLEVEL, MINLEVEL);
 }
 
 event stop(t=100);
