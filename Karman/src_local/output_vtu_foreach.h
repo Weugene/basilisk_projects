@@ -1,3 +1,6 @@
+#ifndef BASILISK_HEADER_1
+#define BASILISK_HEADER_1
+#line 1 "./../src_local/output_vtu_foreach.h"
 /*
 This function writes one XML file which allows to read the *.vtu files generated
 by output_vtu_ascii_foreach() when used in MPI. Tested in (quad- and oct-)trees
@@ -314,3 +317,5 @@ void output_vtu_MPI(scalar * list, vector * vlist, char * subname){
     fprintf (ferr, "iter_fp: %d\n", nf);
     iter_fp++;
 }
+
+#endif
