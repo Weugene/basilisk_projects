@@ -16,11 +16,10 @@ advect the passive tracer *f*. */
 
 #include "../src_local/centered-weugene.h"
 // #include "navier-stokes/perfs.h"
-//#include "two-phase.h"
-#include "../src_local/three-phase-rheology.h"
+#include "../src_local/rheology_model.h"
 #include "tension.h"
 //#include "tracer.h" //don't use it if you added two-phase
-#include "diffusion.h"
+
 
 
 
@@ -51,7 +50,7 @@ advect the passive tracer *f*. */
 #define TMAX 2
 #define TMIN 1
 
-face vector kappa[];
+
 
 int main() {
     L0 = 8.;

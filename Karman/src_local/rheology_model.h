@@ -1,6 +1,14 @@
+#ifndef BASILISK_HEADER_8
+#define BASILISK_HEADER_8
+#line 1 "./../src_local/rheology_model.h"
 //The module is intended to solve the heat transfer equation, the polymerization effect and rheology changing
 //it is coupled with navier-stokes/centered.h module
 //
+#include "../src_local/three-phase-rheology.h"
+#include "diffusion.h"
+face vector kappa[];
+scalar r[], thetav[];
+scalar u_grad_scalar[], tmp[];
 double Htr = 1;
 //double Arrhenius_const = 4.53e+7;//1/s
 //double Ea_by_R = 72900/8.314;// Kelvin
@@ -40,7 +48,7 @@ void advection_upwind (scalar f, vector u, scalar df)
 }
 
 event stability (i++) {
-    dtmax = min(dtmax, 0.5*(h/L0)/(Arrhenius_const*exp(-Ea_by_R/TMAX)));
+//    dtmax = min(dtmax, 0.5*(h/L0)/(Arrhenius_const*exp(-Ea_by_R/TMAX)));
 //    double cfl;
 //    foreach_face(x, reduction (max:cfl)) {
 //        cfl =
@@ -48,8 +56,6 @@ event stability (i++) {
 }
 
 mgstats mgT;
-scalar r[], thetav[];
-scalar u_grad_scalar[], tmp[];
 event end_timestep (i++,last){
 //average(thetav, f, fs, rho1*Cp1, rho2*Cp2, rho3*Cp3);
 foreach() thetav[] = f[]*(rho1*Cp1 - rho2*Cp2) + rho2*Cp2 + fs[]*(rho3*Cp3 - rho2*Cp2);
@@ -81,3 +87,4 @@ boundary ((scalar*) {alpha_doc});
 //    fprintf(stderr, "boundary...last");
 
 }
+#endif
