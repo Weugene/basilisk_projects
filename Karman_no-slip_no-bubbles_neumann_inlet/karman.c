@@ -23,20 +23,20 @@ advect the passive tracer *f*. */
 #include "diffusion.h"
 
 
-#define MAXVEL 0.02
+#define MAXVEL 0.1
 //#define TMAX 400
 //#define TMIN 300
 #define TMAX 2
 #define TMIN 1
 #define MAXLEVEL 10
 #define MINLEVEL 4
-#define feps 1e-2
-#define Teps 1e-2
+#define feps 1e-3
+#define Teps 1e-3
 #define aeps 1e-2
-#define ueps 1e-2
+#define ueps 1e-3
 #undef SEPS
 #define SEPS 1e-10
-#define SIGMA 1e-4
+#define SIGMA 1e+0
 
 face vector kappa[];
 
@@ -45,7 +45,7 @@ int main() {
     origin (-L0/2, -L0/2.);
     N = 512;
     CFL = 0.1;
-    DT = 1e-4;
+    DT = 1e-3;
 //    stokes = true;
 //    rho1 = 1140; rho2 = 1; rho3 = 2000;
 //    mu1 = 0.155; mu2 = 1.81e-5; mu3 = 1;
@@ -54,14 +54,18 @@ int main() {
     f.sigma = SIGMA;
     run();
 }
-u.n[left]  = dirichlet(MAXVEL*((L0*L0/4)-y*y));
+//exp(-pow(x + L0/2.,2)/(2*pow(L0/10.,2)))
+#define U_BC MAXVEL*(sqrt(1 - pow(y/(L0/2.),16)))
+#define T_BC (0.5*(TMAX + TMIN) + 0.5*(TMAX - TMIN)*tanh((x)/(L0/10)))
+
+u.n[left]  = dirichlet(U_BC);
 p[left]    = neumann(0.);
 pf[left]   = neumann(0.);
 f[left]    = dirichlet(1);
 //f[left]    = dirichlet((fabs(y)<sin(0.5*pi*t))?0:1);
 T[left]    = dirichlet(TMIN);
 fs[left]   = dirichlet(0);
-alpha_doc[left] = 0;
+alpha_doc[left] = neumann(0.);
 
 u.n[right] = neumann(0.);
 p[right]   = dirichlet(0.);
@@ -70,10 +74,7 @@ T[right]    = neumann(0);
 fs[right]   = neumann(0);
 alpha_doc[right] = neumann_homogeneous();
 
-#define UT_BC exp(-pow(x + L0/2.,2)/(2*pow(L0/10.,2)))
-#define T_BC (0.5*(TMAX + TMIN) + 0.5*(TMAX - TMIN)*tanh(x/(L0/10)))
 u.n[top] = dirichlet(0);
-//u.t[top] = neumann(0);
 u.t[top] = dirichlet(0);
 alpha_doc[top] = neumann(0);
 T[top] = dirichlet(T_BC);
@@ -81,7 +82,6 @@ fs[top] = neumann(0);
 f[top] = neumann(0);
 
 u.n[bottom] = dirichlet(0.);
-//u.t[bottom] = neumann(0);
 u.t[bottom] = dirichlet(0);
 alpha_doc[bottom] = neumann(0);
 T[bottom] = dirichlet(T_BC);
@@ -112,16 +112,12 @@ event init (t = 0) {
             foreach()
             {
                 T[] = 1;
-                f[] = (sq(x+3) + sq(y) - sq(0.25) > 0 &&
-                       sq(x+3.2) + sq(y-2) - sq(0.25) > 0 &&
-                       sq(x+3) + sq(y-1) - sq(0.3) > 0 &&
-                       sq(x+2.6) + sq(y+1.5) - sq(0.3) > 0 &&
-                       sq(x+2.8) + sq(y+3) - sq(0.4) > 0) && (x < -2) ? 1 : 0;
-                u.x[] = MAXVEL*((L0*L0/4)-y*y);
+                f[] = (x < 0) ? 1 : 0;
+                u.x[] = U_BC;
             }
             boundary ({f, T, u});
-        }while (iter <=5 || adapt_wavelet({f, T, u}, (double []){feps, Teps, ueps, ueps},
-                              maxlevel = MAXLEVEL, minlevel=MINLEVEL).nf != 0 && iter <= 15);
+        }while ((adapt_wavelet({f, T, u}, (double []){feps, Teps, ueps, ueps},
+                              maxlevel = MAXLEVEL, minlevel=MINLEVEL).nf != 0) && (iter <= 15));
         fprintf(stderr, "init refinement iter=%d", iter);
         foreach() {
             alpha_doc[] = 0;
@@ -236,7 +232,7 @@ static int iteration=0;
 #define OUTPUT_VARS (scalar *) {l, f, T, alpha_doc, thetav, r, rho, u_grad_scalar, tmp}, (vector *) {u, kappa, mu}//be careful with kappa, mu. They can be const unity
 #include "output_fields/output_vtu_foreach.h"
 //event vtk_file (i += 1)
-event vtk_file (t += 0.01)
+event vtk_file (t += 0.05)
 {
     int nf = iteration;
     scalar l[];
@@ -266,14 +262,14 @@ event vtk_file (t += 0.01)
 
 
 
-//#if DUMP
-//event snapshot (i += 1000)
-//{
-//  char name[80];
-//  sprintf (name, "dump-%d", i);
-//  dump (file = name);
-//}
-//#endif
+#if DUMP
+event snapshot (i += 1000)
+{
+  char name[80];
+  sprintf (name, "dump-%d", i);
+  dump (file = name);
+}
+#endif
 
 /**
 We adapt according to the error on the embedded geometry, velocity and

@@ -1,7 +1,7 @@
 CFLAGS=-DDUMP=1 -Wall -O2 -events
 CLIBS=-lm -L$(BASILISK)/gl  $(OPENGLIBS)
 
-karman:
+karman_no-slip_no-bubbles:
 	qcc   $(CFLAGS) karman.c $(CINCL) $(CLIBS)
 	./a.out
 #	 > out 2> log
