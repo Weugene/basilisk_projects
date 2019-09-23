@@ -5,18 +5,18 @@
 
 #define MAXLEVEL 10
 #define MINLEVEL 4
-#define feps 1e-3
+#define feps 1e-2
 #define Teps 1e-2
 #define aeps 1e-2
 #define ueps 1e-2
 
 
-#define Re 0.1 // rhol*U*L/mul
+#define Re 1 // rhol*U*L/mul
 #define We 0.01//rhol*L*U^2/sigma
 #define Pe 1 // Cpl*rhol*U*L/kappal
 #define Ec 0.01 // U^2/(Cpl*T)
 #define Ex 1 // H_tr/(Cpl*T)
-#define Po 1000 // A*L/U
+#define Po 1000 // A*L/U //1000
 #define Aralpha 5 // E_a/RT
 #define Areta 0.1 // E_eta/RT
 #define Rrhog 10
@@ -40,7 +40,7 @@ int main() {
     origin (-L0/2, -L0/2.);
     N = 512;
     CFL = 0.5;
-    DT = 1e-5;
+    DT = 1e-6;
     stokes = true;
 //    rho1 = 1140; rho2 = 1; rho3 = 2000;
 //    mu1 = 0.155; mu2 = 1.81e-5; mu3 = 1;
@@ -61,12 +61,15 @@ int main() {
     n_degree = 1.667;
     m_degree = 0.333;
     Eeta_by_Rg = Areta;
-    chi = 3;
+    chi = 10;
+    for (scalar s in {f,fs}) {
+        s.refine = s.prolongation = fraction_refine;
+    }
     run();
 }
-#define U_BC (sqrt(1 - pow(y/(L0/2.),16)))
+#define U_BC (sqrt(1 - pow(y/(L0/2.),8)))
 //#define UT_BC exp(-pow(x + L0/2.,2)/(2*pow(L0/10.,2)))
-#define T_BC (0.5*(TMAX + TMIN) + 0.5*(TMAX - TMIN)*tanh((x)/(L0/10)))
+#define T_BC (0.5*(TMAX + TMIN) + 0.5*(TMAX - TMIN)*tanh((x)/(L0/10.0)))
 u.n[left]  = dirichlet(U_BC);
 p[left]    = neumann(0.);
 pf[left]   = neumann(0.);
@@ -81,7 +84,7 @@ p[right]   = dirichlet(0.);
 pf[right]  = dirichlet(0.);
 T[right]    = neumann(0);
 fs[right]   = neumann(0);
-alpha_doc[right] = neumann_homogeneous();
+alpha_doc[right] = neumann(0);
 
 
 u.n[top] = dirichlet(0);
@@ -110,27 +113,31 @@ event init (t = 0) {
             foreach()
             {
                 T[] = TMIN;
-                f[] = (sq(x+L0*2) + sq(y) - sq(0.25) > 0 &&
-                       sq(x+3.2) + sq(y-2) - sq(0.25) > 0 &&
-                       sq(x+3) + sq(y-1) - sq(0.3) > 0 &&
-                       sq(x+2.6) + sq(y+1.5) - sq(0.3) > 0 &&
-                       sq(x+2.8) + sq(y+3) - sq(0.4) > 0) && (x < 2) ? 1 : 0;
-                u.x[] = U_BC;
+                f[] = (sq(x+2/8.) + sq(y) - sq(0.25/8.0) > 0 &&
+                       sq(x+3.2/8.0) + sq(y-2.0/8.0) - sq(0.25/8.0) > 0 &&
+                       sq(x+3/8.0) + sq(y-1.0/8.0) - sq(0.3/8.0) > 0 &&
+                       sq(x+2.6/8.0) + sq(y+1.5/8.0) - sq(0.3/8.0) > 0 &&
+                       sq(x+2.8/8.0) + sq(y+3./8.0) - sq(0.03*L0) > 0) ? 1 : 0;// && (x < 2)
+
+                fs[] = sq(x-0.25*L0) + sq(y) - sq(0.03*L0) > 0 ? 0 : 1;
+                u.x[] = U_BC*(1.0 - fs[]);
             }
-            boundary ({f, T, u});
-        }while (adapt_wavelet({f, T, u}, (double []){feps, Teps, ueps, ueps},
+            boundary ({f, fs, T, u});
+        }while (adapt_wavelet({f, fs, T, u}, (double []){feps, feps, Teps, ueps, ueps},
                               maxlevel = MAXLEVEL, minlevel=MINLEVEL).nf != 0 && iter <= 15);
         fprintf(stderr, "init refinement iter=%d", iter);
         foreach() {
             alpha_doc[] = 0;
-            fs[] = 0;
         }
-        foreach_face(){
-            kappa.x[] = f[]*(kappa1 - kappa2) + kappa2 + fs[]*(kappa3 - kappa2);
-        }
+        fprintf(stderr, "kappa1=%g kappa2=%g kappa3=%g ", kappa1,kappa2,kappa3);
+        foreach_face() kappav.x[] = fm.x[]*kappav(f[], fs[]);
+        advection_centered(T, u, u_grad_scalar);
     }
 }
 
+event velocity_correction(i++){
+    foreach() foreach_dimension() u.x[] *= (1-fs[]);
+}
 //event adapt_step(i<=5)  DT = 1e-9;//event adapt_step(i<=5)  DT = 1e-9;
 
 //Output
@@ -140,7 +147,24 @@ event vtk_file (i += 1)
     char subname[80]; sprintf(subname, "hrhs");
     scalar l[]; foreach() l[] = level;
     //be careful with kappa, mu. They can be const unity
-    output_vtu_MPI( (scalar *) {l, f, T, alpha_doc, thetav, r, rho, u_grad_scalar, tmp}, (vector *) {u, kappa, mu}, subname);
+
+//    vector mapped_kappa_lower[], mapped_kappa_upper[];
+//    vector mapped_mu_lower[], mapped_mu_upper[];
+//    face_vector2vector(kappa, mapped_kappa_lower, mapped_kappa_upper);
+//    face_vector2vector(kappa, mapped_mu_lower, mapped_mu_upper);
+
+
+//    vector mapped_kappa_lower[], mapped_kappa_upper[];
+//    vector mapped_mu_lower[], mapped_mu_upper[];
+//    foreach()
+//    foreach_dimension(){
+//        mapped_kappa_lower.x[] = kappa.x[];
+//        mapped_kappa_upper.x[] = kappa.x[1];
+//        mapped_mu_lower.x[] = mu.x[];
+//        mapped_mu_upper.x[] = mu.x[1];
+//    }
+    advection_centered(T, u, u_grad_scalar);// DELETE THIS LINE!
+    output_vtu_MPI( (scalar *) {l, f, fs, T, alpha_doc, rho, u_grad_scalar}, (vector *) {u, kappa, mu}, subname);
 }
 
 #if DUMP
@@ -152,12 +176,11 @@ event snapshot (i += 1000)
 }
 #endif
 
-event adapt (i++) {
-    adapt_wavelet ({f, T, alpha_doc, u}, (double[]){feps, Teps, aeps, ueps, ueps}, MAXLEVEL, MINLEVEL);
-//    unrefine (x > 0.45*L0 && x<-0.45*L0);
+event adapt (i+=100) {
+    adapt_wavelet ({f, fs, T, alpha_doc, u}, (double[]){feps, feps, Teps, aeps, ueps, ueps}, MAXLEVEL, MINLEVEL);
 }
 
-event stop(t=100);
+event stop(t=200);
 
 /**
 We check the number of iterations of the Poisson and viscous
@@ -180,3 +203,4 @@ We produce animations of the vorticity and tracer fields... */
 //    output_ppm (f, file = "f.mp4", box = {{-0.5,-0.5},{7.5,0.5}},
 //            linear = false, min = 0, max = 1);
 //}
+

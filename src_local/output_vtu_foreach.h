@@ -314,3 +314,15 @@ void output_vtu_MPI(scalar * list, vector * vlist, char * subname){
     fprintf (ferr, "iter_fp: %d\n", nf);
     iter_fp++;
 }
+
+
+void face_vector2vector(face vector fv, vector mapped_data_lower, vector mapped_data_upper){
+//    face vector kappa;
+//    kappa = some_face_data;
+//    vector mapped_data_lower, mapped_data_upper;
+    foreach()
+    foreach_dimension(){
+        mapped_data_lower.x[] = fv.x[];
+        mapped_data_upper.x[] = fv.x[1];
+    }
+}

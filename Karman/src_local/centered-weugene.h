@@ -70,7 +70,7 @@ $\nabla\cdot(\mathbf{u}\otimes\mathbf{u})$ is omitted. This is a
 reference to [Stokes flows](http://en.wikipedia.org/wiki/Stokes_flow)
 for which inertia is negligible compared to viscosity. */
 
-(const) face vector mu = zerof, a = zerof, alpha = unityf;
+(const) face vector mu = zerof, a = zerof, alpha = unityf, kappa = zerof;;
 (const) scalar rho = unity;
 mgstats mgp, mgpf, mgu;
 bool stokes = false;
@@ -230,7 +230,7 @@ $\alpha_c$) or dynamic viscosity (face field $\mu_f$) -- at time
 $t+\Delta t/2$ -- can be defined by overloading this event. */
 
 event properties (i++,last) {
-  boundary ({alpha, mu, rho});
+  boundary ({alpha, mu, rho, kappa}); // Weugene: kappa added
 }
 
 event tracer_diffusion (i++,last);
@@ -428,12 +428,17 @@ event projection (i++,last)
   correction (dt);
 }
 
+event velocity_correction(i++, last);
 /**
 Some derived solvers need to hook themselves at the end of the
 timestep. */
 
 event end_timestep (i++, last);
 
+
+/**
+Output vtk files*/
+event vtk_file (i += 1, last);// correct. Added by Weugene
 /**
 ## Adaptivity
 

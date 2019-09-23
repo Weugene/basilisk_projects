@@ -17,13 +17,15 @@ method. The volume fraction in fluid 1 is $f=1$; $f=0$ and $fs=0$ in fluid
 scalar fs[];
 scalar f[], * interfaces = {f};
 double rho1 = 1., mu1 = 0., rho2 = 1., mu2 = 0., rho3 = 1., mu3 = 0.;
-
+double kappa1 = 0, kappa2 = 0, kappa3 = 0;//W/(m*K)
 
 /**
 Auxilliary fields are necessary to define the (variable) specific
 volume $\alpha=1/\rho$ as well as the cell-centered density. */
 
+
 face vector alphav[];
+face vector kappav[];
 scalar rhov[];
 
 event defaults (i = 0) {
@@ -31,21 +33,30 @@ event defaults (i = 0) {
   rho = rhov;
 
   /**
-  If the viscosity is non-zero, we need to allocate the face-centered
-  viscosity field. */
+  If the viscosity and conductivity are non-zero, we need to allocate the face-centered
+  viscosity and conductivity fields. */
   
   if (mu1 || mu2) //?
     mu = new face vector;
+
+  if (kappa1 || kappa2) //?
+      kappa = new face vector;
 }
 
 /**
-The density and viscosity are defined using arithmetic averages by
+The density, viscosity and conductivity are defined using arithmetic averages by
 default. The user can overload these definitions to use other types of
 averages (i.e. harmonic).
 Usually, it is assumed that mu1 is variable, mu2 and mu3 are not. For simplisity mu3=mu2
  */
 #ifndef rho
-#define rho(f, fs) (clamp(f,0.,1.)*(rho1 - rho2) + rho2 + fs*(rho3 - rho2))
+#define rho(f, fs) (clamp(f-fs,0.,1.)*(rho1 - rho2) + rho2 + fs*(rho3 - rho2))
+#endif
+
+#ifndef kappav
+//#define kappav(f, fs)  (clamp(f-fs,0.,1.)*(kappa1 - kappa2) + kappa2 + clamp(fs,0.,1.)*(kappa3 - kappa2)) //CORRECT IT !!!
+#define kappav(f, fs)  (1./(  clamp(f-fs,0.,1.)*(1./kappa1 - 1./kappa2) + 1./kappa2 + fs*(1./kappa3 - 1./kappa2)  )    )
+
 #endif
 /**
 # Variable rheology models
@@ -69,9 +80,11 @@ double alpha_gel = 0.8;
 #endif
 
 #ifndef mu
-//#define mu(f, fs, alpha_doc, T)  (clamp(f,0.,1.)*(mu1 - mu2) + mu2 + clamp(fs,0.,1.)*(mu3 - mu2))
-#define mu(f, fs, alpha_doc, T)  (clamp(f,0.,1.)*(muf1(alpha_doc, T) - mu2) + mu2 + fs*(mu3 - mu2))
+//#define mu(f, fs, alpha_doc, T)  (clamp(f-fs,0.,1.)*(mu1 - mu2) + mu2 + clamp(fs,0.,1.)*(mu3 - mu2)) //CORRECT IT !!!
+//#define mu(f, fs, alpha_doc, T)  (clamp(f-fs,0.,1.)*(muf1(alpha_doc, T) - mu2) + mu2 + fs*(mu3 - mu2))
+#define mu(f, fs, alpha_doc, T)  (1./(  clamp(f-fs,0.,1.)*(1./muf1(alpha_doc, T) - 1./mu2) + 1./mu2 + fs*(1./mu3 - 1./mu2)  )    )
 #endif
+
 
 /**
 We have the option of using some "smearing" of the density/viscosity
@@ -118,9 +131,13 @@ event properties (i++) {
       face vector muv = mu;
       muv.x[] = fm.x[]*mu(ff, fsf, alpha_doc[], T[]);
     }
+    if (kappa1 || kappa2) {
+        face vector kappav = kappa;
+        kappav.x[] = fm.x[]*kappav(ff, fsf);
+    }
   }
   foreach()
-    rhov[] = cm[]*rho(sf[], fs[]); //? alphav.x and rhov are not consistent
+    rhov[] = cm[]*rho(sf[], fs[]); //? alphav.x and rhov are not consistent - All do so
 
 #if TREE  
   sf.prolongation = fraction_refine;
