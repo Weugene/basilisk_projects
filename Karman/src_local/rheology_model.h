@@ -17,7 +17,10 @@ double Cp1 = 1, Cp2 = 1, Cp3 = 1;//J/(kg*K)
 #undef SEPS
 #define SEPS 1e-10
 
-
+//#ifndef AverA
+//#define AverA(f, fs, A1, A2, A3)  (clamp((f-fs),0.,1.)*(A1 - A2) + A2 + clamp(fs,0.,1.)*(A3 - A2))
+////#define AverA(f, fs, A1, A2, A3)  ( 1./(  clamp((f-fs),0.,1.)*( 1./A1 - 1./A2 ) + 1./A2 + clamp(fs,0,1)*(1./A3 - 1./A2)  ))
+//#endif
 //void average(scalar A, const scalar f, const scalar fs, const double A1, const double A2, const double A3){
 //    foreach(){
 //        A[] = f[]*(A1 - A2) + A2 + fs[]*(A3 - A2);

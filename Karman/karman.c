@@ -11,7 +11,7 @@
 #define ueps 1e-2
 
 
-#define Re 1 // rhol*U*L/mul
+#define Re 0.01 // rhol*U*L/mul
 #define We 0.01//rhol*L*U^2/sigma
 #define Pe 1 // Cpl*rhol*U*L/kappal
 #define Ec 0.01 // U^2/(Cpl*T)
@@ -19,6 +19,7 @@
 #define Po 1000 // A*L/U //1000
 #define Aralpha 5 // E_a/RT
 #define Areta 0.1 // E_eta/RT
+#define CHI 26.89
 #define Rrhog 10
 #define Rrhos 1
 #define Rmug 100
@@ -28,6 +29,47 @@
 #define RCpg 1
 #define RCps 1
 #define RT 2
+
+//#define Re 0.7 // rhol*U*L/mul
+//#define We 2.6e-1//rhol*L*U^2/sigma
+//#define Pe 4.06 // Cpl*rhol*U*L/kappal
+//#define Ec 3e-12 // U^2/(Cpl*T)
+//#define Ex  1 // H_tr/(Cpl*T)
+//#define Po 0.16 // A*L/U //1000
+//#define Aralpha 30.76// E_a/RT
+//#define Areta 15.08 // E_eta/RT
+//#define CHI 26.89
+//#define Rrhog 10
+//#define Rrhos 0.42
+//#define Rmug 100//8493.
+//#define Rmus 1
+//#define Rkappag 13.95
+//#define Rkappas 0.029
+//#define RCpg 1.24
+//#define RCps 1.87
+//#define RT 1.16
+
+
+
+//#define Re 0.007 // rhol*U*L/mul
+//#define We 2.6e-5//rhol*L*U^2/sigma
+//#define Pe 4.06 // Cpl*rhol*U*L/kappal
+//#define Ec 3e-12 // U^2/(Cpl*T)
+//#define Ex  1 // H_tr/(Cpl*T)
+//#define Po 0.16 // A*L/U //1000
+//#define Aralpha 30.76// E_a/RT
+//#define Areta 15.08 // E_eta/RT
+//#define CHI 26.89
+//#define Rrhog 904
+//#define Rrhos 0.42
+//#define Rmug 1000//8493.
+//#define Rmus 1
+//#define Rkappag 13.95
+//#define Rkappas 0.029
+//#define RCpg 1.24
+//#define RCps 1.87
+//#define RT 1.16
+//
 
 
 
@@ -39,7 +81,7 @@ int main() {
     L0 = 1.;
     origin (-L0/2, -L0/2.);
     N = 512;
-    CFL = 0.5;
+    CFL = 0.4;
     DT = 1e-6;
     stokes = true;
 //    rho1 = 1140; rho2 = 1; rho3 = 2000;
@@ -49,7 +91,7 @@ int main() {
     rho1 = 1.0; rho2 = 1.0/Rrhog; rho3 = 1.0/Rrhos;
     mu1 = 1.0/Re;  mu2 = 1.0/(Re*Rrhog);  mu3 = 1.0/(Re*Rrhos);
 //  surface tension
-//    f.sigma = 1.0/We;
+    f.sigma = 1.0/We;
 //  heat transfer model
     kappa1 = 1.0/Pe;  kappa2 = 1.0/(Pe*Rkappag);  kappa3 = 1.0/(Pe*Rkappas);
     Cp1 = 1.0;  Cp2 = 1.0/RCpg;  Cp3 = 1.0/RCps;
@@ -58,13 +100,14 @@ int main() {
     Arrhenius_const = Po;
     Ea_by_R = Aralpha;
 //  rheology model
-    n_degree = 1.667;
-    m_degree = 0.333;
+    n_degree = 1.94;
+    m_degree = 0.;
     Eeta_by_Rg = Areta;
-    chi = 10;
-    for (scalar s in {f,fs}) {
+    chi = CHI;
+    for (scalar s in {f, fs}) {
         s.refine = s.prolongation = fraction_refine;
     }
+    boundary ({f, fs});
     run();
 }
 #define U_BC (sqrt(1 - pow(y/(L0/2.),8)))
@@ -89,17 +132,16 @@ alpha_doc[right] = neumann(0);
 
 u.n[top] = dirichlet(0);
 u.t[top] = dirichlet(0);
-//u.t[top] = dirichlet(0);
 alpha_doc[top] = neumann(0);
 T[top] = dirichlet(T_BC);
-fs[top] = neumann(0);
+fs[top] = dirichlet(0);
 f[top] = neumann(0);
 
 u.n[bottom] = dirichlet(0.);
 u.t[bottom] = dirichlet(0);
-//u.t[bottom] = dirichlet(0);
 alpha_doc[bottom] = neumann(0);
 T[bottom] = dirichlet(T_BC);
+fs[top] = dirichlet(0);
 f[bottom] = neumann(0);
 
 
@@ -113,13 +155,15 @@ event init (t = 0) {
             foreach()
             {
                 T[] = TMIN;
-                f[] = (sq(x+2/8.) + sq(y) - sq(0.25/8.0) > 0 &&
-                       sq(x+3.2/8.0) + sq(y-2.0/8.0) - sq(0.25/8.0) > 0 &&
-                       sq(x+3/8.0) + sq(y-1.0/8.0) - sq(0.3/8.0) > 0 &&
-                       sq(x+2.6/8.0) + sq(y+1.5/8.0) - sq(0.3/8.0) > 0 &&
-                       sq(x+2.8/8.0) + sq(y+3./8.0) - sq(0.03*L0) > 0) ? 1 : 0;// && (x < 2)
-
-                fs[] = sq(x-0.25*L0) + sq(y) - sq(0.03*L0) > 0 ? 0 : 1;
+               // f[] = (sq(x+2/8.) + sq(y) - sq(0.25/8.0) > 0 &&
+               //       sq(x+3.2/8.0) + sq(y-2.0/8.0) - sq(0.25/8.0) > 0 &&
+               //        sq(x+3/8.0) + sq(y-1.0/8.0) - sq(0.3/8.0) > 0 &&
+               //        sq(x+2.6/8.0) + sq(y+1.5/8.0) - sq(0.3/8.0) > 0 &&
+               //        sq(x+2.8/8.0) + sq(y+3./8.0) - sq(0.03*L0) > 0) ? 1 : 0;// && (x < 2)
+		f[] = (x<0.1*L0);
+		fs[] = 0.0;
+//                fs[] = (sq(x-0.25*L0) + sq(y) - sq(0.03*L0) > 0 && sq(x-0.3*L0) + sq(y) - sq(0.03*L0) > 0 &&
+//			sq(x-0.35*L0) + sq(y) - sq(0.03*L0) > 0) ? 0 : 1;
                 u.x[] = U_BC*(1.0 - fs[]);
             }
             boundary ({f, fs, T, u});
@@ -132,7 +176,11 @@ event init (t = 0) {
         fprintf(stderr, "kappa1=%g kappa2=%g kappa3=%g ", kappa1,kappa2,kappa3);
         foreach_face() kappav.x[] = fm.x[]*kappav(f[], fs[]);
         advection_centered(T, u, u_grad_scalar);
+    }else{
+        fprintf(stderr, "RESTART from file");
     }
+
+    event ("vtk_file");
 }
 
 event velocity_correction(i++){

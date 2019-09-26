@@ -9,9 +9,19 @@ an interface (i.e. immiscible fluids) with solid obstacles. It is typically used
 combination with a [Navier--Stokes solver](navier-stokes/centered.h). 
 
 The interface between the fluids is tracked with a Volume-Of-Fluid
-method. The volume fraction in fluid 1 is $f=1$; $f=0$ and $fs=0$ in fluid
-2; $f=0$ and $fs=1$ in solid. The densities and dynamic viscosities for fluid 1 and 2 are *rho1*,
-*mu1*, *rho2*, *mu2*, respectively, in solid rho3 and mu3.*/
+method. The volume fraction $f$ and $fs$ leads to next interpretation of averaged value of A =(\rho, \mu, \kappa)
+\begin{table}[]
+\begin{tabular}{lll}
+f & fs & A    \\
+1 & 1  & A\_3 \\
+0 & 1  & A\_3 \\
+1 & 0  & A\_1 \\
+0 & 0  & A\_2
+\end{tabular}
+\end{table}
+ The above definition of variables leads to a specific definition of the averaged value A.
+The densities and dynamic viscosities for fluid 1 and 2 are *rho1*,
+*mu1*, *rho2*, *mu2*, respectively, in a solid rho3 and mu3.*/
 
 #include "vof.h"
 scalar fs[];
