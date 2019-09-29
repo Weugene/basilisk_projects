@@ -67,7 +67,7 @@ $\nabla\cdot(\mathbf{u}\otimes\mathbf{u})$ is omitted. This is a
 reference to [Stokes flows](http://en.wikipedia.org/wiki/Stokes_flow)
 for which inertia is negligible compared to viscosity. */
 
-(const) face vector mu = zerof, a = zerof, alpha = unityf, kappa = zerof;;
+(const) face vector mu = zerof, a = zerof, alpha = unityf, kappa = zerof;
 (const) scalar rho = unity;
 mgstats mgp, mgpf, mgu;
 bool stokes = false;
