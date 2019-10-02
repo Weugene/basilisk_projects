@@ -343,6 +343,14 @@ event viscous_term (i++,last)
   if (constant(mu.x) != 0.) {
     correction (dt);
     mgu = viscosity (u, mu, rho, dt, mgu.nrelax);
+
+//    foreach(){
+//        tmp[] = Arrhenius_const * pow(1 - alpha_doc[], n_degree) * exp(-Ea_by_R / T[]);
+//        r[] = Htr * rho1 * f[] * tmp[]*(1.0 - Eeta_by_Rg/T[]) - thetav[] * u_grad_scalar[];
+//        beta[] = Htr * rho1 * f[] * tmp[]*Eeta_by_Rg/(T[]*T[]);
+//    }
+//
+//    mgu = diffusion(T, dt, D = kappa, r = r, beta = beta, theta = thetav);
     correction (-dt);
   }
 

@@ -104,10 +104,12 @@ int main() {
     m_degree = 0.;
     Eeta_by_Rg = Areta;
     chi = CHI;
-    for (scalar s in {f, fs}) {
-        s.refine = s.prolongation = fraction_refine;
-    }
-    boundary ({f, fs});
+#if TREE
+    for (scalar s in {f, fs}){
+    s.refine = s.prolongation = fraction_refine;
+    boundary ({s});
+  }
+#endif
     run();
 }
 #define U_BC (sqrt(1 - pow(y/(L0/2.),8)))

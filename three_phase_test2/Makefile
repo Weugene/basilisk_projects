@@ -1,4 +1,8 @@
-#!/bin/bash
-all:
-	qcc -O2 -Wall three_phase_test2.c -o three_phase_test2 -lm -events
-	./three_phase_test2
+CFILE=three_phase_test2
+CFLAGS=-DDUMP=1 -Wall -O2 -events
+CLIBS=-lm -L$(BASILISK)/gl  $(OPENGLIBS)
+
+target_$(CFILE):
+	rm -rf enc* log .qcc*
+	qcc  $(CFLAGS) $(CFILE).c $(CINCL) $(CLIBS)
+	./a.out

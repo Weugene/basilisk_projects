@@ -25,13 +25,13 @@
 #include "distance.h"
 
 #define MAXlevel 10                                              // maximum level
-#define MINlevel 0                                              // maximum level
+#define MINlevel 4                                              // maximum level
 #define tmax 5.0                                                 // maximum time
 #define tsnap (1e-2)
 // Error tolerances
 #define fErr (5e-2)                                 // error tolerance in VOF
-#define K1Err (1e-3)                                 // error tolerance in KAPPA
-#define K2Err (1e-3)                                 // error tolerance in KAPPA
+#define K1Err (1e-1)                                 // error tolerance in KAPPA 1e-3
+#define K2Err (1e-1)                                 // error tolerance in KAPPA
 #define VelErr (2e-1)                            // error tolerances in velocity
 #define OmegaErr (1e-2)                            // error tolerances in velocity
 
@@ -43,7 +43,7 @@ $$ \hat{\rho}\left(\frac{\partial U_i}{\partial t} + U_j\frac{\partial U_i}{\par
 */
 #define La (7.2e4)
 #define Oh sqrt(1./La)
-#define Bo 0.132
+#define Bo 1.32
 #define Mu12 20.0
 #define Rho12 0.9630
 #define Rho32 0.0010
@@ -54,7 +54,7 @@ Non-dimensioalized using the surface tenison coefficient of $\sigma_{23}$.<br/>
 Notice that $\sigma_{12}/\sigma_{23} + \sigma_{13}/\sigma_{23} < 1$. The spreading coefficient
 of liquid pool (1) is positive. It will try to maximize its surface area.
 */
-#define SIGMA12by23 (0.40)
+#define SIGMA12by23 (1.0)
 #define SIGMA13by23 (0.30)
 
 // density
@@ -74,45 +74,70 @@ of liquid pool (1) is positive. It will try to maximize its surface area.
 u.n[right] = neumann(0.);
 u.n[left] = neumann(0.);
 u.n[top] = neumann(0.);
-u.n[bottom] = neumann(0.);
+u.n[bottom] = dirichlet(0.);
+p[left] = dirichlet(0.);
 p[right] = dirichlet(0.);
+p[top] = dirichlet(0.);
 scalar KAPPA1[], KAPPA2[], omega[];
 int main()
 {
   init_grid (1024);
-//  refine(x < 1.1 && x > -2.1 && y < 2.0 && level < 12);
   rho1 = Rho1; mu1 = Mu1;
   rho2 = Rho2; mu2 = Mu2;
   rho3 = Rho3; mu3 = Mu3;
-  sigma13 = SIGMA12by23;
+  sigma13 = SIGMA13by23;
   sigma23 = 1.0;
   sigma12 = SIGMA12by23;
   L0=Ldomain;
   X0=-L0/2;
   Y0=-L0/8;
+  stokes = true; //added
+#if TREE
+  for (scalar s in {f, fs}){
+    s.refine = s.prolongation = fraction_refine;
+    boundary ({s});
+  }
+#endif
   run();
 }
-event init(t = 0)
-{
-//  if(!restore (file = "dump")){
-    foreach () {
-      f[] = (sq(x) + sq(y) - sq(L0/8) < 0) && (y > 0) ? 1 : 0;
-      fs[] = (y < 0) ? 1 : 0;
-      u.x[] = 0.0;
-      u.y[] = 0.0;
+event init(t = 0) {
+    if (!restore (file = "restart")) {
+        int iter = 0;
+        do {
+            iter++;
+            foreach() {
+                f[] = (sq(x) + sq(y) - sq(L0/8) < 0) && (y > 0) ? 1 : 0;
+                fs[] = (y < 0) ? 1 : 0;
+                u.x[] = 0.0;
+                u.y[] = 0.0;
+            }
+            vorticity (u, omega);
+            boundary ((scalar *){omega});
+            boundary ({f, fs, u});
+        }while (adapt_wavelet({f, fs, u.x, u.y, omega}, (double []){fErr, fErr, VelErr, VelErr, OmegaErr},
+                              maxlevel = MAXlevel, minlevel=MINlevel).nf != 0 && iter <= 15);
+
+        fprintf(stderr, "init refinement iter=%d", iter);
+        foreach() {
+
+        }
+    }else{
+        fprintf(stderr, "RESTART from file");
     }
-//  }
+
+    event ("vtk_file");
 }
 // Gravity
 event acceleration(i++){
   face vector av = a;
   foreach_face(x){
-    av.x[] += Bo;
+    av.x[] -= Bo;
   }
 }
 
 event velocity_correction(i++){
     foreach() foreach_dimension() u.x[] *= (1-fs[]);
+    boundary({u});
 }
 //Output
 #include "../src_local/output_vtu_foreach.h"
@@ -120,7 +145,21 @@ event vtk_file (i += 100)
 {
     char subname[80]; sprintf(subname, "enc");
     scalar l[]; foreach() l[] = level;
-    output_vtu_MPI( (scalar *) {l, f, fs, rho, KAPPA1, KAPPA2, omega}, (vector *) {u, mu}, subname);
+
+    scalar tmp1[], tmp2[];
+    vorticity (u, omega);
+    curvature(f, KAPPA1);
+    curvature(fs, KAPPA2);
+    foreach(){
+    //      KAPPA1[] = exp(-fabs(KAPPA1[]));
+    //      KAPPA2[] = exp(-fabs(KAPPA2[]));
+//        tmp1[] = clamp(KAPPA1[], -1000, 1000);
+//        tmp2[] = clamp(KAPPA2[], -1000, 1000);.
+        tmp1[] = (fabs(KAPPA1[])>1000)? 0: KAPPA1[];
+        tmp2[] = (fabs(KAPPA2[])>1000)? 0: KAPPA2[];
+    }
+
+    output_vtu_MPI( (scalar *) {l, f, fs, rho, KAPPA1, KAPPA2, tmp1, tmp2, omega}, (vector *) {u, mu}, subname);
 }
 
 event adapt(i++)
@@ -128,13 +167,19 @@ event adapt(i++)
   /**
   We use AMR based on the curvature values of VOF fields, vorticity, and velocities.
   */
-
   vorticity (u, omega);
-  boundary ((scalar *){omega});
-  curvature(f, KAPPA1);
-  curvature(fs, KAPPA2);
-  adapt_wavelet ((scalar *){f, fs, u.x, u.y, KAPPA1, KAPPA2, omega},
-     (double[]){fErr, fErr, fErr, VelErr, VelErr, K1Err, K2Err, OmegaErr},
+//  curvature(f, KAPPA1);
+//  curvature(fs, KAPPA2);
+//  foreach(){
+////      KAPPA1[] = exp(-fabs(KAPPA1[]));
+////      KAPPA2[] = exp(-fabs(KAPPA2[]));
+////      KAPPA1[] = clamp(KAPPA1[], -1000, 1000);
+////      KAPPA2[] = clamp(KAPPA2[], -1000, 1000);
+//      KAPPA1[] = (fabs(KAPPA1[])>1000)? 1000: KAPPA1[];
+////      KAPPA2[] = (fabs(KAPPA2[])>1000)? 0: KAPPA2[];
+//  }
+  adapt_wavelet ((scalar *){f, fs, omega},
+     (double[]){fErr, fErr, OmegaErr},
       maxlevel = MAXlevel, minlevel = MINlevel);
 }
 // Outputs
