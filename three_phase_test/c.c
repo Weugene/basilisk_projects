@@ -81,7 +81,7 @@ int main()
   rho1 = Rho1; mu1 = Mu1;
   rho2 = Rho2; mu2 = Mu2;
   rho3 = Rho3; mu3 = Mu3;
-  sigma13 = SIGMA12by23;
+  sigma13 = SIGMA13by23;
   sigma23 = 1.0;
   sigma12 = SIGMA12by23;
   L0=Ldomain;
