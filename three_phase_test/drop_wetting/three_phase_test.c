@@ -44,8 +44,8 @@ $$ \hat{\rho}\left(\frac{\partial U_i}{\partial t} + U_j\frac{\partial U_i}{\par
 */
 #define La (3.6e5)
 #define Oh sqrt(1./La)
-#define Bo 0.343
-#define Mu12 1.0
+#define Bo 3.43
+#define Mu12 100
 #define Rho12 1.0
 #define Rho32 0.001
 #define Mu32  0.01
@@ -55,7 +55,7 @@ Non-dimensioalized using the surface tenison coefficient of $\sigma_{23}$.<br/>
 Notice that $\sigma_{12}/\sigma_{23} + \sigma_{13}/\sigma_{23} < 1$. The spreading coefficient
 of liquid pool (1) is positive. It will try to maximize its surface area.
 */
-#define SIGMA12by23 (1.7)
+#define SIGMA12by23 (0.3)
 #define SIGMA13by23 (1)
 
 // density

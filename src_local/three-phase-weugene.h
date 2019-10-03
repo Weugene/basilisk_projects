@@ -55,11 +55,13 @@ The reason we choose this equation because the sum of coefficients of $A_i$ is z
 
 #ifndef rho
 //#define rho(f, fs) (clamp(f,0.,1.)*(rho1 - rho2) + rho2 + clamp(fs,0.,1.)*(rho3 - rho2))
-#define rho(f1, f2) (clamp(f1*(1-f2), 0., 1.) * rho1 + clamp(f1*f2, 0., 1.) * rho2 + clamp((1-f1), 0., 1.) * rho3)
+#define rho(f1, f2) (clamp(f1*(1-f2), 0., 1.) * rho2 + clamp(f1*f2, 0., 1.) * rho1 + clamp((1-f1), 0., 1.) * rho3)
+//#define rho(f1, f2) (clamp(f1*(1-f2), 0., 1.) * rho1 + clamp(f1*f2, 0., 1.) * rho2 + clamp((1-f1), 0., 1.) * rho3)
 #endif
 #ifndef mu
 //#define mu(f, fs)  (clamp(f,0.,1.)*(mu1 - mu2) + mu2 + clamp(fs,0.,1.)*(mu3 - mu2))
-#define mu(f1, f2) (clamp(f1*(1-f2), 0., 1.) * mu1 + clamp(f1*f2, 0., 1.) * mu2 + clamp((1-f1), 0., 1.) * mu3)
+#define mu(f1, f2) (clamp(f1*(1-f2), 0., 1.) * mu2 + clamp(f1*f2, 0., 1.) * mu1 + clamp((1-f1), 0., 1.) * mu3)
+//#define mu(f1, f2) (clamp(f1*(1-f2), 0., 1.) * mu1 + clamp(f1*f2, 0., 1.) * mu2 + clamp((1-f1), 0., 1.) * mu3)
 #endif
 
 /**
