@@ -2,7 +2,8 @@ CFLAGS=-DDUMP=1 -Wall -O2 -events
 CLIBS=-lm -L$(BASILISK)/gl  $(OPENGLIBS)
 
 karman:
-	qcc   $(CFLAGS) karman.c $(CINCL) $(CLIBS)
+	rm -rf .qcc* hr* a.out dump* out log
+	qcc $(CFLAGS) karman.c $(CINCL) $(CLIBS)
 	./a.out
 #	 > out 2> log &
 #	mvlc movie.mp4
