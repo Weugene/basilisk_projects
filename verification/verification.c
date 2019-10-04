@@ -1,7 +1,12 @@
 #include "../src_local/centered-weugene.h"
 // #include "navier-stokes/perfs.h"
+#define a_mu 2.6
+//#define muf1(alpha_doc, T) mu1*exp(pow(2*a_mu*y/L0,2))
+#include "../src_local/three-phase-rheology.h"
 #include "../src_local/rheology_model.h"
-#include "tension.h"
+//#include "tension.h"
+
+
 
 #define MAXLEVEL 10
 #define MINLEVEL 4
@@ -14,7 +19,6 @@
 #define Re 0.01 // rhol*U*L/mul
 #define We 0.01//rhol*L*U^2/sigma
 #define Pe 1 // Cpl*rhol*U*L/kappal
-#define Ec 0.01 // U^2/(Cpl*T)
 #define Ex 1 // H_tr/(Cpl*T)
 #define Po 1000 // A*L/U //1000
 #define Aralpha 5 // E_a/RT
@@ -29,53 +33,10 @@
 #define RCpg 1
 #define RCps 1
 #define RT 2
-
-//#define Re 0.7 // rhol*U*L/mul
-//#define We 2.6e-1//rhol*L*U^2/sigma
-//#define Pe 4.06 // Cpl*rhol*U*L/kappal
-//#define Ec 3e-12 // U^2/(Cpl*T)
-//#define Ex  1 // H_tr/(Cpl*T)
-//#define Po 0.16 // A*L/U //1000
-//#define Aralpha 30.76// E_a/RT
-//#define Areta 15.08 // E_eta/RT
-//#define CHI 26.89
-//#define Rrhog 10
-//#define Rrhos 0.42
-//#define Rmug 100//8493.
-//#define Rmus 1
-//#define Rkappag 13.95
-//#define Rkappas 0.029
-//#define RCpg 1.24
-//#define RCps 1.87
-//#define RT 1.16
-
-
-
-//#define Re 0.007 // rhol*U*L/mul
-//#define We 2.6e-5//rhol*L*U^2/sigma
-//#define Pe 4.06 // Cpl*rhol*U*L/kappal
-//#define Ec 3e-12 // U^2/(Cpl*T)
-//#define Ex  1 // H_tr/(Cpl*T)
-//#define Po 0.16 // A*L/U //1000
-//#define Aralpha 30.76// E_a/RT
-//#define Areta 15.08 // E_eta/RT
-//#define CHI 26.89
-//#define Rrhog 904
-//#define Rrhos 0.42
-//#define Rmug 1000//8493.
-//#define Rmus 1
-//#define Rkappag 13.95
-//#define Rkappas 0.029
-//#define RCpg 1.24
-//#define RCps 1.87
-//#define RT 1.16
-//
-
-
+#define dP 1
 
 #define TMIN 1
 #define TMAX TMIN*RT
-
 
 int main() {
     L0 = 1.;
@@ -84,14 +45,10 @@ int main() {
     CFL = 0.4;
     DT = 1e-6;
     stokes = true;
-//    rho1 = 1140; rho2 = 1; rho3 = 2000;
-//    mu1 = 0.155; mu2 = 1.81e-5; mu3 = 1;
-//double Arrhenius_const = 4.53e+7;//1/s
-//double Ea_by_R = 72900/8.314;// Kelvin
     rho1 = 1.0; rho2 = 1.0/Rrhog; rho3 = 1.0/Rrhos;
     mu1 = 1.0/Re;  mu2 = 1.0/(Re*Rrhog);  mu3 = 1.0/(Re*Rrhos);
 //  surface tension
-    f.sigma = 1.0/We;
+//    f.sigma = 1.0/We;
 //  heat transfer model
     kappa1 = 1.0/Pe;  kappa2 = 1.0/(Pe*Rkappag);  kappa3 = 1.0/(Pe*Rkappas);
     Cp1 = 1.0;  Cp2 = 1.0/RCpg;  Cp3 = 1.0/RCps;
@@ -101,7 +58,7 @@ int main() {
     Ea_by_R = Aralpha;
 //  rheology model
     n_degree = 1.94;
-    m_degree = 0.;
+//    m_degree = 0.;
     Eeta_by_Rg = Areta;
     chi = CHI;
 #if TREE
@@ -116,10 +73,11 @@ int main() {
 //#define UT_BC exp(-pow(x + L0/2.,2)/(2*pow(L0/10.,2)))
 #define T_BC (0.5*(TMAX + TMIN) + 0.5*(TMAX - TMIN)*tanh((x)/(L0/10.0)))
 u.n[left]  = dirichlet(U_BC);
-p[left]    = neumann(0.);
-pf[left]   = neumann(0.);
+//u.n[left] = neumann(1);
+//p[left]    = dirichlet(1);
+//pf[left]   = dirichlet(1);
 f[left]    = dirichlet(1);
-//f[left]    = dirichlet((fabs(y)<sin(0.5*pi*t))?0:1);
+f[left]    = dirichlet((fabs(y)<sin(0.5*pi*t))?0:1);
 T[left]    = dirichlet(TMIN);
 fs[left]   = dirichlet(0);
 alpha_doc[left] = 0;//dirichlet(0);
@@ -146,7 +104,9 @@ T[bottom] = dirichlet(T_BC);
 fs[top] = dirichlet(0);
 f[bottom] = neumann(0);
 
-
+double solution_u (double x, double y){
+    return (dP/(8*mu1*L0))*pow(L0/a_mu, 2)*(exp(-pow(a_mu,2)) - exp(-pow(-2*a_mu*y/L0,2)));
+}
 
 
 event init (t = 0) {
@@ -162,22 +122,24 @@ event init (t = 0) {
                //        sq(x+3/8.0) + sq(y-1.0/8.0) - sq(0.3/8.0) > 0 &&
                //        sq(x+2.6/8.0) + sq(y+1.5/8.0) - sq(0.3/8.0) > 0 &&
                //        sq(x+2.8/8.0) + sq(y+3./8.0) - sq(0.03*L0) > 0) ? 1 : 0;// && (x < 2)
-		f[] = (x<0.1*L0);
+		f[] = 1;
 		fs[] = 0.0;
 //                fs[] = (sq(x-0.25*L0) + sq(y) - sq(0.03*L0) > 0 && sq(x-0.3*L0) + sq(y) - sq(0.03*L0) > 0 &&
 //			sq(x-0.35*L0) + sq(y) - sq(0.03*L0) > 0) ? 0 : 1;
+//                u.x[] = U_BC;
                 u.x[] = U_BC*(1.0 - fs[]);
             }
-            boundary ({f, fs, T, u});
-        }while (adapt_wavelet({f, fs, T, u}, (double []){feps, feps, Teps, ueps, ueps},
+            boundary ({T, f, fs, u});
+        }while (adapt_wavelet({u}, (double []){Teps, feps, feps, ueps, ueps},
                               maxlevel = MAXLEVEL, minlevel=MINLEVEL).nf != 0 && iter <= 15);
         fprintf(stderr, "init refinement iter=%d", iter);
         foreach() {
             alpha_doc[] = 0;
         }
-        fprintf(stderr, "kappa1=%g kappa2=%g kappa3=%g ", kappa1,kappa2,kappa3);
-        foreach_face() kappav.x[] = fm.x[]*kappav(f[], fs[]);
-        advection_centered(T, u, u_grad_scalar);
+        boundary ({alpha_doc});
+//        fprintf(stderr, "kappa1=%g kappa2=%g kappa3=%g ", kappa1,kappa2,kappa3);
+//        foreach_face() kappav.x[] = fm.x[]*kappav(f[], fs[]);
+//        advection_centered(T, u, u_grad_scalar);
     }else{
         fprintf(stderr, "RESTART from file");
     }
@@ -192,30 +154,16 @@ event velocity_correction(i++){
 
 //Output
 #include "../src_local/output_vtu_foreach.h"
-event vtk_file (i += 1)
-{
-    char subname[80]; sprintf(subname, "hrhs");
-    scalar l[]; foreach() l[] = level;
-    //be careful with kappa, mu. They can be const unity
-
-//    vector mapped_kappa_lower[], mapped_kappa_upper[];
-//    vector mapped_mu_lower[], mapped_mu_upper[];
-//    face_vector2vector(kappa, mapped_kappa_lower, mapped_kappa_upper);
-//    face_vector2vector(kappa, mapped_mu_lower, mapped_mu_upper);
-
-
-//    vector mapped_kappa_lower[], mapped_kappa_upper[];
-//    vector mapped_mu_lower[], mapped_mu_upper[];
-//    foreach()
-//    foreach_dimension(){
-//        mapped_kappa_lower.x[] = kappa.x[];
-//        mapped_kappa_upper.x[] = kappa.x[1];
-//        mapped_mu_lower.x[] = mu.x[];
-//        mapped_mu_upper.x[] = mu.x[1];
-//    }
-    advection_centered(T, u, u_grad_scalar);// DELETE THIS LINE!
-    output_vtu_MPI( (scalar *) {l, f, fs, T, alpha_doc, rho, u_grad_scalar}, (vector *) {u, kappa, mu}, subname);
-}
+//event vtk_file (i += 100)
+//{
+//    char subname[80]; sprintf(subname, "hrhs");
+//    scalar l[]; foreach() l[] = level;
+//    scalar err[]; foreach() err[] = u.x[]-solution_u(x, y);
+//    fprintf(stderr, "err[]");
+//    //be careful with kappa, mu. They can be const unity
+//    output_vtu_MPI( (scalar *) {l, rho, err}, (vector *) {u}, subname);
+////    output_vtu_MPI( (scalar *) {l, f, rho, err}, (vector *) {u, mu}, subname);
+//}
 
 #if DUMP
 event snapshot (i += 1000)
@@ -227,7 +175,8 @@ event snapshot (i += 1000)
 #endif
 
 event adapt (i+=100) {
-    adapt_wavelet ({f, fs, T, alpha_doc, u}, (double[]){feps, feps, Teps, aeps, ueps, ueps}, MAXLEVEL, MINLEVEL);
+    adapt_wavelet ({u}, (double[]){ueps, ueps}, MAXLEVEL, MINLEVEL);
+//    adapt_wavelet ({f, fs, T, alpha_doc, u}, (double[]){feps, feps, Teps, aeps, ueps, ueps}, MAXLEVEL, MINLEVEL);
 }
 
 event stop(t=200);

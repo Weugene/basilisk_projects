@@ -192,30 +192,30 @@ event velocity_correction(i++){
 
 //Output
 #include "../src_local/output_vtu_foreach.h"
-event vtk_file (i += 1)
-{
-    char subname[80]; sprintf(subname, "hrhs");
-    scalar l[]; foreach() l[] = level;
-    //be careful with kappa, mu. They can be const unity
-
-//    vector mapped_kappa_lower[], mapped_kappa_upper[];
-//    vector mapped_mu_lower[], mapped_mu_upper[];
-//    face_vector2vector(kappa, mapped_kappa_lower, mapped_kappa_upper);
-//    face_vector2vector(kappa, mapped_mu_lower, mapped_mu_upper);
-
-
-//    vector mapped_kappa_lower[], mapped_kappa_upper[];
-//    vector mapped_mu_lower[], mapped_mu_upper[];
-//    foreach()
-//    foreach_dimension(){
-//        mapped_kappa_lower.x[] = kappa.x[];
-//        mapped_kappa_upper.x[] = kappa.x[1];
-//        mapped_mu_lower.x[] = mu.x[];
-//        mapped_mu_upper.x[] = mu.x[1];
-//    }
-    advection_centered(T, u, u_grad_scalar);// DELETE THIS LINE!
-    output_vtu_MPI( (scalar *) {l, f, fs, T, alpha_doc, rho, u_grad_scalar}, (vector *) {u, kappa, mu}, subname);
-}
+//event vtk_file (i += 1)
+//{
+//    char subname[80]; sprintf(subname, "hrhs");
+//    scalar l[]; foreach() l[] = level;
+//    //be careful with kappa, mu. They can be const unity
+//
+////    vector mapped_kappa_lower[], mapped_kappa_upper[];
+////    vector mapped_mu_lower[], mapped_mu_upper[];
+////    face_vector2vector(kappa, mapped_kappa_lower, mapped_kappa_upper);
+////    face_vector2vector(kappa, mapped_mu_lower, mapped_mu_upper);
+//
+//
+////    vector mapped_kappa_lower[], mapped_kappa_upper[];
+////    vector mapped_mu_lower[], mapped_mu_upper[];
+////    foreach()
+////    foreach_dimension(){
+////        mapped_kappa_lower.x[] = kappa.x[];
+////        mapped_kappa_upper.x[] = kappa.x[1];
+////        mapped_mu_lower.x[] = mu.x[];
+////        mapped_mu_upper.x[] = mu.x[1];
+////    }
+//    advection_centered(T, u, u_grad_scalar);// DELETE THIS LINE!
+//    output_vtu_MPI( (scalar *) {l, f, fs, T, alpha_doc, rho, u_grad_scalar}, (vector *) {u, kappa, mu}, subname);
+//}
 
 #if DUMP
 event snapshot (i += 1000)

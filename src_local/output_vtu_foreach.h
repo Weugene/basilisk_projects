@@ -297,9 +297,10 @@ void output_vtu_MPI(scalar * list, vector * vlist, char * subname){
     if (nf>9999) { fprintf(stderr, "too many files, more than 9999"); exit(1); }
     sprintf(name_vtu, "%s_%4.4d_n%3.3d.vtu", subname, nf, pid());
     fp = fopen(name_vtu, "w");
+    fprintf(stderr, "fp\n");
     output_vtu_bin_foreach(list, vlist, 64, fp, true);//64 and true is useless. It needs to support the interface
     fclose(fp);
-
+    fprintf(stderr, "output_vtu_bin_foreach\n");
     if (pid() == 0) {
         char name_pvtu[80], tmp[80];
 	sprintf(name_pvtu, "%s_%4.4d.pvtu", subname, nf);

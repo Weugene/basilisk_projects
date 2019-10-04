@@ -22,7 +22,7 @@ The densities and dynamic viscosities for fluid 1 and 2 are *rho1*,
 
 #include "vof.h"
 double VOF_cutoff = 0.01;
-scalar f[], fs[], * interfaces = {f}, interfaces_all = {f, fs};
+scalar f[], fs[], * interfaces = {f};//, * interfaces_all = {f,fs};
 double rho1 = 1., mu1 = 0., rho2 = 1., mu2 = 0., rho3 = 1., mu3 = 0.;
 double kappa1 = 0, kappa2 = 0, kappa3 = 0;//W/(m*K)
 
@@ -65,7 +65,6 @@ Usually, it is assumed that mu1 is variable, mu2 and mu3 are not. For simplisity
 #define kappav(f, fs)  (clamp(f,0.,1.)*(kappa1 - kappa2) + kappa2 + clamp(fs,0.,1.)*(kappa3 - kappa2))
 //#define kappav(f, fs)  (clamp(f-fs,0.,1.)*(kappa1 - kappa2) + kappa2 + clamp(fs,0.,1.)*(kappa3 - kappa2)) //CORRECT IT !!!
 //#define kappav(f, fs)  (1./(  clamp(f-fs,0.,1.)*(1./kappa1 - 1./kappa2) + 1./kappa2 + fs*(1./kappa3 - 1./kappa2)  )    )
-
 #endif
 /**
 # Variable rheology models
@@ -88,7 +87,7 @@ double alpha_gel = 0.8;
 #define muf1(alpha_doc, T) (mu1*exp(Eeta_by_Rg/T+chi*alpha_doc*alpha_doc))
 #endif
 
-#ifndef mu.
+#ifndef mu
 #define mu(f, fs, alpha_doc, T)  (clamp(f,0.,1.)*(muf1(alpha_doc, T) - mu2) + mu2 + clamp(fs,0.,1.)*(mu3 - mu2))
 //#define mu(f, fs, alpha_doc, T)  (clamp(f-fs,0.,1.)*(mu1 - mu2) + mu2 + clamp(fs,0.,1.)*(mu3 - mu2)) //CORRECT IT !!!
 //#define mu(f, fs, alpha_doc, T)  (clamp(f-fs,0.,1.)*(muf1(alpha_doc, T) - mu2) + mu2 + fs*(mu3 - mu2))
@@ -101,11 +100,12 @@ We have the option of using some "smearing" of the density/viscosity
 jump. */
 
 #ifdef FILTERED
-scalar sf1[], sf2[], *smearInterfaces = {sf1, sf2};
+scalar sf1[], sf2[];
+scalar *smearInterfaces = {sf1,sf2};
 #else
 #define sf1 f
 #define sf2 fs
-scalar *smearInterfaces = {sf1, sf2};
+scalar *smearInterfaces = {sf1,sf2};
 #endif
 
 event properties (i++) {
@@ -113,23 +113,34 @@ event properties (i++) {
   When using smearing of the density jump, we initialise *sf* with the
   vertex-average of *f*. */
 
-#ifndef FILTERED
-  for (sf,f in smearInterfaces, interfaces_all) {
-#if dimension <= 2
-      foreach()
-      sf[] = (4. * f[] +
-              2. * (f[0, 1] + f[0, -1] + f[1, 0] + f[-1, 0]) +
-              f[-1, -1] + f[1, -1] + f[1, 1] + f[-1, 1]) / 16.;
-#else // dimension == 3
-      foreach()
-        sf[] = (8.*f[] +
-            4.*(f[-1] + f[1] + f[0,1] + f[0,-1] + f[0,0,1] + f[0,0,-1]) +
-            2.*(f[-1,1] + f[-1,0,1] + f[-1,0,-1] + f[-1,-1] +
-            f[0,1,1] + f[0,1,-1] + f[0,-1,1] + f[0,-1,-1] +
-            f[1,1] + f[1,0,1] + f[1,-1] + f[1,0,-1]) +
-            f[1,-1,1] + f[-1,1,1] + f[-1,1,-1] + f[1,1,1] +
-            f[1,1,-1] + f[-1,-1,-1] + f[1,-1,-1] + f[-1,-1,1])/64.;
-#endif
+#ifdef FILTERED
+  int counter1 = 0;
+  for (scalar sf in smearInterfaces){
+    counter1++;
+    int counter2 = 0;
+    for (scalar f in interfaces){
+      counter2++;
+      if (counter1 == counter2){
+        // fprintf(ferr, "%s %s\n", sf.name, f.name);
+      #if dimension <= 2
+          foreach(){
+            sf[] = (4.*f[] +
+        	    2.*(f[0,1] + f[0,-1] + f[1,0] + f[-1,0]) +
+        	    f[-1,-1] + f[1,-1] + f[1,1] + f[-1,1])/16.;
+          }
+      #else // dimension == 3
+          foreach(){
+            sf[] = (8.*f[] +
+        	    4.*(f[-1] + f[1] + f[0,1] + f[0,-1] + f[0,0,1] + f[0,0,-1]) +
+        	    2.*(f[-1,1] + f[-1,0,1] + f[-1,0,-1] + f[-1,-1] +
+        		f[0,1,1] + f[0,1,-1] + f[0,-1,1] + f[0,-1,-1] +
+        		f[1,1] + f[1,0,1] + f[1,-1] + f[1,0,-1]) +
+        	    f[1,-1,1] + f[-1,1,1] + f[-1,1,-1] + f[1,1,1] +
+        	    f[1,1,-1] + f[-1,-1,-1] + f[1,-1,-1] + f[-1,-1,1])/64.;
+          }
+      #endif
+      }
+    }
   }
 #endif
 
@@ -155,10 +166,10 @@ event properties (i++) {
   foreach()
     rhov[] = cm[]*rho(sf1[], sf2[]); //? alphav.x and rhov are not consistent - All do so
 
-#if TREE  
-    for (scalar sf in smearInterfaces){
-        sf.prolongation = fraction_refine;
-        boundary ({sf});
-    }
+#if TREE
+  for (scalar sf in smearInterfaces){
+     sf.prolongation = fraction_refine;
+     boundary ({sf});
+  }
 #endif
 }

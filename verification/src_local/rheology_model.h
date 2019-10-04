@@ -1,3 +1,6 @@
+#ifndef BASILISK_HEADER_2
+#define BASILISK_HEADER_2
+#line 1 "./../src_local/rheology_model.h"
 //The module is intended to solve the heat transfer equation, the polymerization effect and rheology changing
 //it is coupled with navier-stokes/centered.h module
 //
@@ -87,3 +90,4 @@ event end_timestep (i++){
 
     boundary ((scalar*) {alpha_doc});
 }
+#endif

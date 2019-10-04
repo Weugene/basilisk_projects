@@ -38,30 +38,23 @@ event stability (i++) {
   1/\rho$, as well as $\Delta_{min}$. */
 
   double amin = HUGE, amax = -HUGE, dmin = HUGE;
-//  fprintf(stderr, "beginning\n");
   foreach_face (reduction(min:amin) reduction(max:amax) reduction(min:dmin)) {
-//    fprintf(stderr, "alpha.x[] = %g, fm.x[] = %g\n", alpha.x[], fm.x[]);
-//    fprintf(stderr, "rho[] = %g\n", rho[]);
     if (alpha.x[]/fm.x[] > amax) amax = alpha.x[]/fm.x[];
     if (alpha.x[]/fm.x[] < amin) amin = alpha.x[]/fm.x[];
     if (Delta < dmin) dmin = Delta;
-//    fprintf(stderr, "amax = %g, amin = %g, Delta= %g\n", amax, amin, dmin);
   }
   double rhom = (1./amin + 1./amax)/2.;
-//  fprintf(stderr, "rhom = %g\n", rhom);
   /**
   The maximum timestep is set using the sum of surface tension
   coefficients. */
 
   double sigma = sigma13+sigma23+sigma12;
-//  fprintf(stderr, "sigma = %g\n", sigma);
 
   if (sigma) {
     double dt = sqrt (rhom*cube(dmin)/(pi*sigma));
     if (dt < dtmax)
       dtmax = dt;
   }
-//    fprintf(stderr, "sigma = %g", sigma);
 }
 
 /**
