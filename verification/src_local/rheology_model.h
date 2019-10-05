@@ -1,9 +1,10 @@
-#ifndef BASILISK_HEADER_2
-#define BASILISK_HEADER_2
+#ifndef BASILISK_HEADER_9
+#define BASILISK_HEADER_9
 #line 1 "./../src_local/rheology_model.h"
 //The module is intended to solve the heat transfer equation, the polymerization effect and rheology changing
 //it is coupled with navier-stokes/centered.h module
 //
+#include "../src_local/three-phase-rheology.h"
 #include "diffusion.h"
 scalar u_grad_scalar[];
 double Htr = 1;

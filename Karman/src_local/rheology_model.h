@@ -4,6 +4,7 @@
 //The module is intended to solve the heat transfer equation, the polymerization effect and rheology changing
 //it is coupled with navier-stokes/centered.h module
 //
+#include "../src_local/three-phase-rheology.h"
 #include "diffusion.h"
 scalar u_grad_scalar[];
 double Htr = 1;

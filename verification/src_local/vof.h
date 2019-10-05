@@ -1,6 +1,6 @@
-#ifndef BASILISK_HEADER_6
-#define BASILISK_HEADER_6
-#line 1 "./../src_local/vof.h"
+#ifndef BASILISK_HEADER_13
+#define BASILISK_HEADER_13
+#line 1 "./../src_local/../src_local/vof.h"
 /**
 # Volume-Of-Fluid advection
 

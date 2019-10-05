@@ -22,7 +22,7 @@ The densities and dynamic viscosities for fluid 1 and 2 are *rho1*,
 
 #include "vof.h"
 double VOF_cutoff = 0.01;
-scalar f[], fs[], * interfaces = {f};//, * interfaces_all = {f,fs};
+scalar f[], fs[], * interfaces = {f}, * interfaces_all = {f,fs};
 double rho1 = 1., mu1 = 0., rho2 = 1., mu2 = 0., rho3 = 1., mu3 = 0.;
 double kappa1 = 0, kappa2 = 0, kappa3 = 0;//W/(m*K)
 
@@ -101,12 +101,11 @@ jump. */
 
 #ifdef FILTERED
 scalar sf1[], sf2[];
-scalar *smearInterfaces = {sf1,sf2};
 #else
 #define sf1 f
 #define sf2 fs
-scalar *smearInterfaces = {sf1,sf2};
 #endif
+scalar *smearInterfaces = {sf1,sf2};
 
 event properties (i++) {
   /**
@@ -118,7 +117,7 @@ event properties (i++) {
   for (scalar sf in smearInterfaces){
     counter1++;
     int counter2 = 0;
-    for (scalar f in interfaces){
+    for (scalar f in interfaces_all){
       counter2++;
       if (counter1 == counter2){
         // fprintf(ferr, "%s %s\n", sf.name, f.name);

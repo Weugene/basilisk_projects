@@ -1,5 +1,5 @@
-#ifndef BASILISK_HEADER_16
-#define BASILISK_HEADER_16
+#ifndef BASILISK_HEADER_23
+#define BASILISK_HEADER_23
 #line 1 "./../src_local/bcg.h"
 /**
 # Bell-Collela-Glaz advection scheme
