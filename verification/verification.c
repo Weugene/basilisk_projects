@@ -12,13 +12,13 @@
 #define aeps 1e-2
 #define ueps 1e-2
 #define mueps 1e-2
-
+#define EPS_MAXA 1                                   // method of eps calculation
 
 #define Re 1 // rhol*U*L/mul
 #define We 0.01//rhol*L*U^2/sigma
 #define Pe 1 // Cpl*rhol*U*L/kappal
 #define Ex 1 // H_tr/(Cpl*T)
-#define Po 1000 // A*L/U //1000
+#define Po 0 // A*L/U //1000
 #define Aralpha 5 // E_a/RT
 #define Areta 0.1 // E_eta/RT
 #define CHI 26.89
@@ -31,20 +31,23 @@
 #define RCpg 1
 #define RCps 1
 #define RT 1
-#define dP 1
+#define dPl 1
+#define dPr 0
 
 #define TMIN 1
 #define TMAX TMIN*RT
 
-#define ADAPT_SCALARS {mu.x, u.x}
+#define ADAPT_SCALARS {mus, u.x}
 #define ADAPT_EPS_SCALARS {mueps, ueps}
+//#define ADAPT_SCALARS {mu.x, u.x}
+//#define ADAPT_EPS_SCALARS {mueps, ueps}
 
 int main() {
     L0 = 1.;
     origin (-L0/2, -L0/2.);
     N = 512;
     CFL = 0.4;
-    DT = 1e-6;
+    DT = 1e-4;
     stokes = true;
     rho1 = 1.0; rho2 = 1.0/Rrhog; rho3 = 1.0/Rrhos;
     mu1 = 1.0/Re;  mu2 = 1.0/(Re*Rrhog);  mu3 = 1.0/(Re*Rrhos);
@@ -72,18 +75,20 @@ int main() {
 #define T_BC (0.5*(TMAX + TMIN) + 0.5*(TMAX - TMIN)*tanh((x)/(L0/10.0)))
 
 u.n[left] = neumann(0);
-p[left]    = dirichlet(dP);
-pf[left]   = dirichlet(dP);
+p[left]    = dirichlet(dPl);
+pf[left]   = dirichlet(dPl);
 f[left]    = dirichlet(1);
 T[left]    = dirichlet(TMIN);
+f[left]    = dirichlet(1);
 fs[left]   = dirichlet(0);
 alpha_doc[left] = dirichlet(0);
 
 u.n[right] = neumann(0.);
-p[right]   = dirichlet(0.);
-pf[right]  = dirichlet(0.);
+p[right]   = dirichlet(dPr);
+pf[right]  = dirichlet(dPr);
 T[right]    = neumann(0);
-fs[right]   = neumann(0);
+f[right]    = dirichlet(1);
+fs[right]   = dirichlet(0);
 alpha_doc[right] = neumann(0);
 
 u.n[top] = dirichlet(0);
@@ -92,6 +97,7 @@ alpha_doc[top] = neumann(0);
 T[top] = dirichlet(T_BC);
 fs[top] = neumann(0);
 f[top] = neumann(0);
+p[top] = neumann(0);
 
 u.n[bottom] = dirichlet(0.);
 u.t[bottom] = dirichlet(0);
@@ -99,13 +105,14 @@ alpha_doc[bottom] = neumann(0);
 T[bottom] = dirichlet(T_BC);
 fs[bottom] = neumann(0);
 f[bottom] = neumann(0);
-
+p[bottom] = neumann(0);
 double solution_u (double x, double y){
-    return (dP/(8*mu1*L0))*pow(L0/a_mu, 2)*(exp(-pow(a_mu,2)) - exp(-pow(-2*a_mu*y/L0,2)));
+    return ((dPr-dPl)/(8*mu1*L0))*pow(L0/a_mu, 2)*(exp(-pow(a_mu,2)) - exp(-pow(-2*a_mu*y/L0,2)));
 }
 
 scalar sa[];
 vector gva[];
+scalar mus[];
 
 event init (t = 0) {
     double eps_arr[] = ADAPT_EPS_SCALARS;
@@ -124,6 +131,7 @@ event init (t = 0) {
             boundary ({sa, f, fs, T, u});
             gradients ({sa}, {gva});
             event("properties");
+            foreach() mus[] = mu.y[];
             double eps_arr_tmp[] = ADAPT_EPS_SCALARS;
             MinMaxValues(ADAPT_SCALARS, eps_arr_tmp);
             for (int k=0; k<n_eps_arr; k++)
@@ -152,8 +160,8 @@ event vtk_file (i += 100){
     char subname[80]; sprintf(subname, "hrhs");
     scalar l[]; foreach() l[] = level;
     scalar usol[]; foreach() usol[] = solution_u(x, y);
-    scalar err[]; foreach() err[] = u.x[] - usol[]; //be careful with kappa, mu. They can be const unity
-    output_vtu_MPI( (scalar *) {l, rho, p, T, alpha_doc, err, usol}, (vector *) {u, mu}, subname);
+    scalar err[]; foreach() err[] = fabs(u.x[] - usol[]); //be careful with kappa, mu. They can be const unity
+    output_vtu_MPI( (scalar *) {l, sa, rho, p, T, alpha_doc, err, usol}, (vector *) {u, mu}, subname);
 }
 
 #if DUMP
@@ -166,6 +174,7 @@ event snapshot (i += 1000){
 
 
 event adapt (i+=100) {
+    foreach() mus[] = mu.y[];
     double eps_arr[] = ADAPT_EPS_SCALARS;
     MinMaxValues(ADAPT_SCALARS, eps_arr);
     adapt_wavelet ((scalar *) ADAPT_SCALARS,

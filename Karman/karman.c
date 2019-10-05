@@ -9,7 +9,7 @@
 #define Teps 1e-2
 #define aeps 1e-2
 #define ueps 1e-2
-
+#define EPS_MAXA 1                                   // method of eps calculation
 
 #define Re 0.01 // rhol*U*L/mul
 #define We 0.01//rhol*L*U^2/sigma
@@ -89,13 +89,15 @@ alpha_doc[top] = neumann(0);
 T[top] = dirichlet(T_BC);
 fs[top] = dirichlet(0);
 f[top] = neumann(0);
+p[top]]   = dirichlet(0.);
 
 u.n[bottom] = dirichlet(0.);
 u.t[bottom] = dirichlet(0);
 alpha_doc[bottom] = neumann(0);
 T[bottom] = dirichlet(T_BC);
-fs[top] = dirichlet(0);
+fs[bottom] = dirichlet(0);
 f[bottom] = neumann(0);
+p[bottom]   = dirichlet(0.);
 
 
 scalar sa[];
