@@ -1,6 +1,6 @@
 #include "../src_local/centered-weugene.h"
 // #include "navier-stokes/perfs.h"
-#define a_mu 2.6
+#define a_mu 2
 #define muf1(alpha_doc, T) mu1*exp(pow(2*a_mu*y/L0,2))
 #include "../src_local/rheology_model.h"
 #include "tension.h"
@@ -10,8 +10,8 @@
 #define feps 1e-2
 #define Teps 1e-2
 #define aeps 1e-2
-#define ueps 1e-2
-#define mueps 1e-2
+#define ueps 1e-3
+#define mueps 1
 #define EPS_MAXA 1                                   // method of eps calculation
 
 #define Re 1 // rhol*U*L/mul
@@ -176,7 +176,7 @@ event snapshot (i += 1000){
 event adapt (i+=100) {
     foreach() mus[] = mu.y[];
     double eps_arr[] = ADAPT_EPS_SCALARS;
-    MinMaxValues(ADAPT_SCALARS, eps_arr);
+//    MinMaxValues(ADAPT_SCALARS, eps_arr);
     adapt_wavelet ((scalar *) ADAPT_SCALARS,
                    eps_arr, maxlevel = MAXLEVEL, minlevel = MINLEVEL);
 }
