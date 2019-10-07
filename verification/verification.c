@@ -99,7 +99,7 @@ fs[top] = neumann(0);
 f[top] = neumann(0);
 p[top] = neumann(0);
 
-u.n[bottom] = dirichlet(0.);
+u.n[bottom] = dirichlet(0);
 u.t[bottom] = dirichlet(0);
 alpha_doc[bottom] = neumann(0);
 T[bottom] = dirichlet(T_BC);
@@ -150,9 +150,6 @@ event init (t = 0) {
     event ("vtk_file");
 }
 
-event velocity_correction(i++){
-    foreach() foreach_dimension() u.x[] *= (1-fs[]);
-}
 
 //Output
 #include "../src_local/output_vtu_foreach.h"
@@ -165,7 +162,7 @@ event vtk_file (i += 100){
 }
 
 #if DUMP
-event snapshot (i += 1000){
+event snapshot (i += 5000){
   char name[80];
   sprintf (name, "dump-%d", i);
   dump (file = name);
@@ -173,7 +170,7 @@ event snapshot (i += 1000){
 #endif
 
 
-event adapt (i+=100) {
+event adapt (i+=1000) {
     foreach() mus[] = mu.y[];
     double eps_arr[] = ADAPT_EPS_SCALARS;
 //    MinMaxValues(ADAPT_SCALARS, eps_arr);

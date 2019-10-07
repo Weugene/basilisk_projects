@@ -95,13 +95,8 @@ event properties (i++) {
   When using smearing of the density jump, we initialise sf_i with the
   vertex-average of f_i. */
 #ifdef FILTERED
-  int counter1 = 0;
-  for (scalar sf in smearInterfaces){
-    counter1++;
-    int counter2 = 0;
-    for (scalar f in interfaces_all){
-      counter2++;
-      if (counter1 == counter2){
+
+  for (scalar sf, f in smearInterfaces, interfaces_all){
         // fprintf(ferr, "%s %s\n", sf.name, f.name);
       #if dimension <= 2
           foreach(){
@@ -120,8 +115,6 @@ event properties (i++) {
         	    f[1,1,-1] + f[-1,-1,-1] + f[1,-1,-1] + f[-1,-1,1])/64.;
           }
       #endif
-      }
-    }
   }
 #endif
 
@@ -149,3 +142,34 @@ event properties (i++) {
   }
 #endif
 }
+
+
+
+//  int counter1 = 0;
+//  for (scalar sf in smearInterfaces){
+//    counter1++;
+//    int counter2 = 0;
+//    for (scalar f in interfaces_all){
+//      counter2++;
+//      if (counter1 == counter2){
+//        // fprintf(ferr, "%s %s\n", sf.name, f.name);
+//      #if dimension <= 2
+//          foreach(){
+//            sf[] = (4.*f[] +
+//        	    2.*(f[0,1] + f[0,-1] + f[1,0] + f[-1,0]) +
+//        	    f[-1,-1] + f[1,-1] + f[1,1] + f[-1,1])/16.;
+//          }
+//      #else // dimension == 3
+//          foreach(){
+//            sf[] = (8.*f[] +
+//        	    4.*(f[-1] + f[1] + f[0,1] + f[0,-1] + f[0,0,1] + f[0,0,-1]) +
+//        	    2.*(f[-1,1] + f[-1,0,1] + f[-1,0,-1] + f[-1,-1] +
+//        		f[0,1,1] + f[0,1,-1] + f[0,-1,1] + f[0,-1,-1] +
+//        		f[1,1] + f[1,0,1] + f[1,-1] + f[1,0,-1]) +
+//        	    f[1,-1,1] + f[-1,1,1] + f[-1,1,-1] + f[1,1,1] +
+//        	    f[1,1,-1] + f[-1,-1,-1] + f[1,-1,-1] + f[-1,-1,1])/64.;
+//          }
+//      #endif
+//      }
+//    }
+//  }

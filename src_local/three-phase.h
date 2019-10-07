@@ -22,7 +22,7 @@ The densities and dynamic viscosities for fluid 1, 2 and 3 are *rho1*,
 
 #include "vof.h"
 double VOF_cutoff = 0.01;
-scalar f1[], f2[], *interfaces = {f1, f2};
+scalar f[], fs[], * interfaces = {f}, * interfaces_all = {f, fs};
 double rho1 = 1., mu1 = 0., rho2 = 1., mu2 = 0., rho3 = 1., mu3 = 0.;
 
 /**
@@ -54,10 +54,14 @@ The reason we choose this equation because the sum of coefficients of $A_i$ is z
 */
 
 #ifndef rho
-#define rho(f1, f2) (clamp(f1*(1-f2), 0., 1.) * rho1 + clamp(f1*f2, 0., 1.) * rho2 + clamp((1-f1), 0., 1.) * rho3)
+//#define rho(f, fs) (clamp(f,0.,1.)*(rho1 - rho2) + rho2 + clamp(fs,0.,1.)*(rho3 - rho2))
+#define rho(f1, f2) (clamp(f1*(1-f2), 0., 1.) * rho2 + clamp(f1*f2, 0., 1.) * rho1 + clamp((1-f1), 0., 1.) * rho3)
+//#define rho(f1, f2) (clamp(f1*(1-f2), 0., 1.) * rho1 + clamp(f1*f2, 0., 1.) * rho2 + clamp((1-f1), 0., 1.) * rho3)
 #endif
 #ifndef mu
-#define mu(f1, f2) (clamp(f1*(1-f2), 0., 1.) * mu1 + clamp(f1*f2, 0., 1.) * mu2 + clamp((1-f1), 0., 1.) * mu3)
+//#define mu(f, fs)  (clamp(f,0.,1.)*(mu1 - mu2) + mu2 + clamp(fs,0.,1.)*(mu3 - mu2))
+#define mu(f1, f2) (clamp(f1*(1-f2), 0., 1.) * mu2 + clamp(f1*f2, 0., 1.) * mu1 + clamp((1-f1), 0., 1.) * mu3)
+//#define mu(f1, f2) (clamp(f1*(1-f2), 0., 1.) * mu1 + clamp(f1*f2, 0., 1.) * mu2 + clamp((1-f1), 0., 1.) * mu3)
 #endif
 
 /**
@@ -67,8 +71,8 @@ jump. */
 #ifdef FILTERED
 scalar sf1[], sf2[], *smearInterfaces = {sf1, sf2};
 #else
-#define sf1 f1
-#define sf2 f2
+#define sf1 f
+#define sf2 fs
 scalar *smearInterfaces = {sf1, sf2};
 #endif
 
@@ -79,25 +83,20 @@ event properties (i++) {
     But I see it happening sometimes (usually at triple contact point).
     Hence, I include this if-else loop.
     */
-    if (i > 1){
-        foreach(){
-            if (f2[] > 0.5 & f1[] < 0.5){
-                f1[] = f2[];
-            }
-        }
-    }
+//  if (i > 1){
+//    foreach(){
+//      if (f2[] > 0.5 & f1[] < 0.5){
+//        f1[] = f2[];
+//      }
+//    }
+//  }
 
     /**
     When using smearing of the density jump, we initialise sf_i with the
     vertex-average of f_i. */
 #ifdef FILTERED
-    int counter1 = 0;
-  for (scalar sf in smearInterfaces){
-    counter1++;
-    int counter2 = 0;
-    for (scalar f in interfaces){
-      counter2++;
-      if (counter1 == counter2){
+
+    for (scalar sf, f in smearInterfaces, interfaces_all){
         // fprintf(ferr, "%s %s\n", sf.name, f.name);
       #if dimension <= 2
           foreach(){
@@ -116,10 +115,9 @@ event properties (i++) {
         	    f[1,1,-1] + f[-1,-1,-1] + f[1,-1,-1] + f[-1,-1,1])/64.;
           }
       #endif
-      }
-    }
   }
 #endif
+
 #if TREE
     for (scalar sf in smearInterfaces){
     sf.prolongation = refine_bilinear;
@@ -134,9 +132,8 @@ event properties (i++) {
         face vector muv = mu;
         muv.x[] = fm.x[]*mu(ff1, ff2);
     }
-    foreach(){
-        rhov[] = cm[]*rho(sf1[], sf2[]);
-    }
+    foreach()
+    rhov[] = cm[]*rho(sf1[], sf2[]);
 
 #if TREE
     for (scalar sf in smearInterfaces){
@@ -145,3 +142,34 @@ event properties (i++) {
   }
 #endif
 }
+
+
+
+//  int counter1 = 0;
+//  for (scalar sf in smearInterfaces){
+//    counter1++;
+//    int counter2 = 0;
+//    for (scalar f in interfaces_all){
+//      counter2++;
+//      if (counter1 == counter2){
+//        // fprintf(ferr, "%s %s\n", sf.name, f.name);
+//      #if dimension <= 2
+//          foreach(){
+//            sf[] = (4.*f[] +
+//        	    2.*(f[0,1] + f[0,-1] + f[1,0] + f[-1,0]) +
+//        	    f[-1,-1] + f[1,-1] + f[1,1] + f[-1,1])/16.;
+//          }
+//      #else // dimension == 3
+//          foreach(){
+//            sf[] = (8.*f[] +
+//        	    4.*(f[-1] + f[1] + f[0,1] + f[0,-1] + f[0,0,1] + f[0,0,-1]) +
+//        	    2.*(f[-1,1] + f[-1,0,1] + f[-1,0,-1] + f[-1,-1] +
+//        		f[0,1,1] + f[0,1,-1] + f[0,-1,1] + f[0,-1,-1] +
+//        		f[1,1] + f[1,0,1] + f[1,-1] + f[1,0,-1]) +
+//        	    f[1,-1,1] + f[-1,1,1] + f[-1,1,-1] + f[1,1,1] +
+//        	    f[1,1,-1] + f[-1,-1,-1] + f[1,-1,-1] + f[-1,-1,1])/64.;
+//          }
+//      #endif
+//      }
+//    }
+//  }

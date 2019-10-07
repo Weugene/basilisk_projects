@@ -20,7 +20,7 @@
 #include "../src_local/centered-weugene.h"
 // Smering out the interfaces for high density and viscosity ratios.
 //#define FILTERED
-#include "../src_local/three-phase-weugene.h"
+#include "../src_local/three-phase.h"
 #include "../src_local/tension_three-phase-weugene.h"
 #include "distance.h"
 

@@ -474,4 +474,28 @@ event adapt (i++,last) {
 * [Performance monitoring](perfs.h)
 */
 
+void MinMaxValues(const scalar * list, double * arr_eps) {// for each scalar min and max
+  double arr[10][2];
+  int ilist = 0;
+  for (scalar s in list) {
+    int mina= HUGE, maxa= -HUGE;
+    foreach( reduction(min:mina) reduction(max:maxa) ){
+      if (fabs(s[]) < mina) mina = fabs(s[]);
+      if (fabs(s[]) > maxa) maxa = fabs(s[]);
+    }
+    arr[ilist][0] = mina;
+    arr[ilist][1] = maxa;
+    ilist++;
+//        fprintf(stderr, "arr for i=%d", ilist);
+  }
+
+  for (int i = 0; i < ilist; i++){
+#if EPS_MAXA == 1
+    arr_eps[i] *=arr[i][1];
+#else
+    arr_eps[i] *= 0.5*(arr[i][0] + arr[i][1]);
+#endif
+    fprintf(stderr, "MinMaxValues: i=%d, min=%g, max=%g, eps=%g\n", i, arr[i][0], arr[i][1], arr_eps[i]);
+  }
+}
 #endif

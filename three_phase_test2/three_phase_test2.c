@@ -24,16 +24,17 @@
 #include "../src_local/tension_three-phase-weugene.h"
 #include "distance.h"
 
-#define MAXlevel 10                                              // maximum level
+#define MAXlevel 10                                             // maximum level
 #define MINlevel 4                                              // maximum level
-#define tmax 5.0                                                 // maximum time
+#define tmax 5.0                                                // maximum time
 #define tsnap (1e-2)
 // Error tolerances
-#define fErr (5e-2)                                 // error tolerance in VOF
+#define fErr (1e-2)                                  // error tolerance in VOF
 #define K1Err (1e-1)                                 // error tolerance in KAPPA 1e-3
 #define K2Err (1e-1)                                 // error tolerance in KAPPA
-#define VelErr (2e-1)                            // error tolerances in velocity
-#define OmegaErr (1e-2)                            // error tolerances in velocity
+#define VelErr (2e-1)                                // error tolerances in velocity
+#define OmegaErr (1e-2)                              // error tolerances in velocity
+#define EPS_MAXA 1                                   // method of eps calculation
 
 /**
 Different scales used in the problem: $U_\sigma \equiv \sqrt{{\sigma}/{\rho_l R_0}}$
@@ -41,25 +42,25 @@ and time: $t_\sigma \equiv {R_0}/{U_\sigma}$.<br/>
 Navier-Stokes equation is therefore:
 $$ \hat{\rho}\left(\frac{\partial U_i}{\partial t} + U_j\frac{\partial U_i}{\partial X_j}\right) = -\frac{\partial P}{\partial X_i} + \frac{\partial}{\partial X_j}\left(2\left(\hat{\mu}Oh\right)D_{ij}\right) + \kappa\delta_s\hat{n}_{i} + Bo\hat{g}_i $$
 */
-#define La (7.2e4)
+#define La (3.6e5)
 #define Oh sqrt(1./La)
-#define Bo 0.132
-#define Mu12 20.0
-#define Rho12 0.9630
-#define Rho32 0.0010
-#define Mu32  0.0185
+#define Bo 0.343
+#define Mu12 1.0
+#define Rho12 1.0
+#define Rho32 0.001
+#define Mu32  0.01
 
 /** Surface tesnions
 Non-dimensioalized using the surface tenison coefficient of $\sigma_{23}$.<br/>
 Notice that $\sigma_{12}/\sigma_{23} + \sigma_{13}/\sigma_{23} < 1$. The spreading coefficient
 of liquid pool (1) is positive. It will try to maximize its surface area.
 */
-#define SIGMA12by23 (1.0)
-#define SIGMA13by23 (0.30)
+#define SIGMA12by23 (1.7)
+#define SIGMA13by23 (1)
 
 // density
 #define Rho1 Rho12                                         // density of phase 1
-#define Rho2 (0.963)                                       // density of phase 2
+#define Rho2 (1.0)                                       // density of phase 2
 #define Rho3 Rho32                                         // density of phase 3
 
 // viscosity
@@ -75,9 +76,11 @@ u.n[right] = neumann(0.);
 u.n[left] = neumann(0.);
 u.n[top] = neumann(0.);
 u.n[bottom] = dirichlet(0.);
+
 p[left] = dirichlet(0.);
 p[right] = dirichlet(0.);
 p[top] = dirichlet(0.);
+p[bottom] = dirichlet(0.);
 scalar KAPPA1[], KAPPA2[], omega[];
 int main()
 {
@@ -106,8 +109,9 @@ event init(t = 0) {
         do {
             iter++;
             foreach() {
-                f[] = (sq(x) + sq(y) - sq(L0/8) < 0) && (y > 0) ? 1 : 0;
                 fs[] = (y < 0) ? 1 : 0;
+                f[] = (sq(x) + sq(y) - sq(L0/8) < 0) && (y > 0) ? 1 : 0;
+                f[] += fs[];
                 u.x[] = 0.0;
                 u.y[] = 0.0;
             }
@@ -129,63 +133,88 @@ event init(t = 0) {
 }
 // Gravity
 event acceleration(i++){
-    face vector av = a;
-    foreach_face(x){
-            av.x[] -= Bo;
-    }
+face vector av = a;
+foreach_face(y){
+        av.y[] -= Bo;
+}
 }
 
 event velocity_correction(i++){
-foreach() foreach_dimension() u.x[] *= (1-fs[]);
+foreach() foreach_dimension() u.x[] *= (1.0 - fs[]);
 boundary({u});
 }
 //Output
 #include "../src_local/output_vtu_foreach.h"
-event vtk_file (i += 100){
-    char subname[80]; sprintf(subname, "enc");
-    scalar l[]; foreach() l[] = level;
-    vorticity (u, omega);
-    curvature(f, KAPPA1);
-    curvature(fs, KAPPA2);
-    output_vtu_MPI( (scalar *) {l, f, fs, rho, KAPPA1, KAPPA2, omega}, (vector *) {u, mu}, subname);
+event vtk_file (i += 100)
+{
+char subname[80]; sprintf(subname, "enc");
+scalar l[]; foreach() l[] = level;
+
+        vorticity (u, omega);
+curvature(f, KAPPA1);
+curvature(fs, KAPPA2);
+
+output_vtu_MPI( (scalar *) {l, f, fs, rho, p, pf, KAPPA1, KAPPA2, omega}, (vector *) {u, uf, mu}, subname);
 }
 
-event adapt(i++){
+#define ADAPT_SCALARS {a, ga.x, ga.y, omega}
+#define ADAPT_EPS_SCALARS {fErr, fErr, fErr, OmegaErr}
+
+event adapt(i++)
+{
 /**
 We use AMR based on the curvature values of VOF fields, vorticity, and velocities.
 */
-    adapt_wavelet ((scalar *){f, fs, omega},
-    (double[]){fErr, fErr, OmegaErr},
-    maxlevel = MAXlevel, minlevel = MINlevel);
+vorticity (u, omega);
+scalar a[];
+vector ga[];
+foreach() a[] = f[] + fs[];
+        boundary({a});
+gradients ({a}, {ga});
+//  curvature(f, KAPPA1);
+//  curvature(fs, KAPPA2);
+//  foreach(){
+////      KAPPA1[] = exp(-fabs(KAPPA1[]));
+////      KAPPA2[] = exp(-fabs(KAPPA2[]));
+////      KAPPA1[] = clamp(KAPPA1[], -1000, 1000);
+////      KAPPA2[] = clamp(KAPPA2[], -1000, 1000);
+//      KAPPA1[] = (fabs(KAPPA1[])>1000)? 1000: KAPPA1[];
+////      KAPPA2[] = (fabs(KAPPA2[])>1000)? 0: KAPPA2[];
+//  }
+double eps_arr[] = ADAPT_EPS_SCALARS;
+MinMaxValues(ADAPT_SCALARS, eps_arr);
+adapt_wavelet ((scalar *) ADAPT_SCALARS,
+eps_arr,
+maxlevel = MAXlevel, minlevel = MINlevel);
 }
 // Outputs
-event writingFiles (t = 0; t += tsnap; t <= tmax + tsnap) {
-    dump (file = "dump");
-    char nameOut[80];
-    sprintf (nameOut, "intermediate/snapshot-%5.4f", t);
-    dump (file = nameOut);
-}
+//event writingFiles (t = 0; t += tsnap; t <= tmax + tsnap) {
+//  dump (file = "dump");
+//  char nameOut[80];
+//  sprintf (nameOut, "intermediate/snapshot-%5.4f", t);
+//  dump (file = nameOut);
+//}
 
-event logWriting (i++) {
-    double ke = 0.;
-    foreach (reduction(+:ke)){
-    ke += sq(Delta)*(sq(u.x[]) + sq(u.y[]))*rho(f[],fs[]);
-    }
-    static FILE * fp;
-    if (i == 0) {
-    fprintf (ferr, "i dt t ke\n");
-    fp = fopen ("log", "w");
-    fprintf (fp, "i dt t ke\n");
-    fprintf (fp, "%d %g %g %g\n", i, dt, t, ke);
-    fclose(fp);
-    } else {
-    fp = fopen ("log", "a");
-    fprintf (fp, "%d %g %g %g\n", i, dt, t, ke);
-    fclose(fp);
-    }
-    fprintf (ferr, "%d %g %g %g\n", i, dt, t, ke);
-}
-
+//event logWriting (i++) {
+//  double ke = 0.;
+//  foreach (reduction(+:ke)){
+//    ke += sq(Delta)*(sq(u.x[]) + sq(u.y[]))*rho(f[],fs[]);
+//  }
+//  static FILE * fp;
+//  if (i == 0) {
+//    fprintf (ferr, "i dt t ke\n");
+//    fp = fopen ("log", "w");
+//    fprintf (fp, "i dt t ke\n");
+//    fprintf (fp, "%d %g %g %g\n", i, dt, t, ke);
+//    fclose(fp);
+//  } else {
+//    fp = fopen ("log", "a");
+//    fprintf (fp, "%d %g %g %g\n", i, dt, t, ke);
+//    fclose(fp);
+//  }
+//  fprintf (ferr, "%d %g %g %g\n", i, dt, t, ke);
+//}
+event stop (t = tmax);
 /**
 ## Running the code
 

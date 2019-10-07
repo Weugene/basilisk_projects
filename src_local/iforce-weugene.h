@@ -58,8 +58,7 @@ event acceleration (i++)
       values of the volume fraction larger than one or smaller than
       zero. */
 
-      foreach()
-	f[] = clamp (f[], 0., 1.);
+      foreach()	f[] = clamp (f[], 0., 1.);
       boundary ({f});
     }
 

@@ -302,7 +302,6 @@ void output_vtu_MPI(scalar * list, vector * vlist, char * subname){
     fp = fopen(name_vtu, "w");
     output_vtu_bin_foreach(list, vlist, 64, fp, true);//64 and true is useless. It needs to support the interface
     fclose(fp);
-
     if (pid() == 0) {
         char name_pvtu[80], tmp[80];
 	sprintf(name_pvtu, "%s_%4.4d.pvtu", subname, nf);

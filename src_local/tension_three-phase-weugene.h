@@ -12,7 +12,7 @@ $$
 with $\sigma$ the (constant) surface tension coefficient and $\kappa$
 the interface mean curvature. */
 
-#include "iforce-weugene.h"
+//#include "iforce-weugene.h"
 #include "curvature.h"
 
 /**
