@@ -16,12 +16,11 @@
 
 
 // 1 is Si Pool, 2 is Water Drop and 3 is air
-//#include "axi.h"
 #include "../src_local/centered-weugene.h"
 // Smering out the interfaces for high density and viscosity ratios.
 //#define FILTERED
 #include "../src_local/three-phase-weugene.h"
-#include "../src_local/tension_three-phase-weugene.h"
+#include "../src_local/decompose-weugene.h"
 #include "distance.h"
 
 #define MAXlevel 10                                             // maximum level
@@ -44,17 +43,19 @@ $$ \hat{\rho}\left(\frac{\partial U_i}{\partial t} + U_j\frac{\partial U_i}{\par
 */
 #define La (3.6e5)
 #define Oh sqrt(1./La)
-#define Bo 0.343
+#define Bo 0
 #define Mu12 1.0
 #define Rho12 1.0
-#define Rho32 0.001
-#define Mu32  0.01
+#define Rho32 0.1
+#define Mu32  0.1
 
 /** Surface tesnions
 Non-dimensioalized using the surface tenison coefficient of $\sigma_{23}$.<br/>
 Notice that $\sigma_{12}/\sigma_{23} + \sigma_{13}/\sigma_{23} < 1$. The spreading coefficient
 of liquid pool (1) is positive. It will try to maximize its surface area.
-*/
+\cos \theta = \frac{\sigma_{23}-\sigma_{12}}{\sigma_{13}} =\frac{\sigma_{sg}-\sigma_{ls}}{\sigma_{lg}}
+ (1-1.7)/1=-0.7
+ */
 #define SIGMA12by23 (1.7)
 #define SIGMA13by23 (1)
 
@@ -81,7 +82,7 @@ p[left] = dirichlet(0.);
 p[right] = dirichlet(0.);
 p[top] = dirichlet(0.);
 p[bottom] = dirichlet(0.);
-scalar KAPPA1[], KAPPA2[], omega[];
+scalar omega[];
 int main()
 {
     init_grid (1024);
@@ -91,10 +92,12 @@ int main()
     sigma13 = SIGMA13by23;
     sigma23 = 1.0;
     sigma12 = SIGMA12by23;
+
     L0=Ldomain;
     X0=-L0/2;
     Y0=-L0/8;
     stokes = true; //added
+    DT = 1e-4;
 #if TREE
     for (scalar s in {f, fs}){
     s.refine = s.prolongation = fraction_refine;
@@ -105,30 +108,32 @@ int main()
 }
 event init(t = 0) {
     if (!restore (file = "restart")) {
+        scalar tmp[];
+        vector gtmp[];
         int iter = 0;
         do {
             iter++;
             foreach() {
                 fs[] = (y < 0) ? 1 : 0;
                 f[] = (sq(x) + sq(y) - sq(L0/8) < 0) && (y > 0) ? 1 : 0;
-                f[] += fs[];
+                tmp[] = f[] + 2*fs[];
                 u.x[] = 0.0;
                 u.y[] = 0.0;
             }
             vorticity (u, omega);
             boundary ((scalar *){omega});
-            boundary ({f, fs, u});
-        }while (adapt_wavelet({f, fs, u.x, u.y, omega}, (double []){fErr, fErr, VelErr, VelErr, OmegaErr},
+            boundary ({f, fs, u, tmp});
+            gradients ({tmp}, {gtmp});
+        }while (adapt_wavelet({gtmp.x, gtmp.x, u.x, u.y, omega}, (double []){fErr, fErr, VelErr, VelErr, OmegaErr},
                               maxlevel = MAXlevel, minlevel=MINlevel).nf != 0 && iter <= 15);
 
         fprintf(stderr, "init refinement iter=%d", iter);
-        foreach() {
-
-        }
     }else{
         fprintf(stderr, "RESTART from file");
     }
 
+    event("properties");
+    event("acceleration");
     event ("vtk_file");
 }
 // Gravity
@@ -140,53 +145,41 @@ foreach_face(y){
 }
 
 event velocity_correction(i++){
-foreach() foreach_dimension() u.x[] *= (1.0 - fs[]);
-boundary({u});
+    foreach() foreach_dimension() u.x[] *= (1.0 - fs[]);
+    boundary({u});
 }
 //Output
 #include "../src_local/output_vtu_foreach.h"
-event vtk_file (i += 100)
+event vtk_file (i += 10)
 {
-char subname[80]; sprintf(subname, "enc");
-scalar l[]; foreach() l[] = level;
+    char subname[80]; sprintf(subname, "enc");
+    scalar l[]; foreach() l[] = level;
 
-        vorticity (u, omega);
-curvature(f, KAPPA1);
-curvature(fs, KAPPA2);
-
-output_vtu_MPI( (scalar *) {l, f, fs, rho, p, pf, KAPPA1, KAPPA2, omega}, (vector *) {u, uf, mu}, subname);
+    vorticity (u, omega);
+    output_vtu_MPI( (scalar *) {l, f, fs, rho, p, pf, phi1, phi2, omega}, (vector *) {a, u, uf, mu}, subname);
 }
 
-#define ADAPT_SCALARS {a, ga.x, ga.y, omega}
-#define ADAPT_EPS_SCALARS {fErr, fErr, fErr, OmegaErr}
+#define ADAPT_SCALARS {ga.x, ga.y, omega}
+#define ADAPT_EPS_SCALARS {fErr, fErr, OmegaErr}
 
 event adapt(i++)
 {
 /**
 We use AMR based on the curvature values of VOF fields, vorticity, and velocities.
 */
-vorticity (u, omega);
-scalar a[];
-vector ga[];
-foreach() a[] = f[] + fs[];
+    vorticity (u, omega);
+    scalar a[];
+    vector ga[];
+    foreach() a[] = f[] + 2*fs[];
         boundary({a});
-gradients ({a}, {ga});
-//  curvature(f, KAPPA1);
-//  curvature(fs, KAPPA2);
-//  foreach(){
-////      KAPPA1[] = exp(-fabs(KAPPA1[]));
-////      KAPPA2[] = exp(-fabs(KAPPA2[]));
-////      KAPPA1[] = clamp(KAPPA1[], -1000, 1000);
-////      KAPPA2[] = clamp(KAPPA2[], -1000, 1000);
-//      KAPPA1[] = (fabs(KAPPA1[])>1000)? 1000: KAPPA1[];
-////      KAPPA2[] = (fabs(KAPPA2[])>1000)? 0: KAPPA2[];
-//  }
-double eps_arr[] = ADAPT_EPS_SCALARS;
-MinMaxValues(ADAPT_SCALARS, eps_arr);
-adapt_wavelet ((scalar *) ADAPT_SCALARS,
-eps_arr,
-maxlevel = MAXlevel, minlevel = MINlevel);
+    gradients ({a}, {ga});
+    double eps_arr[] = ADAPT_EPS_SCALARS;
+//    MinMaxValues(ADAPT_SCALARS, eps_arr);
+    adapt_wavelet ((scalar *) ADAPT_SCALARS,
+                    eps_arr, maxlevel = MAXlevel, minlevel = MINlevel);
 }
+
+event stop (t = tmax);
 // Outputs
 //event writingFiles (t = 0; t += tsnap; t <= tmax + tsnap) {
 //  dump (file = "dump");
@@ -214,7 +207,7 @@ maxlevel = MAXlevel, minlevel = MINlevel);
 //  }
 //  fprintf (ferr, "%d %g %g %g\n", i, dt, t, ke);
 //}
-event stop (t = tmax);
+
 /**
 ## Running the code
 

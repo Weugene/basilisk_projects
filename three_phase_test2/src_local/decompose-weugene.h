@@ -1,3 +1,6 @@
+#ifndef BASILISK_HEADER_4
+#define BASILISK_HEADER_4
+#line 1 "./../src_local/decompose-weugene.h"
 #include "curvature.h"
 
 attribute {
@@ -25,9 +28,8 @@ event defaults (i = 0) {
         f.sigma = 0.5*(sigma13 + sigma12 - sigma23);
         fs.sigma = 0.5*(- sigma13 + sigma12 + sigma23);
         sigma3 = 0.5*(sigma13 - sigma12 + sigma23);
-        double costheta = (sigma23 - sigma12)/sigma13;
-        fprintf(stderr, "cos theta=%g theta=%g\n", costheta, acos(costheta));
-        fprintf(stderr, "sigma1=%g sigma2=%g sigma3=%g\n", f.sigma, fs.sigma, sigma3);
+//        fprintf(stderr, "sigma3=%g", sigma3);
+//        fprintf(stderr, "sigma1=%g sigma2=%g sigma3=%g", f.sigma, fs.sigma, sigma3);
     }
 }
 
@@ -152,3 +154,5 @@ event acceleration (i++)
 #endif
 
 }
+
+#endif

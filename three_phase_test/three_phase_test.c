@@ -21,7 +21,7 @@
 // Smering out the interfaces for high density and viscosity ratios.
 //#define FILTERED
 #include "../src_local/three-phase.h"
-#include "../src_local/tension_three-phase-weugene.h"
+#include "../src_local/tension_three-phase.h"
 #include "distance.h"
 
 #define MAXlevel 10                                             // maximum level
@@ -122,9 +122,7 @@ event init(t = 0) {
                               maxlevel = MAXlevel, minlevel=MINlevel).nf != 0 && iter <= 15);
 
         fprintf(stderr, "init refinement iter=%d", iter);
-        foreach() {
 
-        }
     }else{
         fprintf(stderr, "RESTART from file");
     }
