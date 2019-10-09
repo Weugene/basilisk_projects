@@ -310,7 +310,7 @@ void output_vtu_MPI(scalar * list, vector * vlist, char * subname){
     @if _MPI
         MPI_Barrier(MPI_COMM_WORLD);
     @endif
-    fprintf (ferr, "iter_fp: %d\n", nf);
+    fprintf (ferr, "iter_fp: %d t=%g dt=%g\n", nf, t, dt);
     iter_fp++;
 }
 
