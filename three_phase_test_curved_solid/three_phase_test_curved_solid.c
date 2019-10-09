@@ -54,9 +54,8 @@ Non-dimensioalized using the surface tenison coefficient of $\sigma_{23}$.<br/>
 Notice that $\sigma_{12}/\sigma_{23} + \sigma_{13}/\sigma_{23} < 1$. The spreading coefficient
 of liquid pool (1) is positive. It will try to maximize its surface area.
 \cos \theta = \frac{\sigma_{23}-\sigma_{12}}{\sigma_{13}} =\frac{\sigma_{sg}-\sigma_{ls}}{\sigma_{lg}}
- (1-1.7)/1=-0.7
  */
-#define SIGMA12by23 (1.7)
+#define SIGMA12by23 (0.3)
 #define SIGMA13by23 (1)
 
 // density
@@ -114,7 +113,7 @@ event init(t = 0) {
         do {
             iter++;
             foreach() {
-                fs[] = (y < 0) ? 1 : 0;
+                fs[] = (sq(y+L0/4)+sq(x) < sq(L0/4)) ? 1 : 0;
                 f[] = (sq(x) + sq(y) - sq(L0/8) < 0) && (y > 0) ? 1 : 0;
                 tmp[] = f[] + 2*fs[];
                 u.x[] = 0.0;
