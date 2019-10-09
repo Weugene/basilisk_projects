@@ -39,10 +39,6 @@ set term pop
 #include "vof.h"
 #include "tension.h"
 
-//#define LEVEL 8
-//#define MINLEVEL 4
-//#define MAXLEVEL 10
-
 scalar f[], * interfaces = {f};
 
 /**
@@ -57,11 +53,10 @@ h.t[bottom] = contact_angle (theta0*pi/180.);
 int main()
 {
   size (2);
-  N=1024;
-  init_grid (N);
+
   /**
   We use a constant viscosity. */
-  
+
   const face vector muc[] = {.1,.1};
   mu = muc;
 
@@ -75,20 +70,16 @@ int main()
   /**
   We set the surface tension coefficient and run for the range of
   contact angles. */
-  
-  f.sigma = 2.;
 
-  for (theta0 = 150; theta0 <= 150; theta0 += 15)
+  f.sigma = 1.;
+
+  for (theta0 = 15; theta0 <= 165; theta0 += 15)
     run();
 }
 
 /**
 The initial drop is a quarter of a circle. */
 
-u.n[right] = dirichlet(1.);
-p[right]   = neumann(0.);
-pf[right]  = neumann(0.);
-f[right]   = f0[]; //???
 event init (t = 0)
 {
   fraction (f, - (sq(x) + sq(y) - sq(0.5)));
@@ -107,14 +98,22 @@ event snapshots (t += 1)
 }
 #endif
 
+//Output
+#include "../src_local/output_vtu_foreach.h"
+event vtk_file (i += 100)
+{
+    char subname[80]; sprintf(subname, "ses");
+    output_vtu_MPI( (scalar *) {f, p, pf}, (vector *) {a, u, uf}, subname);
+}
+
 /**
-At equilibrium (t = 1 seems sufficient), we output the interface
+At equilibrium (t = 10 seems sufficient), we output the interface
 shape and compute the (constant) curvature. */
-double ent_time=1;
-event end (t = ent_time)
+
+event end (t = 10)
 {
   output_facets (f, stdout);
-  
+
   scalar kappa[];
   curvature (f, kappa);
   stats s = statsf (kappa);
@@ -122,32 +121,6 @@ event end (t = ent_time)
   fprintf (ferr, "%d %g %.5g %.3g\n", N, theta0, R/sqrt(V/pi), s.stddev);
 }
 
-//event movie (t += 0.01; t <= ent_time) {
-//  static FILE * fpf = popen ("/home/weugene/basilisk/src/ppm2mpeg > f.mpg", "w");
-//  output_ppm (f, fpf, linear = true);
-//}
-
-event images (t+= 0.01) {
-
-    static FILE * fpff = fopen ("f.ppm", "w");
-    output_ppm (f, fpff, min = 0, max = 1);
-//    char name[80];
-//    printf("iter=%d\n", iteration);
-//    sprintf(name, "list.vtk.%d", iteration++);
-//    printf("name %s", name);
-//    FILE * fplist = fopen (name, "w");
-//    output_vtk ({rho, w}, N, fplist,  true);
-
-}
-
-#if TREE
-event adapt (i++) {
-  adapt_wavelet ({f}, (double[]){1e-3}, LEVEL + 1);
-}
-#endif
-//event adapt (i++) {
-//    adapt_wavelet ({f}, (double[]){1e-3}, LEVEL + 1);
-//}
 /**
 We compare $R/R_0$ to the analytical expression, with $R_0=\sqrt{V/\pi}$.
 
