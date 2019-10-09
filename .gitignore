@@ -4,6 +4,7 @@ out
 *.vtk.*
 *.pvtu
 *.vtu
+*.vtu.*
 log
 log*
 log-*
