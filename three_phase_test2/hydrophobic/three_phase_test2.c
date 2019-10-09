@@ -56,7 +56,7 @@ of liquid pool (1) is positive. It will try to maximize its surface area.
 \cos \theta = \frac{\sigma_{23}-\sigma_{12}}{\sigma_{13}} =\frac{\sigma_{sg}-\sigma_{ls}}{\sigma_{lg}}
  (1-1.7)/1=-0.7
  */
-#define SIGMA12by23 (0.3)
+#define SIGMA12by23 (1.7)
 #define SIGMA13by23 (1)
 
 // density
