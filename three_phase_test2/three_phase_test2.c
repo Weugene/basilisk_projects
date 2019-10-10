@@ -23,12 +23,12 @@
 #include "../src_local/decompose-weugene.h"
 #include "distance.h"
 
-#define MAXlevel 10                                             // maximum level
+#define MAXlevel 9                                             // maximum level
 #define MINlevel 4                                              // maximum level
-#define tmax 5.0                                                // maximum time
+#define tmax 15.0                                                // maximum time
 #define tsnap (1e-2)
 // Error tolerances
-#define fErr (1e-2)                                  // error tolerance in VOF
+#define fErr (1e-3)                                  // error tolerance in VOF
 #define K1Err (1e-1)                                 // error tolerance in KAPPA 1e-3
 #define K2Err (1e-1)                                 // error tolerance in KAPPA
 #define VelErr (2e-1)                                // error tolerances in velocity
@@ -42,12 +42,14 @@ Navier-Stokes equation is therefore:
 $$ \hat{\rho}\left(\frac{\partial U_i}{\partial t} + U_j\frac{\partial U_i}{\partial X_j}\right) = -\frac{\partial P}{\partial X_i} + \frac{\partial}{\partial X_j}\left(2\left(\hat{\mu}Oh\right)D_{ij}\right) + \kappa\delta_s\hat{n}_{i} + Bo\hat{g}_i $$
 */
 #define La (3.6e5)
-#define Oh sqrt(1./La)
+#define Oh 1
+//#define Oh sqrt(1./La)
 #define Bo 0
-#define Mu12 1.0
+#define Mu12 1
+#define Mu32 1
 #define Rho12 1.0
-#define Rho32 0.1
-#define Mu32  0.1
+#define Rho32 1
+
 
 /** Surface tesnions
 Non-dimensioalized using the surface tenison coefficient of $\sigma_{23}$.<br/>
@@ -56,7 +58,7 @@ of liquid pool (1) is positive. It will try to maximize its surface area.
 \cos \theta = \frac{\sigma_{23}-\sigma_{12}}{\sigma_{13}} =\frac{\sigma_{sg}-\sigma_{ls}}{\sigma_{lg}}
  (1-1.7)/1=-0.7
  */
-#define SIGMA12by23 (0.3)
+#define SIGMA12by23 (0.1)
 #define SIGMA13by23 (1)
 
 // density
@@ -70,7 +72,7 @@ of liquid pool (1) is positive. It will try to maximize its surface area.
 #define Mu3 (Mu32*Oh)                            // Dynamic viscosity of phase 3
 
 // domain
-#define Ldomain 8                                 // Dimension of the domain
+#define Ldomain 1                                 // Dimension of the domain
 
 // boundary conditions
 u.n[right] = neumann(0.);
@@ -78,10 +80,19 @@ u.n[left] = neumann(0.);
 u.n[top] = neumann(0.);
 u.n[bottom] = dirichlet(0.);
 
-p[left] = dirichlet(0.);
-p[right] = dirichlet(0.);
+f[left] =neumann(0);
+f[right]=dirichlet(0);
+f[top] =dirichlet(0);
+f[bottom] =dirichlet(0);
+
+fs[left] =neumann(0);
+fs[right]=neumann(0);
+fs[top] =dirichlet(0);
+fs[bottom] =dirichlet(1);
+//p[left] = dirichlet(0.);
+//p[right] = dirichlet(0.);
 p[top] = dirichlet(0.);
-p[bottom] = dirichlet(0.);
+//p[bottom] = dirichlet(0.);
 scalar omega[];
 int main()
 {
@@ -94,10 +105,10 @@ int main()
     sigma12 = SIGMA12by23;
 
     L0=Ldomain;
-    X0=-L0/2;
+    X0=0;
     Y0=-L0/8;
     stokes = true; //added
-    DT = 1e-4;
+    DT = 1e-3;
 #if TREE
     for (scalar s in {f, fs}){
     s.refine = s.prolongation = fraction_refine;
@@ -115,7 +126,7 @@ event init(t = 0) {
             iter++;
             foreach() {
                 fs[] = (y < 0) ? 1 : 0;
-                f[] = (sq(x) + sq(y) - sq(L0/8) < 0) && (y > 0) ? 1 : 0;
+                f[] = (sq(x) + sq(y+L0/4) - sq(L0/2) < 0) && (y > 0) ? 1 : 0;
                 tmp[] = f[] + 2*fs[];
                 u.x[] = 0.0;
                 u.y[] = 0.0;
@@ -159,8 +170,8 @@ event vtk_file (i += 100)
     output_vtu_MPI( (scalar *) {l, f, fs, rho, p, pf, phi1, phi2, omega}, (vector *) {a, u, uf, mu}, subname);
 }
 
-#define ADAPT_SCALARS {ga.x, ga.y, omega}
-#define ADAPT_EPS_SCALARS {fErr, fErr, OmegaErr}
+#define ADAPT_SCALARS {ga.x, ga.y}
+#define ADAPT_EPS_SCALARS {fErr, fErr}
 
 event adapt(i++)
 {
@@ -171,7 +182,7 @@ We use AMR based on the curvature values of VOF fields, vorticity, and velocitie
     scalar a[];
     vector ga[];
     foreach() a[] = f[] + 2*fs[];
-        boundary({a});
+    boundary({a});
     gradients ({a}, {ga});
     double eps_arr[] = ADAPT_EPS_SCALARS;
 //    MinMaxValues(ADAPT_SCALARS, eps_arr);

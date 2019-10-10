@@ -26,7 +26,7 @@ event defaults (i = 0) {
         fs.sigma = 0.5*(- sigma13 + sigma12 + sigma23);
         sigma3 = 0.5*(sigma13 - sigma12 + sigma23);
         double costheta = (sigma23 - sigma12)/sigma13;
-        fprintf(stderr, "cos theta=%g theta=%g\n", costheta, acos(costheta));
+        fprintf(stderr, "cos theta=%g theta=%g\n", costheta, 180*acos(costheta)/3.141592);
         fprintf(stderr, "sigma1=%g sigma2=%g sigma3=%g\n", f.sigma, fs.sigma, sigma3);
     }
 }

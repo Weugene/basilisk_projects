@@ -98,13 +98,13 @@ event snapshots (t += 1)
 }
 #endif
 
-//Output
-#include "../src_local/output_vtu_foreach.h"
-event vtk_file (i += 100)
-{
-    char subname[80]; sprintf(subname, "ses");
-    output_vtu_MPI( (scalar *) {f, p, pf}, (vector *) {a, u, uf}, subname);
-}
+////Output
+//#include "../src_local/output_vtu_foreach.h"
+//event vtk_file (i += 100)
+//{
+//    char subname[80]; sprintf(subname, "ses");
+//    output_vtu_MPI( (scalar *) {f, p, pf}, (vector *) {a, u, uf}, subname);
+//}
 
 /**
 At equilibrium (t = 10 seems sufficient), we output the interface
