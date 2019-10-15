@@ -33,12 +33,14 @@ set term pop
 ~~~
 */
 
-#include "grid/multigrid.h"
-#include "navier-stokes/centered.h"
+//#include "grid/multigrid.h"
+//#include "grid/quadtree.h"
+//#include "navier-stokes/centered.h"
+#include "../src_local/centered-weugene.h"
 #include "contact.h"
 #include "vof.h"
 #include "tension.h"
-
+#define MAXLEVEL 8
 scalar f[], * interfaces = {f};
 
 /**
@@ -49,7 +51,7 @@ its tangential component. */
 vector h[];
 double theta0 = 30;
 h.t[bottom] = contact_angle (theta0*pi/180.);
-
+scalar kappa_cur[];
 int main()
 {
   size (2);
@@ -98,13 +100,14 @@ event snapshots (t += 1)
 }
 #endif
 
-////Output
-//#include "../src_local/output_vtu_foreach.h"
-//event vtk_file (i += 100)
-//{
-//    char subname[80]; sprintf(subname, "ses");
-//    output_vtu_MPI( (scalar *) {f, p, pf}, (vector *) {a, u, uf}, subname);
-//}
+//Output
+#include "../src_local/output_vtu_foreach.h"
+event vtk_file (i += 100)
+{
+    char subname[80]; sprintf(subname, "ses");
+    curvature (f, kappa_cur);
+    output_vtu_MPI( (scalar *) {f, p, pf, kappa_cur}, (vector *) {a, u, uf}, subname);
+}
 
 /**
 At equilibrium (t = 10 seems sufficient), we output the interface
@@ -114,12 +117,28 @@ event end (t = 10)
 {
   output_facets (f, stdout);
 
-  scalar kappa[];
-  curvature (f, kappa);
-  stats s = statsf (kappa);
+
+  curvature (f, kappa_cur);
+  stats s = statsf (kappa_cur);
   double R = s.volume/s.sum, V = 2.*statsf(f).sum;
   fprintf (ferr, "%d %g %.5g %.3g\n", N, theta0, R/sqrt(V/pi), s.stddev);
 }
+
+
+
+#if TREE
+event adapt (i++) {
+#if 1
+  scalar f1[];
+  foreach()
+    f1[] = f[];
+  boundary ({f1});
+  adapt_wavelet ({f1}, (double[]){1e-3}, minlevel = 3, maxlevel = MAXLEVEL);
+#else
+  adapt_wavelet ({f}, (double[]){1e-4}, minlevel = 3, maxlevel = MAXLEVEL);
+#endif
+}
+#endif
 
 /**
 We compare $R/R_0$ to the analytical expression, with $R_0=\sqrt{V/\pi}$.
