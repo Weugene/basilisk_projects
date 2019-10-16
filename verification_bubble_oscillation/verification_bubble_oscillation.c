@@ -5,34 +5,42 @@
 #include "two-phase.h"
 //#include "navier-stokes/conserving.h" //???should add?
 #include "tension.h"
-
-#define MAXLEVEL 10
 #define MINLEVEL 4
-#define feps 1e-3
-#define ueps 1e-2
-#define peps 1e-2
+
 #define EPS_MAXA 1                                   // method of eps calculation
-
-#define Re 1 // rhol*U*L/mul
-#define We 1//rhol*L*U^2/sigma
-
-#define Rrhog 10
-#define Rrhos 1
-#define Rmug 100
-#define Rmus 1
-#define dPl 0
-#define dPr 0
-#define Rad (0.05*L0)
+#define Rad (0.1*L0)
 
 #define ADAPT_SCALARS {f, p}
 #define ADAPT_EPS_SCALARS {feps, peps}
 
+int MAXLEVEL = 10;
+double feps = 1e-3, ueps = 1e-2, peps = 1e-2;
+double Re = 1, We = 1, Bo=1; // Re = rhol*U*L/mul //We = rhol*L*U^2/sigma
+double Rrhog = 10, Rmug = 100;
 p[left]   = dirichlet(0.);
 pf[right] = dirichlet(0.);
 p[bottom] = dirichlet(0.);
 pf[top]   = dirichlet(0.);
 
-int main() {
+int main(int argc, char * argv[]) {
+//    maxruntime (&argc, argv);
+    if (argc > 1) {
+        MAXLEVEL = atoi(argv[1]); //convert from string to int
+    }else if (argc > 2) {
+        feps = atof(argv[2]);
+    }else if (argc > 3) {
+        ueps = atof(argv[3]);
+    }else if (argc > 4) {
+        peps = atof(argv[4]);
+    }else if (argc > 5) {
+        Re = atof(argv[5]);
+    }else if (argc > 6) {
+        We = atof(argv[6]);
+    }else if (argc > 7) {
+        Rrhog = atof(argv[7]);
+    }else if (argc > 8) {
+        Rmug = atof(argv[8]);
+    }
     L0 = 1.;
     origin (-L0/2, -L0/2.);
     N = 512;
@@ -62,10 +70,13 @@ event init (t = 0) {
 
     if (!restore (file = "restart")) {
         int iter = 0;
+        double r2, theta;
         do {
             iter++;
             foreach(){
-                f[] = (sq(x) + sq(y) < sq(Rad)) ? 1 : 0;
+                r2 = sq(x) + sq(y);
+                theta =atan(y/x);
+                f[] = (r2 > sq(Rad))? 1 : 0;
                 u.x[] = 0;
 //                p[] = f[]*f.sigma/Rad;
             }
@@ -79,7 +90,13 @@ event init (t = 0) {
     event ("vtk_file");
 }
 
-
+// Gravity
+event acceleration(i++){
+face vector av = a;
+foreach_face(y){
+        av.y[] -= Bo;
+}
+}
 //Output
 #include "../src_local/output_vtu_foreach.h"
 event end_timestep (t += 0.01){
