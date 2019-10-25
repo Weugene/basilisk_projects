@@ -9,6 +9,7 @@
 
 #define EPS_MAXA 1                                   // method of eps calculation
 #define Rad (0.1*L0)
+#define r_d (0.1*Rad)
 
 #define ADAPT_SCALARS {f, p}
 #define ADAPT_EPS_SCALARS {feps, peps}
@@ -50,7 +51,7 @@ int main(int argc, char * argv[]) {
     TOLERANCE = 1e-8;
     fprintf(stderr, "TOLERANCE = %g", TOLERANCE);
     rho1 = 1.0; rho2 = 1.0/Rrhog;
-    mu1 = 1.0/Re;  mu2 = 1.0/(Re*Rrhog);
+    mu1 = 1.0/Re;  mu2 = 1.0/(Re*Rmug);
 //  surface tension
     f.sigma = 1.0/We;
 #if TREE
@@ -70,17 +71,18 @@ event init (t = 0) {
 
     if (!restore (file = "restart")) {
         int iter = 0;
-        double r2, theta;
+        double r2, r2i, theta;
         do {
             iter++;
             foreach(){
-                r2 = sq(x) + sq(y);
-                theta =atan(y/x);
-                f[] = (r2 > sq(Rad))? 1 : 0;
+                theta = atan(y/x);
+                r2 = (sq(x) + sq(y));
+                r2i = sq(Rad) * (1 + r_d * cos(10 * theta));
+                f[] = (r2 > r2i)? 1 : 0;
                 u.x[] = 0;
-//                p[] = f[]*f.sigma/Rad;
+                pf[] = f[] * f.sigma/Rad;//??
             }
-            boundary ({f, u, p});
+            boundary ({f, u, pf});
         }while (adapt_wavelet({f}, (double []){feps},
                 maxlevel = MAXLEVEL, minlevel=MINLEVEL).nf != 0 && iter <= 15);
         fprintf(stderr, "init refinement iter=%d", iter);

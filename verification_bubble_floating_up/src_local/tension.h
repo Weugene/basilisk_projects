@@ -1,3 +1,6 @@
+#ifndef BASILISK_HEADER_2
+#define BASILISK_HEADER_2
+#line 1 "./../src_local/tension.h"
 /**
 # Surface tension
 
@@ -91,3 +94,5 @@ event acceleration (i++)
       }
     }
 }
+
+#endif
