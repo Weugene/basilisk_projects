@@ -141,7 +141,7 @@ using MPI.
 */
 void output_pvtu_bin (scalar * list, vector * vlist, int n, FILE * fp, char * subname)
 {
-    int dim = 2;
+    int dim = 3;
     fputs ("<?xml version=\"1.0\"?>\n"
     "<VTKFile type=\"PUnstructuredGrid\" version=\"1.0\" byte_order=\"LittleEndian\" header_type=\"UInt64\">\n", fp);
     fputs ("\t <PUnstructuredGrid GhostLevel=\"0\">\n", fp);
@@ -178,7 +178,7 @@ using MPI. Also works with solids (when not using MPI).
 */
 void output_vtu_bin_foreach (scalar * list, vector * vlist, int n, FILE * fp, bool linear)
 {
-  int dim = 2;
+  int dim = 3;
 #if defined(_OPENMP)
   int num_omp = omp_get_max_threads();
   omp_set_num_threads(1);

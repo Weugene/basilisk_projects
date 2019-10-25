@@ -1,19 +1,23 @@
 #define BRINKMAN_PENALIZATION
+#define DEBUG_BRINKMAN_PENALIZATION
 //#define DEBUG_MINMAXVALUES
 //#define DEBUG_OUTPUT_VTU_MPI
+
+scalar fs[], omega[];
+vector Us[];
+
 #include "../src_local/centered-weugene.h"
 #define RAD pow(sq(x - xo)+sq(y - yo), 0.5)
 #define ST (-(x - xo)/RAD)
 #define MAXLEVEL 10
-#define CYLINDER (sq(x - xo) + sq(y - 5.)<1) ? 1
+#define CYLINDER (sq(x - xo) + sq(y - 5.)<1) ? 1 : 0
 
 double yo = 10., xo = 10;
 int iteration = 0;
-scalar fs[], omega[];
-vector Us[];
+
 
 u.n[left] = neumann(0);
-p[left]    = dirichlet(1);
+p[left]    = dirichlet(37.5);
 pf[left]   = dirichlet(1);
 fs[left]   = dirichlet(0);
 
@@ -31,12 +35,14 @@ u.n[bottom] = dirichlet(0);
 u.t[bottom] = dirichlet(0);
 fs[bottom] = dirichlet(0);
 p[bottom] = neumann(0);
+face vector muv[];
 int main() {
     L0 = 1;
     origin(-L0/2,-L0/2);
-    eta_s =1e-3;
+    eta_s =1e-5;
     TOLERANCE = 1e-5;
     DT = 1e-4;
+    mu = muv;
     run();
 }
 
@@ -58,6 +64,11 @@ event init (t = 0) {
     event ("vtk_file");
 }
 
+event properties (i++)
+{
+    foreach_face()
+    muv.x[] = 1;
+}
 
 #define ADAPT_SCALARS {fs, omega, p}
 #define ADAPT_EPS_SCALARS {0.01, 0.01, 0.01}
@@ -75,7 +86,7 @@ event end_timestep (i++){
     scalar l[];
     vorticity (u, omega);
     foreach() l[] = level;
-    output_vtu_MPI( (scalar *) {l, omega, fs, p}, (vector *) {u}, subname);
+    output_vtu_MPI( (scalar *) {l, omega, fs, p}, (vector *) {u, dbp}, subname);
 }
 
 event stop(t = 10);

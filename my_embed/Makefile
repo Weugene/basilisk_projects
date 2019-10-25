@@ -1,4 +1,4 @@
-CFLAGS=-DDUMP=1 -Wall -O2
+CFLAGS=-DDUMP=1 -Wall -O2 -events
 CLIBS=-lm $(OPENGLIBS)
 CFILE=my_embed
 my_embed:

@@ -1,6 +1,6 @@
 #ifndef BASILISK_HEADER_3
 #define BASILISK_HEADER_3
-#line 1 "./../src_local/viscosity-weugene.h"
+#line 1 "./../src_local/./viscosity-weugene.h"
 #include "poisson.h"
 
 struct Viscosity {
@@ -26,9 +26,12 @@ struct Viscosity {
 #endif
 
 #ifdef BRINKMAN_PENALIZATION
-extern scalar fs;
-extern vector Us;
+//extern scalar fs;
+//extern vector Us;
 double eta_s = 1e-3;
+#ifdef DEBUG_BRINKMAN_PENALIZATION
+vector dbp[];
+#endif
 #endif
 
 static void relax_viscosity (scalar * a, scalar * b, int l, void * data)
@@ -137,9 +140,13 @@ static double residual_viscosity (scalar * a, scalar * b, scalar * resl,
 	    d += taux.x[1] - taux.x[];
       res.x[] = r.x[]
     #ifdef BRINKMAN_PENALIZATION
-               + qs*(Us.x[]- lambda.x*u.x[])
+               + qs*(Us.x[]- u.x[])
     #endif
                - lambda.x*u.x[] + q*d/Delta;
+    #ifdef DEBUG_BRINKMAN_PENALIZATION
+      dbp.x[] = qs*(Us.x[]- u.x[]);
+//      if (fabs(fs[]) > 1e-5) fprintf(stderr, "%g\n", dbp.x[]);
+    #endif
       if (fabs (res.x[]) > maxres)
 	maxres = fabs (res.x[]);
     }
@@ -156,7 +163,7 @@ static double residual_viscosity (scalar * a, scalar * b, scalar * resl,
         {
             res.x[] = r.x[]
         #ifdef BRINKMAN_PENALIZATION
-                    + qs*(Us.x[]- lambda.x * u.x[])
+                    + qs*(Us.x[]- u.x[])
         #endif
                     - lambda.x * u.x[]
                     + q * (2. * mu.x[1, 0] * (u.x[1] - u.x[])
@@ -178,6 +185,10 @@ static double residual_viscosity (scalar * a, scalar * b, scalar * resl,
                             (u.z[-1,0,-1] + u.z[-1,0,0])/4.)
         #endif
                     ) / sq(Delta);
+        #ifdef DEBUG_BRINKMAN_PENALIZATION
+            dbp.x[] = qs*(Us.x[]- u.x[]);
+//            if (fabs(dbp.x[]) > 1e-5) fprintf(stderr, "%g\n", dbp.x[]);
+        #endif
             if (fabs(res.x[]) > maxres)
                 maxres = fabs(res.x[]);
         }
@@ -192,7 +203,7 @@ trace
 mgstats viscosity (struct Viscosity p)
 {
 #if AXI
-    fprintf("Not correct solution for AXI in viscosity-weugene.h");
+    fprintf(stderr, "Not correct solution for AXI in viscosity-weugene.h");
     return 9;
 #endif
   vector u = p.u, r[];
@@ -203,7 +214,6 @@ mgstats viscosity (struct Viscosity p)
   face vector mu = p.mu;
   scalar rho = p.rho;
   restriction ({mu,rho});
-  
   return mg_solve ((scalar *){u}, (scalar *){r},
 		   residual_viscosity, relax_viscosity, &p, p.nrelax, p.res);
 }

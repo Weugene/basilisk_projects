@@ -33,7 +33,7 @@ for viscosity. */
 #if EMBED
 #include "viscosity-embed.h"
 #else
-#include "viscosity-weugene.h"
+#include "./viscosity-weugene.h"
 //#include "viscosity.h"
 #endif
 
