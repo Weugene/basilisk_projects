@@ -4,17 +4,14 @@
 #define RAD pow(sq(x - xo)+sq(y - yo), 0.5)
 #define ST (-(x - xo)/RAD)
 #define MAXLEVEL 10
-#define CYLINDER (1. - sqrt(sq(x - xo) + sq(y - 5.)))
-//* \
-//                 (1. - sqrt(sq(x - xo-3) + sq(y - 5.)))* \
-//                 (1. - sqrt(sq(x - xo+3) + sq(y - 5.)))* \
-//                 (1. - sqrt(sq(x - xo-6) + sq(y - 5.)))* \
-//                 (1. - sqrt(sq(x - xo+6) + sq(y - 5.)))
-double yo = 10., xo = 12.5;
+
+#define CYLINDER ( sq(x - xo) + sq(y - yo) - sq(rad) )
+
+double yo = 0., xo = 0.1, rad = 0.02;
 int iteration = 0;
 face vector muc[];
 int main() {
-    L0 = 25;
+    L0 = 1;
     mu = muc;
     run();
 }
@@ -38,10 +35,8 @@ event init (t = 0) {
             u.x[] = -((psi[0, 1] - psi[0, -1])/(2*Delta)); //ux = -dyPsi
             u.y[] = (psi[1, 0] - psi[-1, 0])/(2*Delta);    //uy =  dxPsi
         }
-
-        printf("channel\n");
         foreach_vertex()
-            phi[] = -CYLINDER; // phi<0 in, phi>0 out of cyl
+            phi[] = CYLINDER; // phi<0 in, phi>0 out of cyl
         fractions (phi, cs, fs);//=>cs and fs are calculated to define an obstacle//cs, fs each direction 0 in cylinder, 1 out of cyl
         //fraction(channel, RAD - 1);
         if (it>=10) printf("WARNING: does not converge... ");
@@ -102,3 +97,32 @@ event vtk_file (t += 0.1; t<=100)
 
     iteration++;
 }
+
+
+//scalar psi[], phi[];
+//double k = 3.83170597;
+//
+//int it = 0;
+//
+//do {
+//it++;
+//printf("u\n");
+////setting scalar functions for defining velocity field. ux = -dyPsi uy =  dxPsi
+//foreach()
+//psi[] = ((RAD > 1)*ST/RAD +
+//(RAD < 1)*(-2*j1(k*RAD)*ST/(k*j0(k)) + //j0, j1 Bessel functions
+//RAD*ST));
+//boundary ({psi});
+//foreach() {
+//    u.x[] = -((psi[0, 1] - psi[0, -1])/(2*Delta)); //ux = -dyPsi
+//    u.y[] = (psi[1, 0] - psi[-1, 0])/(2*Delta);    //uy =  dxPsi
+//}
+//
+//printf("channel\n");
+//foreach_vertex()
+//phi[] = CYLINDER; // phi<0 in, phi>0 out of cyl
+//fractions (phi, cs, fs);//=>cs and fs are calculated to define an obstacle//cs, fs each direction 0 in cylinder, 1 out of cyl
+////fraction(channel, RAD - 1);
+//if (it>=10) printf("WARNING: does not converge... ");
+//}while (adapt_wavelet({cs, u.x, u.y}, (double []){0.001, 0.01, 0.01},
+//maxlevel = MAXLEVEL, minlevel = 3).nf != 0 && it <= 10);
