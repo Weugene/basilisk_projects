@@ -9,7 +9,7 @@ vector Us[];
 #include "../src_local/centered-weugene.h"
 
 #define MAXLEVEL 10
-#define Re 200
+#define Re 80
 #define CYLINDER (sq(x - xo) + sq(y - yo)< sq(rad)) ? 1 : 0
 
 double yo = 1.65, xo = 1.5, rad = 0.05;

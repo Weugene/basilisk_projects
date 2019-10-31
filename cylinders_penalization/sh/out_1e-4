@@ -1,0 +1,18 @@
+stationary flow nc = 0 i = 975 du = 0.000998403
+# Quadtree, 975 steps, 150.295 CPU, 152.8 real, 3.5e+05 points.step/s, 25 var
+stationary flow nc = 1 i = 926 du = 0.00099849
+# Quadtree, 926 steps, 146.407 CPU, 148.8 real, 3.45e+05 points.step/s, 25 var
+stationary flow nc = 2 i = 814 du = 0.000998059
+# Quadtree, 814 steps, 118.755 CPU, 120.8 real, 3.56e+05 points.step/s, 25 var
+stationary flow nc = 3 i = 680 du = 0.000998288
+# Quadtree, 680 steps, 89.1828 CPU, 90.8 real, 3.61e+05 points.step/s, 25 var
+stationary flow nc = 4 i = 531 du = 0.000999678
+# Quadtree, 531 steps, 61.4785 CPU, 63.12 real, 3.56e+05 points.step/s, 25 var
+stationary flow nc = 5 i = 376 du = 0.000991431
+# Quadtree, 376 steps, 36.723 CPU, 37.75 real, 3.44e+05 points.step/s, 25 var
+stationary flow nc = 6 i = 226 du = 0.000986201
+# Quadtree, 226 steps, 18.2982 CPU, 19 real, 3.15e+05 points.step/s, 25 var
+stationary flow nc = 7 i = 125 du = 0.00097173
+# Quadtree, 125 steps, 8.30656 CPU, 8.845 real, 2.74e+05 points.step/s, 25 var
+stationary flow nc = 8 i = 102 du = 0.000988123
+# Quadtree, 102 steps, 6.03195 CPU, 6.56 real, 2.51e+05 points.step/s, 25 var

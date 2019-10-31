@@ -150,18 +150,14 @@ void output_pvtu_bin (scalar * list, vector * vlist, int n, FILE * fp, char * su
     fputs ("\t <PUnstructuredGrid GhostLevel=\"0\">\n", fp);
     fputs ("\t\t\t <PCellData Scalars=\"scalars\">\n", fp);
     for (scalar s in list) {
-      fprintf (fp,"\t\t\t\t <PDataArray type=\"Float64\" Name=\"%s\" format=\"appended\">\n", s.name);
-      fputs ("\t\t\t\t </PDataArray>\n", fp);
-
+      fprintf (fp,"\t\t\t\t <PDataArray type=\"Float64\" Name=\"%s\" format=\"appended\"/>\n", s.name);
     }
     for (vector v in vlist) {
-      fprintf (fp,"\t\t\t\t <PDataArray type=\"Float64\" NumberOfComponents=\"%d\" Name=\"%s\" format=\"appended\">\n", dim, v.x.name);
-      fputs ("\t\t\t\t </PDataArray>\n", fp);
+      fprintf (fp,"\t\t\t\t <PDataArray type=\"Float64\" NumberOfComponents=\"%d\" Name=\"%s\" format=\"appended\"/>\n", dim, v.x.name);
     }
     fputs ("\t\t\t </PCellData>\n", fp);
     fputs ("\t\t\t <PPoints>\n", fp);
-    fprintf (fp,"\t\t\t\t <PDataArray type=\"Float64\" NumberOfComponents=\"%d\" format=\"ascii\">\n", dim);
-    fputs ("\t\t\t\t </PDataArray>\n", fp);
+    fprintf (fp,"\t\t\t\t <PDataArray type=\"Float64\" NumberOfComponents=\"%d\" format=\"ascii\"/>\n", dim);
     fputs ("\t\t\t </PPoints>\n", fp);
 
     for (int i = 0; i < npe(); i++)

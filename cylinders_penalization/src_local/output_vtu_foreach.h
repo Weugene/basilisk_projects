@@ -17,7 +17,7 @@ using MPI.
     #define MY_DELTA_BOX_CONDITION (x - 0.5*Delta >= Pmin.x) && (x + 0.5*Delta <= Pmax.x) && (y - 0.5*Delta >= Pmin.y) && (y + 0.5*Delta <= Pmax.y) && (z - 0.5*Delta >= Pmin.z) && (z + 0.5*Delta <= Pmax.z)
 #endif
 
-void output_pvtu_ascii (scalar * list, vector * vlist, int n, FILE * fp, char * subname, double shift)
+void output_pvtu_ascii (scalar * list, vector * vlist, int n, FILE * fp, char * subname)
 {
     fputs ("<?xml version=\"1.0\"?>\n"
     "<VTKFile type=\"PUnstructuredGrid\" version=\"1.0\" byte_order=\"LittleEndian\" header_type=\"UInt64\">\n", fp);
@@ -52,7 +52,7 @@ one *.vtu file per PID process this function may be combined with
 output_pvtu_ascii() above to read in parallel. Tested in (quad- and oct-)trees
 using MPI. Also works with solids (when not using MPI).
 */
-void output_vtu_ascii_foreach (scalar * list, vector * vlist, int n, FILE * fp, bool linear)
+void output_vtu_ascii_foreach (scalar * list, vector * vlist, int n, FILE * fp, bool linear, double shift)
 {
   coord Pmin = {X0 + shift, Y0 + shift, Z0 + shift};
   coord Pmax = {X0 + L0 - shift, Y0 + L0 - shift, Z0 + L0 - shift};

@@ -187,6 +187,7 @@ event images (t += 0.1) {
 
 }
 
+
 #if TREE
 event adapt (i++) {
   adapt_wavelet ({p,u}, (double[]){1e-2,1e-3,1e-3}, MAXLEVEL);
