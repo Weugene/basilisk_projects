@@ -74,7 +74,7 @@ int main()
     computed from the volume fraction. */
 
     for (nc = 0; nc < 9; nc++) {
-        maxlevel = 8;
+        maxlevel = 7;
         N = 1 << maxlevel;
         radius = sqrt(sq(L0)*sangani[nc][0]/pi);
         run();
@@ -114,57 +114,78 @@ event init (t = 0)
 /**
 We check for a stationary solution. */
 
-event logfile (i++; i <= 500){
-  double avg = normf(u.x).avg, du = change (u.x, un)/(avg + SEPS);
-  fprintf (fout, "%d %d %d %d %d %d %d %d %.3g %.3g %.3g %.3g %.3g\n",
-  maxlevel, i,
-  mgp.i, mgp.nrelax, mgp.minlevel,
-  mgu.i, mgu.nrelax, mgu.minlevel,
-  du, mgp.resa*dt, mgu.resa, statsf(u.x).sum, normf(p).max);
+event logfile (i++; i <= 500)
+{
+double avg = normf(u.x).avg, du = change (u.x, un)/(avg + SEPS);
+fprintf (fout, "%d %d %d %d %d %d %d %d %.3g %.3g %.3g %.3g %.3g\n",
+maxlevel, i,
+mgp.i, mgp.nrelax, mgp.minlevel,
+mgu.i, mgu.nrelax, mgu.minlevel,
+du, mgp.resa*dt, mgu.resa, statsf(u.x).sum, normf(p).max);
 
-  if (i > 1 && du < 1e-3 || i == 500) {
-    /**
-    We output the non-dimensional force per unit length on the
-    cylinder $F/(\mu U)$, together with the corresponding value from
-    Sangani & Acrivos and the relative error. */
+if (i > 1 && du < 1e-3) {
+/**
+We output the non-dimensional force per unit length on the
+cylinder $F/(\mu U)$, together with the corresponding value from
+Sangani & Acrivos and the relative error. */
 
-    stats s = statsf(u.x);
-    double Phi = 1. - s.volume/sq(L0);
-    double U = s.sum/s.volume;
-    double F = sq(L0)/(1. - Phi);
-    fprintf (ferr,
-    "%d %g %g %g %g\n", maxlevel, sangani[nc][0], F/U, sangani[nc][1],
-    fabs(F/U - sangani[nc][1])/sangani[nc][1]);
+stats s = statsf(u.x);
+double Phi = 1. - s.volume/sq(L0);
 
-    view (fov = 9.78488, tx = 0.250594, ty = -0.250165);
-    draw_vof ("fs",  lc = {1,0,0}, lw = 2); // draw line lc -color, lw -width
-    squares ("u.x", linear = 1, spread = -1); // spread<0 => color is distributed min max
-    cells();
-    char subname[80]; sprintf(subname, "mesh-%d.png", nc);
-    save (subname);
+double U = s.sum/s.volume;
+double F = sq(L0)/(1. - Phi);
+fprintf (ferr,
+"%d %g %g %g %g\n", maxlevel, sangani[nc][0], F/U, sangani[nc][1],
+fabs(F/U - sangani[nc][1])/sangani[nc][1]);
 
-    fprintf(fout, "stationary flow nc = %d i = %d du = %g", nc, i, du);
-    return 9;
-  }
+/**
+We dump the simulation and draw the mesh for one of the cases. */
+
+p.nodump = false;
+dump();
+if (maxlevel == 9 && nc == 8) {
+view (fov = 9.78488, tx = 0.250594, ty = -0.250165);
+draw_vof ("cs", "fs", lc = {1,0,0}, lw = 2);
+squares ("u.x", linear = 1, spread = -1);
+cells();
+save ("mesh.png");
 }
 
+/**
+We stop at level 9. */
 
-event adapt (i++){
+if (maxlevel == 9)
+return 1; /* stop */
+
+/**
+We refine the converged solution to get the initial guess for the
+finer level. We also reset the embedded fractions to avoid
+interpolation errors on the geometry. */
+
+maxlevel++;
 #if 0
-  refine (level < maxlevel);
+refine (level < maxlevel);
 #else
-  adapt_wavelet ({cs,u}, (double[]){1e-2,2e-6,2e-6}, maxlevel =maxlevel, minlevel = minlevel);
+adapt_wavelet ({cs,u}, (double[]){1e-2,2e-6,2e-6}, maxlevel =maxlevel, minlevel = minlevel);
 #endif
-  cylinder (cs, fs);
+cylinder (cs, fs);
 }
+//#if 0
+//refine (level < maxlevel);
+//#else
+//adapt_wavelet ({cs,u}, (double[]){1e-3,2e-6,2e-6}, maxlevel);
+//#endif
+}
+
 //Output
 #include "../src_local/output_vtu_foreach.h"
 event end_timestep (t += 0.01){
+//event end_timestep (t += 0.01){
 char subname[80]; sprintf(subname, "br");
 scalar l[], omega[];
 vorticity (u, omega);
 foreach() l[] = level;
-        output_vtu_MPI( (scalar *) {l, omega, cs, p}, (vector *) {u}, subname, L0/pow(2, minlevel));
+        output_vtu_MPI( (scalar *) {l, omega, cs, p, cm}, (vector *) {u, fm}, subname, L0/pow(2, minlevel));
 }
 //#include "vtknew.h"
 //static int iter_fp = 0;

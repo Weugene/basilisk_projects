@@ -77,12 +77,11 @@ event init (t = 0) {
             foreach(){
                 theta = atan(y/x);
                 r2 = (sq(x) + sq(y));
-                r2i = sq(Rad) * (1 + r_d * cos(10 * theta));
+                r2i = sq(Rad) * (1 + 0.1 * cos(10 * theta));
                 f[] = (r2 > r2i)? 1 : 0;
                 u.x[] = 0;
-                pf[] = f[] * f.sigma/Rad;//??
             }
-            boundary ({f, u, pf});
+            boundary ({f, u});
         }while (adapt_wavelet({f}, (double []){feps},
                 maxlevel = MAXLEVEL, minlevel=MINLEVEL).nf != 0 && iter <= 15);
         fprintf(stderr, "init refinement iter=%d", iter);
@@ -92,13 +91,7 @@ event init (t = 0) {
     event ("vtk_file");
 }
 
-// Gravity
-event acceleration(i++){
-face vector av = a;
-foreach_face(y){
-        av.y[] -= Bo;
-}
-}
+
 //Output
 #include "../src_local/output_vtu_foreach.h"
 event end_timestep (t += 0.01){
@@ -106,7 +99,7 @@ event end_timestep (t += 0.01){
     scalar l[]; foreach() l[] = level;
     scalar Psol[]; foreach() Psol[] = solution_P(x, y);
     scalar err[]; foreach() err[] = fabs(p[] - Psol[]); //be careful with kappa, mu. They can be const unity
-    output_vtu_MPI( (scalar *) {l, f, rho, p, err, pf, Psol}, (vector *) {u}, subname);
+    output_vtu_MPI( (scalar *) {l, f, rho, p, err, pf, Psol}, (vector *) {u}, subname, 0);
 }
 
 #if DUMP

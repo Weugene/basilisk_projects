@@ -13,7 +13,6 @@ multipole expansion of [Sangani and Acrivos, 1982](#sangani1982). */
 //#define DEBUG_OUTPUT_VTU_MPI
 
 scalar fs[], omega[];
-face vector facev[];
 vector Us[];
 
 #include "../src_local/centered-weugene.h"
@@ -43,7 +42,7 @@ We will vary the maximum level of refinement, *nc* is the index of the
 case in the table above, the radius of the cylinder will be computed
 using the volume fraction $\Phi$. */
 
-int maxlevel = 8, minlevel =4, nc;
+int maxlevel = 10, minlevel =4, nc;
 double radius;
 
 int main(int argc, char * argv[]){
@@ -107,10 +106,10 @@ event init (t = 0)
 We check for a stationary solution. */
 
 event logfile (i++; i <= 5000){
-  vector u_tmp[];
-  foreach() foreach_dimension() u_tmp.x[] = u.x[]*(1-fs[]);
-  double avg = normf(u.x).avg;
-  double du = change (u.x, un)/(avg + SEPS); //change 1) Linf  2) un = u
+  scalar u_tmp[];
+  foreach() u_tmp[] = u.x[]*(1-fs[]);
+  double avg = normf(u_tmp).avg;
+  double du = change (u_tmp, un)/(avg + SEPS); //change 1) Linf  2) un = u
 //  fprintf (fout, "%d %d %d %d %d %d %d %d %.3g %.3g %.3g %.3g %.3g\n",
 //  maxlevel, i,
 //  mgp.i, mgp.nrelax, mgp.minlevel,
@@ -122,7 +121,7 @@ event logfile (i++; i <= 5000){
   cylinder $F/(\mu U)$, together with the corresponding value from
   Sangani & Acrivos and the relative error. */
 
-  stats s = statsf(u.x);
+  stats s = statsf(u_tmp);
   double Phi = 1. - s.volume/sq(L0);
   double U = s.sum/s.volume;
   double F = sq(L0)/(1. - Phi);
@@ -142,8 +141,11 @@ event logfile (i++; i <= 5000){
   }
 }
 
-#define ADAPT_SCALARS {fs, u}
-#define ADAPT_EPS_SCALARS {1e-3,2e-6,2e-6}
+//#define ADAPT_SCALARS {fs, u}
+//#define ADAPT_EPS_SCALARS {1e-3,2e-5,2e-5}
+
+#define ADAPT_SCALARS {fs, omega}
+#define ADAPT_EPS_SCALARS {1e-3,1e-3}
 event adapt (i++){
   double eps_arr[] = ADAPT_EPS_SCALARS;
 //  MinMaxValues(ADAPT_SCALARS, eps_arr);

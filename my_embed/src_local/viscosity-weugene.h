@@ -187,7 +187,7 @@ static double residual_viscosity (scalar * a, scalar * b, scalar * resl,
                     ) / sq(Delta);
         #ifdef DEBUG_BRINKMAN_PENALIZATION
             dbp.x[] = qs*(Us.x[]- u.x[]);
-//            if (fabs(dbp.x[]) > 1e-5) fprintf(stderr, "%g\n", dbp.x[]);
+            if (fabs(dbp.x[]) > 1e-5) fprintf(stderr, "dbp.x=%g\n", dbp.x[]);
         #endif
             if (fabs(res.x[]) > maxres)
                 maxres = fabs(res.x[]);
