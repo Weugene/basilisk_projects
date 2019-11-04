@@ -16,7 +16,7 @@
 
 int MAXLEVEL = 10;
 double feps = 1e-3, ueps = 1e-2, peps = 1e-2;
-double Re = 1, We = 1, Bo=1; // Re = rhol*U*L/mul //We = rhol*L*U^2/sigma
+double Re = 100, We = 1, Bo=1; // Re = rhol*U*L/mul //We = rhol*L*U^2/sigma
 double Rrhog = 10, Rmug = 100;
 p[left]   = dirichlet(0.);
 pf[right] = dirichlet(0.);
@@ -75,7 +75,7 @@ event init (t = 0) {
         do {
             iter++;
             foreach(){
-                theta = atan(y/x);
+                theta = atan2(y, x); //return -pi, pi
                 r2 = (sq(x) + sq(y));
                 r2i = sq(Rad) * (1 + 0.1 * cos(10 * theta));
                 f[] = (r2 > r2i)? 1 : 0;

@@ -108,10 +108,10 @@ void output_vtu_ascii_foreach (scalar * list, vector * vlist, int n, FILE * fp, 
   foreach_vertex(){
     if (MY_BOX_CONDITION)
     #if dimension == 1
-      fprintf (fp, "\t\t\t\t\t %g 0 0\n", x);
+      fprintf (fp, "\t\t\t\t\t %g %g %g\n", x, y, z);
     #endif
     #if dimension == 2
-      fprintf (fp, "\t\t\t\t\t %g %g 0\n", x, y);
+      fprintf (fp, "\t\t\t\t\t %g %g %g\n", x, y, z);
     #endif
     #if dimension > 2
       fprintf (fp, "\t\t\t\t\t %g %g %g\n", x, y, z);

@@ -471,7 +471,7 @@ void MinMaxValues(scalar * list, double * arr_eps) {// for each scalar min and m
   double arr[10][2];
   int ilist = 0;
   for (scalar s in list) {
-    int mina= HUGE, maxa= -HUGE;
+    double mina= HUGE, maxa= -HUGE;
     foreach( reduction(min:mina) reduction(max:maxa) ){
       if (fabs(s[]) < mina) mina = fabs(s[]);
       if (fabs(s[]) > maxa) maxa = fabs(s[]);

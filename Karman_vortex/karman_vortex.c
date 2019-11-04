@@ -105,7 +105,7 @@ event end_timestep (i++){
     scalar l[];
     vorticity (u, omega);
     foreach() l[] = level;
-    output_vtu_MPI( (scalar *) {l, omega, p, cs, f}, (vector *) {u}, subname);
+    output_vtu_MPI( (scalar *) {l, omega, p, cs, f}, (vector *) {u}, subname, 0);
 }
 
 /**
