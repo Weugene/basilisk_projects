@@ -26,6 +26,8 @@ struct Viscosity {
 //extern scalar fs;
 //extern vector Us;
 double eta_s = 1e-3;
+(const) scalar a_d = unity;
+(const) scalar b_d = zero;
 #ifdef DEBUG_BRINKMAN_PENALIZATION
 vector dbp[];
 #endif

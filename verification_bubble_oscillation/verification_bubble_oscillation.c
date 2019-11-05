@@ -16,7 +16,7 @@
 
 int MAXLEVEL = 10;
 double feps = 1e-3, ueps = 1e-2, peps = 1e-2;
-double Re = 100, We = 1, Bo=1; // Re = rhol*U*L/mul //We = rhol*L*U^2/sigma
+double Re = 100, We = 0.01; // Re = rhol*U*L/mul //We = rhol*L*U^2/sigma
 double Rrhog = 10, Rmug = 100;
 p[left]   = dirichlet(0.);
 pf[right] = dirichlet(0.);

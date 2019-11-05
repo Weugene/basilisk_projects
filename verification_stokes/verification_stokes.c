@@ -5,6 +5,7 @@
 
 scalar fs[];
 vector Us[];
+face vector n_sol[];
 #include "../src_local/centered-weugene.h"
 
 #define MAXLEVEL 10
@@ -47,10 +48,21 @@ int main() {
     stokes = true;
     run();
 }
-
+void normal_calc(scalar f, face vector nf){
+    foreach_face() {
+        n_sol.x[] = (f[] - f[-1])/Delta;
+    }
+    
+}
 event properties (i++) {
     double un;
-    foreach_face() muv.x[] = fm.x[];
+    scalar magn2[];
+    foreach_face() {
+        muv.x[] = fm.x[];
+        n_sol.x[] = (f[] - f[-1])/Delta;
+        magn2[] += sq(n_sol.x[]);
+    }
+
     foreach() {
         theta = atan2(y, x + SEPS);
         coord normal = {cos(theta), sin(theta)};
