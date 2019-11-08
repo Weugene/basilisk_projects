@@ -1,11 +1,12 @@
 #define BRINKMAN_PENALIZATION
+#define BRINKMAN_PENALIZATION_SLIP
 #define DEBUG_BRINKMAN_PENALIZATION
 //#define DEBUG_MINMAXVALUES
 //#define DEBUG_OUTPUT_VTU_MPI
 
 scalar fs[];
 vector Us[];
-face vector n_sol[];
+vector n_sol[];
 #include "../src_local/centered-weugene.h"
 
 #define MAXLEVEL 10
@@ -48,45 +49,39 @@ int main() {
     stokes = true;
     run();
 }
-void normal_calc(scalar f, face vector nf){
-    foreach_face() {
-        n_sol.x[] = (f[] - f[-1])/Delta;
-    }
-    
-}
+
 event properties (i++) {
-    double un;
-    scalar magn2[];
+//    double un, nn;
+//    gradients({fs}, {n_sol});
+//    foreach() {
+//        nn = 0;
+//        foreach_dimension() nn += sq(n_sol.x[]);
+//        foreach_dimension() n_sol.x[] /= sqrt(nn + SEPS);
+//    }
+
     foreach_face() {
         muv.x[] = fm.x[];
-        n_sol.x[] = (f[] - f[-1])/Delta;
-        magn2[] += sq(n_sol.x[]);
     }
 
     foreach() {
         theta = atan2(y, x + SEPS);
-        coord normal = {cos(theta), sin(theta)};
-        un = 0;
-        foreach_dimension() un += u.x[] * normal.x;
-        foreach_dimension() Us.x[] = u.x[] - un * normal.x;
+        n_sol.x[] = cos(theta);
+        n_sol.y[] = sin(theta);
     }
 }
 
 event init (t = 0) {
     int it = 0;
-    double theta, r, un;
+    double theta, r2;
     do {
         it++;
         foreach() {
-            r = sqrt(sq(x) + sq(y));
+            r2 = sq(x - xo) + sq(y - yo);
             theta = atan2(y, x + SEPS);
-            coord normal = {cos(theta), sin(theta)};
-            fs[] = 0.5*(1 - tanh((sq(x - xo) + sq(y - yo)- sq(rad))/Delta_int));
+            fs[] = 0.5*(1 - tanh((r2- sq(rad))/Delta_int));
             u.x[] = U_inf*(1.0 - fs[]);
             u.y[] = 0;
-            un = 0;
-            foreach_dimension() un += u.x[] * normal.x;
-            foreach_dimension() Us.x[] = u.x[] - un*normal.x;
+            foreach_dimension() Us.x[] = 0;
         }
         boundary ({fs, Us, u.x, u.y});
         if (it>=10) printf("WARNING: does not converge... ");
@@ -118,7 +113,7 @@ event end_timestep (i += 1){
     exact_solution(ve, pe);
     vorticity (u, omega);
     foreach() l[] = level;
-    output_vtu_MPI( (scalar *) {l, omega, fs, p, pe}, (vector *) {u, Us, dbp, ve}, subname, 0);
+    output_vtu_MPI( (scalar *) {l, omega, fs, p, pe}, (vector *) {u, Us, dbp, ve, n_sol}, subname, 0);
 }
 
 #define ADAPT_SCALARS {fs, omega}
