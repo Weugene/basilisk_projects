@@ -1,0 +1,39 @@
+events (i = 3010, t = 0.00367097)
+  set_dtmax                 src/navier-stokes/centered.h:209
+  stability                 src/tension.h:36
+  stability                 src/vof.h:63
+  stability                 src/navier-stokes/centered.h:211
+  vof                       src/vof.h:312
+  vof                       src/navier-stokes/centered.h:221
+  tracer_advection          src/navier-stokes/centered.h:222
+  tracer_diffusion          src/navier-stokes/centered.h:223
+  properties                src/two-phase.h:59
+  properties                src/navier-stokes/centered.h:230
+  advection_term            src/navier-stokes/centered.h:307
+  viscous_term              src/navier-stokes/centered.h:337
+  acceleration              src/tension.h:70
+  acceleration              src/iforce.h:44
+  acceleration              src/navier-stokes/centered.h:373
+  projection                src/navier-stokes/centered.h:416
+  adapt                     verification_bubble_oscillation.c:114
+  adapt                     src/navier-stokes/centered.h:441
+  properties                src/two-phase.h:59
+  properties                src/navier-stokes/centered.h:230
+
+events (i = 3011, t = 0.00367219)
+  set_dtmax                 src/navier-stokes/centered.h:209
+  stability                 src/tension.h:36
+  stability                 src/vof.h:63
+  stability                 src/navier-stokes/centered.h:211
+  vof                       src/vof.h:312
+  vof                       src/navier-stokes/centered.h:221
+  tracer_advection          src/navier-stokes/centered.h:222
+  tracer_diffusion          src/navier-stokes/centered.h:223
+  properties                src/two-phase.h:59
+  properties                src/navier-stokes/centered.h:230
+  advection_term            src/navier-stokes/centered.h:307
+  viscous_term              src/navier-stokes/centered.h:337
+  acceleration              src/tension.h:70
+  acceleration              src/iforce.h:44
+  acceleration              src/navier-stokes/centered.h:373
+  projection                src/navier-stokes/centered.h:416

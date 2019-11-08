@@ -14,10 +14,10 @@
 #define ADAPT_SCALARS {f, p}
 #define ADAPT_EPS_SCALARS {feps, peps}
 
-int MAXLEVEL = 10;
+int MAXLEVEL = 11;
 double feps = 1e-3, ueps = 1e-2, peps = 1e-2;
-double Re = 100, We = 0.01; // Re = rhol*U*L/mul //We = rhol*L*U^2/sigma
-double Rrhog = 10, Rmug = 100;
+double Re = 1000, We = 0.01, Bo=1; // Re = rhol*U*L/mul //We = rhol*L*U^2/sigma
+double Rrhog = 100, Rmug = 100;
 p[left]   = dirichlet(0.);
 pf[right] = dirichlet(0.);
 p[bottom] = dirichlet(0.);
@@ -94,7 +94,7 @@ event init (t = 0) {
 
 //Output
 #include "../src_local/output_vtu_foreach.h"
-event end_timestep (t += 0.01){
+event end_timestep (t += 0.0001){
     char subname[80]; sprintf(subname, "hrhs");
     scalar l[]; foreach() l[] = level;
     scalar Psol[]; foreach() Psol[] = solution_P(x, y);
