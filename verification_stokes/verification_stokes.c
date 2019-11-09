@@ -1,18 +1,17 @@
 #define BRINKMAN_PENALIZATION
-#define BRINKMAN_PENALIZATION_SLIP
+#define BRINKMAN_PENALIZATION_NEUMANN
 #define DEBUG_BRINKMAN_PENALIZATION
 //#define DEBUG_MINMAXVALUES
 //#define DEBUG_OUTPUT_VTU_MPI
 
 scalar fs[];
-vector Us[];
-vector n_sol[];
+vector n_solv[];
 #include "../src_local/centered-weugene.h"
 
 #define MAXLEVEL 10
 #define Re 40
 #define U_inf (Re/diam)
-#define Delta_int (rad/10.)
+#define Delta_int (rad/100.)
 #undef SEPS
 #define SEPS 1e-30
 
@@ -42,31 +41,25 @@ int main() {
     L0 = 10;
     origin(-L0/3, -L0/2);
     eta_s = 1e-6;
+    nu_s = 0e-6;
     TOLERANCE = 1e-6;
     DT = 1e-4;
     N = 512;
     mu = muv;
+    n_sol = n_solv;
     stokes = true;
     run();
 }
 
 event properties (i++) {
-//    double un, nn;
-//    gradients({fs}, {n_sol});
-//    foreach() {
-//        nn = 0;
-//        foreach_dimension() nn += sq(n_sol.x[]);
-//        foreach_dimension() n_sol.x[] /= sqrt(nn + SEPS);
-//    }
-
     foreach_face() {
         muv.x[] = fm.x[];
     }
 
     foreach() {
         theta = atan2(y, x + SEPS);
-        n_sol.x[] = cos(theta);
-        n_sol.y[] = sin(theta);
+        n_solv.x[] = cos(theta);
+        n_solv.y[] = sin(theta);
     }
 }
 
@@ -81,12 +74,13 @@ event init (t = 0) {
             fs[] = 0.5*(1 - tanh((r2- sq(rad))/Delta_int));
             u.x[] = U_inf*(1.0 - fs[]);
             u.y[] = 0;
-            foreach_dimension() Us.x[] = 0;
         }
-        boundary ({fs, Us, u.x, u.y});
+        boundary ({fs, u.x, u.y});
         if (it>=10) printf("WARNING: does not converge... ");
     }while (adapt_wavelet({fs, u.x, u.y}, (double []){1e-3, 1e-3, 1e-3},
                           maxlevel = MAXLEVEL, minlevel = 3).nf != 0 && it <= 10);
+
+    event ("properties");
     event ("end_timestep");
 }
 
@@ -113,7 +107,7 @@ event end_timestep (i += 1){
     exact_solution(ve, pe);
     vorticity (u, omega);
     foreach() l[] = level;
-    output_vtu_MPI( (scalar *) {l, omega, fs, p, pe}, (vector *) {u, Us, dbp, ve, n_sol}, subname, 0);
+    output_vtu_MPI( (scalar *) {l, omega, fs, p, pe}, (vector *) {u, total_rhs, dbp, ve, n_sol}, subname, 0);
 }
 
 #define ADAPT_SCALARS {fs, omega}
