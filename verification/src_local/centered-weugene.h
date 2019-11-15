@@ -31,9 +31,10 @@ for viscosity. */
 #include "timestep.h"
 #include "bcg.h"
 #if EMBED
-# include "viscosity-embed.h"
+#include "viscosity-embed.h"
 #else
-# include "viscosity.h"
+#include "./viscosity-weugene.h"
+//#include "viscosity.h"
 #endif
 
 /**
@@ -343,14 +344,6 @@ event viscous_term (i++,last)
   if (constant(mu.x) != 0.) {
     correction (dt);
     mgu = viscosity (u, mu, rho, dt, mgu.nrelax);
-
-//    foreach(){
-//        tmp[] = Arrhenius_const * pow(1 - alpha_doc[], n_degree) * exp(-Ea_by_R / T[]);
-//        r[] = Htr * rho1 * f[] * tmp[]*(1.0 - Eeta_by_Rg/T[]) - thetav[] * u_grad_scalar[];
-//        beta[] = Htr * rho1 * f[] * tmp[]*Eeta_by_Rg/(T[]*T[]);
-//    }
-//
-//    mgu = diffusion(T, dt, D = kappa, r = r, beta = beta, theta = thetav);
     correction (-dt);
   }
 
@@ -474,11 +467,11 @@ event adapt (i++,last) {
 * [Performance monitoring](perfs.h)
 */
 
-void MinMaxValues(const scalar * list, double * arr_eps) {// for each scalar min and max
+void MinMaxValues(scalar * list, double * arr_eps) {// for each scalar min and max
   double arr[10][2];
   int ilist = 0;
   for (scalar s in list) {
-    int mina= HUGE, maxa= -HUGE;
+    double mina= HUGE, maxa= -HUGE;
     foreach( reduction(min:mina) reduction(max:maxa) ){
       if (fabs(s[]) < mina) mina = fabs(s[]);
       if (fabs(s[]) > maxa) maxa = fabs(s[]);
@@ -495,7 +488,9 @@ void MinMaxValues(const scalar * list, double * arr_eps) {// for each scalar min
 #else
     arr_eps[i] *= 0.5*(arr[i][0] + arr[i][1]);
 #endif
+#ifdef DEBUG_MINMAXVALUES
     fprintf(stderr, "MinMaxValues: i=%d, min=%g, max=%g, eps=%g\n", i, arr[i][0], arr[i][1], arr_eps[i]);
+#endif
   }
 }
 #endif

@@ -1,3 +1,6 @@
+#ifndef BASILISK_HEADER_9
+#define BASILISK_HEADER_9
+#line 1 "./../src_local/./viscosity-weugene.h"
 #include "poisson.h"
 
 #if dimension == 1
@@ -295,3 +298,4 @@ mgstats viscosity_explicit (struct Viscosity p)
 //}
 //}
 //#endif
+#endif

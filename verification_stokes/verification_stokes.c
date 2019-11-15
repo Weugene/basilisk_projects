@@ -1,5 +1,4 @@
-#define BRINKMAN_PENALIZATION
-#define BRINKMAN_PENALIZATION_NEUMANN
+#define BRINKMAN_PENALIZATION 1
 #define DEBUG_BRINKMAN_PENALIZATION
 //#define DEBUG_MINMAXVALUES
 //#define DEBUG_OUTPUT_VTU_MPI
@@ -9,12 +8,12 @@ vector n_solv[];
 #include "../src_local/centered-weugene.h"
 
 #define MAXLEVEL 10
-#define Re 40
+#define Re 1
 #define U_inf (Re/diam)
 #define Delta_int (rad/100.)
 #undef SEPS
 #define SEPS 1e-30
-
+#define JACOBI 1
 double yo = 0, xo = 0, rad = 0.5, diam = 1;
 int iteration = 0;
 scalar omega[];
@@ -40,26 +39,26 @@ p[bottom] = neumann(0);
 int main() {
     L0 = 10;
     origin(-L0/3, -L0/2);
-    eta_s = 1e-6;
-    nu_s = 0e-6;
-    TOLERANCE = 1e-6;
+    eta_s = 1e-3;
+    nu_s = 0;
+    TOLERANCE = 1e-5;
     DT = 1e-4;
     N = 512;
-    mu = muv;
+    mu = fm;
+//    mu = muv;
     n_sol = n_solv;
     stokes = true;
     run();
 }
 
 event properties (i++) {
-    foreach_face() {
-        muv.x[] = fm.x[];
-    }
-
+//    foreach_face() {
+//        muv.x[] = fm.x[];
+//    }
     foreach() {
         theta = atan2(y, x + SEPS);
-        n_solv.x[] = cos(theta);
-        n_solv.y[] = sin(theta);
+        n_solv.x[] = -cos(theta);
+        n_solv.y[] = -sin(theta);
     }
 }
 
@@ -89,18 +88,24 @@ void exact_solution(vector ve, scalar pe){
     foreach() {
         r = sqrt(sq(x) + sq(y));
         theta = atan2(y, x + SEPS);
+      #if 0
         vr  =   (r > rad) * U_inf * (1 - sq(rad/(r + SEPS))) * cos(theta);
         vth = - (r > rad) * U_inf * (1 + sq(rad/(r + SEPS))) * sin(theta);
-//        vv = (r > rad)*U_inf * sqrt(1 + sq(sq(rad/(r + SEPS))) - 2.0 * sq(rad/(r+ SEPS)) * cos(2 * theta));
         ve.x[] = vr * cos(theta) - vth * sin(theta);
         ve.y[] = vr * sin(theta) + vth * cos(theta);
         pe[] = 0.5 * rho[] * (sq(U_inf) - sq(ve.x[]) - sq(ve.y[]));
+      #else
+        ve.x[] = (r > rad) ? ((sq(R) - sq(r))*sq(cos(theta)) + sq(r)*log(r/R) + 0.5*(sq(r) - sq(R)))/sq(r) : 0;
+        ve.y[] = (r > rad) ? (sq(R) - sq(r))*cos(theta)*sin(theta)/sq(r) : 0;
+        pe[]   = - 2*cos(theta)/r;
+      #endif
+
     }
 }
 
 //Output
 #include "../src_local/output_vtu_foreach.h"
-event end_timestep (i += 1){
+event end_timestep (i += 10){
     char subname[80]; sprintf(subname, "br");
     scalar l[], pe[];
     vector ve[];
@@ -111,7 +116,7 @@ event end_timestep (i += 1){
 }
 
 #define ADAPT_SCALARS {fs, omega}
-#define ADAPT_EPS_SCALARS {1e-3, 1}
+#define ADAPT_EPS_SCALARS {1e-3, 1e-2}
 //Because of the spatio-temporal localization of our problem, grid adaptation is employed.
 event adapt (i++){
     double eps_arr[] = ADAPT_EPS_SCALARS;
@@ -120,5 +125,8 @@ event adapt (i++){
     boundary ({u.x, u.y});
 }
 
-
-event stop(t = 10);
+event log_file(i += 10){
+    fprintf(ferr, "i=%d t=%g dt=%g ui=%d un=%d pi=%d pn=%d pfi=%d pfn=%d ",
+            i, t, dt, mgu.i, mgu.nrelax, mgp.i, mgp.nrelax, mgpf.i, mgpf.nrelax);
+}
+event stop(i = 1000);

@@ -1,8 +1,8 @@
 CFLAGS=-DDUMP=1 -Wall -O2 -events -g
 CLIBS=-lm $(OPENGLIBS)
-CFILE=verification
-verification:
-	rm -rf .qcc* hr* a.out dump* out log
+CFILE=verification_Brinkman_Poiseulle
+verification_Brinkman_Poiseulle:
+	rm -rf .qcc* br* a.out dump* out log
 	$(BASILISK)/qcc   $(CFLAGS) $(CFILE).c $(CINCL) $(CLIBS)
 	./a.out
 #	 > out 2> log &

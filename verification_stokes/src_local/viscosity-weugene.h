@@ -12,11 +12,11 @@
 #endif
 
 #if dimension == 1
-#define m_scalar_a_by_b(a, b) (a.x[]*b.x[-1])
+#define m_scalar_a_by_b(a, b) (a.x[]*(b.x[1] - b.x[-1]))
 #elif dimension == 2
-#define m_scalar_a_by_b(a, b) (a.x[]*b.x[-1] + a.y[]*b.y[-1])
+#define m_scalar_a_by_b(a, b) (a.x[]*(b.x[1] - b.x[-1]) + a.y[]*(b.y[1] - b.y[-1]))
 #else // dimension == 3
-#define m_scalar_a_by_b(a, b) (a.x[]*b.x[-1] + a.y[]*b.y[-1] + a.z[]*b.z[-1])
+#define m_scalar_a_by_b(a, b) (a.x[]*(b.x[1] - b.x[-1]) + a.y[]*(b.y[1] - b.y[-1]) + a.z[]*(b.z[1] - b.z[-1]))
 #endif
 
 struct Viscosity {
@@ -49,30 +49,35 @@ struct Viscosity {
 
 
 #ifdef BRINKMAN_PENALIZATION
-    #if defined(BRINKMAN_PENALIZATION_SLIP) && defined(BRINKMAN_PENALIZATION_NO_SLIP)
-        #define  BRINKMAN_PENALIZATION_ERROR_BC
-    #endif
+
     extern scalar fs;
     double eta_s = 1e-3, nu_s = 1e+1;
     (const) vector n_sol = zerof, target_U = zerof;
     (const) scalar a_br = unity;
     (const) scalar b_br = unity;
+    vector umUs[];
 
-    #ifdef BRINKMAN_PENALIZATION_DIRICHLET
+    #if BRINKMAN_PENALIZATION == 1
         #define PLUS_BRINKMAN_RHS         + fs[]*dt*(nu_s*(u.x[1] - 2*u.x[] +u.x[-1])/sq(Delta) - (a_br[]*u.x[] - target_U.x[])/eta_s)
         #define PLUS_NUMERATOR_BRINKMAN   + fs[]*dt*(nu_s*(u.x[1] + u.x[-1]) + sq(Delta)*target_U.x[]/eta_s)
         #define PLUS_DENOMINATOR_BRINKMAN + fs[]*dt*(a_br[]*sq(Delta) /eta_s + 2*nu_s)
-    #elif defined BRINKMAN_PENALIZATION_NEUMANN
+    #elif BRINKMAN_PENALIZATION == 2
         #define CALC_GRAD
-        extern vector n_sol;
         #define PLUS_BRINKMAN_RHS         + fs[]*dt*(nu_s*(u.x[1] - 2*u.x[] +u.x[-1])/sq(Delta) - (b_br[]*scalar_a_by_b(n_sol, grad_u) - target_U.x[])/eta_s)
-        #define PLUS_NUMERATOR_BRINKMAN   + fs[]*dt*(nu_s*(u.x[1] + u.x[-1]) + (Delta*b_br[]*(m_scalar_a_by_b(n_sol,u)) + sq(Delta)*target_U.x[])/eta_s)
-        #define PLUS_DENOMINATOR_BRINKMAN + fs[]*dt*((b_br[]*Delta*scalar_a_by_b(n_sol, unityf))/eta_s + 2*nu_s)
-    #elif defined BRINKMAN_PENALIZATION_ROBIN
+        #define PLUS_NUMERATOR_BRINKMAN   + fs[]*dt*(nu_s*(u.x[1] + u.x[-1]) - (0.5*Delta*b_br[]*(m_scalar_a_by_b(n_sol, u)) - sq(Delta)*target_U.x[])/eta_s)
+        #define PLUS_DENOMINATOR_BRINKMAN + fs[]*dt*(2*nu_s)
+    #elif BRINKMAN_PENALIZATION == 3
         #define CALC_GRAD
         #define PLUS_BRINKMAN_RHS         + fs[]*dt*(nu_s*(u.x[1] - 2*u.x[] +u.x[-1])/sq(Delta) - (a_br[]*u.x[] + b_br[]*scalar_a_by_b(n_sol, grad_u) - target_U.x[])/eta_s)
-        #define PLUS_NUMERATOR_BRINKMAN   + fs[]*dt*(nu_s*(u.x[1] + u.x[-1]) + (Delta*b_br[]*(m_scalar_a_by_b(n_sol,u)) + sq(Delta)*target_U.x[])/eta_s)
-        #define PLUS_DENOMINATOR_BRINKMAN + fs[]*dt*((a_br[]*sq(Delta) + b_br[]*Delta*scalar_a_by_b(n_sol, unityf))/eta_s + 2*nu_s)
+        #define PLUS_NUMERATOR_BRINKMAN   + fs[]*dt*(nu_s*(u.x[1] + u.x[-1]) - (0.5*Delta*b_br[]*(m_scalar_a_by_b(n_sol, u)) - sq(Delta)*target_U.x[])/eta_s)
+        #define PLUS_DENOMINATOR_BRINKMAN + fs[]*dt*(a_br[]*sq(Delta)/eta_s + 2*nu_s)
+    #elif BRINKMAN_PENALIZATION == 4
+        #define CALC_GRAD
+        #define PLUS_BRINKMAN_RHS         + fs[]*dt*(nu_s*(u.x[1] - 2*u.x[] +u.x[-1])/sq(Delta) - n_sol.x[]*scalar_a_by_b(n_sol, umUs)/eta_s)
+        #define PLUS_NUMERATOR_BRINKMAN   + fs[]*dt*(nu_s*(u.x[1] + u.x[-1]) - sq(Delta)*n_sol.x[]*(scalar_a_by_b(n_sol, umUs) - n_sol.x[]*u.x[])/eta_s)
+        #define PLUS_DENOMINATOR_BRINKMAN + fs[]*dt*(sq(n_sol.x[]*Delta)/eta_s + 2*nu_s)
+    #else
+        #define BRINKMAN_PENALIZATION_ERROR_BC 1
     #endif
     #ifdef DEBUG_BRINKMAN_PENALIZATION
         vector dbp[], total_rhs[];
@@ -87,6 +92,7 @@ static void relax_viscosity (scalar*a, scalar*b, int l, void*data)
   double dt = p->dt;
   vector u = vector(a[0]), r = vector(b[0]);
 
+//    fprintf(ferr, "relax_viscosity...\n");
 #if JACOBI
   vector w[];
 #else
@@ -127,7 +133,11 @@ static void relax_viscosity (scalar*a, scalar*b, int l, void*data)
          ) );
     }
   }
-
+//  foreach_level_or_leaf (l){
+//      if (w.x[]>10)fprintf(ferr, "l =%d w= %g u %g %g \n", l, w.x[], u.x[], u.y[]);
+//      if (w.x[]>1e15){fprintf(ferr, "l =%d w= %g u %g %g  STOP\n", l, w.x[], u.x[], u.y[]); exit(1);}
+//  }
+//  fprintf(ferr, "===========================\n");
 #if JACOBI
   foreach_level_or_leaf (l)
     foreach_dimension()
@@ -155,12 +165,13 @@ static double residual_viscosity (scalar*a, scalar*b, scalar*resl,
     double dt = p->dt;
     vector u = vector(a[0]), r = vector(b[0]), res = vector(resl[0]);
     double maxres = 0, un = 0, d = 0;
-
+//    fprintf(ferr, "residual_viscosity...\n");
     /* conservative coarse/fine discretisation (2nd order) */
     foreach_dimension() {
     #ifdef CALC_GRAD
       vector grad_u[];
       gradients({u.x}, {grad_u});
+      foreach() umUs.x[] = u.x[] - target_U.x[];
     #endif
       face vector taux[];
       foreach_face(x)
@@ -183,21 +194,27 @@ static double residual_viscosity (scalar*a, scalar*b, scalar*resl,
         foreach_dimension() d += taux.x[1] - taux.x[];
         res.x[] = r.x[]
                   PLUS_BRINKMAN_RHS
-                 - lambda.x*u.x[] + fns*dt*d/(Delta*rho[]);
+                  - lambda.x*u.x[] + fns*dt*d/(Delta*rho[]);
         if (fabs (res.x[]) > maxres)
-      maxres = fabs (res.x[]);
+        maxres = fabs (res.x[]);
       }
     }
     boundary (resl);
 #ifdef DEBUG_BRINKMAN_PENALIZATION
-  foreach_dimension() {
+    foreach_dimension() {
     #ifdef CALC_GRAD
       vector grad_u[];
       gradients({u.x}, {grad_u});
     #endif
+      scalar vvv[];
+
       foreach (){
-            dbp.x[] = PLUS_BRINKMAN_RHS;
-            total_rhs.x[] = (res.x[] - r.x[] + lambda.x*u.x[])/dt;
+          dbp.x[] = PLUS_BRINKMAN_RHS;
+          total_rhs.x[] = (res.x[] - r.x[] + lambda.x*u.x[])/dt;
+//          vvv[]=b_br[]*scalar_a_by_b(n_sol, grad_u);
+//          if (dbp.x[]>10) fprintf(ferr, "%g dbp %g rhs %g  grad %g %g \n", vvv[], dbp.x[], total_rhs.x[], grad_u.x[], grad_u.y[]);
+//          if (dbp.x[]>10) fprintf(ferr, "b = %g scal_prod %g  \n", b_br[], scalar_a_by_b(n_sol, grad_u));
+//          if (dbp.x[]>1e11) {fprintf(ferr, "b = ... big %g scal_prod %g ERROR STOP  \n", b_br[], scalar_a_by_b(n_sol, grad_u));exit(2);}
       }
   }
 #endif

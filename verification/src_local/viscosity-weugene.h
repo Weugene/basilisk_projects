@@ -1,3 +1,6 @@
+#ifndef BASILISK_HEADER_19
+#define BASILISK_HEADER_19
+#line 1 "./../src_local/./viscosity-weugene.h"
 #include "poisson.h"
 
 #if dimension == 1
@@ -48,7 +51,7 @@ struct Viscosity {
 #ifdef BRINKMAN_PENALIZATION
 
     extern scalar fs;
-    double eta_s = 1e-3, nu_s = 0;
+    double eta_s = 1e-3, nu_s = 1e+1;
     (const) vector n_sol = zerof, target_U = zerof;
     (const) scalar a_br = unity;
     (const) scalar b_br = unity;
@@ -203,10 +206,10 @@ static double residual_viscosity (scalar*a, scalar*b, scalar*resl,
       vector grad_u[];
       gradients({u.x}, {grad_u});
     #endif
-//      scalar vvv[];
+      scalar vvv[];
 
       foreach (){
-          dbp.x[] = PLUS_BRINKMAN_RHS; //fs[]*dt*(nu_s*(u.x[1] - 2*u.x[] +u.x[-1])/sq(Delta) - (a_br[]*u.x[] - target_U.x[])/eta_s);
+          dbp.x[] = PLUS_BRINKMAN_RHS;
           total_rhs.x[] = (res.x[] - r.x[] + lambda.x*u.x[])/dt;
 //          vvv[]=b_br[]*scalar_a_by_b(n_sol, grad_u);
 //          if (dbp.x[]>10) fprintf(ferr, "%g dbp %g rhs %g  grad %g %g \n", vvv[], dbp.x[], total_rhs.x[], grad_u.x[], grad_u.y[]);
@@ -295,3 +298,4 @@ mgstats viscosity_explicit (struct Viscosity p)
 //}
 //}
 //#endif
+#endif

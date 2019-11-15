@@ -1,3 +1,6 @@
+#ifndef BASILISK_HEADER_8
+#define BASILISK_HEADER_8
+#line 1 "./../src_local/centered-weugene.h"
 /**
 # Incompressible Navier--Stokes solver (centered formulation)
 
@@ -491,3 +494,4 @@ void MinMaxValues(scalar * list, double * arr_eps) {// for each scalar min and m
 #endif
   }
 }
+#endif
