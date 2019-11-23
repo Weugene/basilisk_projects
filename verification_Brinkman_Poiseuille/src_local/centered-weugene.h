@@ -1,5 +1,5 @@
-#ifndef BASILISK_HEADER_8
-#define BASILISK_HEADER_8
+#ifndef BASILISK_HEADER_9
+#define BASILISK_HEADER_9
 #line 1 "./../src_local/centered-weugene.h"
 /**
 # Incompressible Navier--Stokes solver (centered formulation)
@@ -429,7 +429,9 @@ event projection (i++,last)
   correction (dt);
 }
 
-
+#if BRINKMAN_PENALIZATION
+event brinkman_penalization(i++, last);
+#endif
 /**
 Some derived solvers need to hook themselves at the end of the
 timestep. */
@@ -439,7 +441,7 @@ event end_timestep (i++, last);
 
 /**
 Output vtk files*/
-event vtk_file (i += 1, last);// correct. Added by Weugene
+event vtk_file (i++, last);// correct. Added by Weugene
 /**
 ## Adaptivity
 
@@ -460,7 +462,6 @@ event adapt (i++,last) {
 }
 #endif
 
-event velocity_correction(i++, last);
 /**
 ## See also
 

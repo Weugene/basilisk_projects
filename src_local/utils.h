@@ -302,3 +302,11 @@ double change (scalar s, scalar sn)
 }
 
 #include "output.h"
+
+#if dimension == 1
+#define scalar_a_by_b(a, b) (a.x[]*b.x[])
+#elif dimension == 2
+#define scalar_a_by_b(a, b) (a.x[]*b.x[] + a.y[]*b.y[])
+#else // dimension == 3
+#define scalar_a_by_b(a, b) (a.x[]*b.x[] + a.y[]*b.y[] + a.z[]*b.z[])
+#endif

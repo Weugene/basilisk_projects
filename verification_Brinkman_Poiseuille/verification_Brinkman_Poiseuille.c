@@ -21,7 +21,10 @@ face vector face_fs[]; //added
 scalar f[];
 #define BRINKMAN_PENALIZATION 1
 #define DEBUG_BRINKMAN_PENALIZATION
+
+
 #include "../src_local/centered-weugene.h"
+#include "../src_local/penalization.h"
 
 #include "fractions.h" //added
 // #include "navier-stokes/perfs.h"
@@ -120,21 +123,23 @@ event init (t = 0)
     event("end_timestep");
 }
 
-event velocity_correction(i++){
-//    foreach() {
-//        fs[] = (sq(x) + sq(y) - sq(diam/2.) <= 0) ? 1 : 0;
-//        foreach_dimension() {u.x[] *= 1 - fs[];}
-//    }
-    foreach_face() {
-        uf.x[] *= 1 - face_fs.x[];
-    }
-    if (flag) event ("end_timestep");
-    flag = false;
-}
+//event velocity_correction(i++){
+////    foreach() {
+////        fs[] = (sq(x) + sq(y) - sq(diam/2.) <= 0) ? 1 : 0;
+////        foreach_dimension() {u.x[] *= 1 - fs[];}
+////    }
+////    foreach_face() {
+////        uf.x[] *= 1 - face_fs.x[];
+////    }
+//    if (flag) event ("end_timestep");
+//    flag = false;
+//}
+
+
+
 /**
 We check the number of iterations of the Poisson and viscous
 problems. */
-
 event logfile (i++)
 fprintf (stderr, "%d %g %d %d\n", i, t, mgp.i, mgu.i);
 
@@ -148,7 +153,7 @@ event end_timestep (t += 1e-1; t <= 15.){
     vorticity (u, omega);
     foreach() l[] = level;
 //    output_vtu_MPI( (scalar *) {l, omega, p, f}, (vector *) {u}, subname, 0);
-    output_vtu_MPI( (scalar *) {l, omega, p, pe, pf, f, fs}, (vector *) {u, ve, uf, total_rhs, dbp, tmp}, subname, 0);
+    output_vtu_MPI( (scalar *) {l, omega, p, pe, pf, f, fs}, (vector *) {u, ve, uf, dbp}, subname, 0);
     flag = true;
 }
 
