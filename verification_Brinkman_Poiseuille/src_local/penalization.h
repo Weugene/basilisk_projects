@@ -55,7 +55,7 @@ event brinkman_penalization(i++, last){
     + (uf.x[0,0,1] - uf.x[])*n_sol_face.z[]/Delta
 #endif
     ;
-    uf.x[] = (uf.x[] + (fs_face*dt/eta_s)*(target_U_face.x[] + lambda_slip*grad_uf))/(1 +fs_face*dt/eta_s)
+    uf.x[] = (uf.x[] + (fs_face*dt/eta_s)*(target_U_face.x[] + lambda_slip*grad_uf))/(1 +fs_face*dt/eta_s);
   }
 }
 #endif

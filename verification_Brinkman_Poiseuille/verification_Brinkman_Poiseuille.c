@@ -146,7 +146,7 @@ fprintf (stderr, "%d %g %d %d\n", i, t, mgp.i, mgu.i);
 //Output
 #include "../src_local/output_vtu_foreach.h"
 event end_timestep (t += 1e-1; t <= 15.){
-    if (i<=1) return 0;
+//    if (i==1) return 0;
     char subname[80]; sprintf(subname, "br");
     scalar l[], omega[];
     vector ve[]; scalar pe[]; exact_solution(ve, pe);
