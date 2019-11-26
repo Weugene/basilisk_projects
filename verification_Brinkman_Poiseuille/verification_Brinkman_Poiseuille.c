@@ -85,13 +85,13 @@ condition is used on the right boundary. */
 u.n[left]  = dirichlet(1.);
 //uf.n[left]  = dirichlet(1.);
 p[left]    = neumann(0.);
-//pf[left]   = neumann(0.);
+pf[left]   = neumann(0.);
 f[left]    = dirichlet(y < 0);
 
 u.n[right] = neumann(0.);
 //uf.n[right] = neumann(0.);
 p[right]   = dirichlet(0.);
-//pf[right]  = dirichlet(0.);
+pf[right]  = dirichlet(0.);
 /**
 We set a constant viscosity corresponding to a Reynolds number of 160,
 based on the cylinder diameter (0.125) and the inflow velocity (1). */
@@ -162,7 +162,8 @@ We adapt according to the error on the embedded geometry, velocity and
 tracer fields. */
 
 event adapt (i++) {
-    adapt_wavelet ({fs,u,f}, (double[]){1e-2,3e-2,3e-2,3e-2}, MAXLEVEL, 4);
+//    foreach() fprintf(ferr, "%g %g %g ", fs[], f[], u.x[]);
+//    adapt_wavelet ({fs,u,f}, (double[]){1e-2,3e-2,3e-2,3e-2}, MAXLEVEL, 4);
 }
 
 /**

@@ -426,7 +426,7 @@ event projection (i++,last)
   /**
   We add the gradient field *g* to the centered velocity field. */
 
-  correction (dt);
+  correction (dt);//Weugene: why here?
 }
 
 #if BRINKMAN_PENALIZATION

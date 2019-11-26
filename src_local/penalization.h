@@ -2,21 +2,22 @@ struct Penalization {
     vector u;
     double dt;
 };
+//double lambda_slip = 0;
 #ifdef BRINKMAN_PENALIZATION
 
     extern scalar fs;
     double eta_s = 1e-3, nu_s = 0, lambda_slip = 0;
     (const) vector n_sol = zerof, target_U = zerof;
     (const) face vector n_sol_face = zerof, target_U_face = zerof;
-//    (const) scalar a_br = unity;
-//    (const) scalar b_br = unity;
+    (const) scalar a_br = unity;
+    (const) scalar b_br = unity;
 #ifdef DEBUG_BRINKMAN_PENALIZATION
     vector dbp[];
 #endif
 #endif
 
 event brinkman_penalization(i++, last){
-  vector utau[];
+  vector utau[]; // tangetial component of velocity $\mathbf{u}$
   double ubyn, d, velo;
   foreach() {
     ubyn = 0;
