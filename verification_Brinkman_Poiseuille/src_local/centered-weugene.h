@@ -1,5 +1,5 @@
-#ifndef BASILISK_HEADER_9
-#define BASILISK_HEADER_9
+#ifndef BASILISK_HEADER_8
+#define BASILISK_HEADER_8
 #line 1 "./../src_local/centered-weugene.h"
 /**
 # Incompressible Navier--Stokes solver (centered formulation)
@@ -430,7 +430,9 @@ event projection (i++,last)
 }
 
 #if BRINKMAN_PENALIZATION
-event brinkman_penalization(i++, last);
+//event brinkman_penalization(i++, last){
+//    brinkman_correction(u, uf, rho, dt);
+//}
 #endif
 /**
 Some derived solvers need to hook themselves at the end of the

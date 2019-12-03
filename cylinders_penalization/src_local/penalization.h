@@ -1,3 +1,6 @@
+#ifndef BASILISK_HEADER_17
+#define BASILISK_HEADER_17
+#line 1 "./../src_local/./../src_local/penalization.h"
 #ifdef BRINKMAN_PENALIZATION
 //    #define frhs (fs[] <= 0)
 //    #define fbp (fs[] > 0)
@@ -149,3 +152,4 @@ void brinkman_correction (struct Brinkman p){
 //        uf.x[] += face_value(U_solid.x,0);
 //    }
 //}
+#endif

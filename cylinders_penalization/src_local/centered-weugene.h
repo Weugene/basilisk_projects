@@ -426,10 +426,14 @@ event projection (i++,last)
   /**
   We add the gradient field *g* to the centered velocity field. */
 
-  correction (dt);
+  correction (dt);//Weugene: why here?
 }
 
-event velocity_correction(i++, last);
+#if BRINKMAN_PENALIZATION
+//event brinkman_penalization(i++, last){
+//    brinkman_correction(u, uf, rho, dt);
+//}
+#endif
 /**
 Some derived solvers need to hook themselves at the end of the
 timestep. */
@@ -439,7 +443,7 @@ event end_timestep (i++, last);
 
 /**
 Output vtk files*/
-event vtk_file (i += 1, last);// correct. Added by Weugene
+event vtk_file (i++, last);// correct. Added by Weugene
 /**
 ## Adaptivity
 

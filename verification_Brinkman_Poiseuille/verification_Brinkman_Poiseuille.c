@@ -15,29 +15,27 @@ advect the passive tracer *f*. */
 
 //#include "embed.h"
 //#include "navier-stokes/centered.h"
-vector tmp[];
 scalar fs[];           //added
-face vector face_fs[]; //added
 scalar f[];
-#define BRINKMAN_PENALIZATION 1
-#define DEBUG_BRINKMAN_PENALIZATION
+#define BRINKMAN_PENALIZATION 4
+#define DEBUG_BRINKMAN_PENALIZATION 1
 
 
 #include "../src_local/centered-weugene.h"
-#include "../src_local/penalization.h"
+
 
 #include "fractions.h" //added
 // #include "navier-stokes/perfs.h"
 #include "tracer.h"
 
 #define Re 1.
-#define diam 0.125
+#define diam 0.25// 0.125
 #define rad (0.5*diam)
 #define Lch 0.5
 #define MAXLEVEL 11
 
 scalar * tracers = {f};
-face vector muv[];
+//face vector muv[];
 bool flag = true;
 /**
 The domain is eight units long, centered vertically. */
@@ -52,8 +50,6 @@ void exact_solution(vector ve, scalar pe){
     ve.x[] = vr * cos(theta) - vth * sin(theta);
     ve.y[] = vr * sin(theta) + vth * cos(theta);
     pe[] = 0.5 * rho[] * (1 - sq(ve.x[]) - sq(ve.y[]));
-
-
 #endif
   }
 }
@@ -67,11 +63,11 @@ The top and bottom walls are free-slip and the cylinder is no-slip. */
 
 int main() {
     L0 = 8.;
-    origin (-0.5, -L0/2.);
+    origin (-1, -L0/2.);
     N = 1024;
-    mu = muv;
-    eta_s = 1e-6;
-    TOLERANCE = 1e-5;
+    mu = fm;//muv;
+    eta_s = 1e-5;
+    TOLERANCE = 1e-6;
     DT=1e-4;
 //    nu_s = sq(L0/pow(2.,MAXLEVEL))/eta_s/100;
     stokes = true;
@@ -83,44 +79,56 @@ tracer is injected in the lower-half of the left boundary. An outflow
 condition is used on the right boundary. */
 
 u.n[left]  = dirichlet(1.);
-//uf.n[left]  = dirichlet(1.);
+uf.n[left]  = dirichlet(1.);
 p[left]    = neumann(0.);
 pf[left]   = neumann(0.);
 f[left]    = dirichlet(y < 0);
 
 u.n[right] = neumann(0.);
-//uf.n[right] = neumann(0.);
+uf.n[right] = neumann(0.);
 p[right]   = dirichlet(0.);
 pf[right]  = dirichlet(0.);
 /**
 We set a constant viscosity corresponding to a Reynolds number of 160,
 based on the cylinder diameter (0.125) and the inflow velocity (1). */
 
-event properties (i++)
-{
-    foreach_face() muv.x[] = fm.x[]*diam/Re;
-//    foreach() foreach_dimension() target_U.x[] = 0;
-}
+//event properties (i++)
+//{
+//    foreach_face() muv.x[] = fm.x[]*diam/Re;
+//}
 
-
-event init (t = 0)
-{
+void calc_solid(scalar fs, vector n_sol, vector target_U){
     vertex scalar phi[];
+    face vector face_fs[];
     foreach_vertex() {
         phi[] = (sq(x) + sq(y) < sq(diam/2.) ) ? 1 : -1;
     }
     boundary ({phi});
     fractions (phi, fs, face_fs);
-    foreach() f[] = (x<-0.4)*(y<0)*(1-fs[]);
-//    foreach() fs[] = (sq(x) + sq(y) - sq(diam/2.) <= 0) ? 1 : 0;
+    foreach() {
+        foreach_dimension() target_U.x[] = 0;
+        n_sol.x[] = x/sqrt(sq(x) + sq(y));
+        n_sol.y[] = y/sqrt(sq(x) + sq(y));
+    }
+    boundary ({fs, target_U, n_sol});
+}
+
+event init (t = 0)
+{
+    int it = 0;
+    do {
+        calc_solid(fs, n_sol, target_U);
+        foreach() f[] = (x<-0.4)*(y<0)*(1-fs[]);
+    }while (adapt_wavelet({fs, f}, (double []){0.001, 0.001},
+                          maxlevel = MAXLEVEL, 2).nf != 0 && ++it <= 10);
+
 
     /**
     We set the initial velocity field. */
 
     foreach() u.x[] = 1.0 - fs[];
-    foreach_face() uf.x[] = 1.0 - face_fs.x[];
-    event("properties");
-    event("end_timestep");
+
+    event("vtk_file");
 }
 
 //event velocity_correction(i++){
@@ -145,15 +153,15 @@ fprintf (stderr, "%d %g %d %d\n", i, t, mgp.i, mgu.i);
 
 //Output
 #include "../src_local/output_vtu_foreach.h"
-event end_timestep (t += 1e-1; t <= 15.){
-//    if (i==1) return 0;
+event vtk_file (i += 1; t <= 15.){
+//event vtk_file (t += 1e-1; t <= 15.){
     char subname[80]; sprintf(subname, "br");
     scalar l[], omega[];
     vector ve[]; scalar pe[]; exact_solution(ve, pe);
     vorticity (u, omega);
     foreach() l[] = level;
 //    output_vtu_MPI( (scalar *) {l, omega, p, f}, (vector *) {u}, subname, 0);
-    output_vtu_MPI( (scalar *) {l, omega, p, pe, pf, f, fs}, (vector *) {u, ve, uf, dbp}, subname, 0);
+    output_vtu_MPI( (scalar *) {l, omega, p, pe, pf, f, fs}, (vector *) {u, ve, uf, dbp, grad_utau_n, n_sol, utau, target_U}, subname, 0);
     flag = true;
 }
 
@@ -163,7 +171,8 @@ tracer fields. */
 
 event adapt (i++) {
 //    foreach() fprintf(ferr, "%g %g %g ", fs[], f[], u.x[]);
-//    adapt_wavelet ({fs,u,f}, (double[]){1e-2,3e-2,3e-2,3e-2}, MAXLEVEL, 4);
+    adapt_wavelet ({fs, f, u}, (double[]){1e-3,1e-3,3e-2,3e-2}, MAXLEVEL, 4);
+    calc_solid(fs, n_sol, target_U);
 }
 
 /**
