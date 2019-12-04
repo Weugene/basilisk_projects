@@ -3,9 +3,9 @@
 
 We compare the numerical results with the solution given by the
 multipole expansion of [Sangani and Acrivos, 1982](#sangani1982). */
-
-#define BRINKMAN_PENALIZATION
-#define DEBUG_BRINKMAN_PENALIZATION
+const vector zerocf[] = {0.,0.,0.};
+#define BRINKMAN_PENALIZATION 4
+#define DEBUG_BRINKMAN_PENALIZATION 1
 
 #undef SEPS
 #define SEPS 1e-30
@@ -13,7 +13,6 @@ multipole expansion of [Sangani and Acrivos, 1982](#sangani1982). */
 //#define DEBUG_OUTPUT_VTU_MPI
 
 scalar fs[], omega[];
-face vector facev[];
 vector Us[];
 
 #include "../src_local/centered-weugene.h"
@@ -43,7 +42,7 @@ We will vary the maximum level of refinement, *nc* is the index of the
 case in the table above, the radius of the cylinder will be computed
 using the volume fraction $\Phi$. */
 
-int maxlevel = 8, minlevel =4, nc;
+int maxlevel = 11, minlevel =4, nc;
 double radius;
 
 int main(int argc, char * argv[]){
@@ -53,8 +52,7 @@ int main(int argc, char * argv[]){
     }
     /**
     The domain is the periodic unit square, centered on the origin. */
-
-    size (1.);
+    L0=1;
     origin (-L0/2., -L0/2.);
     periodic (right);
     periodic (top);
@@ -67,7 +65,7 @@ int main(int argc, char * argv[]){
 
     stokes = true;
     DT = 1e-4;
-    TOLERANCE = 1e-5;
+    TOLERANCE = 1e-8;
     NITERMIN = 5;
     /**
     We do the 9 cases computed by Sangani & Acrivos. The radius is
@@ -80,6 +78,21 @@ int main(int argc, char * argv[]){
     }
 }
 
+void calc_solid(scalar fs, vector n_sol, vector target_U){
+    vertex scalar phi[];
+    face vector face_fs[];
+    foreach_vertex() {
+        phi[] = (sq(x) + sq(y) < sq(radius) ) ? 1 : -1;
+    }
+    boundary ({phi});
+    fractions (phi, fs, face_fs);
+    foreach() {
+        foreach_dimension() target_U.x[] = 0;
+        n_sol.x[] = x/sqrt(sq(x) + sq(y));
+        n_sol.y[] = y/sqrt(sq(x) + sq(y));
+    }
+    boundary ({fs, target_U, n_sol});
+}
 /**
 We need an extra field to track convergence. */
 
@@ -87,10 +100,11 @@ scalar un[];
 
 event init (t = 0)
 {
-    /**
-    We initialize the embedded geometry. */
-    foreach() fs[] = sq(x) + sq(y) < sq(radius);
-    boundary ({fs});
+    int it = 0;
+    do {
+        calc_solid(fs, n_sol, target_U);
+    }while (adapt_wavelet({fs}, (double []){0.001},
+                          maxlevel = maxlevel, minlevel=minlevel).nf != 0 && ++it <= 10);
     /**
     And set acceleration and viscosity to unity. */
 
@@ -99,64 +113,70 @@ event init (t = 0)
     mu = fm;
     /**
     We initialize the reference velocity. */
-    foreach()
-    un[] = u.y[];
+    foreach() un[] = u.y[];
+    event("vtk_file");
 }
 
 /**
 We check for a stationary solution. */
 
 event logfile (i++; i <= 5000){
-  double avg = normf(u.x).avg;
-  double du = change (u.x, un)/(avg + SEPS); //change 1) Linf  2) un = u
-//  fprintf (fout, "%d %d %d %d %d %d %d %d %.3g %.3g %.3g %.3g %.3g\n",
-//  maxlevel, i,
-//  mgp.i, mgp.nrelax, mgp.minlevel,
-//  mgu.i, mgu.nrelax, mgu.minlevel,
-//  du, mgp.resa*dt, mgu.resa, statsf(u.x).sum, normf(p).max);
-  if (i > 1 && du < 1e-3 || i == 5000) {
-  /**
-  We output the non-dimensional force per unit length on the
-  cylinder $F/(\mu U)$, together with the corresponding value from
-  Sangani & Acrivos and the relative error. */
+    scalar u_tmp[];
+    foreach() u_tmp[] = u.x[]*(1-fs[]);
+    double avg = normf(u_tmp).avg;
+    double du = change (u_tmp, un)/(avg + SEPS); //change 1) Linf  2) un = u
+      fprintf (fout, "%d %d %d %d %d %d %d %d %.3g %.3g %.3g %.3g %.3g\n",
+      maxlevel, i,
+      mgp.i, mgp.nrelax, mgp.minlevel,
+      mgu.i, mgu.nrelax, mgu.minlevel,
+      du, mgp.resa*dt, mgu.resa, statsf(u.x).sum, normf(p).max);
+    fflush(fout);
+    if ((i > 1) && (du < 1e-3) || (i == 5000)) {
+        /**
+        We output the non-dimensional force per unit length on the
+        cylinder $F/(\mu U)$, together with the corresponding value from
+        Sangani & Acrivos and the relative error. */
 
-  stats s = statsf(u.x);
-  double Phi = 1. - s.volume/sq(L0);
-  double U = s.sum/s.volume;
-  double F = sq(L0)/(1. - Phi);
-  fprintf (ferr,
-  "%d %g %g %g %g\n", maxlevel, sangani[nc][0], F/U, sangani[nc][1],
-  fabs(F/U - sangani[nc][1])/sangani[nc][1]);
+        stats s = statsf(u_tmp);
+        double Phi = 1. - s.volume/sq(L0);
+        double U = s.sum/s.volume;
+        double F = sq(L0)/(1. - Phi);
+        fprintf (ferr,
+        "%d %g %g %g %g\n", maxlevel, sangani[nc][0], F/U, sangani[nc][1],
+        fabs(F/U - sangani[nc][1])/sangani[nc][1]);
 
-  view (fov = 9.78488, tx = 0.250594, ty = -0.250165);
-  draw_vof ("fs",  lc = {1,0,0}, lw = 2); // draw line lc -color, lw -width
-  squares ("u.x", linear = 1, spread = -1); // spread<0 => color is distributed min max
-  cells();
-  char subname[80]; sprintf(subname, "mesh-%d.png", nc);
-  save (subname);
-
-  fprintf(fout, "stationary flow nc = %d i = %d du = %g", nc, i, du);
-  return 9;
-  }
+        view (fov = 9.78488, tx = 0.250594, ty = -0.250165);
+        draw_vof ("fs",  lc = {1,0,0}, lw = 2); // draw line lc -color, lw -width
+        squares ("u.x", linear = 1, spread = -1); // spread<0 => color is distributed min max
+        cells();
+        char subname[80]; sprintf(subname, "mesh-%d.png", nc);
+        save (subname);
+//
+        fprintf(fout, "stationary flow nc = %d i = %d du = %g", nc, i, du);
+        fflush(fout);
+        return 9;
+    }
 }
 
-#define ADAPT_SCALARS {fs, u}
-#define ADAPT_EPS_SCALARS {1e-3,2e-6,2e-6}
-event adapt (i++){
-  double eps_arr[] = ADAPT_EPS_SCALARS;
-//  MinMaxValues(ADAPT_SCALARS, eps_arr);
-  adapt_wavelet ((scalar *) ADAPT_SCALARS, eps_arr, maxlevel = maxlevel, minlevel = minlevel);
-  foreach() fs[] = sq(x) + sq(y) < sq(radius);
-}
 //Output
 #include "../src_local/output_vtu_foreach.h"
-event end_timestep (t += 0.01){
-  char subname[80]; sprintf(subname, "br");
-  scalar l[], omega[];
-  vorticity (u, omega);
-  foreach() l[] = level;
-  output_vtu_MPI( (scalar *) {l, omega, fs, p}, (vector *) {u, dbp}, subname, L0/pow(2, minlevel));
+event vtk_file (t += 0.01){
+    char subname[80]; sprintf(subname, "br");
+    scalar l[], omega[];
+    vorticity (u, omega);
+    foreach() l[] = level;
+    output_vtu_MPI( (scalar *) {l, omega, fs, p}, (vector *) {u, uf, dbp, utau, grad_utau_n, n_sol, target_U}, subname, L0/pow(2, minlevel));
 }
+
+#define ADAPT_SCALARS {fs, omega}
+#define ADAPT_EPS_SCALARS {1e-3, 1e-3}
+event adapt (i++){
+    double eps_arr[] = ADAPT_EPS_SCALARS;
+//  MinMaxValues(ADAPT_SCALARS, eps_arr);
+    adapt_wavelet ((scalar *) ADAPT_SCALARS, eps_arr, maxlevel = maxlevel, minlevel = minlevel);
+    calc_solid(fs, n_sol, target_U);
+}
+
 /**
 The non-dimensional drag force per unit length closely matches the
 results of Sangani & Acrivos. For $\Phi=0.75$ and level 8 there is

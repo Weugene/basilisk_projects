@@ -1,3 +1,4 @@
+
 cylinders_penalization:
 	rm -rf .qcc* hr_* br_* dump out* log* a.out
 	qcc -Wall -O2 cylinders_penalization.c -lm -L$(BASILISK)/gl  $(OPENGLIBS)
