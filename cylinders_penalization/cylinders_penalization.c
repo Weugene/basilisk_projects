@@ -42,7 +42,7 @@ We will vary the maximum level of refinement, *nc* is the index of the
 case in the table above, the radius of the cylinder will be computed
 using the volume fraction $\Phi$. */
 
-int maxlevel = 12, minlevel =4, nc;
+int maxlevel = 10, minlevel =4, nc;
 double radius;
 
 int main(int argc, char * argv[]){
@@ -111,6 +111,7 @@ event init (t = 0)
     const face vector g[] = {1.,0.};
     a = g;
     mu = fm;
+
     /**
     We initialize the reference velocity. */
     foreach() un[] = u.y[];
@@ -121,29 +122,41 @@ event init (t = 0)
 We check for a stationary solution. */
 
 event logfile (i++; i <= 5000){
-    scalar u_tmp[];
-    foreach() u_tmp[] = u.x[]*(1-fs[]);
-    double avg = normf(u_tmp).avg;
-    double du = change (u_tmp, un)/(avg + SEPS); //change 1) Linf  2) un = u
-      fprintf (fout, "%d %d %d %d %d %d %d %d %.3g %.3g %.3g %.3g %.3g\n",
-      maxlevel, i,
-      mgp.i, mgp.nrelax, mgp.minlevel,
-      mgu.i, mgu.nrelax, mgu.minlevel,
-      du, mgp.resa*dt, mgu.resa, statsf(u.x).sum, normf(p).max);
+    double avg = normf_weugene(u.x, fs).avg;
+    double du = change_weugene (u.x, un, fs)/(avg + SEPS); //change 1) Linf  2) un = u
+    fprintf (fout, "%d %d %d %d %d %d %d %d %.3g %.3g %.3g %.3g %.3g\n",
+    maxlevel, i,
+    mgp.i, mgp.nrelax, mgp.minlevel,
+    mgu.i, mgu.nrelax, mgu.minlevel,
+    du, mgp.resa*dt, mgu.resa, statsf_weugene(u.x, fs).sum, normf_weugene(p, fs).max);
     fflush(fout);
+
+    if(i>1){
+        stats s = statsf_weugene(u.x, fs);
+        double Phi = 1. - s.volume/sq(L0);
+        double Phia = pi*sq(radius)/sq(L0);
+        double U = s.sum/s.volume;
+        double F = sq(L0)/(1. - Phi);
+        fprintf (ferr, "%d %g %g %g %g %d| %g=%g? %g %g\n", maxlevel, sangani[nc][0], F/U, sangani[nc][1], fabs(F/U - sangani[nc][1])/sangani[nc][1], i, Phi, Phia, U, F);
+    }
     if ((i > 1) && (du < 1e-3) || (i == 5000)) {
         /**
         We output the non-dimensional force per unit length on the
         cylinder $F/(\mu U)$, together with the corresponding value from
         Sangani & Acrivos and the relative error. */
-
-        stats s = statsf(u_tmp);
+        stats s = statsf_weugene(u.x, fs);
         double Phi = 1. - s.volume/sq(L0);
+        double Phia = pi*sq(radius)/sq(L0);
         double U = s.sum/s.volume;
         double F = sq(L0)/(1. - Phi);
-        fprintf (ferr,
-        "%d %g %g %g %g\n", maxlevel, sangani[nc][0], F/U, sangani[nc][1],
-        fabs(F/U - sangani[nc][1])/sangani[nc][1]);
+        fprintf (ferr, "%d %g %g %g %g %d| %g=%g? %g %g\n", maxlevel, sangani[nc][0], F/U, sangani[nc][1], fabs(F/U - sangani[nc][1])/sangani[nc][1], i, Phi, Phia, U, F);
+//        stats s = statsf(u);
+//        double Phi = 1. - s.volume/sq(L0);
+//        double U = s.sum/s.volume;
+//        double F = sq(L0)/(1. - Phi);
+//        fprintf (ferr,
+//        "%d %g %g %g %g %d\n", maxlevel, sangani[nc][0], F/U, sangani[nc][1],
+//        fabs(F/U - sangani[nc][1])/sangani[nc][1], i);
 
         view (fov = 9.78488, tx = 0.250594, ty = -0.250165);
         draw_vof ("fs",  lc = {1,0,0}, lw = 2); // draw line lc -color, lw -width
@@ -162,7 +175,7 @@ event logfile (i++; i <= 5000){
 #include "../src_local/output_vtu_foreach.h"
 event vtk_file (t += 0.01){
     char subname[80]; sprintf(subname, "br");
-    scalar l[], omega[];
+    scalar l[];
     vorticity (u, omega);
     foreach() l[] = level;
     output_vtu_MPI( (scalar *) {l, omega, fs, p}, (vector *) {u, uf, dbp, utau, grad_utau_n, n_sol, target_U}, subname, L0/pow(2, minlevel));
@@ -172,7 +185,7 @@ event vtk_file (t += 0.01){
 #define ADAPT_EPS_SCALARS {1e-3, 1e-3}
 event adapt (i++){
     double eps_arr[] = ADAPT_EPS_SCALARS;
-//  MinMaxValues(ADAPT_SCALARS, eps_arr);
+//    MinMaxValues(ADAPT_SCALARS, eps_arr);
     adapt_wavelet ((scalar *) ADAPT_SCALARS, eps_arr, maxlevel = maxlevel, minlevel = minlevel);
     calc_solid(fs, n_sol, target_U);
 }
@@ -183,13 +196,13 @@ results of Sangani & Acrivos. For $\Phi=0.75$ and level 8 there is
 only about 6 grid points in the width of the gap between cylinders.
 
 ~~~gnuplot Non-dimensional drag force per unit length
-set xlabel 'Volume fraction'
-set ylabel 'k_0'
+set xlabel 'Volume fraction'  font ",15"
+set ylabel 'k_0'  font ",15"
 set logscale y
 set grid
 set key top left
-plot '< grep "^8" log' u 2:4 ps 1 lw 2 t 'Sangani and Acrivos, 1982', \
-     '' u 2:3 ps 1 pt 6 lw 2 t '8 levels'
+set tics font "Helvetica,15"
+plot '< grep "^12" log_1e-6' u 2:4 ps 5 lw 5 t 'Sangani and Acrivos, 1982','' u 2:3 ps 5 pt 6 lw 5 t '12 levels'
 ~~~
 
 This can be further quantified by plotting the relative error. It

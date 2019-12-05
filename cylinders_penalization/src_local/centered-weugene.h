@@ -497,4 +497,59 @@ void MinMaxValues(scalar * list, double * arr_eps) {// for each scalar min and m
 #endif
   }
 }
+
+stats statsf_weugene (scalar f, scalar fs)
+{
+  double min = 1e100, max = -1e100, sum = 0., sum2 = 0., volume = 0.;
+  foreach(reduction(+:sum) reduction(+:sum2) reduction(+:volume)
+  reduction(max:max) reduction(min:min))
+  if (fs[] == 0 && f[] != nodata) {
+    volume += dv();
+    sum    += dv()*f[];
+    sum2   += dv()*sq(f[]);
+    if (f[] > max) max = f[];
+    if (f[] < min) min = f[];
+  }
+  stats s;
+  s.min = min, s.max = max, s.sum = sum, s.volume = volume;
+  if (volume > 0.)
+    sum2 -= sum*sum/volume;
+  s.stddev = sum2 > 0. ? sqrt(sum2/volume) : 0.;
+  return s;
+}
+
+
+norm normf_weugene (scalar f, scalar fs)
+{
+  double avg = 0., rms = 0., max = 0., volume = 0.;
+  foreach(reduction(max:max) reduction(+:avg)
+  reduction(+:rms) reduction(+:volume))
+  if (f[] != nodata && fs[] == 0) {
+    double v = fabs(f[]);
+    if (v > max) max = v;
+    volume += dv();
+    avg    += dv()*v;
+    rms    += dv()*sq(v);
+  }
+  norm n;
+  n.avg = volume ? avg/volume : 0.;
+  n.rms = volume ? sqrt(rms/volume) : 0.;
+  n.max = max;
+  n.volume = volume;
+  return n;
+}
+
+double change_weugene (scalar s, scalar sn, scalar fs)
+{
+  double max = 0.;
+  foreach(reduction(max:max)) {
+    if (fs[] == 0) {
+      double ds = fabs (s[] - sn[]);
+      if (ds > max)
+        max = ds;
+    }
+    sn[] = s[];
+  }
+  return max;
+}
 #endif

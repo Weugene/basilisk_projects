@@ -32,9 +32,9 @@ We will vary the maximum level of refinement, *nc* is the index of the
 case in the table above, the radius of the cylinder will be computed
 using the volume fraction $\Phi$. */
 
-int maxlevel = 6, minlevel= 4, nc;
+int maxlevel = 11, minlevel= 4, nc;
 double radius;
-
+scalar omega[];
 /**
 This function defines the embedded volume and face fractions. */
 
@@ -49,15 +49,12 @@ void cylinder (scalar cs, face vector fs)
 
 int main()
 {
-
     /**
     The domain is the periodic unit square, centered on the origin. */
-
     size (1.);
     origin (-L0/2., -L0/2.);
     periodic (right);
     periodic (top);
-
     /**
     We turn off the advection term. The choice of the maximum timestep
     and of the tolerance on the Poisson and viscous solves is not
@@ -74,7 +71,6 @@ int main()
     computed from the volume fraction. */
 
     for (nc = 0; nc < 9; nc++) {
-        maxlevel = 8;
         N = 1 << maxlevel;
         radius = sqrt(sq(L0)*sangani[nc][0]/pi);
         run();
@@ -121,7 +117,14 @@ event logfile (i++; i <= 500){
   mgp.i, mgp.nrelax, mgp.minlevel,
   mgu.i, mgu.nrelax, mgu.minlevel,
   du, mgp.resa*dt, mgu.resa, statsf(u.x).sum, normf(p).max);
-
+  if(i>1){
+      stats s = statsf(u.x);
+      double Phi = 1. - s.volume/sq(L0);
+      double Phia = pi*sq(radius)/sq(L0);
+      double U = s.sum/s.volume;
+      double F = sq(L0)/(1. - Phi);
+      fprintf (ferr, "%d %g %g %g %g %d| %g=%g? %g %g\n", maxlevel, sangani[nc][0], F/U, sangani[nc][1], fabs(F/U - sangani[nc][1])/sangani[nc][1], i, Phi, Phia, U, F);
+  }
   if (i > 1 && du < 1e-3 || i == 500) {
     /**
     We output the non-dimensional force per unit length on the
@@ -130,11 +133,13 @@ event logfile (i++; i <= 500){
 
     stats s = statsf(u.x);
     double Phi = 1. - s.volume/sq(L0);
+    double Phia = pi*sq(radius)/sq(L0);
     double U = s.sum/s.volume;
     double F = sq(L0)/(1. - Phi);
-    fprintf (ferr,
-    "%d %g %g %g %g\n", maxlevel, sangani[nc][0], F/U, sangani[nc][1],
-    fabs(F/U - sangani[nc][1])/sangani[nc][1]);
+    fprintf (ferr, "%d %g %g %g %g %d| %g=%g? %g %g\n", maxlevel, sangani[nc][0], F/U, sangani[nc][1], fabs(F/U - sangani[nc][1])/sangani[nc][1], i, Phi, Phia, U, F);
+//    fprintf (ferr,
+//    "%d %g %g %g %g\n", maxlevel, sangani[nc][0], F/U, sangani[nc][1],
+//    fabs(F/U - sangani[nc][1])/sangani[nc][1]);
 
     view (fov = 9.78488, tx = 0.250594, ty = -0.250165);
     draw_vof ("fs",  lc = {1,0,0}, lw = 2); // draw line lc -color, lw -width
@@ -149,22 +154,24 @@ event logfile (i++; i <= 500){
 }
 
 
-event adapt (i++){
-#if 0
-  refine (level < maxlevel);
-#else
-  adapt_wavelet ({cs,u}, (double[]){1e-2,2e-6,2e-6}, maxlevel =maxlevel, minlevel = minlevel);
-#endif
-  cylinder (cs, fs);
-}
+
 //Output
 #include "../src_local/output_vtu_foreach.h"
-event end_timestep (t += 0.01){
-char subname[80]; sprintf(subname, "br");
-scalar l[], omega[];
-vorticity (u, omega);
-foreach() l[] = level;
-        output_vtu_MPI( (scalar *) {l, omega, cs, p}, (vector *) {u}, subname, L0/pow(2, minlevel));
+event vtk_file (t += 0.01){
+    char subname[80]; sprintf(subname, "br");
+    scalar l[];
+    vorticity (u, omega);
+    foreach() l[] = level;
+    output_vtu_MPI( (scalar *) {l, omega, cs, p}, (vector *) {u}, subname, L0/pow(2, minlevel));
+}
+
+#define ADAPT_SCALARS {cs, omega}
+#define ADAPT_EPS_SCALARS {1e-3, 1e-3}
+event adapt (i++){
+    double eps_arr[] = ADAPT_EPS_SCALARS;
+    //  MinMaxValues(ADAPT_SCALARS, eps_arr);
+    adapt_wavelet ((scalar *) ADAPT_SCALARS, eps_arr, maxlevel = maxlevel, minlevel = minlevel);
+    cylinder (cs, fs);
 }
 //#include "vtknew.h"
 //static int iter_fp = 0;
