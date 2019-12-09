@@ -5,7 +5,8 @@ We compare the numerical results with the solution given by the
 multipole expansion of [Sangani and Acrivos, 1982](#sangani1982). */
 
 #include "embed.h" //cm = cs; fm = fs;
-#include "navier-stokes/centered.h"
+//#include "navier-stokes/centered.h"
+#include "../src_local/centered-weugene.h"
 #include "view.h"
 
 /**
@@ -63,7 +64,7 @@ int main()
 
     stokes = true;
     DT = 1e-3;
-    TOLERANCE = HUGE;
+    TOLERANCE = 1e-8;
     NITERMIN = 5;
 
     /**
@@ -86,7 +87,12 @@ event init (t = 0)
 {
     /**
     We initialize the embedded geometry. */
-    cylinder (cs, fs);
+    int it = 0;
+    do {
+      cylinder (cs, fs);
+    }while (adapt_wavelet({cs}, (double []){0.001},
+                        maxlevel = maxlevel, minlevel=minlevel).nf != 0 && ++it <= 10);
+
     /**
     And set acceleration and viscosity to unity. */
 
@@ -103,29 +109,30 @@ event init (t = 0)
     /**
     We initialize the reference velocity. */
 
-    foreach()
-    un[] = u.y[];
+    foreach() un[] = u.y[];
+    event("vtk_file");
 }
 
 /**
 We check for a stationary solution. */
 
-event logfile (i++; i <= 500){
+event logfile (i++; i <= 5000){
   double avg = normf(u.x).avg, du = change (u.x, un)/(avg + SEPS);
   fprintf (fout, "%d %d %d %d %d %d %d %d %.3g %.3g %.3g %.3g %.3g\n",
   maxlevel, i,
   mgp.i, mgp.nrelax, mgp.minlevel,
   mgu.i, mgu.nrelax, mgu.minlevel,
   du, mgp.resa*dt, mgu.resa, statsf(u.x).sum, normf(p).max);
-  if(i>1){
-      stats s = statsf(u.x);
-      double Phi = 1. - s.volume/sq(L0);
-      double Phia = pi*sq(radius)/sq(L0);
-      double U = s.sum/s.volume;
-      double F = sq(L0)/(1. - Phi);
-      fprintf (ferr, "%d %g %g %g %g %d| %g=%g? %g %g\n", maxlevel, sangani[nc][0], F/U, sangani[nc][1], fabs(F/U - sangani[nc][1])/sangani[nc][1], i, Phi, Phia, U, F);
-  }
-  if (i > 1 && du < 1e-3 || i == 500) {
+  fflush(fout);
+//  if(i>1){
+//      stats s = statsf(u.x);
+//      double Phi = 1. - s.volume/sq(L0);
+//      double Phia = pi*sq(radius)/sq(L0);
+//      double U = s.sum/s.volume;
+//      double F = sq(L0)/(1. - Phi);
+//      fprintf (ferr, "%d %g %g %g %g %d| %g=%g? %g %g\n", maxlevel, sangani[nc][0], F/U, sangani[nc][1], fabs(F/U - sangani[nc][1])/sangani[nc][1], i, Phi, Phia, U, F);
+//  }
+  if (((i > 1) && (du < 1e-3))|| (i == 5000)) {
     /**
     We output the non-dimensional force per unit length on the
     cylinder $F/(\mu U)$, together with the corresponding value from
@@ -136,7 +143,10 @@ event logfile (i++; i <= 500){
     double Phia = pi*sq(radius)/sq(L0);
     double U = s.sum/s.volume;
     double F = sq(L0)/(1. - Phi);
-    fprintf (ferr, "%d %g %g %g %g %d| %g=%g? %g %g\n", maxlevel, sangani[nc][0], F/U, sangani[nc][1], fabs(F/U - sangani[nc][1])/sangani[nc][1], i, Phi, Phia, U, F);
+    scalar bulk[]; foreach() bulk[] = 1 - cs[];
+    stats sw = statsf_weugene(u.x, bulk);
+    double Uw = sw.sum/sw.volume;
+    fprintf (ferr, "%d %g %g %g %g %d| %g=%g F:%g dt:%g t:%g U: %g %g\n", maxlevel, sangani[nc][0], F/U, sangani[nc][1], fabs(F/U - sangani[nc][1])/sangani[nc][1], i, Phi, Phia, F, dt, t, U, Uw);
 //    fprintf (ferr,
 //    "%d %g %g %g %g\n", maxlevel, sangani[nc][0], F/U, sangani[nc][1],
 //    fabs(F/U - sangani[nc][1])/sangani[nc][1]);
@@ -162,33 +172,18 @@ event vtk_file (t += 0.01){
     scalar l[];
     vorticity (u, omega);
     foreach() l[] = level;
-    output_vtu_MPI( (scalar *) {l, omega, cs, p}, (vector *) {u}, subname, L0/pow(2, minlevel));
+    output_vtu_MPI( (scalar *) {l, omega, cs, p}, (vector *) {u, uf}, subname, L0/pow(2, minlevel));
 }
 
 #define ADAPT_SCALARS {cs, omega}
-#define ADAPT_EPS_SCALARS {1e-3, 1e-3}
+#define ADAPT_EPS_SCALARS {1e-3, 1e-2}
 event adapt (i++){
     double eps_arr[] = ADAPT_EPS_SCALARS;
     //  MinMaxValues(ADAPT_SCALARS, eps_arr);
     adapt_wavelet ((scalar *) ADAPT_SCALARS, eps_arr, maxlevel = maxlevel, minlevel = minlevel);
     cylinder (cs, fs);
 }
-//#include "vtknew.h"
-//static int iter_fp = 0;
-////event outvtk (t += 0.01) {
-//event outvtk (i += 1) {
-//    int nf = iter_fp;
-//    char name[80];
-//    FILE *fpvtk;
-//    sprintf(name, "hr_%4.4d.vtk", nf);
-//    fpvtk = fopen(name, "w");
-//    scalar omega[], l[];
-//    vorticity (u, omega);
-//    foreach() l[] = level;
-//    output_vtk ({cs, p, u.x, u.y, omega, l}, fpvtk, 0.1*L0);//L0/N
-//    fclose (fpvtk);
-//    iter_fp++;
-//}
+
 
 /**
 The non-dimensional drag force per unit length closely matches the
@@ -201,8 +196,8 @@ set ylabel 'k_0'
 set logscale y
 set grid
 set key top left
-plot '< grep "^8" log' u 2:4 ps 1 lw 2 t 'Sangani and Acrivos, 1982', \
-     '' u 2:3 ps 1 pt 6 lw 2 t '8 levels'
+plot '< grep "^10" log10' u 2:3 ps 3 pt 6 lc rgb "blue" lw 4 t 'Embeded 10 levels', '< grep "^11" log11' u 2:3 ps 3 pt 8 lc rgb "violet" lw 4 t 'Embeded 11 levels','< grep "^10" log10' u 2:4 ps 3 pt 2 lc rgb "orange-red" lw 4 t 'Sangani and Acrivos, 1982'
+plot '< grep "^10" log' u 2:4 ps 1 lw 2 t 'Sangani and Acrivos, 1982', '' u 2:3 ps 1 pt 6 lw 2 t '10 levels'
 ~~~
 
 This can be further quantified by plotting the relative error. It

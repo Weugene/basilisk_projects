@@ -45,11 +45,31 @@ using the volume fraction $\Phi$. */
 int maxlevel = 10, minlevel =4, nc;
 double radius;
 
+void calc_solid(scalar fs, vector n_sol, vector target_U){
+  vertex scalar phi[];
+  face vector face_fs[];
+  foreach_vertex() {
+    phi[] = (sq(x) + sq(y) < sq(radius) ) ? 1 : -1;
+  }
+  boundary ({phi});
+  fractions (phi, fs, face_fs);
+  foreach() {
+    foreach_dimension() target_U.x[] = 0;
+    n_sol.x[] = x/sqrt(sq(x) + sq(y));
+    n_sol.y[] = y/sqrt(sq(x) + sq(y));
+  }
+  boundary ({fs, target_U, n_sol});
+}
+
 int main(int argc, char * argv[]){
     eta_s =1e-5;
     if (argc > 1) {
       eta_s = atof(argv[1]); //convert from string to float
     }
+    if (argc > 2) {
+      maxlevel = atoi(argv[2]); //convert from string to float
+    }
+    fprintf(fout, "eta_s=%g maxlevel=%d", eta_s, maxlevel);
     /**
     The domain is the periodic unit square, centered on the origin. */
     L0=1;
@@ -64,7 +84,7 @@ int main(int argc, char * argv[]){
     splitting errors and optimize convergence speed. */
 
     stokes = true;
-    DT = 1e-4;
+    DT = 1e-3;
     TOLERANCE = 1e-8;
     NITERMIN = 5;
     /**
@@ -72,27 +92,13 @@ int main(int argc, char * argv[]){
     computed from the volume fraction. */
 
     for (nc = 0; nc < 9; nc++) {
-        N = 1 << 8;
+        N = 1 << maxlevel;
         radius = sqrt(sq(L0) * sangani[nc][0] / pi);
         run();
     }
 }
 
-void calc_solid(scalar fs, vector n_sol, vector target_U){
-    vertex scalar phi[];
-    face vector face_fs[];
-    foreach_vertex() {
-        phi[] = (sq(x) + sq(y) < sq(radius) ) ? 1 : -1;
-    }
-    boundary ({phi});
-    fractions (phi, fs, face_fs);
-    foreach() {
-        foreach_dimension() target_U.x[] = 0;
-        n_sol.x[] = x/sqrt(sq(x) + sq(y));
-        n_sol.y[] = y/sqrt(sq(x) + sq(y));
-    }
-    boundary ({fs, target_U, n_sol});
-}
+
 /**
 We need an extra field to track convergence. */
 
@@ -121,6 +127,7 @@ event init (t = 0)
 /**
 We check for a stationary solution. */
 
+//event logfile (i++; t <= 0.27){
 event logfile (i++; i <= 5000){
     double avg = normf_weugene(u.x, fs).avg;
     double du = change_weugene (u.x, un, fs)/(avg + SEPS); //change 1) Linf  2) un = u
@@ -131,15 +138,16 @@ event logfile (i++; i <= 5000){
     du, mgp.resa*dt, mgu.resa, statsf_weugene(u.x, fs).sum, normf_weugene(p, fs).max);
     fflush(fout);
 
-    if(i>1){
-        stats s = statsf_weugene(u.x, fs);
-        double Phi = 1. - s.volume/sq(L0);
-        double Phia = pi*sq(radius)/sq(L0);
-        double U = s.sum/s.volume;
-        double F = sq(L0)/(1. - Phi);
-        fprintf (ferr, "%d %g %g %g %g %d| %g=%g? %g %g\n", maxlevel, sangani[nc][0], F/U, sangani[nc][1], fabs(F/U - sangani[nc][1])/sangani[nc][1], i, Phi, Phia, U, F);
-    }
-    if ((i > 1) && (du < 1e-3) || (i == 5000)) {
+//    if(i>1){
+//        stats s = statsf_weugene(u.x, fs);
+//        double Phi = 1. - s.volume/sq(L0);
+//        double Phia = pi*sq(radius)/sq(L0);
+//        double U = s.sum/s.volume;
+//        double F = sq(L0)/(1. - Phi);
+//        fprintf (ferr, "%d %g %g %g %g %d| %g=%g? %g %g\n", maxlevel, sangani[nc][0], F/U, sangani[nc][1], fabs(F/U - sangani[nc][1])/sangani[nc][1], i, Phi, Phia, U, F);
+//    }
+//    if (t >= 0.267) {
+    if (((i > 1) && (du < 1e-3))|| (i == 5000)) {
         /**
         We output the non-dimensional force per unit length on the
         cylinder $F/(\mu U)$, together with the corresponding value from
@@ -149,7 +157,7 @@ event logfile (i++; i <= 5000){
         double Phia = pi*sq(radius)/sq(L0);
         double U = s.sum/s.volume;
         double F = sq(L0)/(1. - Phi);
-        fprintf (ferr, "%d %g %g %g %g %d| %g=%g? %g %g\n", maxlevel, sangani[nc][0], F/U, sangani[nc][1], fabs(F/U - sangani[nc][1])/sangani[nc][1], i, Phi, Phia, U, F);
+        fprintf (ferr, "%d %g %g %g %g %d| %g=%g? F:%g dt:%g t:%g U:%g\n", maxlevel, sangani[nc][0], F/U, sangani[nc][1], fabs(F/U - sangani[nc][1])/sangani[nc][1], i, Phi, Phia, F, dt, t, U);
 //        stats s = statsf(u);
 //        double Phi = 1. - s.volume/sq(L0);
 //        double U = s.sum/s.volume;
@@ -182,7 +190,7 @@ event vtk_file (t += 0.01){
 }
 
 #define ADAPT_SCALARS {fs, omega}
-#define ADAPT_EPS_SCALARS {1e-3, 1e-3}
+#define ADAPT_EPS_SCALARS {1e-3, 1e-2}
 event adapt (i++){
     double eps_arr[] = ADAPT_EPS_SCALARS;
 //    MinMaxValues(ADAPT_SCALARS, eps_arr);
@@ -196,15 +204,17 @@ results of Sangani & Acrivos. For $\Phi=0.75$ and level 8 there is
 only about 6 grid points in the width of the gap between cylinders.
 
 ~~~gnuplot Non-dimensional drag force per unit length
-set xlabel 'Volume fraction'  font ",15"
-set ylabel 'k_0'  font ",15"
+set xlabel 'Volume fraction'  font ",10"
+set ylabel 'k_0'  font ",10"
 set logscale y
 set grid
 set key top left
-set tics font "Helvetica,15"
-plot '< grep "^12" log_1e-6' u 2:4 ps 5 lw 5 t 'Sangani and Acrivos, 1982','' u 2:3 ps 5 pt 6 lw 5 t '12 levels'
+set tics font "Helvetica,10"
+set format y "10^{%L}"
+plot '< grep "^10" log_1e-6' u 2:4 ps 5 lw 5 t 'Sangani and Acrivos, 1982','' u 2:3 ps 5 pt 6 lw 5 t '10 levels'
 ~~~
-
+ plot '< grep "^11" log_1e-6'  u 2:3 w lp ps 1 pt 6 lw 2 t 'BP eta=1e-6, 11 levels','< grep "^11" log_1e-5' u 2:3 w lp ps 1 pt 30 lw 2 t 'BP eta=1e-5, 11 levels','< grep "^11" log_1e-4' u 2:3 w lp ps 1 pt 33 lw 2 t 'BP eta=1e-4, 11 levels','< grep "^11" log_1e-3' u 2:3 w lp ps 1 pt 10 lw 2 t 'BP eta=1e-3, 11 levels','< grep "^11" log_1e-2' u 2:3 w lp ps 1 pt 12 lw 2 t 'BP eta=1e-2, 11 levels','< grep "^11" log_1e-6' u 2:4 w lp pt 2 ps 1 lc rgb "orange-red" lw 2 t 'Sangani and Acrivos, 1982'
+ 
 This can be further quantified by plotting the relative error. It
 seems that at low volume fractions, the error is independent from the
 mesh refinement. This may be due to other sources of errors, such as
