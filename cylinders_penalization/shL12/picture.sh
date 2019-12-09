@@ -1,4 +1,4 @@
-#!/usr/bin/gnuplot -c
+#!/usr/bin/env gnuplot -c
 # Show usage information if no argument is present
 if (strlen(ARG1) == 0) print "Usage: " . ARG0 . " level"; exit
 # Output W3C Scalable Vector Graphics

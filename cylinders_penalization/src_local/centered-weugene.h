@@ -430,9 +430,9 @@ event projection (i++,last)
 }
 
 #if BRINKMAN_PENALIZATION
-//event brinkman_penalization(i++, last){
-//    brinkman_correction(u, uf, rho, dt);
-//}
+event brinkman_penalization(i++, last){
+    brinkman_correction(u, uf, rho, dt);
+}
 #endif
 /**
 Some derived solvers need to hook themselves at the end of the

@@ -1,9 +1,8 @@
 /**
 # Stokes flow past a periodic array of cylinders
-
 We compare the numerical results with the solution given by the
 multipole expansion of [Sangani and Acrivos, 1982](#sangani1982). */
-const vector zerocf[] = {0.,0.,0.};
+//const vector zerocf[] = {0.,0.,0.};
 #define BRINKMAN_PENALIZATION 4
 #define DEBUG_BRINKMAN_PENALIZATION 1
 
@@ -42,7 +41,7 @@ We will vary the maximum level of refinement, *nc* is the index of the
 case in the table above, the radius of the cylinder will be computed
 using the volume fraction $\Phi$. */
 
-int maxlevel = 10, minlevel =4, nc;
+int maxlevel = 10, minlevel = 4, nc;
 double radius;
 
 void calc_solid(scalar fs, vector n_sol, vector target_U){
@@ -98,14 +97,12 @@ int main(int argc, char * argv[]){
     }
 }
 
-
 /**
 We need an extra field to track convergence. */
 
 scalar un[];
 
-event init (t = 0)
-{
+event init (t = 0){
     int it = 0;
     do {
         calc_solid(fs, n_sol, target_U);
@@ -166,12 +163,12 @@ event logfile (i++; i <= 5000){
 //        "%d %g %g %g %g %d\n", maxlevel, sangani[nc][0], F/U, sangani[nc][1],
 //        fabs(F/U - sangani[nc][1])/sangani[nc][1], i);
 
-        view (fov = 9.78488, tx = 0.250594, ty = -0.250165);
-        draw_vof ("fs",  lc = {1,0,0}, lw = 2); // draw line lc -color, lw -width
-        squares ("u.x", linear = 1, spread = -1); // spread<0 => color is distributed min max
-        cells();
-        char subname[80]; sprintf(subname, "mesh-%d.png", nc);
-        save (subname);
+//        view (fov = 9.78488, tx = 0.250594, ty = -0.250165);
+//        draw_vof ("fs",  lc = {1,0,0}, lw = 2); // draw line lc -color, lw -width
+//        squares ("u.x", linear = 1, spread = -1); // spread<0 => color is distributed min max
+//        cells();
+//        char subname[80]; sprintf(subname, "mesh-%d.png", nc);
+//        save (subname);
 //
         fprintf(fout, "stationary flow nc = %d i = %d du = %g", nc, i, du);
         fflush(fout);
@@ -185,7 +182,7 @@ event vtk_file (t += 0.01){
     char subname[80]; sprintf(subname, "br");
     scalar l[];
     vorticity (u, omega);
-    foreach() l[] = level;
+    foreach() {l[] = level; omega[] *= 1 - fs[];}
     output_vtu_MPI( (scalar *) {l, omega, fs, p}, (vector *) {u, uf, dbp, utau, grad_utau_n, n_sol, target_U}, subname, L0/pow(2, minlevel));
 }
 
