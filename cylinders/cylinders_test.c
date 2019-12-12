@@ -132,7 +132,7 @@ event logfile (i++; i <= 5000){
 //      double F = sq(L0)/(1. - Phi);
 //      fprintf (ferr, "%d %g %g %g %g %d| %g=%g? %g %g\n", maxlevel, sangani[nc][0], F/U, sangani[nc][1], fabs(F/U - sangani[nc][1])/sangani[nc][1], i, Phi, Phia, U, F);
 //  }
-  if (((i > 1) && (du < 1e-3))|| (i == 5000)) {
+  if (((i > 1) && (du/dt < 1e-3))|| (i == 5000)) {
     /**
     We output the non-dimensional force per unit length on the
     cylinder $F/(\mu U)$, together with the corresponding value from
@@ -146,7 +146,7 @@ event logfile (i++; i <= 5000){
     scalar bulk[]; foreach() bulk[] = 1 - cs[];
     stats sw = statsf_weugene(u.x, bulk);
     double Uw = sw.sum/sw.volume;
-    fprintf (ferr, "%d %g %g %g %g %d| %g=%g F:%g dt:%g t:%g U: %g %g\n", maxlevel, sangani[nc][0], F/U, sangani[nc][1], fabs(F/U - sangani[nc][1])/sangani[nc][1], i, Phi, Phia, F, dt, t, U, Uw);
+    fprintf (ferr, "%d %g %g %g %g i=%d ifp=%d| %g=%g F:%g dt:%g t:%g U: %g Uw: %g Ua: %g\n", maxlevel, sangani[nc][0], F/U, sangani[nc][1], fabs(F/U - sangani[nc][1])/sangani[nc][1], i, iter_fp, Phi, Phia, F, dt, t, U, Uw, sq(L0)/(sangani[nc][1]*(1 - sangani[nc][0])));
 //    fprintf (ferr,
 //    "%d %g %g %g %g\n", maxlevel, sangani[nc][0], F/U, sangani[nc][1],
 //    fabs(F/U - sangani[nc][1])/sangani[nc][1]);

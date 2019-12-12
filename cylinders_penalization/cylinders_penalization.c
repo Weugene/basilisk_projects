@@ -2,7 +2,7 @@
 # Stokes flow past a periodic array of cylinders
 We compare the numerical results with the solution given by the
 multipole expansion of [Sangani and Acrivos, 1982](#sangani1982). */
-//const vector zerocf[] = {0.,0.,0.};
+
 #define BRINKMAN_PENALIZATION 4
 #define DEBUG_BRINKMAN_PENALIZATION 1
 
@@ -16,6 +16,7 @@ vector Us[];
 
 #include "../src_local/centered-weugene.h"
 #include "view.h"
+#include "../src_local/output_vtu_foreach.h"
 
 /**
 This is Table 1 of [Sangani and Acrivos, 1982](#sangani1982), where
@@ -61,7 +62,7 @@ void calc_solid(scalar fs, vector n_sol, vector target_U){
 }
 
 int main(int argc, char * argv[]){
-    eta_s =1e-5;
+    eta_s =1e-6;
     if (argc > 1) {
       eta_s = atof(argv[1]); //convert from string to float
     }
@@ -144,7 +145,7 @@ event logfile (i++; i <= 5000){
 //        fprintf (ferr, "%d %g %g %g %g %d| %g=%g? %g %g\n", maxlevel, sangani[nc][0], F/U, sangani[nc][1], fabs(F/U - sangani[nc][1])/sangani[nc][1], i, Phi, Phia, U, F);
 //    }
 //    if (t >= 0.267) {
-    if (((i > 1) && (du < 1e-3))|| (i == 5000)) {
+    if (((i > 1) && (du/dt < 1e-3))|| (i == 5000)) {
         /**
         We output the non-dimensional force per unit length on the
         cylinder $F/(\mu U)$, together with the corresponding value from
@@ -154,7 +155,7 @@ event logfile (i++; i <= 5000){
         double Phia = pi*sq(radius)/sq(L0);
         double U = s.sum/s.volume;
         double F = sq(L0)/(1. - Phi);
-        fprintf (ferr, "%d %g %g %g %g %d| %g=%g? F:%g dt:%g t:%g U:%g\n", maxlevel, sangani[nc][0], F/U, sangani[nc][1], fabs(F/U - sangani[nc][1])/sangani[nc][1], i, Phi, Phia, F, dt, t, U);
+        fprintf (ferr, "%d %g %g %g %g i=%d ifp=%d| %g=%g? F:%g dt:%g t:%g U:%g Uw:%g Ua:%g\n", maxlevel, sangani[nc][0], F/U, sangani[nc][1], fabs(F/U - sangani[nc][1])/sangani[nc][1], i, iter_fp, Phi, Phia, F, dt, t, U);
 //        stats s = statsf(u);
 //        double Phi = 1. - s.volume/sq(L0);
 //        double U = s.sum/s.volume;
@@ -177,7 +178,6 @@ event logfile (i++; i <= 5000){
 }
 
 //Output
-#include "../src_local/output_vtu_foreach.h"
 event vtk_file (t += 0.01){
     char subname[80]; sprintf(subname, "br");
     scalar l[];
@@ -208,7 +208,7 @@ set grid
 set key top left
 set tics font "Helvetica,10"
 set format y "10^{%L}"
-plot '< grep "^10" log_1e-6' u 2:4 ps 5 lw 5 t 'Sangani and Acrivos, 1982','' u 2:3 ps 5 pt 6 lw 5 t '10 levels'
+plot '< grep "^10" log' u 2:4 ps 5 lw 5 t 'Sangani and Acrivos, 1982','' u 2:3 ps 5 pt 6 lw 5 t '10 levels'
 ~~~
  plot '< grep "^11" log_1e-6'  u 2:3 w lp ps 1 pt 6 lw 2 t 'BP eta=1e-6, 11 levels','< grep "^11" log_1e-5' u 2:3 w lp ps 1 pt 30 lw 2 t 'BP eta=1e-5, 11 levels','< grep "^11" log_1e-4' u 2:3 w lp ps 1 pt 33 lw 2 t 'BP eta=1e-4, 11 levels','< grep "^11" log_1e-3' u 2:3 w lp ps 1 pt 10 lw 2 t 'BP eta=1e-3, 11 levels','< grep "^11" log_1e-2' u 2:3 w lp ps 1 pt 12 lw 2 t 'BP eta=1e-2, 11 levels','< grep "^11" log_1e-6' u 2:4 w lp pt 2 ps 1 lc rgb "orange-red" lw 2 t 'Sangani and Acrivos, 1982'
  
