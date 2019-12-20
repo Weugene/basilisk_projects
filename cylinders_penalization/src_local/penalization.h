@@ -3,35 +3,35 @@
 #line 1 "./../src_local/./../src_local/penalization.h"
 const vector zerocf[] = {0.,0.,0.};
 #ifdef BRINKMAN_PENALIZATION
-//    #define frhs (fs[] <= 0)
-//    #define fbp (fs[] > 0)
     #define frhs (1 - fs[])
     #define fbp (fs[])
     extern scalar fs;
-    vector target_U[], n_sol[];
     double eta_s = 1e-3, nu_s = 0, lambda_slip = 0;
-    (const) vector U_solid = zerocf;
     (const) scalar a_br = unity, b_br = unity; // useful for Robin BC
 
-    #if BRINKMAN_PENALIZATION == 1 // Dirichlet BC
-        #define PLUS_BRINKMAN_RHS         + fbp*dt*(nu_s*(u.x[1] - 2*u.x[] +u.x[-1])/sq(Delta) - (u.x[] - target_U.x[])/eta_s)
-        #define PLUS_NUMERATOR_BRINKMAN   + fbp*dt*(nu_s*(u.x[1] + u.x[-1]) + sq(Delta)*target_U.x[]/eta_s)
-        #define PLUS_DENOMINATOR_BRINKMAN + fbp*dt*(a_br[]*sq(Delta) /eta_s + 2*nu_s)
+    #if BRINKMAN_PENALIZATION == 1 //Dirichlet BC
+        (const) vector U_solid = zerocf, target_U = zerocf, n_sol = zerocf;
+        #define PLUS_BRINKMAN_RHS         + fbp*dt*(- (u.x[] - target_U.x[])/eta_s)
+        #define PLUS_NUMERATOR_BRINKMAN   + fbp*dt*(sq(Delta)*target_U.x[]/eta_s)
+        #define PLUS_DENOMINATOR_BRINKMAN + fbp*dt*(sq(Delta)/eta_s)
     #elif BRINKMAN_PENALIZATION == 2 //Neumann BC
+        vector target_U[], n_sol[];
         #define CALC_GRAD
         #define PLUS_BRINKMAN_RHS         + fbp*dt*(nu_s*(u.x[1] - 2*u.x[] +u.x[-1])/sq(Delta) - (scalar_a_by_b(n_sol, grad_u) - target_U.x[])/eta_s)
         #define PLUS_NUMERATOR_BRINKMAN   + fbp*dt*(nu_s*(u.x[1] + u.x[-1]) - (0.5*Delta*(m_scalar_a_by_b(n_sol, u)) - sq(Delta)*target_U.x[])/eta_s)
         #define PLUS_DENOMINATOR_BRINKMAN + fbp*dt*(2*nu_s)
     #elif BRINKMAN_PENALIZATION == 3 //Robin BC
+        vector target_U[], n_sol[];
         #define CALC_GRAD
         #define PLUS_BRINKMAN_RHS         + fbp*dt*(nu_s*(u.x[1] - 2*u.x[] +u.x[-1])/sq(Delta) - (a_br[]*u.x[] + b_br[]*scalar_a_by_b(n_sol, grad_u) - target_U.x[])/eta_s)
         #define PLUS_NUMERATOR_BRINKMAN   + fbp*dt*(nu_s*(u.x[1] + u.x[-1]) - (0.5*Delta*b_br[]*(m_scalar_a_by_b(n_sol, u)) - sq(Delta)*target_U.x[])/eta_s)
         #define PLUS_DENOMINATOR_BRINKMAN + fbp*dt*(a_br[]*sq(Delta)/eta_s + 2*nu_s)
     #elif BRINKMAN_PENALIZATION == 4 //No penetration & slip BC
+        vector target_U[], n_sol[]; //here target_U will be recalcilated each time step
         #define CALC_GRAD_U_TAU
-        #define PLUS_BRINKMAN_RHS         + fbp*dt*(nu_s*(u.x[1] - 2*u.x[] +u.x[-1])/sq(Delta)  - (u.x[] - target_U.x[])/eta_s)
-        #define PLUS_NUMERATOR_BRINKMAN   + fbp*dt*(nu_s*(u.x[1] + u.x[-1]) + sq(Delta)*target_U.x[]/eta_s)
-        #define PLUS_DENOMINATOR_BRINKMAN + fbp*dt*(sq(Delta) /eta_s + 2*nu_s)
+        #define PLUS_BRINKMAN_RHS         + fbp*dt*(- (u.x[] - target_U.x[])/eta_s)
+        #define PLUS_NUMERATOR_BRINKMAN   + fbp*dt*(sq(Delta)*target_U.x[]/eta_s)
+        #define PLUS_DENOMINATOR_BRINKMAN + fbp*dt*(sq(Delta)/eta_s)
 //    #elif BRINKMAN_PENALIZATION == 5//Ideal slip, no friction
 //        #define CALC_GRAD
 //        #define PLUS_BRINKMAN_RHS         + fbp*dt*(nu_s*(u.x[1] - 2*u.x[] +u.x[-1])/sq(Delta) - n_sol.x[]*scalar_a_by_b(n_sol, umUs)/eta_s)
@@ -103,7 +103,7 @@ void calc_target_U(const vector u, vector target_U, const vector normal){
 }
 
 void brinkman_correction_u (vector u, double dt){
-    calc_target_U(u, target_U, n_sol);
+    if (!is_constant(target_U.x)) calc_target_U(u, target_U, n_sol);
     foreach() {
         foreach_dimension(){
             u.x[] = (u.x[] + (fbp*dt/eta_s)*target_U.x[])/(1. + fbp*dt/eta_s);

@@ -4,10 +4,9 @@ if (strlen(ARG1) == 0) print "Usage: " . ARG0 . " level"; exit
 # Output W3C Scalable Vector Graphics
 set terminal postscript eps enhanced color font 'Helvetica,10'
 level=ARG1
-emin=2
-emax=6
-N=emax-emin+1
-grepf(l, num) = sprintf("< grep \"^%s\" log_1e-%d", l, num)
+array(n) = word("2 3 4 5 6 15", n)
+N=6
+grepf(l, num) = sprintf("< grep \"^%s\" log_1e-%s", l, num)
 set xlabel 'Volume fraction'  font ",10"
 set ylabel 'k_0'  font ",10"
 set logscale y
@@ -16,9 +15,12 @@ set key spacing 2
 set key top left
 set tics font "Helvetica,10"
 set format y "10^{%L}"
+set ytics 100
+set xtics 1
 array files[N+1]
 array titles[N+1]
 array lstyles[N+1]
+array col[N+1]
 set for [i=1:7] linetype i dt i
 set style line 1 lt 1 lc rgb "blue" lw 3 pt 6 ps 1
 set style line 2 lt 1 lc rgb "orange" lw 3 pt 6 ps 1
@@ -30,12 +32,14 @@ set style line 7 lt 3 lc rgb "black" lw 3 pt 2 ps 1
 
 #show style line
 p=1
-do for [i=emin:emax+1] {
-	files[p]=grepf(level, i)
-	titles[p]=sprintf("BP eta=1e-%d, %s levels", i, level)
+do for [i=1:N+1] {
+	files[p]=grepf(level, array(i))
+	titles[p]=sprintf("BP eta=1e-%s, %s levels", array(i), level)
 	lstyles[p]=i
+	col[p]=3
 	p=p+1
 }
-files[N+1]=grepf(level, emax)
+files[N+1]=grepf(level, array(1))
 titles[N+1]=sprintf("Sangani and Acrivos, 1982")
-plot for [i=1:N+1] files[i] u 2:3 w lp ls lstyles[i] t titles[i]
+col[N+1]=4
+plot for [i=1:N+1] files[i] u 2:col[i] w lp ls lstyles[i] t titles[i]

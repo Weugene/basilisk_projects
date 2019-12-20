@@ -1,6 +1,7 @@
 #ifndef BASILISK_HEADER_17
 #define BASILISK_HEADER_17
 #line 1 "./../src_local/./../src_local/penalization.h"
+const vector zerocf[] = {0.,0.,0.};
 #ifdef BRINKMAN_PENALIZATION
 //    #define frhs (fs[] <= 0)
 //    #define fbp (fs[] > 0)
@@ -59,61 +60,74 @@ struct Brinkman {
     scalar rho;
     double dt;
 //    int nrelax;
-//    scalar * res;
+//    scalar*res;
 };
 
 
 void calc_target_U(const vector u, vector target_U, const vector normal){
-    double ubyn;
-    #ifndef DEBUG_BRINKMAN_PENALIZATION
+    if (!is_constant(U_solid.x)) foreach() foreach_dimension() target_U.x[] = U_solid.x[];
+    if (fabs(lambda_slip) > 0.) {
+        double ubyn;
+        #ifndef DEBUG_BRINKMAN_PENALIZATION
         vector utau[]; // otherwise utau will be defined globally
-    #endif
-    if (!is_constant(U_solid.x)) foreach() foreach_dimension() u.x[] -= U_solid.x[];
-    if (!is_constant(U_solid.x)) fprintf(ferr, "U_solid.x");
-    foreach() {
-        ubyn = 0; foreach_dimension() ubyn += (u.x[])*normal.x[];
-        foreach_dimension() utau.x[] = u.x[] - ubyn*normal.x[];
-    }
-    if (!is_constant(U_solid.x)) foreach() foreach_dimension() u.x[] += U_solid.x[];
-    foreach() {
-        foreach_dimension() {
-            if (0 < fs[] && fs[] < 1){
-                gradun = ((1 - fs[-1])*utau.x[-1] - (1 - fs[-2])*utau.x[-2] + (1 - fs[2])*utau.x[2] - (1 - fs[1])*utau.x[1])*n_sol.x[]/Delta
-                        #if dimension > 1
-                        + ((1 - fs[0,-1])*utau.x[0,-1] - (1 - fs[0,-2])*utau.x[0,-2] + (1 - fs[0,2])*utau.x[0,2] - (1 - fs[0,1])*utau.x[0,1])*n_sol.y[]/Delta
-                        #endif
-                        #if dimension > 2
-                        + ((1 - fs[0, 0, -1]) * utau.x[0, 0, -1] - (1 - fs[0, 0, -2]) * utau.x[0, 0, -2] +  (1 - fs[0, 0, 2]) * utau.x[0, 0, 2] - (1 - fs[0, 0, 1]) * utau.x[0, 0, 1]) * n_sol.z[] / Delta
-                        #endif
-                        ;
-            }else{
-                gradun = 0;
+        #endif
+        if (!is_constant(U_solid.x)) foreach() foreach_dimension() u.x[] -= U_solid.x[];
+        //    if (!is_constant(U_solid.x)) fprintf(ferr, "U_solid.x");
+        foreach() {
+            ubyn = 0;
+            foreach_dimension()
+            ubyn += (u.x[])*normal.x[];
+            foreach_dimension()
+            utau.x[] = u.x[] - ubyn*normal.x[];
+        }
+        if (!is_constant(U_solid.x)) foreach() foreach_dimension() u.x[] += U_solid.x[];
+        foreach() {
+            foreach_dimension() {
+                if (0 < fs[] && fs[] < 1) {
+                    gradun = ((1 - fs[-1])*utau.x[-1] - (1 - fs[-2])*utau.x[-2] + (1 - fs[2])*utau.x[2] - (1 - fs[1])*utau.x[1])*n_sol.x[] / Delta
+                            #if dimension > 1
+                            + ((1 - fs[0,-1])*utau.x[0,-1] - (1 - fs[0,-2])*utau.x[0,-2] + (1 - fs[0,2])*utau.x[0,2] - (1 - fs[0,1])*utau.x[0,1])*n_sol.y[]/Delta
+                            #endif
+                            #if dimension > 2
+                            + ((1 - fs[0, 0, -1])*utau.x[0, 0, -1] - (1 - fs[0, 0, -2])*utau.x[0, 0, -2] +  (1 - fs[0, 0, 2])*utau.x[0, 0, 2] - (1 - fs[0, 0, 1])*utau.x[0, 0, 1])*n_sol.z[] / Delta
+                            #endif
+                            ;
+                } else {
+                    gradun = 0;
+                }
+                target_U.x[] += lambda_slip*gradun;
+                //            if (target_U.x[]) fprintf(ferr, "Ut = %g, U_s = %g, l=%g gr=%g\n", target_U.x[], U_solid.x[], lambda_slip, gradun);
             }
-            target_U.x[] = lambda_slip*gradun;
-//            if (target_U.x[]) fprintf(ferr, "Ut = %g, U_s = %g, l=%g gr=%g\n", target_U.x[], U_solid.x[], lambda_slip, gradun);
         }
     }
-    if (!is_constant(U_solid.x)) foreach() foreach_dimension() target_U.x[] += U_solid.x[];
 }
 
-void brinkman_correction (struct Brinkman p){
-    vector u = p.u; face vector uf = p.uf; scalar rho = p.rho; double dt = p.dt;
+void brinkman_correction_u (vector u, double dt){
     calc_target_U(u, target_U, n_sol);
     foreach() {
         foreach_dimension(){
-            u.x[] = (u.x[] + (fbp*dt/eta_s)*target_U.x[])/(1 + fbp*dt/eta_s);
-            #ifdef DEBUG_BRINKMAN_PENALIZATION
-                dbp.x[] = (PLUS_BRINKMAN_RHS)/dt;
-            #endif
+            u.x[] = (u.x[] + (fbp*dt/eta_s)*target_U.x[])/(1. + fbp*dt/eta_s);
+#ifdef DEBUG_BRINKMAN_PENALIZATION
+            dbp.x[] = (PLUS_BRINKMAN_RHS)/dt;
+#endif
         }
     }
+    boundary ((scalar *){u});
+}
 
+void brinkman_correction_uf (face vector uf, double dt){
     double fs_face, target_U_face;
     foreach_face(){
         fs_face = face_value(fs, 0);
         target_U_face = face_value(target_U.x, 0);
         uf.x[] = (uf.x[] + (fs_face*dt/eta_s)*target_U_face)/(1 +fs_face*dt/eta_s);
     }
+    boundary ((scalar *){uf});
+}
+void brinkman_correction (struct Brinkman p){
+    vector u = p.u; face vector uf = p.uf; scalar rho = p.rho; double dt = p.dt;
+    brinkman_correction_u (u, dt);
+    brinkman_correction_uf (uf, dt);
 }
 
 //void calc_target_Uf(face vector uf, vector U_solid, face vector target_U, vector normal){
@@ -140,7 +154,7 @@ void brinkman_correction (struct Brinkman p){
 //                + ((1 - fs[0,-1])*utau.x[0,-1] - (1 - fs[0,-2])*utau.x[0,-2] + (1 - fs[0,2])*utau.x[0,2] - (1 - fs[0,1])*utau.x[0,1])*n_sol.y[]/Delta
 //#endif
 //#if dimension > 2
-//                + ((1 - fs[0, 0, -1]) * utau.x[0, 0, -1] - (1 - fs[0, 0, -2]) * utau.x[0, 0, -2] +  (1 - fs[0, 0, 2]) * utau.x[0, 0, 2] - (1 - fs[0, 0, 1]) * utau.x[0, 0, 1]) * n_sol.z[] / Delta
+//                + ((1 - fs[0, 0, -1])*utau.x[0, 0, -1] - (1 - fs[0, 0, -2])*utau.x[0, 0, -2] +  (1 - fs[0, 0, 2])*utau.x[0, 0, 2] - (1 - fs[0, 0, 1])*utau.x[0, 0, 1])*n_sol.z[] / Delta
 //#endif
 //                    ;
 //        }else{

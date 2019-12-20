@@ -8,7 +8,7 @@ multipole expansion of [Sangani and Acrivos, 1982](#sangani1982). */
 //#include "navier-stokes/centered.h"
 #include "../src_local/centered-weugene.h"
 #include "view.h"
-
+#include "../src_local/output_vtu_foreach.h"
 /**
 This is Table 1 of [Sangani and Acrivos, 1982](#sangani1982), where
 the first column is the volume fraction $\Phi$ of the cylinders and
@@ -48,8 +48,12 @@ void cylinder (scalar cs, face vector fs)
     fractions (phi, cs, fs);
 }
 
-int main()
+int main(int argc, char * argv[])
 {
+    maxlevel = 10;
+    if (argc > 1) {
+      maxlevel = atoi(argv[1]); //convert from string to float
+    }
     /**
     The domain is the periodic unit square, centered on the origin. */
     size (1.);
@@ -166,12 +170,11 @@ event logfile (i++; i <= 5000){
 
 
 //Output
-#include "../src_local/output_vtu_foreach.h"
 event vtk_file (t += 0.01){
     char subname[80]; sprintf(subname, "br");
     scalar l[];
     vorticity (u, omega);
-    foreach() l[] = level;
+    foreach() {l[] = level; omega[] *= 1 - cs[];}    
     output_vtu_MPI( (scalar *) {l, omega, cs, p}, (vector *) {u, uf}, subname, L0/pow(2, minlevel));
 }
 

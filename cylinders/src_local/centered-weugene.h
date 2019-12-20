@@ -33,8 +33,11 @@ for viscosity. */
 #if EMBED
 #include "viscosity-embed.h"
 #else
+#ifndef BRINKMAN_PENALIZATION
+#include "viscosity.h"
+#else
 #include "./viscosity-weugene.h"
-//#include "viscosity.h"
+#endif
 #endif
 
 /**
@@ -430,9 +433,9 @@ event projection (i++,last)
 }
 
 #if BRINKMAN_PENALIZATION
-//event brinkman_penalization(i++, last){
-//    brinkman_correction(u, uf, rho, dt);
-//}
+event brinkman_penalization(i++, last){
+    brinkman_correction(u, uf, rho, dt);
+}
 #endif
 /**
 Some derived solvers need to hook themselves at the end of the
@@ -500,36 +503,58 @@ void MinMaxValues(scalar * list, double * arr_eps) {// for each scalar min and m
 
 stats statsf_weugene (scalar f, scalar fs)
 {
-  double min = 1e100, max = -1e100, sum = 0., sum2 = 0., volume = 0.;
-  foreach(reduction(+:sum) reduction(+:sum2) reduction(+:volume)
-  reduction(max:max) reduction(min:min))
-  if (fs[] == 0 && f[] != nodata) {
-    volume += dv();
-    sum    += dv()*f[];
-    sum2   += dv()*sq(f[]);
-    if (f[] > max) max = f[];
-    if (f[] < min) min = f[];
-  }
-  stats s;
-  s.min = min, s.max = max, s.sum = sum, s.volume = volume;
-  if (volume > 0.)
-    sum2 -= sum*sum/volume;
-  s.stddev = sum2 > 0. ? sqrt(sum2/volume) : 0.;
-  return s;
+    double dvr, min = 1e100, max = -1e100, sum = 0., sum2 = 0., volume = 0.;
+    foreach(reduction(+:sum) reduction(+:sum2) reduction(+:volume)
+    reduction(max:max) reduction(min:min))
+    if (fs[] < 1. && f[] != nodata) {
+        dvr = dv()*(1. - fs[]);
+        volume += dvr;
+        sum    += dvr*f[];
+        sum2   += dvr*sq(f[]);
+        if (f[] > max) max = f[];
+        if (f[] < min) min = f[];
+    }
+    stats s;
+    s.min = min, s.max = max, s.sum = sum, s.volume = volume;
+    if (volume > 0.)
+        sum2 -= sum*sum/volume;
+    s.stddev = sum2 > 0. ? sqrt(sum2/volume) : 0.;
+    return s;
 }
 
+stats statsf_weugene2 (scalar f, scalar fs)
+{
+    double dvr, min = 1e100, max = -1e100, sum = 0., sum2 = 0., volume = 0.;
+    foreach(reduction(+:sum) reduction(+:sum2) reduction(+:volume)
+    reduction(max:max) reduction(min:min))
+    if (fs[] == 0. && f[] != nodata) {
+        dvr = dv()*(1. - fs[]);
+        volume += dvr;
+        sum    += dvr*f[];
+        sum2   += dvr*sq(f[]);
+        if (f[] > max) max = f[];
+        if (f[] < min) min = f[];
+    }
+    stats s;
+    s.min = min, s.max = max, s.sum = sum, s.volume = volume;
+    if (volume > 0.)
+        sum2 -= sum*sum/volume;
+    s.stddev = sum2 > 0. ? sqrt(sum2/volume) : 0.;
+    return s;
+}
 
 norm normf_weugene (scalar f, scalar fs)
 {
-  double avg = 0., rms = 0., max = 0., volume = 0.;
+  double dvr, avg = 0., rms = 0., max = 0., volume = 0.;
   foreach(reduction(max:max) reduction(+:avg)
   reduction(+:rms) reduction(+:volume))
-  if (f[] != nodata && fs[] == 0) {
+  if (fs[] < 1. && f[] != nodata) {
+    dvr = dv()*(1. - fs[]);
     double v = fabs(f[]);
     if (v > max) max = v;
-    volume += dv();
-    avg    += dv()*v;
-    rms    += dv()*sq(v);
+    volume += dvr;
+    avg    += dvr*v;
+    rms    += dvr*sq(v);
   }
   norm n;
   n.avg = volume ? avg/volume : 0.;
@@ -543,7 +568,7 @@ double change_weugene (scalar s, scalar sn, scalar fs)
 {
   double max = 0.;
   foreach(reduction(max:max)) {
-    if (fs[] == 0) {
+    if (fs[] < 1) {
       double ds = fabs (s[] - sn[]);
       if (ds > max)
         max = ds;

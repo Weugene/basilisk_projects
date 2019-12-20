@@ -3,7 +3,7 @@
 We compare the numerical results with the solution given by the
 multipole expansion of [Sangani and Acrivos, 1982](#sangani1982). */
 
-#define BRINKMAN_PENALIZATION 4
+#define BRINKMAN_PENALIZATION 1
 #define DEBUG_BRINKMAN_PENALIZATION 1
 
 #undef SEPS
@@ -79,7 +79,7 @@ int main(int argc, char * argv[]){
 
     /**
     We turn off the advection term. The choice of the maximum timestep
-    and of the tolerance on the Poisson and viscous solves is not
+    and of tqhe tolerance on the Poisson and viscous solves is not
     trivial. This was adjusted by trial and error to minimize (possibly)
     splitting errors and optimize convergence speed. */
 
@@ -126,7 +126,7 @@ event init (t = 0){
 We check for a stationary solution. */
 
 //event logfile (i++; t <= 0.27){
-event logfile (i++; i <= 5000){
+event logfile (i++; i <= 1000){
     double avg = normf_weugene(u.x, fs).avg;
     double du = change_weugene (u.x, un, fs)/(avg + SEPS); //change 1) Linf  2) un = u
     fprintf (fout, "%d %d %d %d %d %d %d %d %.3g %.3g %.3g %.3g %.3g\n",
@@ -145,7 +145,7 @@ event logfile (i++; i <= 5000){
 //        fprintf (ferr, "%d %g %g %g %g %d| %g=%g? %g %g\n", maxlevel, sangani[nc][0], F/U, sangani[nc][1], fabs(F/U - sangani[nc][1])/sangani[nc][1], i, Phi, Phia, U, F);
 //    }
 //    if (t >= 0.267) {
-    if (((i > 1) && (du/dt < 1e-3))|| (i == 5000)) {
+    if (((i > 1) && (du/dt < 1e-2))|| (i == 1000)) {
         /**
         We output the non-dimensional force per unit length on the
         cylinder $F/(\mu U)$, together with the corresponding value from
@@ -183,7 +183,8 @@ event vtk_file (t += 0.01){
     scalar l[];
     vorticity (u, omega);
     foreach() {l[] = level; omega[] *= 1 - fs[];}
-    output_vtu_MPI( (scalar *) {l, omega, fs, p}, (vector *) {u, uf, dbp, utau, grad_utau_n, n_sol, target_U}, subname, L0/pow(2, minlevel));
+//    output_vtu_MPI( (scalar *) {l, omega, fs, p}, (vector *) {u, uf, dbp, utau, grad_utau_n, n_sol, target_U}, subname, L0/pow(2, minlevel));
+    output_vtu_MPI( (scalar *) {l, omega, fs, p}, (vector *) {u, uf, dbp, utau}, subname, L0/pow(2, minlevel));
 }
 
 #define ADAPT_SCALARS {fs, omega}

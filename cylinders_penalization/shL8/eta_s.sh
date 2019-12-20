@@ -2,7 +2,7 @@
 echo "Usage: $0 level; No args=> cp logs and outs. Total input args $#"
 solver=./a.out
 level=$1
-plist=(1e-6 1e-5 1e-4 1e-3 1e-2)
+plist=(1e-15 1e-6 1e-5 1e-4 1e-3 1e-2)
 
 if [ $# -gt 0 ]; then
 	for eta in "${plist[@]}"; do

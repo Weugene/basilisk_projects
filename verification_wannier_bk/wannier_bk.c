@@ -9,11 +9,14 @@ cylinders. For this problem (also known as "journal bearing" flow), an
 exact analytical solution in the limit of Stokes flows was obtained by
 [Wannier, 1950](#wannier1950) using conformal mapping. */
 
+scalar fs[], omega[];
+vector Us[];
 #include "grid/quadtree.h"
 //#include "grid/multigrid.h"
-#include "embed.h"
-#include "navier-stokes/centered.h"
+#include "../src_local/centered-weugene.h"
 #include "view.h"
+#define BRINKMAN_PENALIZATION 4
+#define DEBUG_BRINKMAN_PENALIZATION 1
 
 /**
 The analytical solution, as computed by Wannier. */
@@ -70,9 +73,16 @@ the 'bipolar' variant. */
 int MAXLEVEL = 5;
 
 int main() {
+  eta_s = 1e-15;
+  if (argc > 1) {
+     eta_s = atof(argv[1]); //convert from string to float
+  }
+  if (argc > 2) {
+     maxlevel = atoi(argv[2]); //convert from string to float
+  }
   size (2.5);
   origin (-L0/2., -L0/2.);
-  
+
   stokes = true;
   for (N = 32; N <= 512; N *= 2) {
     MAXLEVEL = log(N) / log(2);
@@ -84,6 +94,23 @@ scalar un[];
 
 #define WIDTH 0.5
 
+void calc_solid(scalar fs, vector n_sol, vector target_U){
+  vertex scalar phi[];
+  face vector face_fs[];
+  foreach_vertex() {
+    phi[] = difference (sq(R2) - sq(x) - sq(y - ECC),
+			sq(R1) - sq(x) - sq(y));
+  }
+  boundary ({phi});
+  fractions (phi, fs, face_fs);
+  foreach() {
+    foreach_dimension() target_U.x[] = 0;
+    n_sol.x[] = x/sqrt(sq(x) + sq(y));
+    n_sol.y[] = y/sqrt(sq(x) + sq(y));
+  }
+  boundary ({fs, target_U, n_sol});
+}
+
 event init (t = 0) {
 
   /**
@@ -94,13 +121,12 @@ event init (t = 0) {
   /**
   The geometry is two excentric cylinders. */
   
-  vertex scalar phi[];
-  foreach_vertex()
-    phi[] = difference (sq(R2) - sq(x) - sq(y - ECC),
-			sq(R1) - sq(x) - sq(y));
-  boundary ({phi});
-  fractions (phi, cs, fs);
-  
+
+  int it = 0;
+  do {
+     calc_solid(fs, n_sol, target_U);
+  }while (adapt_wavelet({fs}, (double []){0.001},
+                          maxlevel = maxlevel, minlevel=minlevel).nf != 0 && ++it <= 10);
   /**
   The outer cylinder is fixed and the inner cylinder is rotating with
   a tangential velocity unity. */
