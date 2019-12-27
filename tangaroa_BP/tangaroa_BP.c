@@ -4,7 +4,7 @@
 This is an improved version of the [famous Gerris
 example](http://gerris.dalembert.upmc.fr/gerris/examples/examples/fs.html),
 illustrating the combination of complex solid boundaries, air-water
-turbulent flows and reduced gravity approach. 
+turbulent flows and reduced gravity approach.
 
 We use the centered Navier--Stokes solver, two-phase flow and the
 momentum-conserving option. Note that the momentum-conserving option
@@ -13,6 +13,7 @@ configuration. */
 
 #define BRINKMAN_PENALIZATION 1
 #define DEBUG_BRINKMAN_PENALIZATION 1
+#define DEBUG_MINMAXVALUES 1
 
 #undef SEPS
 #define SEPS 1e-30
@@ -81,7 +82,7 @@ void fraction_from_stl (scalar f, FILE * fp, double eps, int maxlevel){
 ## Main function
 
 We can change both the maximum level of refinement and the [Froude
-number](https://en.wikipedia.org/wiki/Froude_number) at runtime. 
+number](https://en.wikipedia.org/wiki/Froude_number) at runtime.
 
 [RV Tangaroa](https://en.wikipedia.org/wiki/RV_Tangaroa) is 70 metres
 long. If we assume that it moves at 20 knots (twice its actual cruise
@@ -98,7 +99,7 @@ We need additional (fraction) fields for the ship geometry and for the
 scalar fs[], f0[], l2[], omega[];
 
 int main (int argc, char * argv[]) {
-	
+
 	maxruntime (&argc, argv);
 	if (argc > 1) MAXLEVEL = atoi(argv[1]); //convert from string to int
 	fprintf(ferr, "maxlevel = %d", MAXLEVEL);
@@ -107,7 +108,7 @@ int main (int argc, char * argv[]) {
 	init_grid (32);
 	rho1 = 1.; // water
 	rho2 = 1./815.; // air
-
+    eta_s= 1e-15;
 	/**
 	The length of the ship is unity and the domain is five times
 	larger. We change the origin so that the ship is not too close to
@@ -136,7 +137,6 @@ int main (int argc, char * argv[]) {
 
 The inflow condition fixes the velocity (unity) and the water level
 (using `f0`). */
-	      
 u.n[bottom] = dirichlet(1);
 p[bottom]   = neumann(0.);
 pf[bottom]  = neumann(0.);
@@ -144,7 +144,6 @@ f[bottom]   = f0[];
 
 /**
 Outflow uses standard Neumann/Dirichlet conditions.  */
-	      
 u.n[top]  = neumann(0.);
 p[top]    = dirichlet(0.);
 pf[top]   = dirichlet(0.);
@@ -157,17 +156,15 @@ f[back]  = 1;
 
 /**
 Not sure whether this is really useful. */
-	      
 uf.n[left] = 0.;
 uf.n[right] = 0.;
-	      
 /**
 ## Initial conditions
 
 We can optionally restart, otherwise we open the STL file and
 initialize the corresponding fraction. We also initialize the `f0`
 field used for the inflow condition and set the initial water level
-and velocity field. */      
+and velocity field. */
 
 event init (t = 0) {
 	if (!restore (file = "restart")) {
@@ -187,13 +184,12 @@ event init (t = 0) {
 	}
 }
 
-#define DEBUG_MINMAXVALUES 1
 event logfile (i++){
 	if (pid()==0) fprintf (stderr, "%d %g %d %d\n", i, t, mgp.i, mgu.i);
 	//double eps_arr[] = {1,1,1, 1,1,1, 1,1,1, 1,1,1};
-        //MinMaxValues({f,fs,p,u,uf,dbp}, eps_arr);
-	double eps_arr[] = {1,1,1};
-        MinMaxValues({f,fs,p}, eps_arr);
+    //MinMaxValues({f,fs,p,u,uf,dbp}, eps_arr);
+	//double eps_arr[] = {1,1,1};
+    //MinMaxValues({f,fs,p}, eps_arr);
 
 }
 /**
@@ -217,13 +213,11 @@ the top of the steep primary Kelvin waves is particularly noticeable.
 
 The computations above were done on the Irene supercomputer using 12
 levels of refinement. */
-	      
-event movie (t += 0.01; t <= 10) {
-	view (fov = 5.86528,
-		  quat = {0.5,0.1,0.2,0.8},//	quat = {0.515965,0.140691,0.245247,0.808605},
-		  tx = 0, ty = 0,//tx = -0.07438, ty = -0.0612925,
-		  width = 1024, height = 768);
-
+event movie (t += 100.01; t >= 10) {
+    view (fov = 5.86528,
+        quat = {0.515965,0.140691,0.245247,0.808605},
+        tx = -0.07438, ty = -0.0612925,
+        width = 1024, height = 768);
 	clear();
 	draw_vof ("fs");
 	scalar Z[];
@@ -242,7 +236,7 @@ event movie (t += 0.01; t <= 10) {
 }
 
 #if DUMP
-event snapshot (i += 500) {
+event snapshot (t +=0.01) {
 	char name[80];
 	sprintf (name, "dump-%d", i);
 	lambda2 (u, l2);
@@ -251,13 +245,13 @@ event snapshot (i += 500) {
 #endif
 
 //Output
-event vtk_file (t += 0.01){
-    char subname[80]; sprintf(subname, "br");
-    scalar l[];
-    vorticity (u, omega);
-    foreach() {l[] = level; omega[] *= 1 - fs[];}
-    output_vtu_MPI( (scalar *) {l, omega, fs, p, l2}, (vector *) {u, uf, dbp}, subname, 0);
-}
+//event vtk_file (t += 0.01){
+//    char subname[80]; sprintf(subname, "br");
+//    scalar l[];
+//    vorticity (u, omega);
+//    foreach() {l[] = level; omega[] *= 1 - fs[];}
+//    output_vtu_MPI( (scalar *) {l, omega, fs, p, l2}, (vector *) {u, uf, dbp}, subname, 0);
+//}
 
 /**
 ## Mesh adaptation
