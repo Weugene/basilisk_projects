@@ -17,7 +17,7 @@ droplets. We generate animations online using Basilisk View. */
 #include "tag.h"
 #include "view.h"
 //#include "vtk3d.h"
-#include "fractions_output.h"
+//#include "fractions_output.h"
 /**
 We define the radius of the jet, the initial jet length, the Reynolds
 number and the surface tension coefficient. */
@@ -91,7 +91,7 @@ event init (t = 0) {
     /**
     We use a static refinement down to *maxlevel* in a cylinder 1.2
     times longer than the initial jet and twice the radius. */
-    
+
     refine (x < 1.2*length && sq(y) + sq(z) < 2.*sq(radius) && level < maxlevel);
     
     /**
@@ -257,17 +257,17 @@ event adapt (i++) {
 //}
 //#endif
 
-event fraction_output (i += 1)
-{
-    char name[80];
-    sprintf(name, "list.ply.%d", iteration++);
-    printf("name %s", name);
-    FILE * fplist = fopen (name, "w");
-    scalar l[];
-    foreach()
-        l[] = level;
-    output_ply(f, fplist);
-}
+//event fraction_output (i += 1)
+//{
+//    char name[80];
+//    sprintf(name, "list.ply.%d", iteration++);
+//    printf("name %s", name);
+//    FILE * fplist = fopen (name, "w");
+//    scalar l[];
+//    foreach()
+//        l[] = level;
+//    output_ply(f, fplist);
+//}
 
 /**
 ## Running in parallel
