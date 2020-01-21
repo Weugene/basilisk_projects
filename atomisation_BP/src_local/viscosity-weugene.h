@@ -1,3 +1,6 @@
+#ifndef BASILISK_HEADER_30
+#define BASILISK_HEADER_30
+#line 1 "./../src_local/./viscosity-weugene.h"
 #include "poisson.h"
 #include "../src_local/penalization.h"
 
@@ -193,3 +196,5 @@ mgstats viscosity (struct Viscosity p){
 //  boundary ((scalar *){u});
 //  return mg;
 //}
+
+#endif

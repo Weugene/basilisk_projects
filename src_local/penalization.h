@@ -3,7 +3,7 @@ const vector zerocf[] = {0.,0.,0.};
     #define frhs (1 - fs[])
     #define fbp (fs[])
     extern scalar fs;
-    double eta_s = 1e-3, nu_s = 0, lambda_slip = 0;
+    double eta_s = 1e-15, nu_s = 0, lambda_slip = 0;
     (const) scalar a_br = unity, b_br = unity; // useful for Robin BC
 
     #if BRINKMAN_PENALIZATION == 1 //Dirichlet BC

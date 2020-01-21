@@ -1,3 +1,6 @@
+#ifndef BASILISK_HEADER_29
+#define BASILISK_HEADER_29
+#line 1 "./../src_local/centered-weugene.h"
 /**
 # Incompressible Navier--Stokes solver (centered formulation)
 
@@ -582,3 +585,4 @@ double change_weugene (scalar s, scalar sn, scalar fs)
   }
   return max;
 }
+#endif

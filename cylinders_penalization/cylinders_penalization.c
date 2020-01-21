@@ -62,7 +62,7 @@ void calc_solid(scalar fs, vector n_sol, vector target_U){
 }
 
 int main(int argc, char * argv[]){
-    eta_s =1e-6;
+    eta_s =1e-15;
     if (argc > 1) {
       eta_s = atof(argv[1]); //convert from string to float
     }

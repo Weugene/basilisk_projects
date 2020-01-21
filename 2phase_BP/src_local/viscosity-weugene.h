@@ -1,3 +1,6 @@
+#ifndef BASILISK_HEADER_37
+#define BASILISK_HEADER_37
+#line 1 "./../src_local/./viscosity-weugene.h"
 #include "poisson.h"
 #include "../src_local/penalization.h"
 
@@ -181,7 +184,7 @@ mgstats viscosity (struct Viscosity p){
     return mg_solve ((scalar *){u}, (scalar *){r}, residual_viscosity, relax_viscosity, &p, p.nrelax, p.res);
 }
 
-//trace
+trace
 //mgstats viscosity_explicit (struct Viscosity p)
 //{
 //  vector u = p.u, r[];
@@ -193,3 +196,5 @@ mgstats viscosity (struct Viscosity p){
 //  boundary ((scalar *){u});
 //  return mg;
 //}
+
+#endif

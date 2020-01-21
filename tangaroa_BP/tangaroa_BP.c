@@ -91,7 +91,7 @@ speed), this gives a Froude number of approx 0.4. */
 int MAXLEVEL = 12;
 int LEVEL = 9;
 double FROUDE = 0.4;
-double uemax = 0.1; 
+double uemax = 0.1;
 /**
 We need additional (fraction) fields for the ship geometry and for the
 (inflow) boundary condition. */
@@ -213,7 +213,7 @@ the top of the steep primary Kelvin waves is particularly noticeable.
 
 The computations above were done on the Irene supercomputer using 12
 levels of refinement. */
-event movie (t += 100.01; t >= 10) {
+event movie (t += 0.01; t >= 10) {
     view (fov = 5.86528,
         quat = {0.515965,0.140691,0.245247,0.808605},
         tx = -0.07438, ty = -0.0612925,

@@ -32,7 +32,6 @@ with $\rho_m=(\rho_1+\rho_2)/2.$ and $\rho_1$, $\rho_2$ the densities
 on either side of the interface. */
 
 event stability (i++) {
-
   /**
   We first compute the minimum and maximum values of $\alpha/f_m =
   1/\rho$, as well as $\Delta_{min}$. */
