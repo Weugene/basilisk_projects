@@ -24,8 +24,16 @@ The scheme implemented here is close to that used in Gerris ([Popinet,
 
 We will use the generic time loop, a CFL-limited timestep, the
 Bell-Collela-Glaz advection scheme and the implicit viscosity
-solver. If embedded boundaries are used, a different scheme is used
-for viscosity. */
+solver.
+There are 2 ways of solid treatment: (i) embedded boundaries method (EBM), (ii) Brinkman Penalization method (BPM).
+If embedded boundaries are used, a different scheme is used for viscosity.
+The advantages of EBM are high accuracy and MPI parallelization, however, it works only for \textbf{one phase flow}.
+If Brinkman Penalization method for solid treatment is used,
+then a penalization term is added implicitly with the viscous term.
+In this case $\mathbf{a} = -\frac{\chi}{\eta_s}\left(\mathbf{u} - \mathbf{U_t} \right)$
+BPM can work for multiphase flow with MPI paarallelization with sufficient accuracy.
+Detailed information about comparison you can find here.
+ */
 
 #include "run.h"
 #include "timestep.h"

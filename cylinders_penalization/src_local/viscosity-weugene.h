@@ -184,7 +184,7 @@ mgstats viscosity (struct Viscosity p){
     return mg_solve ((scalar *){u}, (scalar *){r}, residual_viscosity, relax_viscosity, &p, p.nrelax, p.res);
 }
 
-trace
+//trace
 //mgstats viscosity_explicit (struct Viscosity p)
 //{
 //  vector u = p.u, r[];

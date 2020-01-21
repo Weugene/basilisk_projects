@@ -45,7 +45,7 @@ using the volume fraction $\Phi$. */
 int maxlevel = 10, minlevel = 4, nc;
 double radius;
 
-void calc_solid(scalar fs, vector n_sol, vector target_U){
+void calc_solid(scalar fs){
   vertex scalar phi[];
   face vector face_fs[];
   foreach_vertex() {
@@ -53,12 +53,7 @@ void calc_solid(scalar fs, vector n_sol, vector target_U){
   }
   boundary ({phi});
   fractions (phi, fs, face_fs);
-  foreach() {
-    foreach_dimension() target_U.x[] = 0;
-    n_sol.x[] = x/sqrt(sq(x) + sq(y));
-    n_sol.y[] = y/sqrt(sq(x) + sq(y));
-  }
-  boundary ({fs, target_U, n_sol});
+  boundary ({fs});
 }
 
 int main(int argc, char * argv[]){
@@ -106,7 +101,7 @@ scalar un[];
 event init (t = 0){
     int it = 0;
     do {
-        calc_solid(fs, n_sol, target_U);
+        calc_solid(fs);
     }while (adapt_wavelet({fs}, (double []){0.001},
                           maxlevel = maxlevel, minlevel=minlevel).nf != 0 && ++it <= 10);
     /**
@@ -193,7 +188,7 @@ event adapt (i++){
     double eps_arr[] = ADAPT_EPS_SCALARS;
 //    MinMaxValues(ADAPT_SCALARS, eps_arr);
     adapt_wavelet ((scalar *) ADAPT_SCALARS, eps_arr, maxlevel = maxlevel, minlevel = minlevel);
-    calc_solid(fs, n_sol, target_U);
+    calc_solid(fs);
 }
 
 /**
