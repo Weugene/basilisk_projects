@@ -5,4 +5,3 @@ cylinders_penalization:
 #	./a.out >out 2>log
 	CC99='mpicc -std=c99' qcc  -Wunused-result -O2 -D_MPI=1  cylinders_penalization.c -lm -L$(BASILISK)/gl $(OPENGLIBS)
 	mpirun -np 4 ./a.out
-#	animate out.ppm

@@ -1,16 +1,15 @@
 /**
-# Atomisation of a pulsed liquid jet onto a cylinder surface
+# Atomisation of a pulsed liquid jet onto a cylinder surface. No-wetting and perfect wetting solids.
 
 A dense cylindrical liquid jet is injected into a stagnant lighter
-phase (density ratio 1/27.84) with a cylinder solid obstacle. The inflow velocity is modulated
-sinusoidally to promote the growth of primary shear
+phase (density ratio 1/27.84) with a cylinder solid obstacle. The inflow velocity is modulated sinusoidally to promote the growth of primary shear
 instabilities. Surface tension is included and ultimately controls the
 characteristic scale of the smallest droplets.
 
 We solve the two-phase Navier--Stokes equations with surface
 tension.
 
- Brinkman Penalization method (BPM) is used to handle solids. To switch on BPM, BRINKMAN_PENALIZATION defined,
+ Brinkman Penalization method ([BPM](http://basilisk.fr/sandbox/weugene/penalization.h)) is used to handle solids. To switch on BPM, BRINKMAN_PENALIZATION is defined,
  to see/output debug fields (penalization term - dbp, total right-hand-side - total_rhs,
  tangential (along the solid surface) component of the velocity - utau (NEED CALCULATION of the normal to the solid surface n_sol),
  grad_utau_n(NEED n_sol)), DEBUG_BRINKMAN_PENALIZATION is defined.
@@ -22,13 +21,12 @@ tension.
  */
 #define BRINKMAN_PENALIZATION 1
 #define DEBUG_BRINKMAN_PENALIZATION 1
-//#include "grid/octree.h"
-#include "../src_local/centered-weugene.h"
+#include "centered-weugene.h"
 #include "two-phase.h"
 #include "tension.h"
 #include "tag.h"
 #include "view.h"
-#include "../src_local/output_vtu_foreach.h"
+#include "output_vtu_foreach.h"
 
 /**
 We define the radius of the jet, the initial jet length, the Reynolds
@@ -120,8 +118,8 @@ event init (t = 0) {
     do {
         fraction (f0, sq(radius) - sq(y) - sq(z));
         foreach() {
+            f[] = f0[]*(x < length);
             fs[] = sq(x - L0/2) + sq(y) < sq(Rsolid) ? 1 : 0;
-		    f[] = f0[]*(x < length) + fs[];
             u.x[] = f[];
         }
         boundary ({f,u.x});
@@ -231,24 +229,23 @@ event vtk_file (t += 0.01){
     output_vtu_MPI( (scalar *) {f, fs, rhov, omega, p, l}, (vector *) {u}, subname, 0);
 }
 
-/*
+/**
 ## Results
-
-![Atomisation of a pulsed liquid jet. 4096^2^ equivalent
- resolution.](link)(width="800" height="600")
-Symmetry of the solution is violated because of sinusoidal pulsation of the jet.
+The symmetry of the solution is violated because of the sinusoidal pulsation of the jet.
 It is seen that
 
 - there is no penetration of liquid into the solid,
 
 - velocity is equal 0 in solids
 
- ![Volume fraction](https://drive.google.com/uc?authuser=0&id=1xhnstbrB4JtEjLYF7Dm_BR0LZ-l85-28&export=download)
- ![Vorticity](https://drive.google.com/uc?authuser=0&id=1JDhJe_ICUXM_WUOTZ6pIGrsqPZZnsD8V&export=download)
- ![Grid](https://drive.google.com/uc?authuser=0&id=1UUjA_4z0a1D9jPmd-afjc8BzhGSg5zuY&export=download)
- ![Magnitute of velocity](https://drive.google.com/uc?authuser=0&id=1KA1EtiT1E_n46mos5UBVnQ2yzWg6nTHc&export=download)
- ![](https://drive.google.com/file/d/1weHONySfNJebPZR--LE_uDS_hVhiDOoo/view?usp=sharing)
+ ![Volume fraction](https://drive.google.com/uc?authuser=0&id=1xhnstbrB4JtEjLYF7Dm_BR0LZ-l85-28&export=download.mp4)(width="800" height="600")
+ ![Vorticity](https://drive.google.com/uc?authuser=0&id=1JDhJe_ICUXM_WUOTZ6pIGrsqPZZnsD8V&export=download.mp4)(width="800" height="600")
+ ![Grid](https://drive.google.com/uc?authuser=0&id=1UUjA_4z0a1D9jPmd-afjc8BzhGSg5zuY&export=download.mp4)(width="800" height="600")
+ ![Magnitute of velocity](https://drive.google.com/uc?authuser=0&id=1KA1EtiT1E_n46mos5UBVnQ2yzWg6nTHc&export=download.mp4)(width="800" height="600")
+
+
 ## See also
 
 * [Same example with Gerris](http://gerris.dalembert.upmc.fr/gerris/examples/examples/atomisation.html)
 */
+
