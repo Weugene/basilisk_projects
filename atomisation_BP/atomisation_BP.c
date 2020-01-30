@@ -54,7 +54,7 @@ outside. We then set an oscillating inflow velocity on the
 left-hand-side and free outflow on the right-hand-side. */
 
 scalar f0[], fs[], omega[];
-u.n[left]  = dirichlet(f0[]*(1. + 0.05*sin (10.*2.*pi*t)));
+u.n[left]  = dirichlet(f0[]);//*(1. + 0.05*sin (10.*2.*pi*t)));
 u.t[left]  = dirichlet(0);
 #if dimension > 2
 u.r[left]  = dirichlet(0);
@@ -121,7 +121,7 @@ event init (t = 0) {
         fraction (f0, sq(radius) - sq(y) - sq(z));
         foreach() {
             fs[] = sq(x - L0/2) + sq(y) < sq(Rsolid) ? 1 : 0;
-		    f[] = f0[]*(x < length) + fs[];
+		    f[] = f0[]*(x < length);// + fs[];
             u.x[] = f[];
         }
         boundary ({f,u.x});

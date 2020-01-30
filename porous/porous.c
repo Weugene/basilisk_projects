@@ -12,9 +12,9 @@ solvers. */
 #include "view.h"
 
 /**
-We will vary the maximum level of refinement, starting from 7. */
+We will vary the maximum level of refinement, starting from 5. */
 
-int maxlevel = 7;
+int maxlevel = 5;
 
 /**
 The porous medium is defined by the union of a random collection of
@@ -22,31 +22,35 @@ disks. The number of disks can be varied to vary the porosity. */
 
 void porous (scalar cs, face vector fs)
 {
-  int ns = 160; // 80, 160, 165, 200
-  double xc[ns], yc[ns], R[ns];
-  srand (0);
-  for (int i = 0; i < ns; i++)
-    xc[i] = 0.5*noise(), yc[i] = 0.5*noise(), R[i] = 0.02 + 0.04*fabs(noise());
-
-  /**
-  Once we have defined the random centers and radii, we can compute
-  the levelset function $\phi$ representing the embedded boundary. */
-  
-  vertex scalar phi[];
-  foreach_vertex() {
-    phi[] = HUGE;
-
-    /**
-    Since the medium is periodic, we need to take into account all
-    the disk images using periodic symmetries. */
-      
-    for (double xp = -L0; xp <= L0; xp += L0)
-      for (double yp = -L0; yp <= L0; yp += L0)
+	int ns = 800;
+	double xc[ns], yc[ns], R[ns];
+	srand (0);
 	for (int i = 0; i < ns; i++)
-	  phi[] = intersection (phi[], (sq(x + xp - xc[i]) +
-					sq(y + yp - yc[i]) - sq(R[i])));
-  }
-  fractions (phi, cs, fs);
+		xc[i] = 0.5*noise(), yc[i] = 0.5*noise(), R[i] = 0.01 + 0.02*fabs(noise());
+
+	/**
+	Once we have defined the random centers and radii, we can compute
+	the levelset function $\phi$ representing the embedded boundary. */
+
+	vertex scalar phi[];
+	foreach_vertex() {
+		phi[] = HUGE;
+
+		/**
+		Since the medium is periodic, we need to take into account all
+		the disk images using periodic symmetries. */
+
+		for (double xp = -L0; xp <= L0; xp += L0)
+			for (double yp = -L0; yp <= L0; yp += L0)
+				for (int i = 0; i < ns; i++)
+					phi[] = intersection (phi[], (sq(x + xp - xc[i]) +
+					                              sq(y + yp - yc[i]) - sq(R[i])));
+		phi[] = -phi[];
+	}
+	boundary ({phi});
+
+	fractions (phi, cs, fs);
+	fractions_cleanup (cs, fs);
 }
 
 /**
@@ -54,53 +58,58 @@ The domain is the periodic unit square centered on the origin. */
 
 int main()
 {
-  origin (-0.5, -0.5);
-  periodic (right);
-  periodic (top);
+	origin (-0.5, -0.5);
+	periodic (right);
+	periodic (top);
 
-  /**
-  We turn off the advection term. The choice of the maximum timestep
-  and of the tolerance on the Poisson and viscous solves is not
-  trivial. This was adjusted by trial and error to minimize (possibly)
-  splitting errors and optimize convergence speed. */
-  
-  stokes = true;
-  DT = 2e-5;
-  TOLERANCE = HUGE;
-  NITERMIN = 10;
-  N = 1 << maxlevel;
+	/**
+	We turn off the advection term. The choice of the maximum timestep
+	and of the tolerance on the Poisson and viscous solves is not
+	trivial. This was adjusted by trial and error to minimize (possibly)
+	splitting errors and optimize convergence speed. */
 
-  run();
+	stokes = true;
+	DT = 2e-5;
+#if 1
+	TOLERANCE = HUGE;
+	NITERMIN = 2;
+#else
+	TOLERANCE = 1e-3;
+  NITERMIN = 2;
+#endif
+	N = 1 << maxlevel;
+
+	run();
 }
 
 scalar un[];
 
 event init (t = 0) {
 
-  /**
-  We define the porous embedded geometry. */
+	/**
+	We define the porous embedded geometry. */
 
-  porous (cs, fs);
-  
-  /**
-  The gravity vector is aligned with the channel and viscosity is
-  unity. */
-  
-  const face vector g[] = {1.,0.};
-  a = g;
-  mu = fm;
+	porous (cs, fs);
 
-  /**
-  The boundary condition is zero velocity on the embedded boundary. */
+	/**
+	The gravity vector is aligned with the channel and viscosity is
+	unity. */
 
-  u.n[embed] = dirichlet_embed(0);
-  u.t[embed] = dirichlet_embed(0);
-  
-  /**
-  We initialize the reference velocity. */
-  
-  foreach()
-    un[] = u.y[];
+	const face vector g[] = {1.,0.};
+	a = g;
+	mu = fm;
+
+	/**
+	The boundary condition is zero velocity on the embedded boundary. */
+
+	u.n[embed] = dirichlet(0);
+	u.t[embed] = dirichlet(0);
+
+	/**
+	We initialize the reference velocity. */
+
+	foreach()
+	un[] = u.x[];
 }
 
 /**
@@ -108,79 +117,80 @@ We check for a stationary solution. */
 
 event logfile (i++; i <= 500)
 {
-  double avg = normf(u.x).avg, du = change (u.x, un)/(avg + SEPS);
-  fprintf (ferr, "%d %d %d %d %d %d %d %d %.3g %.3g %.3g %.3g %.3g\n",
-	   maxlevel, i,
-	   mgp.i, mgp.nrelax, mgp.minlevel,
-	   mgu.i, mgu.nrelax, mgu.minlevel,
-	   du, mgp.resa*dt, mgu.resa, statsf(u.x).sum, normf(p).max);
+double avg = normf(u.x).avg, du = change (u.x, un)/(avg + SEPS);
+fprintf (ferr, "%d %d %d %d %d %d %d %d %.3g %.3g %.3g %.3g %.3g\n",
+maxlevel, i,
+mgp.i, mgp.nrelax, mgp.minlevel,
+mgu.i, mgu.nrelax, mgu.minlevel,
+du, mgp.resa*dt, mgu.resa, statsf(u.x).sum, normf(p).max);
 
-  /**
-  If the relative change of the velocity is small enough we stop this
-  simulation. */
-  
-  if (i > 1 && (avg < 1e-9 || du < 1e-2)) {
+/**
+If the relative change of the velocity is small enough we stop this
+simulation. */
 
-    /**
-    We are interested in the permeability $k$ of the medium, which is
-    defined by
-    $$
-    U = \frac{k}{\mu}\nabla p = \frac{k}{\mu}\rho g
-    $$
-    with $U$ the average fluid velocity.
-    */
+if (i > 1 && (avg < 1e-9 || du < 1e-2)) {
 
-    stats s = statsf (u.x);
-    printf ("%d %g\n", maxlevel, s.sum/s.volume);
-    
-    /**
-    We output fields and dump the simulation. */
-    
-    scalar nu[];
-    foreach()
-      nu[] = sqrt (sq(u.x[]) + sq(u.y[]));
-    boundary ({nu});
+/**
+We are interested in the permeability $k$ of the medium, which is
+defined by
+$$
+U = \frac{k}{\mu}\nabla p = \frac{k}{\mu}\rho g
+$$
+with $U$ the average fluid velocity.
+*/
 
-    view (fov = 19.3677);
-    
-    draw_vof ("cs", "fs", filled = -1, fc = {1,1,1});
-    squares ("nu", linear = true, spread = 8);
-    char name[80];
-    sprintf (name, "nu-%d.png", maxlevel);
-    save (name);
+stats s = statsf (u.x);
+printf ("%d %g\n", maxlevel, s.sum/s.volume);
 
-    draw_vof ("cs", "fs", filled = -1, fc = {1,1,1});
-    squares ("p", linear = false, spread = -1);
-    sprintf (name, "p-%d.png", maxlevel);
-    save (name);
+/**
+We output fields and dump the simulation. */
 
-    draw_vof ("cs", "fs", filled = -1, fc = {1,1,1});
-    squares ("level");
-    sprintf (name, "level-%d.png", maxlevel);
-    save (name);
+scalar nu[];
+foreach()
+		nu[] = sqrt (sq(u.x[]) + sq(u.y[]));
+				boundary ({nu});
 
-    sprintf (name, "dump-%d", maxlevel);
-    dump (name);
+view (fov = 19.3677);
 
-    /**
-    We stop at level 10. */
-    
-    if (maxlevel == 10)
-      return 1; /* stop */
+draw_vof ("cs", "fs", filled = -1, fc = {1,1,1});
+squares ("nu", linear = true, spread = 8);
+char name[80];
+sprintf (name, "nu-%d.png", maxlevel);
+save (name);
 
-    /**
-    We refine the converged solution to get the initial guess for the
-    finer level. We also reset the embedded fractions to avoid
-    interpolation errors on the geometry. */
-    
-    maxlevel++;
+draw_vof ("cs", "fs", filled = -1, fc = {1,1,1});
+squares ("p", linear = false, spread = -1);
+sprintf (name, "p-%d.png", maxlevel);
+save (name);
+
+draw_vof ("cs", "fs", filled = -1, fc = {1,1,1});
+squares ("level");
+sprintf (name, "level-%d.png", maxlevel);
+save (name);
+
+sprintf (name, "dump-%d", maxlevel);
+dump (name);
+
+/**
+We stop at level 10. */
+
+if (maxlevel == 10)
+return 1; /* stop */
+
+/**
+We refine the converged solution to get the initial guess for the
+finer level. We also reset the embedded fractions to avoid
+interpolation errors on the geometry. */
+
+maxlevel++;
 #if 0
-    refine (level < maxlevel && cs[] > 0. && cs[] < 1.);
+refine (level < maxlevel && cs[] > 0. && cs[] < 1.);
 #else
-    adapt_wavelet ({cs,u}, (double[]){1e-2,2e-6,2e-6}, maxlevel);
+adapt_wavelet ({cs,u}, (double[]){1e-2,2e-6,2e-6}, maxlevel);
 #endif
-    porous (cs, fs);
-  }
+porous (cs, fs);
+boundary (all); // this is necessary since BCs depend on embedded fractions
+}
 }
 
 /**
@@ -194,6 +204,7 @@ event logfile (i++; i <= 500)
 set xlabel 'Level'
 set grid
 set ytics format '%.1e'
+set logscale y
 plot 'out' w lp t ''
 ~~~
 
@@ -201,6 +212,7 @@ plot 'out' w lp t ''
 set xlabel 'Iterations'
 set logscale y
 set ytics format '%.0e'
+set yrange [1e-10:]
 plot '../porous.ref' u 2:9 w l t '', '' u 2:10 w l t '', \
     '' u 2:11 w l t '', '' u 2:12 w l t '', '' u 2:13 w l t '', \
     'log' u 2:9 w p t 'du', '' u 2:10 w p t 'resp', \
@@ -210,4 +222,5 @@ plot '../porous.ref' u 2:9 w l t '', '' u 2:10 w l t '', \
 ## See also
 
 * [Stokes flow past a periodic array of cylinders](cylinders.c)
+* [Stokes flow through a complex 3D porous medium](/src/examples/porous3D.c)
 */
