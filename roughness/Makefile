@@ -1,5 +1,5 @@
-CFILE=porous_BP
-porous_BP:
+CFILE=roughness
+roughness:
 	rm -rf log out porous_BP_*
 	qcc -Wall -O2 $(CFILE).c -lm -events $(OPENGLIBS)
 	./a.out > out 2> log

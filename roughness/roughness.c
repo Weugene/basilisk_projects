@@ -11,7 +11,7 @@ solvers. */
 //#include "embed.h"
 #include "../src_local/centered-weugene.h"
 #include "two-phase.h"
-//#include "tension.h"
+#include "tension.h"
 #include "view.h"
 #include "../src_local/output_vtu_foreach.h"
 /**
@@ -19,19 +19,14 @@ We will vary the maximum level of refinement, starting from 5. */
 
 int maxlevel = 9;
 int minlevel = 5;
-int Npores = 20; //250
 scalar f0[], fs[], omega[];
 /**
 The porous medium is defined by the union of a random collection of
 disks. The number of disks can be varied to vary the porosity. */
 
-void porous (scalar fs, int ns)
+void rough_surface (scalar fs, double A, int n)
 {
 	face vector ffs[];
-	double xc[ns], yc[ns], R[ns];
-	srand (0);
-	for (int i = 0; i < ns; i++)
-		xc[i] = 0.5*noise(), yc[i] = 0.5*noise(), R[i] = 0.1 + 0.03*fabs(noise());//0.02 + 0.03*fabs(noise());
 
 	/**
 	Once we have defined the random centers and radii, we can compute
@@ -46,11 +41,7 @@ void porous (scalar fs, int ns)
 		the disk images using periodic symmetries. */
 
 		for (double xp = -L0; xp <= L0; xp += L0)
-			for (double yp = -L0; yp <= L0; yp += L0)
-				for (int i = 0; i < ns; i++)
-				for (int i = 0; i < ns; i++)
-					phi[] = intersection (phi[], (sq(x + xp - xc[i]) +
-					                              sq(y + yp - yc[i]) - sq(R[i])));
+		    phi[] = intersection (phi[], ( A*sin(2.0*pi*n*x/L0) + L0/pow(2, minlevel-1) - y ));
 //		phi[] = -phi[];
 	}
 	boundary ({phi});
@@ -64,9 +55,7 @@ The domain is the periodic unit square centered on the origin. */
 
 int main()
 {
-	origin (-0.5, -0.5);
-	periodic (right);
-	periodic (top);
+	origin (-0.5);
 	eta_s = 1e-15;
 	/**
 	We turn off the advection term. The choice of the maximum timestep
@@ -75,7 +64,7 @@ int main()
 	splitting errors and optimize convergence speed. */
 
 //	stokes = true;
-	DT = 1e-5;
+	DT = 1e-3;
 
 	N = 1 << maxlevel;
 	rho1 = 1.; rho2 = 1./25.;
@@ -92,13 +81,11 @@ event init (t = 0) {
 	if (!restore (file = "restart")) {
 		int it = 0;
 		do {
-			porous (fs, Npores);
+            rough_surface (fs, L0/20., 10);
 			boundary (all); // this is necessary since BCs depend on embedded fractions
 			foreach() {
-				f[] = ( sq(x+0.250000)+sq(y+0.00781)<sq(0.03)|| //sq(x+0.140625)+sq(y+0.00781)<sq(0.03)
-						sq(x+0.410100)+sq(y+0.12890)<sq(0.02)||
-						sq(x+0.378900)+sq(y-0.14000)<sq(0.03) ) ? 0 : 1;
-//				f[] = clamp(f[] + fs[], 0, 1);
+				f[] = ( sq(x) + sq(y-L0/2.) < sq(0.3875*L0) ) ? 1 : 0;
+				f[] = clamp(f[] + fs[], 0, 1);
 			}
 			boundary ({f});
 		}while (adapt_wavelet({fs,f}, (double []){1e-3, 1e-3}, maxlevel=maxlevel, minlevel=minlevel).nf != 0 && ++it <= 10);
@@ -115,7 +102,7 @@ The gravity vector is aligned with the channel and viscosity is
 unity. */
 event acceleration (i++) {
 	face vector av = a;
-	foreach_face(x)	av.x[] += 1;
+	foreach_face(y)	av.y[] -= 1;
 }
 /**
 We check for a stationary solution. */
@@ -157,7 +144,7 @@ We check for a stationary solution. */
 //}
 
 //Output
-event vtk_file (i+=100){
+event vtk_file (i+=100;t<10){
 	char subname[80]; sprintf(subname, "porous_BP");
 	scalar l[];
 	vorticity (u, omega);
@@ -166,7 +153,7 @@ event vtk_file (i+=100){
 }
 
 event adapt (i++) {
-	adapt_wavelet ({f, fs, u}, (double[]){0.01, 0.01, 2e-6, 2e-6, 2e-6}, maxlevel=maxlevel, minlevel=minlevel);
+	adapt_wavelet ({f, fs, u}, (double[]){0.01, 0.01, 2e-3, 2e-3, 2e-3}, maxlevel=maxlevel, minlevel=minlevel);
 }
 /**
 ![Norm of the velocity field.](porous/nu-10.png)
