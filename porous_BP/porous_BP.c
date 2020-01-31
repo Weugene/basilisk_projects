@@ -6,9 +6,11 @@ The medium is periodic and described using embedded boundaries.
 This tests mainly the robustness of the representation of embedded
 boundaries and the convergence of the viscous and Poisson
 solvers. */
+scalar my_kappa[];
 #define BRINKMAN_PENALIZATION 1
 #define DEBUG_BRINKMAN_PENALIZATION 1
 #include "../src_local/centered-weugene.h"
+#define mu(f)  (1./(clamp(f,0,1)*(1./mu1 - 1./mu2) + 1./mu2))
 #include "two-phase.h"
 #include "tension.h"
 #include "view.h"
@@ -18,7 +20,7 @@ We will vary the maximum level of refinement, starting from 5. */
 
 int maxlevel = 9;
 int minlevel = 5;
-int Npores = 20; //250
+int Npores = 50; //250
 scalar f0[], fs[], omega[];
 /**
 The porous medium is defined by the union of a random collection of
@@ -74,12 +76,13 @@ int main()
 	splitting errors and optimize convergence speed. */
 
 //	stokes = true;
-	DT = 1e-3;
-
+	DT = 1e-5;
+	TOLERANCE = 1e-6;
+//	NITERMAX = 100;
 	N = 1 << maxlevel;
 	rho1 = 1.; rho2 = 1./25.;
 	mu1 = 1.; mu2 = 1.0/25.;
-	f.sigma = 1.0e-2;
+	f.sigma = 1.0e-3;
 	for (scalar s in {f0,fs})
 		s.refine = s.prolongation = fraction_refine;
 	run();
@@ -91,22 +94,29 @@ event init (t = 0) {
 	if (!restore (file = "restart")) {
 		int it = 0;
 		do {
-			porous (fs, Npores);
-			boundary (all); // this is necessary since BCs depend on embedded fractions
+			//porous (fs, Npores);
 			foreach() {
-				f[] = ( sq(x+0.250000)+sq(y+0.00781)<sq(0.03)|| //sq(x+0.140625)+sq(y+0.00781)<sq(0.03)
-						sq(x+0.410100)+sq(y+0.12890)<sq(0.02)||
-						sq(x+0.378900)+sq(y-0.14000)<sq(0.03) ) ? 0 : 1;
+				f[] = ( sq(x+0.250000)+sq(y+0.00781)<sq(0.03) //sq(x+0.140625)+sq(y+0.00781)<sq(0.03)
+						|| sq(x+0.410100)+sq(y+0.12890)<sq(0.02)
+						|| sq(x+0.378900)+sq(y-0.14000)<sq(0.03)
+//						|| sq(x+0.200000)+sq(y-0.20000)<sq(0.10)
+//						|| sq(x+0.000000)+sq(y-0.26000)<sq(0.05)
+//						|| sq(x+0.200000)+sq(y+0.15000)<sq(0.05)
+						) ? 0 : 1;
 //				f[] = clamp(f[] + fs[], 0, 1);
 			}
-			boundary ({f});
+			boundary (all); // this is necessary since BCs depend on embedded fractions
 		}while (adapt_wavelet({fs,f}, (double []){1e-3, 1e-3}, maxlevel=maxlevel, minlevel=minlevel).nf != 0 && ++it <= 10);
 	}
 	/**
 	We initialize the reference velocity. */
-	foreach() un[] = u.x[];
-
-
+	foreach() {
+		un[] = u.x[];
+		p[] = ( sq(x+0.250000)+sq(y+0.00781)<sq(0.03))? f.sigma/0.03:
+		      ( sq(x+0.410100)+sq(y+0.12890)<sq(0.02))? f.sigma/0.02:
+		      (sq(x+0.378900)+sq(y-0.14000)<sq(0.03)) ? f.sigma/0.03:0;
+		p[]=pf[];
+	}
 }
 
 /**
@@ -156,12 +166,12 @@ We check for a stationary solution. */
 //}
 
 //Output
-event vtk_file (i+=100; t<10){
+event vtk_file (i+=1; t<10){
 	char subname[80]; sprintf(subname, "porous_BP");
 	scalar l[];
 	vorticity (u, omega);
 	foreach() {l[] = level; omega[] *= 1 - fs[];}
-	output_vtu_MPI( (scalar *) {fs, f, omega, p, l}, (vector *) {u,a}, subname, L0/pow(2., minlevel));
+	output_vtu_MPI( (scalar *) {fs, f, omega, p, l, my_kappa}, (vector *) {u,a}, subname, L0/pow(2., minlevel));
 }
 
 event adapt (i++) {

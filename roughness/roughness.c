@@ -8,7 +8,6 @@ boundaries and the convergence of the viscous and Poisson
 solvers. */
 #define BRINKMAN_PENALIZATION 1
 #define DEBUG_BRINKMAN_PENALIZATION 1
-//#include "embed.h"
 #include "../src_local/centered-weugene.h"
 #include "two-phase.h"
 #include "tension.h"
@@ -41,7 +40,7 @@ void rough_surface (scalar fs, double A, int n)
 		the disk images using periodic symmetries. */
 
 		for (double xp = -L0; xp <= L0; xp += L0)
-		    phi[] = intersection (phi[], ( A*sin(2.0*pi*n*x/L0) + L0/pow(2, minlevel-1) - y ));
+		    phi[] = intersection (phi[], ( A*sin(2.0*pi*n*x/L0) + A + L0/pow(2, minlevel-2) - y ));
 //		phi[] = -phi[];
 	}
 	boundary ({phi});
@@ -50,6 +49,25 @@ void rough_surface (scalar fs, double A, int n)
 //	fractions_cleanup (fs, ffs);
 }
 
+f[left] =neumann(0);
+f[right]=neumann(0);
+f[bottom] =dirichlet(1);
+f[top]=neumann(0);
+
+u.n[left] =neumann(0);
+u.n[right]=neumann(0);
+u.n[bottom] =dirichlet(0);
+u.n[top]=neumann(0);
+
+u.t[left] =neumann(0);
+u.t[right]=neumann(0);
+u.t[bottom] =dirichlet(0);
+u.t[top]=neumann(0);
+
+p[left] =neumann(0);
+p[right]=neumann(0);
+p[bottom] =dirichlet(0);
+p[top]=neumann(0);
 /**
 The domain is the periodic unit square centered on the origin. */
 
@@ -65,10 +83,12 @@ int main()
 
 //	stokes = true;
 	DT = 1e-3;
-
+	TOLERANCE = 1e-8;
+	NITERMAX = 100;
+	mgp.nrelax = 100;
 	N = 1 << maxlevel;
-	rho1 = 1.; rho2 = 1./25.;
-	mu1 = 1.; mu2 = 1.0/25.;
+	rho1 = 1.; rho2 = 1./10.;
+	mu1 = 1.; mu2 = 1.0/10.;
 	f.sigma = 1.0e-2;
 	for (scalar s in {f0,fs})
 		s.refine = s.prolongation = fraction_refine;
@@ -84,7 +104,7 @@ event init (t = 0) {
             rough_surface (fs, L0/20., 10);
 			boundary (all); // this is necessary since BCs depend on embedded fractions
 			foreach() {
-				f[] = ( sq(x) + sq(y-L0/2.) < sq(0.3875*L0) ) ? 1 : 0;
+				f[] = ( sq(x) + sq(y-L0/2.) < sq(0.25*L0) ) ? 1 : 0;
 				f[] = clamp(f[] + fs[], 0, 1);
 			}
 			boundary ({f});
@@ -134,18 +154,18 @@ We check for a stationary solution. */
 //	}
 //}
 
-//event snapshot (t = 0.1; t += 0.01; t <= 10.8) {
-//	char name[80];
-//	sprintf (name, "snapshot-%g", t);
-//	scalar pid[];
-//	foreach()	pid[] = fmod(pid()*(npe() + 37), npe());
-//					boundary ({pid});
-//	dump (name);
-//}
+event snapshot (t += 0.01; t <= 100) {
+	char name[80];
+	sprintf (name, "snapshot-%g", t);
+	scalar pid[];
+	foreach()	pid[] = fmod(pid()*(npe() + 37), npe());
+					boundary ({pid});
+	dump (name);
+}
 
 //Output
-event vtk_file (i+=100;t<10){
-	char subname[80]; sprintf(subname, "porous_BP");
+event vtk_file (t+=0.01){
+	char subname[80]; sprintf(subname, "rg");
 	scalar l[];
 	vorticity (u, omega);
 	foreach() {l[] = level; omega[] *= 1 - fs[];}
@@ -153,7 +173,7 @@ event vtk_file (i+=100;t<10){
 }
 
 event adapt (i++) {
-	adapt_wavelet ({f, fs, u}, (double[]){0.01, 0.01, 2e-3, 2e-3, 2e-3}, maxlevel=maxlevel, minlevel=minlevel);
+	adapt_wavelet ({f, fs, u}, (double[]){1e-3, 1e-3, 1e-3, 1e-3, 1e-3}, maxlevel=maxlevel, minlevel=minlevel);
 }
 /**
 ![Norm of the velocity field.](porous/nu-10.png)

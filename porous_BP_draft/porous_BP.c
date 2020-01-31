@@ -50,7 +50,7 @@ void porous (scalar fs, int ns)
 				for (int i = 0; i < ns; i++)
 				for (int i = 0; i < ns; i++)
 					phi[] = intersection (phi[], (sq(x + xp - xc[i]) +
-					                              sq(y + yp - yc[i]) - sq(R[i])));
+					                              sq(y + yp - yc[i]) - sq(R[i]) ));
 //		phi[] = -phi[];
 	}
 	boundary ({phi});
