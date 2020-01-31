@@ -75,7 +75,6 @@ event acceleration (i++)
 
   for (scalar f in interfaces)
     if (f.sigma) {
-      
       /**
       If $\phi$ is already allocated, we add $\sigma\kappa$, otherwise
       we allocate a new field and set it to $\sigma\kappa$. */
@@ -88,5 +87,7 @@ event acceleration (i++)
 	curvature (f, phi, f.sigma, add = false);
 	f.phi = phi;
       }
+	foreach() my_kappa[] = phi[];
     }
+
 }
