@@ -8,15 +8,19 @@ boundaries and the convergence of the viscous and Poisson
 solvers. */
 #define BRINKMAN_PENALIZATION 1
 #define DEBUG_BRINKMAN_PENALIZATION 1
+#define REDUCED 1
 #include "../src_local/centered-weugene.h"
 #include "two-phase.h"
 #include "tension.h"
+#if REDUCED
+	#include "reduced.h"
+#endif
 #include "view.h"
 #include "../src_local/output_vtu_foreach.h"
 /**
 We will vary the maximum level of refinement, starting from 5. */
 
-int maxlevel = 9;
+int maxlevel = 10;
 int minlevel = 5;
 scalar f0[], fs[], omega[];
 /**
@@ -39,7 +43,7 @@ void rough_surface (scalar fs, double A, int n)
 		Since the medium is periodic, we need to take into account all
 		the disk images using periodic symmetries. */
 
-		for (double xp = -L0; xp <= L0; xp += L0)
+//		for (double xp = -L0; xp <= L0; xp += L0)
 		    phi[] = intersection (phi[], ( A*sin(2.0*pi*n*x/L0) + A + L0/pow(2, minlevel-2) - y ));
 //		phi[] = -phi[];
 	}
@@ -47,6 +51,20 @@ void rough_surface (scalar fs, double A, int n)
 
 	fractions (phi, fs, ffs);
 //	fractions_cleanup (fs, ffs);
+}
+
+void drop (scalar f, scalar fs)
+{
+	face vector ff[];
+	vertex scalar phi[];
+	foreach_vertex() {
+		phi[] = HUGE;
+		phi[] = intersection (phi[], (sq(x) + sq(y-L0/2.) - sq(0.25*L0) ));
+		phi[] = -phi[];
+	}
+	boundary ({phi});
+	fractions (phi, f, ff);
+	foreach() f[] = clamp(f[] + fs[], 0, 1);
 }
 
 f[left] =neumann(0);
@@ -63,17 +81,22 @@ u.t[left] =neumann(0);
 u.t[right]=neumann(0);
 u.t[bottom] =dirichlet(0);
 u.t[top]=neumann(0);
-
 p[left] =neumann(0);
 p[right]=neumann(0);
-p[bottom] =dirichlet(0);
-p[top]=neumann(0);
+p[bottom] =neumann(0);
+p[top]=dirichlet(0);
+
+pf[left] =neumann(0);
+pf[right]=neumann(0);
+pf[bottom] =neumann(0);
+pf[top]=dirichlet(0);
 /**
 The domain is the periodic unit square centered on the origin. */
 
 int main()
 {
-	origin (-0.5);
+    size(0.01);
+	origin (-0.5*L0);
 	eta_s = 1e-15;
 	/**
 	We turn off the advection term. The choice of the maximum timestep
@@ -82,77 +105,44 @@ int main()
 	splitting errors and optimize convergence speed. */
 
 //	stokes = true;
-	DT = 1e-3;
-	TOLERANCE = 1e-8;
-	NITERMAX = 100;
-	mgp.nrelax = 100;
-	N = 1 << maxlevel;
-	rho1 = 1.; rho2 = 1./10.;
-	mu1 = 1.; mu2 = 1.0/10.;
-	f.sigma = 1.0e-2;
+	DT = 1e-4;
+	TOLERANCE = 1e-6;
+	//NITERMAX = 100;
+	//mgp.nrelax = 100;
+	N = 1 << 7;
+	rho1 = 1000.; rho2 = 1.2;
+	mu1 = 1.004e-3; mu2 = 18.5e-5;
+	f.sigma = 73.e-3;
+    #if REDUCED
+	    G.y = -9.8;
+	    Z.y = 0;
+    #endif
 	for (scalar s in {f0,fs})
 		s.refine = s.prolongation = fraction_refine;
 	run();
 }
 
-scalar un[];
-
 event init (t = 0) {
 	if (!restore (file = "restart")) {
 		int it = 0;
 		do {
-            rough_surface (fs, L0/20., 10);
+            rough_surface (fs, L0/80., 30);
+			drop(f, fs);
 			boundary (all); // this is necessary since BCs depend on embedded fractions
-			foreach() {
-				f[] = ( sq(x) + sq(y-L0/2.) < sq(0.25*L0) ) ? 1 : 0;
-				f[] = clamp(f[] + fs[], 0, 1);
-			}
-			boundary ({f});
 		}while (adapt_wavelet({fs,f}, (double []){1e-3, 1e-3}, maxlevel=maxlevel, minlevel=minlevel).nf != 0 && ++it <= 10);
 	}
-	/**
-	We initialize the reference velocity. */
-	foreach() un[] = u.x[];
-
-
+	event("vtk_file");
 }
 
 /**
 The gravity vector is aligned with the channel and viscosity is
 unity. */
+#if !REDUCED
 event acceleration (i++) {
 	face vector av = a;
-	foreach_face(y)	av.y[] -= 1;
+	foreach_face(y)	av.y[] = -9.8;
 }
-/**
-We check for a stationary solution. */
-
-//event logfile (i++; i <= 500)
-//{
-//	double avg = normf_weugene(u.x,fs).avg, du = change_weugene (u.x, un, fs)/(avg + SEPS);
-//	fprintf (ferr, "%d %d %d %d %d %d %d %d %.3g %.3g %.3g %.3g %.3g\n",
-//	maxlevel, i,
-//	mgp.i, mgp.nrelax, mgp.minlevel,
-//	mgu.i, mgu.nrelax, mgu.minlevel,
-//	du, mgp.resa*dt, mgu.resa, statsf_weugene(u.x).sum, normf(p).max);
-//
-//	/**
-//	If the relative change of the velocity is small enough we stop this
-//	simulation. */
-//	if (i > 1 && (avg < 1e-9 || du < 1e-2)) {
-//		/**
-//		We are interested in the permeability $k$ of the medium, which is
-//		defined by
-//		$$
-//		U = \frac{k}{\mu}\nabla p = \frac{k}{\mu}\rho g
-//		$$
-//		with $U$ the average fluid velocity.
-//		*/
-//		stats s = statsf_weugene (u.x, fs);
-//		fprintf (fout, "%d %g\n", maxlevel, s.sum/s.volume);
-//		fflush(fout);
-//	}
-//}
+#endif
 
 event snapshot (t += 0.01; t <= 100) {
 	char name[80];
@@ -163,17 +153,28 @@ event snapshot (t += 0.01; t <= 100) {
 	dump (name);
 }
 
+event logfile (i+=1)
+{
+    fprintf (ferr, "%d %d %g %g %d %d %d %d %d %d %.3g %.3g \n",
+        maxlevel, i, t, dt,
+        mgp.i, mgp.nrelax, mgp.minlevel,
+        mgu.i, mgu.nrelax, mgu.minlevel,
+        mgp.resa*dt, mgu.resa);
+}
+
 //Output
-event vtk_file (t+=0.01){
+event vtk_file (t+=0.001){
 	char subname[80]; sprintf(subname, "rg");
 	scalar l[];
 	vorticity (u, omega);
 	foreach() {l[] = level; omega[] *= 1 - fs[];}
-	output_vtu_MPI( (scalar *) {fs, f, omega, p, l}, (vector *) {u,a}, subname, L0/pow(2., minlevel));
+	output_vtu_MPI( (scalar *) {fs, f, omega, p, l}, (vector *) {u,a}, subname, 0);
 }
 
 event adapt (i++) {
-	adapt_wavelet ({f, fs, u}, (double[]){1e-3, 1e-3, 1e-3, 1e-3, 1e-3}, maxlevel=maxlevel, minlevel=minlevel);
+	adapt_wavelet ({f, fs, u}, (double[]){1e-3, 1e-3, 1e-2, 1e-2, 1e-2}, maxlevel=maxlevel, minlevel=minlevel);
+    fs.refine = fs.prolongation = fraction_refine;
+    boundary({fs});
 }
 /**
 ![Norm of the velocity field.](porous/nu-10.png)

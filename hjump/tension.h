@@ -38,7 +38,8 @@ event stability (i++) {
   /**
   We first compute the minimum and maximum values of $\alpha/f_m =
   1/\rho$, as well as $\Delta_{min}$. */
-
+//#ifndef NO_SIGMA_STAB
+//  fprintf(ferr, "NO_SIGMA_STAB does not work");
   double amin = HUGE, amax = -HUGE, dmin = HUGE;
   foreach_face (reduction(min:amin) reduction(max:amax) reduction(min:dmin)) {
     if (alpha.x[]/fm.x[] > amax) amax = alpha.x[]/fm.x[];
@@ -59,6 +60,7 @@ event stability (i++) {
     if (dt < dtmax)
       dtmax = dt;
   }
+//#endif
 }
 
 /**
@@ -81,14 +83,12 @@ event acceleration (i++)
       we allocate a new field and set it to $\sigma\kappa$. */
 
       scalar phi = f.phi;
-      if (phi.i){
-	    curvature (f, phi, f.sigma, add = true);
-      }
+      if (phi.i)
+	curvature (f, phi, f.sigma, add = true);
       else {
-	    phi = new scalar;
-    	curvature (f, phi, f.sigma, add = false);
-    	f.phi = phi;
+	phi = new scalar;
+	curvature (f, phi, f.sigma, add = false);
+	f.phi = phi;
       }
-      foreach() my_kappa[] = phi[];
     }
 }

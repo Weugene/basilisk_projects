@@ -121,7 +121,7 @@ event init (t = 0) {
         fraction (f0, sq(radius) - sq(y) - sq(z));
         foreach() {
             fs[] = sq(x - L0/2) + sq(y) < sq(Rsolid) ? 1 : 0;
-		    f[] = f0[]*(x < length);// + fs[];
+		    f[] = f0[]*(x < length)+ fs[];
             u.x[] = f[];
         }
         boundary ({f,u.x});
