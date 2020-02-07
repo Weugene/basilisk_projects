@@ -1,0 +1,33 @@
+# Automatically generated using 'make Makefile.tests'
+# DO NOT EDIT, edit 'Makefile' instead
+ALLTESTS = \
+	stream.c \
+
+plots: \
+
+TESTS = \
+
+SPECIAL_TESTS = \
+
+ALLPAGES = \
+
+stream.s:	\
+	/opt/basilisk/src/grid/multigrid.h \
+	/opt/basilisk/src/navier-stokes/stream.h \
+	/opt/basilisk/src/advection.h \
+	/opt/basilisk/src/poisson.h \
+	/opt/basilisk/src/run.h \
+	/opt/basilisk/src/timestep.h \
+	/opt/basilisk/src/tracer.h \
+	/opt/basilisk/src/bcg.h \
+	/opt/basilisk/src/utils.h \
+	/opt/basilisk/src/output.h \
+	/opt/basilisk/src/grid/foreach_cell.h \
+	/opt/basilisk/src/grid/neighbors.h \
+	/opt/basilisk/src/grid/multigrid-common.h \
+	/opt/basilisk/src/grid/multigrid-mpi.h \
+	/opt/basilisk/src/grid/cartesian-common.h \
+	/opt/basilisk/src/grid/events.h \
+	/opt/basilisk/src/grid/fpe.h \
+	/opt/basilisk/src/common.h \
+

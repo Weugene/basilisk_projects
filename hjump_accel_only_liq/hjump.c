@@ -28,7 +28,7 @@ int minlevel = 4;
 #define v_in 4.0*Q/(pi*sq(diam))//inlet velocity
 double hjet = 2e-2;//meter
 double length = 1.55e-2;//4.1e-3
-double hbreak = 1.0e-2;
+double hbreak = 2.0e-2;
 double Tac = 1e-1;
 
 double SIGMA = 73e-3;//30-70e-3
@@ -49,7 +49,7 @@ uf.t[top]  = f0[] > 0 ? dirichlet(0) : neumann(0);
 //uf.t[top]  = dirichlet(0);
 p[top]    = neumann(0);
 pf[top]    = neumann(0);
-f[top]    = f0[] > 0 ? dirichlet( f0[]) : neumann(0);
+f[top]    = dirichlet(f0[]); //f0[] > 0 ? dirichlet( f0[]) : (u.n[top] >= 0) ? neumann(0) : 0;
 
 u.n[bottom] = dirichlet(0);
 u.t[bottom] = dirichlet(0);
@@ -65,7 +65,7 @@ uf.n[left] = neumann(0);
 uf.t[left] = neumann(0);
 p[left]   = dirichlet(0);
 pf[left]   = dirichlet(0);
-f[left]    = neumann(0);
+f[left]    = dirichlet(0); //(u.n[left] <= 0) ? neumann(0) : 0;
 
 u.n[right] = neumann(0);
 u.t[right] = neumann(0);
@@ -73,7 +73,7 @@ uf.n[right] = neumann(0);
 uf.t[right] = neumann(0);
 p[right]   = dirichlet(0);
 pf[right]   = dirichlet(0);
-f[right]    = neumann(0);
+f[right]    = dirichlet(0);
 /**
 The porous medium is defined by the union of a random collection of
 disks. The number of disks can be varied to vary the porosity. */
@@ -111,11 +111,12 @@ double f_jet(double x, double y, int n){
 
 void jet_in (scalar f,scalar fs)
 {
-	double R = (sq(diam) + sq(0.34*L0))/(2.0*diam);
+	double Rsurf = 0.34*L0;
+	double R = (sq(diam) + sq(Rsurf))/(2.0*diam);
 	double xc = 0, yc = -R + diam;
 	vertex scalar phi[];
 	foreach_vertex()
-	phi[] = ((sq(R) - sq(x - xc) - sq(y - yc) >= 0 && y >= 0) || (fabs(x) <= f_jet(x, y, 0) && y >= hjet - length)) ? 1 : 0;
+	phi[] = ((sq(R) - sq(x - xc) - sq(y - yc) >= 0 && fabs(x) <= Rsurf) || (fabs(x) <= f_jet(x, y, 0) && y >= hjet - length)) ? 1 : 0;
 	boundary ({phi});
 	foreach() {
 		f0[] = 0.25*(phi[] + phi[1,0] + phi[0,1] + phi[1,1]);
@@ -154,8 +155,7 @@ event init (t = 0) {
 		do {
 			jet_in(f, fs);
 			foreach() {
-				u.y[] = - v_in*clamp(f[]-fs[], 0, 1)*(y >= hjet - length);
-//				u.y[] = - v_in*clamp(f[]-fs[], 0, 1)*min(t/0.1, 1);
+				u.y[] = - v_in*f[]*(y - hjet + length> 0.0 );
 			}
 			boundary (all); // this is necessary since BCs depend on embedded fractions
 		}while (adapt_wavelet({fs,f}, (double []){1e-6, 1e-4}, maxlevel=maxlevel, minlevel=minlevel).nf != 0 && ++it <= 10);
