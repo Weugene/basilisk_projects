@@ -7,6 +7,8 @@ boundaries and the convergence of the viscous and Poisson
 solvers. */
 #define BRINKMAN_PENALIZATION 1
 #define DEBUG_BRINKMAN_PENALIZATION 1
+#define DEBUG_MINMAXVALUES
+#define DEBUG_OUTPUT_VTU_MPI
 #define REDUCED 1
 #include "../src_local/centered-weugene.h"
 #define mu(f)  (1./(clamp(f,0,1)*(1./mu1 - 1./mu2) + 1./mu2))
@@ -24,7 +26,7 @@ We will vary the maximum level of refinement, starting from 5. */
 int maxlevel = 9;
 int minlevel = 4;
 #define diam 5e-3//meter 5e-3
-#define Q 1.66e-5//cm^3/s Q=v*S
+double Q = 1.e-5;//cm^3/s Q=v*S
 #define v_in 4.0*Q/(pi*sq(diam))//inlet velocity
 double hjet = 3e-2;//meter
 double length = 2.55e-2;//4.1e-3
@@ -116,7 +118,9 @@ void jet_in (scalar f,scalar fs)
 	double xc = 0, yc = -R + diam;
 	vertex scalar phi[];
 	foreach_vertex()
-	phi[] = ((sq(R) - sq(x - xc) - sq(y - yc) >= 0 && fabs(x) <= Rsurf) || (fabs(x) <= f_jet(x, y, 0) && y >= hjet - length)) ? 1 : 0;
+	phi[] = ((sq(R) - sq(x - xc) - sq(y - yc) >= 0 && fabs(x) <= Rsurf) ||
+			(fabs(x) <= f_jet(x, y, 0) && y >= hjet - length) ||
+			(y <= - 0.5*hbreak ) ) ? 1 : 0;
 	boundary ({phi});
 	foreach() {
 		f0[] = 0.25*(phi[] + phi[1,0] + phi[0,1] + phi[1,1]);
@@ -130,8 +134,14 @@ void jet_in (scalar f,scalar fs)
 //	foreach() {f0[] =clamp(f0[] + fc[], 0, 1); f1[] = f0[];} //clamp(f0[]+fs1[], 0, 1);
 }
 
-int main()
+int main(int argc, char * argv[])
 {
+	if (argc > 1) {
+		Q = atof(argv[1]); //convert from string to float
+	}
+	if (argc > 2) {
+		maxlevel = atoi(argv[2]); //convert from string to float
+	}
 	L0 = 0.16; //meter
 	origin (-0.5*L0, -(L0-hjet) );
 	eta_s = 1e-15;
@@ -214,13 +224,13 @@ du, mgp.resa*dt, mgu.resa, statsf(u.x).sum, normf(p).max);
 //	foreach() {p[] -= normp.avg; pf[] -=normpf.avg;}
 //}
 //Output
-event vtk_file (i+=50; t<100){
-//event vtk_file (t+=0.001; t<100){
-char subname[80]; sprintf(subname, "hjump");
-scalar l[];
-vorticity (u, omega);
-foreach() {l[] = level; omega[] *= 1 - fs[];}
-output_vtu_MPI( (scalar *) {fs, f, omega, p, l}, (vector *) {u, uf, a}, subname, 0.0);
+//event vtk_file (i+=10; t<100){
+event vtk_file (t+=0.01; t<2.25){
+	char subname[80]; sprintf(subname, "hjump");
+	scalar l[];
+	vorticity (u, omega);
+	foreach() {l[] = level; omega[] *= 1 - fs[];}
+	output_vtu_MPI( (scalar *) {fs, f, omega, p, l}, (vector *) {u, uf, a}, subname, 0.0);
 }
 
 event adapt (i++) {

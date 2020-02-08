@@ -1,52 +1,24 @@
-/**
-# Sessile drop
-
-A sessile drop is a drop of liquid at rest on a solid surface. In the
-absence of gravity, the shape of the drop is controlled by surface
-tension only. An important parameter is the "contact angle" $\theta$ between
-the solid surface and the interface. In the absence of gravity, the
-drop is hemispherical and it is easy to show that the relation between
-the radius of the drop $R$ and its volume $V$ is (for two-dimensional
-drops)
-$$
-V = R^2 (\theta - \sin\theta\cos\theta)
-$$
-
-To test this relation, a drop is initialised as a half-disk (i.e. the
-initial contact angle is 90$^\circ$) and the contact angle is varied
-between 15$^\circ$ and 165$^\circ$. The drop oscillates and eventually relaxes
-to its equilibrium position. This equilibrium is exact to within
-machine accuracy. The curvature along the interface is constant.
-
-Note that shallower angles are [not accessible yet](/src/contact.h).
-
-~~~gnuplot Equilibrium shapes for $15^\circ \leq \theta \leq 165^\circ$
-set term push
-set term @SVG size 640,180
-set size ratio -1
-unset key
-unset xtics
-unset ytics
-unset border
-plot 'out' w l, '' u (-$1):2 w l lt 1, 0 lt -1
-set term pop
-~~~
-*/
 #define DEBUG_MINMAXVALUES
+#define DEBUG_OUTPUT_VTU_MPI
+#define REDUCED 1
+#define FILTERED
 #include "../src_local/centered-weugene.h"
 #include "contact.h"
 #include "vof.h"
 #include "two-phase.h"
 #include "tension.h"
+#if REDUCED
+	#include "reduced.h"
+#endif
 #include "../src_local/output_vtu_foreach.h"
 
 
 int maxlevel = 9;
 int minlevel = 4;
 double A=5.0, freq=100, Vmax;
-double rhoL1=519.933, rhoL2=415.667;
-double muL1=3.908e-5, muL2=3.124e-5;
-double SIGMA=2.181e-6, grav=9.8066;
+double rhoL1=963, rhoL2=1.2;
+double muL1=2e-1, muL2=3.124e-5;
+double SIGMA=30e-3, grav=9.8066;
 double lcap, RE, BO;
 
 static double k_a_wave[6][2] = {
@@ -92,23 +64,18 @@ f[right]    = neumann(0);
 
 int main()
 {
-
-
 	/**
 	We use a constant viscosity and density. */
 	mu1 = muL1; mu2 = muL2; rho1 = rhoL1; rho2 = rhoL2;
-
 	/**
 	We must associate the height function field with the VOF tracer, so
 	that it is used by the relevant functions (curvature calculation in
 	particular). */
-
 	f.height = h;
-
 	/**
 	We set the surface tension coefficient and run for the range of
 	contact angles. */
-	DT=1e-4;
+	DT=1e-5;
 	f.sigma = SIGMA;
 	Vmax = A*grav/(2*pi*freq);
 	lcap = sqrt(SIGMA/(fabs(rho1-rho2)*grav));
@@ -118,7 +85,10 @@ int main()
 	        rho2*freq/(mu2*sq(k_a_wave[5][0])), rho2*freq/(mu2*sq(k_a_wave[0][0])),
 	        1./sq(k_a_wave[5][0]*lcap),         1./sq(k_a_wave[0][0]*lcap)
 			);
-	//for (theta0 = 15; theta0 <= 165; theta0 += 15)
+#if REDUCED
+	G.y = 0;
+	Z.y = 0;
+#endif
 	run();
 }
 
@@ -138,8 +108,10 @@ event init (t = 0)
 }
 
 event acceleration (i++) {
-	face vector av = a;
-	foreach_face(y)	av.y[] = A*grav*sin(2*pi*freq*t);//m^2/s
+#if REDUCED
+	G.y = A*grav*sin(2*pi*freq*t);//m^2/s
+	Z.y = 0;
+#endif
 }
 
 #if 1
@@ -183,10 +155,10 @@ event vtk_file (t+=1./(20.*freq)){
 }
 
 #define ADAPT_SCALARS {f, omega}
-#define ADAPT_EPS_SCALARS {1e-3, 1e-2}
+#define ADAPT_EPS_SCALARS {1e-3, 1e-3}
 event adapt (i++){
 	double eps_arr[] = ADAPT_EPS_SCALARS;
-    MinMaxValues(ADAPT_SCALARS, eps_arr);
+    //MinMaxValues(ADAPT_SCALARS, eps_arr);
 	adapt_wavelet ((scalar *) ADAPT_SCALARS, eps_arr, maxlevel = maxlevel, minlevel = minlevel);
 }
 /**

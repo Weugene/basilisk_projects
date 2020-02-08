@@ -5,7 +5,7 @@ multipole expansion of [Sangani and Acrivos, 1982](#sangani1982). */
 
 #define BRINKMAN_PENALIZATION 1
 #define DEBUG_BRINKMAN_PENALIZATION 1
-
+#define REDUCED 1
 #undef SEPS
 #define SEPS 1e-30
 //#define DEBUG_MINMAXVALUES
@@ -15,6 +15,9 @@ scalar fs[], omega[];
 vector Us[];
 
 #include "../src_local/centered-weugene.h"
+#if REDUCED
+	#include "reduced.h"
+#endif
 #include "view.h"
 #include "../src_local/output_vtu_foreach.h"
 
@@ -67,7 +70,7 @@ int main(int argc, char * argv[]){
     fprintf(fout, "eta_s=%g maxlevel=%d", eta_s, maxlevel);
     /**
     The domain is the periodic unit square, centered on the origin. */
-    L0=1;
+    L0 = 1;
     origin (-L0/2., -L0/2.);
     periodic (right);
     periodic (top);
@@ -85,7 +88,10 @@ int main(int argc, char * argv[]){
     /**
     We do the 9 cases computed by Sangani & Acrivos. The radius is
     computed from the volume fraction. */
-
+#if REDUCED
+	G.x = 1;
+	Z.x = 0;
+#endif
     for (nc = 0; nc < 9; nc++) {
         N = 1 << maxlevel;
         radius = sqrt(sq(L0) * sangani[nc][0] / pi);
@@ -102,14 +108,14 @@ event init (t = 0){
     int it = 0;
     do {
         calc_solid(fs);
-    }while (adapt_wavelet({fs}, (double []){0.001},
+    }while (adapt_wavelet({fs}, (double []){1e-5},
                           maxlevel = maxlevel, minlevel=minlevel).nf != 0 && ++it <= 10);
     /**
     And set acceleration and viscosity to unity. */
 
-    const face vector g[] = {1.,0.};
-    a = g;
-    mu = fm;
+//    const face vector g[] = {1.,0.};
+//    a = g;
+//    mu = fm;
 
     /**
     We initialize the reference velocity. */
@@ -183,10 +189,10 @@ event vtk_file (t += 0.01){
 }
 
 #define ADAPT_SCALARS {fs, omega}
-#define ADAPT_EPS_SCALARS {1e-3, 1e-2}
+#define ADAPT_EPS_SCALARS {1e-3, 1e-3}
 event adapt (i++){
     double eps_arr[] = ADAPT_EPS_SCALARS;
-//    MinMaxValues(ADAPT_SCALARS, eps_arr);
+    MinMaxValues(ADAPT_SCALARS, eps_arr);
     adapt_wavelet ((scalar *) ADAPT_SCALARS, eps_arr, maxlevel = maxlevel, minlevel = minlevel);
     calc_solid(fs);
 }

@@ -6,15 +6,18 @@ This function writes one XML file which allows to read the *.vtu files generated
 by output_vtu_ascii_foreach() when used in MPI. Tested in (quad- and oct-)trees
 using MPI.
 */
+#define SMALL_VAL 1e-15
 #if dimension == 1
-#define MY_BOX_CONDITION (x >= Pmin.x) && (x <= Pmax.x)
-    #define MY_DELTA_BOX_CONDITION (x - 0.5*Delta >= Pmin.x) && (x + 0.5*Delta <= Pmax.x)
+	#define MY_BOX_CONDITION (x >= Pmin.x - SMALL_VAL) && (x <= Pmax.x + SMALL_VAL)
+//	#define MY_DELTA_BOX_CONDITION (x - 0.5*Delta >= Pmin.x - SMALL_VAL) && (x + 0.5*Delta <= Pmax.x + SMALL_VAL)
 #elif dimension == 2
-#define MY_BOX_CONDITION (x >= Pmin.x) && (x <= Pmax.x) && (y >= Pmin.y) && (y <= Pmax.y)
-    #define MY_DELTA_BOX_CONDITION (x - 0.5*Delta >= Pmin.x) && (x + 0.5*Delta <= Pmax.x) && (y - 0.5*Delta >= Pmin.y) && (y + 0.5*Delta <= Pmax.y)
+	#define MY_BOX_CONDITION (x >= Pmin.x - SMALL_VAL) && (x <= Pmax.x + SMALL_VAL) && (y >= Pmin.y - SMALL_VAL) && (y <= Pmax.y + SMALL_VAL)
+//	#define MY_DELTA_BOX_CONDITION (x >= Pmin.x - SMALL_VAL) && (x <= Pmax.x + SMALL_VAL) && (y >= Pmin.y - SMALL_VAL) && (y <= Pmax.y + SMALL_VAL)
+//	#define MY_DELTA_BOX_CONDITION (x - 0.5*Delta >= Pmin.x - SMALL_VAL) && (x + 0.5*Delta <= Pmax.x + SMALL_VAL) && (y - 0.5*Delta >= Pmin.y - SMALL_VAL) && (y + 0.5*Delta <= Pmax.y + SMALL_VAL)
 #elif dimension > 2
-#define MY_BOX_CONDITION (x >= Pmin.x) && (x <= Pmax.x) && (y >= Pmin.y) && (y <= Pmax.y) && (z >= Pmin.z) && (z <= Pmax.z)
-    #define MY_DELTA_BOX_CONDITION (x - 0.5*Delta >= Pmin.x) && (x + 0.5*Delta <= Pmax.x) && (y - 0.5*Delta >= Pmin.y) && (y + 0.5*Delta <= Pmax.y) && (z - 0.5*Delta >= Pmin.z) && (z + 0.5*Delta <= Pmax.z)
+	#define MY_BOX_CONDITION (x >= Pmin.x - SMALL_VAL) && (x <= Pmax.x + SMALL_VAL) && (y >= Pmin.y - SMALL_VAL) && (y <= Pmax.y + SMALL_VAL) && (z >= Pmin.z - SMALL_VAL) && (z <= Pmax.z + SMALL_VAL)
+//	#define MY_DELTA_BOX_CONDITION (x >= Pmin.x - SMALL_VAL) && (x <= Pmax.x + SMALL_VAL) && (y >= Pmin.y - SMALL_VAL) && (y <= Pmax.y + SMALL_VAL) && (z >= Pmin.z - SMALL_VAL) && (z <= Pmax.z + SMALL_VAL)
+	//#define MY_DELTA_BOX_CONDITION (x - 0.5*Delta >= Pmin.x - SMALL_VAL) && (x + 0.5*Delta <= Pmax.x + SMALL_VAL) && (y - 0.5*Delta >= Pmin.y - SMALL_VAL) && (y + 0.5*Delta <= Pmax.y + SMALL_VAL) && (z - 0.5*Delta >= Pmin.z - SMALL_VAL) && (z + 0.5*Delta <= Pmax.z + SMALL_VAL)
 #endif
 
 void output_pvtu_ascii (scalar * list, vector * vlist, int n, FILE * fp, char * subname)
@@ -70,7 +73,7 @@ void output_vtu_ascii_foreach (scalar * list, vector * vlist, int n, FILE * fp, 
     }
   }
   foreach(){
-    if (MY_DELTA_BOX_CONDITION) no_cells += 1;
+    if (MY_BOX_CONDITION) no_cells += 1;
   }
 
   fputs ("<?xml version=\"1.0\"?>\n"
@@ -81,7 +84,7 @@ void output_vtu_ascii_foreach (scalar * list, vector * vlist, int n, FILE * fp, 
   for (scalar s in list) {
     fprintf (fp,"\t\t\t\t <DataArray type=\"Float64\" Name=\"%s\" format=\"ascii\">\n", s.name);
     foreach(){
-      if (MY_DELTA_BOX_CONDITION)
+      if (MY_BOX_CONDITION)
         fprintf (fp, "\t\t\t\t\t %g\n", val(s));
     }
     fputs ("\t\t\t\t </DataArray>\n", fp);
@@ -89,7 +92,7 @@ void output_vtu_ascii_foreach (scalar * list, vector * vlist, int n, FILE * fp, 
   for (vector v in vlist) {
     fprintf (fp,"\t\t\t\t <DataArray type=\"Float64\" NumberOfComponents=\"3\" Name=\"%s\" format=\"ascii\">\n", v.x.name);
     foreach(){
-      if (MY_DELTA_BOX_CONDITION)
+      if (MY_BOX_CONDITION)
       #if dimension == 1
         fprintf (fp, "\t\t\t\t\t %g %g 0.\n", val(v.x));
       #endif
@@ -122,7 +125,7 @@ void output_vtu_ascii_foreach (scalar * list, vector * vlist, int n, FILE * fp, 
   fputs ("\t\t\t <Cells>\n", fp);
   fputs ("\t\t\t\t <DataArray type=\"Int64\" Name=\"connectivity\" format=\"ascii\">\n", fp);
   foreach(){
-    if (MY_DELTA_BOX_CONDITION)
+    if (MY_BOX_CONDITION)
     #if dimension == 1
       fprintf (fp, "\t\t\t\t\t %g %g %g %g \n", marker[], marker[1]);
     #endif
@@ -147,7 +150,7 @@ void output_vtu_ascii_foreach (scalar * list, vector * vlist, int n, FILE * fp, 
   fputs ("\t\t\t\t </DataArray>\n", fp);
   fputs ("\t\t\t\t <DataArray type=\"UInt8\" Name=\"types\" format=\"ascii\">\n", fp);
   foreach(){
-    if (MY_DELTA_BOX_CONDITION)
+    if (MY_BOX_CONDITION)
     #if dimension == 1
       fputs ("\t\t\t\t\t 3 \n", fp); //VTK_LINE (=3)
     #endif
@@ -222,11 +225,13 @@ void output_vtu_bin_foreach (scalar * list, vector * vlist, int n, FILE * fp, bo
   foreach_vertex(){
     if (MY_BOX_CONDITION) {
       marker[] = no_points;//_k; // !!!! see here
-      no_points += 1;
+      no_points++;
+    }else{
+    	marker[] = -1;
     }
   }
   foreach(){
-    if (MY_DELTA_BOX_CONDITION) no_cells += 1;
+    if (MY_BOX_CONDITION) no_cells++;
   }
   fputs ("<?xml version=\"1.0\"?>\n"
   "<VTKFile type=\"UnstructuredGrid\" version=\"1.0\" byte_order=\"LittleEndian\" header_type=\"UInt64\">\n", fp);
@@ -253,16 +258,17 @@ void output_vtu_bin_foreach (scalar * list, vector * vlist, int n, FILE * fp, bo
   fputs ("\t\t\t <Cells>\n", fp);
   fputs ("\t\t\t\t <DataArray type=\"Int64\" Name=\"connectivity\" format=\"ascii\">\n", fp);
   foreach(){
-    if (MY_DELTA_BOX_CONDITION)
+    if (MY_BOX_CONDITION) {
 #if dimension == 1
-      fprintf (fp, "%g %g %g %g \n", marker[], marker[1]);
+	    fprintf (fp, "%g %g %g %g \n", marker[], marker[1]);
 #endif
 #if dimension == 2
-      fprintf (fp, "%g %g %g %g \n", marker[], marker[1,0], marker[1,1], marker[0,1]);
+	    fprintf (fp, "%g %g %g %g \n", marker[], marker[1,0], marker[1,1], marker[0,1]);
 #endif
 #if dimension > 2
-      fprintf (fp, "%g %g %g %g %g %g %g %g\n", marker[], marker[1,0,0], marker[1,1,0], marker[0,1,0],marker[0,0,1], marker[1,0,1], marker[1,1,1], marker[0,1,1]);
+	    fprintf (fp, "%g %g %g %g %g %g %g %g\n", marker[], marker[1,0,0], marker[1,1,0], marker[0,1,0],marker[0,0,1], marker[1,0,1], marker[1,1,1], marker[0,1,1]);
 #endif
+    }
   }
   fputs ("\t\t\t\t </DataArray>\n", fp);
   fputs ("\t\t\t\t <DataArray type=\"Int64\" Name=\"offsets\" format=\"ascii\">\n", fp);
@@ -280,7 +286,7 @@ void output_vtu_bin_foreach (scalar * list, vector * vlist, int n, FILE * fp, bo
   fputs ("\t\t\t\t </DataArray>\n", fp);
   fputs ("\t\t\t\t <DataArray type=\"UInt8\" Name=\"types\" format=\"ascii\">\n", fp);
   foreach(){
-    if (MY_DELTA_BOX_CONDITION)
+    if (MY_BOX_CONDITION)
     #if dimension == 1
       fputs ("3 \n", fp); //VTK_LINE (=3)
     #endif
@@ -308,14 +314,14 @@ void output_vtu_bin_foreach (scalar * list, vector * vlist, int n, FILE * fp, bo
   for (scalar s in list) {
     fwrite (&block_len, sizeof (unsigned long long), 1, fp);
     foreach()
-      if (MY_DELTA_BOX_CONDITION)
+      if (MY_BOX_CONDITION)
         fwrite (&val(s), sizeof (double), 1, fp);
   }
   block_len=no_cells*8*dim;
   for (vector v in vlist) {
     fwrite (&block_len, sizeof (unsigned long long), 1, fp);
     foreach(){
-      if (MY_DELTA_BOX_CONDITION){
+      if (MY_BOX_CONDITION){
       #if dimension == 1
         fwrite (&val(v.x), sizeof (double), 1, fp);
         fwrite (&vy, sizeof (double), 1, fp);
