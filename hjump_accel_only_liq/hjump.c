@@ -1,15 +1,9 @@
-/**
-# Stokes flow through a complex porous medium
-
-
-This tests mainly the robustness of the representation of embedded
-boundaries and the convergence of the viscous and Poisson
-solvers. */
 #define BRINKMAN_PENALIZATION 1
 #define DEBUG_BRINKMAN_PENALIZATION 1
 #define DEBUG_MINMAXVALUES
 #define DEBUG_OUTPUT_VTU_MPI
 #define REDUCED 1
+#define FILTERED
 #include "../src_local/centered-weugene.h"
 #define mu(f)  (1./(clamp(f,0,1)*(1./mu1 - 1./mu2) + 1./mu2))
 #include "two-phase.h"
@@ -19,18 +13,18 @@ solvers. */
 #endif
 #include "view.h"
 #include "../src_local/output_vtu_foreach.h"
-#define FILTERED
+
 /**
 We will vary the maximum level of refinement, starting from 5. */
 
 int maxlevel = 9;
 int minlevel = 4;
 #define diam 5e-3//meter 5e-3
-#define Q 2.e-5//cm^3/s Q=v*S
+double Q = 1.e-5;//cm^3/s Q=v*S
 #define v_in 4.0*Q/(pi*sq(diam))//inlet velocity
 double hjet = 3e-2;//meter
 double length = 2.55e-2;//4.1e-3
-double hbreak = 1.0e-2;
+double hbreak = 1.0e-2, hhump=5e-3;
 double Tac = 1e-1;
 
 double SIGMA = 30e-3;//30-70e-3
@@ -90,12 +84,19 @@ double f_surf(double x, double y, double R, int n){
 //	return pow(pow(R,n) -pow(x,n), 1./n) - R;
 //	return ((fabs(x)<0.4*L0 && y<=0) ? 1 : (y<=5.*fabs(x)-2.0*L0) ? 1 : -1);
 }
+
+double f_surf_hump(double x, double y){
+	return 0.5*hbreak*(-1.0 - tanh(100.0*(sq(x) - sq(0.37*L0))/sq(L0))) + hhump*exp(-10000.*sq(fabs(x)-0.35*L0)/sq(L0));
+//	return pow(pow(R,n) -pow(x,n), 1./n) - R;
+//	return ((fabs(x)<0.4*L0 && y<=0) ? 1 : (y<=5.*fabs(x)-2.0*L0) ? 1 : -1);
+}
 void substrate (scalar fs)
 {
 //	face vector ffs[];
 	vertex scalar phi[];
 	foreach_vertex()
-	phi[] = (f_surf(x, y, 0, 0) > y)? 1 : 0;
+//	phi[] = (f_surf(x, y, 0, 0) > y)? 1 : 0;
+	phi[] = (f_surf_hump(x, y) > y)? 1 : 0;
 	//phi[] = ((fabs(x)<0.4*L0 && y<=0) ? 1 : (fabs(x)>0.4*L0 && y<=-5.*fabs(x)+2.0*L0) ? 1 : 0);
 //	boundary ({phi});
 	foreach() fs[] = 0.25*(phi[] + phi[1,0] + phi[0,1] + phi[1,1]);
@@ -118,7 +119,9 @@ void jet_in (scalar f,scalar fs)
 	double xc = 0, yc = -R + diam;
 	vertex scalar phi[];
 	foreach_vertex()
-	phi[] = ((sq(R) - sq(x - xc) - sq(y - yc) >= 0 && fabs(x) <= Rsurf) || (fabs(x) <= f_jet(x, y, 0) && y >= hjet - length)) ? 1 : 0;
+	phi[] = ((sq(R) - sq(x - xc) - sq(y - yc) >= 0 && fabs(x) <= Rsurf) ||
+	         (fabs(x) <= f_jet(x, y, 0) && y >= hjet - length) ||
+	         (y <= - 0.5*hbreak ) ) ? 1 : 0;
 	boundary ({phi});
 	foreach() {
 		f0[] = 0.25*(phi[] + phi[1,0] + phi[0,1] + phi[1,1]);
@@ -165,10 +168,12 @@ event init (t = 0) {
 			foreach() {
 				u.y[] = - v_in*f[]*(y - hjet + length - 0.01*L0> 0.0 );
 			}
+			f.refine = f.prolongation = fraction_refine;
+			fs.refine = fs.prolongation = fraction_refine;
 			boundary (all); // this is necessary since BCs depend on embedded fractions
-		}while (adapt_wavelet({fs,f}, (double []){1e-6, 1e-4}, maxlevel=maxlevel, minlevel=minlevel).nf != 0 && ++it <= 10);
+		}while (adapt_wavelet({fs,f}, (double []){1e-5, 1e-4}, maxlevel=maxlevel+1, minlevel=minlevel).nf != 0 && ++it <= 10);
 		refine( fabs(x) < 0.8*diam && fabs(y-hjet) < 1.1*length && level < maxlevel );
-		refine( fabs(y - f_surf(x,y,0,0)) < 0.5*diam && level < maxlevel );
+		refine( fabs(y - f_surf(x,y,0,0)) < 0.5*diam && level < maxlevel+1 );
 		//refine( fabs(x) < 0.4*L0  && fabs(y) < L0/pow(2, 0.5*(minlevel+maxlevel)) && level < maxlevel );
 		//refine( fabs(x) > 0.4*L0  && fabs(y-(-5.*fabs(x)+2.0*L0)) < L0/pow(2, 0.5*(minlevel+maxlevel)) && level < maxlevel );
 		substrate (fs);
@@ -196,24 +201,24 @@ event acceleration (i++) {
 We check for a stationary solution. */
 
 event snapshot (t += 0.01) {
-char name[80];
-sprintf (name, "snapshot-%g", t);
-scalar pid[];
-foreach()	pid[] = fmod(pid()*(npe() + 37), npe());
-		boundary ({pid});
-dump (name);
+	char name[80];
+	sprintf (name, "snapshot-%g", t);
+	scalar pid[];
+	foreach()	pid[] = fmod(pid()*(npe() + 37), npe());
+			boundary ({pid});
+	dump (name);
 }
 scalar un[];
 #undef SEPS
 #define SEPS 1e-15
 event logfile (i+=10)
 {
-double avg = normf(u.x).avg, du = change (u.x, un)/(avg + SEPS);
-fprintf (ferr, "%d %d %g %g %d %d %d %d %d %d %.3g %.3g %.3g %.3g %.3g\n",
-maxlevel, i, t, dt,
-mgp.i, mgp.nrelax, mgp.minlevel,
-mgu.i, mgu.nrelax, mgu.minlevel,
-du, mgp.resa*dt, mgu.resa, statsf(u.x).sum, normf(p).max);
+	double avg = normf(u.x).avg, du = change (u.x, un)/(avg + SEPS);
+	fprintf (ferr, "%d %d %g %g %d %d %d %d %d %d %.3g %.3g %.3g %.3g %.3g\n",
+	maxlevel, i, t, dt,
+	mgp.i, mgp.nrelax, mgp.minlevel,
+	mgu.i, mgu.nrelax, mgu.minlevel,
+	du, mgp.resa*dt, mgu.resa, statsf(u.x).sum, normf(p).max);
 }
 //event pressure_correction(i++){
 //	norm normp = normf (p);
@@ -224,16 +229,15 @@ du, mgp.resa*dt, mgu.resa, statsf(u.x).sum, normf(p).max);
 //Output
 //event vtk_file (i+=10; t<100){
 event vtk_file (t+=0.01; t<2.25){
-char subname[80]; sprintf(subname, "hjump");
-scalar l[];
-vorticity (u, omega);
-foreach() {l[] = level; omega[] *= 1 - fs[];}
-output_vtu_MPI( (scalar *) {fs, f, omega, p, l}, (vector *) {u, uf, a}, subname, 0.0);
+	char subname[80]; sprintf(subname, "hjump");
+	scalar l[];
+	vorticity (u, omega);
+	foreach() {l[] = level; omega[] *= 1 - fs[];}
+	output_vtu_MPI( (scalar *) {fs, f, omega, p, l}, (vector *) {u, uf, a}, subname, 0.0);
 }
 
 event adapt (i++) {
-
-adapt_wavelet ({f, fs, u}, (double[]){1e-3, 1e-4, 1e-2, 1e-2, 1e-2}, maxlevel=maxlevel, minlevel=minlevel);
-fs.refine = fs.prolongation = fraction_refine;
-boundary({fs});
+	adapt_wavelet ({f, fs, u}, (double[]){1e-3, 1e-4, 1e-2, 1e-2, 1e-2}, maxlevel=maxlevel, minlevel=minlevel);
+	fs.refine = fs.prolongation = fraction_refine;
+	boundary({fs});
 }

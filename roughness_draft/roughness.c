@@ -6,7 +6,7 @@ The medium is periodic and described using embedded boundaries.
 This tests mainly the robustness of the representation of embedded
 boundaries and the convergence of the viscous and Poisson
 solvers. */
-#define BRINKMAN_PENALIZATION 4
+#define BRINKMAN_PENALIZATION 1
 #define DEBUG_BRINKMAN_PENALIZATION 1
 #define REDUCED 1
 #define FILTERED
@@ -83,13 +83,13 @@ uf.t[right]=neumann(0);
 uf.t[bottom] =dirichlet(0);
 uf.t[top]=neumann(0);
 
-p[left] =dirichlet(0);
-p[right]=dirichlet(0);
+p[left] =neumann(0);
+p[right]=neumann(0);
 p[bottom] =neumann(0);
 p[top]=dirichlet(0);
 
-pf[left] =dirichlet(0);
-pf[right]=dirichlet(0);
+pf[left] =neumann(0);
+pf[right]=neumann(0);
 pf[bottom] =neumann(0);
 pf[top]=dirichlet(0);
 
@@ -116,16 +116,12 @@ int main()
 	rho1 = 1000.; rho2 = 1.2;
 	mu1 = 1.004e-3; mu2 = 18.5e-5;
 	f.sigma = 73.e-3;
-	lambda_slip = L0/pow(2., maxlevel+1);
     #if REDUCED
 	    G.y = -9.8;
 	    Z.y = 0;
     #endif
 	for (scalar s in {f0,fs})
 		s.refine = s.prolongation = fraction_refine;
-	fprintf(ferr, "rho1=%g rho2=%g mu1=%g mu2=%g sigma=%g lambda_slip=%g G=%g\n
-			       size=%g maxlevel=%d TOLERANCE=%g eta=%g \n",
-			       rho1, rho2, mu1, mu2, f.sigma, lambda_slip, G.y, L0, maxlevel, TOLERANCE, eta_s);
 	run();
 }
 
@@ -141,9 +137,6 @@ event init (t = 0) {
 	event("vtk_file");
 }
 
-event properties(i++){
-
-}
 /**
 The gravity vector is aligned with the channel and viscosity is
 unity. */
@@ -173,7 +166,7 @@ event logfile (i+=1)
 }
 
 //Output
-event vtk_file (t+=0.01){
+event vtk_file (t+=0.0001){
 	char subname[80]; sprintf(subname, "rg");
 	scalar l[];
 	vorticity (u, omega);

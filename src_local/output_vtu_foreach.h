@@ -3,18 +3,13 @@ This function writes one XML file which allows to read the *.vtu files generated
 by output_vtu_ascii_foreach() when used in MPI. Tested in (quad- and oct-)trees
 using MPI.
 */
-#define SMALL_VAL 1e-15
+#define SMALL_VAL 1e-8
 #if dimension == 1
-	#define MY_BOX_CONDITION (x >= Pmin.x - SMALL_VAL) && (x <= Pmax.x + SMALL_VAL)
-//	#define MY_DELTA_BOX_CONDITION (x - 0.5*Delta >= Pmin.x - SMALL_VAL) && (x + 0.5*Delta <= Pmax.x + SMALL_VAL)
+	#define MY_BOX_CONDITION (x >= Pmin.x) && (x <= Pmax.x)
 #elif dimension == 2
-	#define MY_BOX_CONDITION (x >= Pmin.x - SMALL_VAL) && (x <= Pmax.x + SMALL_VAL) && (y >= Pmin.y - SMALL_VAL) && (y <= Pmax.y + SMALL_VAL)
-//	#define MY_DELTA_BOX_CONDITION (x >= Pmin.x - SMALL_VAL) && (x <= Pmax.x + SMALL_VAL) && (y >= Pmin.y - SMALL_VAL) && (y <= Pmax.y + SMALL_VAL)
-//	#define MY_DELTA_BOX_CONDITION (x - 0.5*Delta >= Pmin.x - SMALL_VAL) && (x + 0.5*Delta <= Pmax.x + SMALL_VAL) && (y - 0.5*Delta >= Pmin.y - SMALL_VAL) && (y + 0.5*Delta <= Pmax.y + SMALL_VAL)
+	#define MY_BOX_CONDITION (x >= Pmin.x) && (x <= Pmax.x) && (y >= Pmin.y) && (y <= Pmax.y)
 #elif dimension > 2
-	#define MY_BOX_CONDITION (x >= Pmin.x - SMALL_VAL) && (x <= Pmax.x + SMALL_VAL) && (y >= Pmin.y - SMALL_VAL) && (y <= Pmax.y + SMALL_VAL) && (z >= Pmin.z - SMALL_VAL) && (z <= Pmax.z + SMALL_VAL)
-//	#define MY_DELTA_BOX_CONDITION (x >= Pmin.x - SMALL_VAL) && (x <= Pmax.x + SMALL_VAL) && (y >= Pmin.y - SMALL_VAL) && (y <= Pmax.y + SMALL_VAL) && (z >= Pmin.z - SMALL_VAL) && (z <= Pmax.z + SMALL_VAL)
-	//#define MY_DELTA_BOX_CONDITION (x - 0.5*Delta >= Pmin.x - SMALL_VAL) && (x + 0.5*Delta <= Pmax.x + SMALL_VAL) && (y - 0.5*Delta >= Pmin.y - SMALL_VAL) && (y + 0.5*Delta <= Pmax.y + SMALL_VAL) && (z - 0.5*Delta >= Pmin.z - SMALL_VAL) && (z + 0.5*Delta <= Pmax.z + SMALL_VAL)
+	#define MY_BOX_CONDITION (x >= Pmin.x) && (x <= Pmax.x) && (y >= Pmin.y) && (y <= Pmax.y) && (z >= Pmin.z) && (z <= Pmax.z)
 #endif
 
 void output_pvtu_ascii (scalar * list, vector * vlist, int n, FILE * fp, char * subname)
@@ -54,8 +49,8 @@ using MPI. Also works with solids (when not using MPI).
 */
 void output_vtu_ascii_foreach (scalar * list, vector * vlist, int n, FILE * fp, bool linear, double shift)
 {
-  coord Pmin = {X0 + shift, Y0 + shift, Z0 + shift};
-  coord Pmax = {X0 + L0 - shift, Y0 + L0 - shift, Z0 + L0 - shift};
+	coord Pmin = {X0 + shift - SMALL_VAL, Y0 + shift - SMALL_VAL, Z0 + shift - SMALL_VAL};
+	coord Pmax = {X0 + L0 - shift + SMALL_VAL, Y0 + L0 - shift + SMALL_VAL, Z0 + L0 - shift + SMALL_VAL};
 #if defined(_OPENMP)
   int num_omp = omp_get_max_threads();
   omp_set_num_threads(1);
@@ -65,8 +60,10 @@ void output_vtu_ascii_foreach (scalar * list, vector * vlist, int n, FILE * fp, 
   int no_points = 0, no_cells=0 ;
   foreach_vertex(){
     if (MY_BOX_CONDITION) {
-      marker[] = no_points;//_k; // !!!! see here
+      marker[] = no_points; // !!!! see here
       no_points += 1;
+    }else{
+	  marker[] = 0;
     }
   }
   foreach(){
@@ -91,7 +88,7 @@ void output_vtu_ascii_foreach (scalar * list, vector * vlist, int n, FILE * fp, 
     foreach(){
       if (MY_BOX_CONDITION)
       #if dimension == 1
-        fprintf (fp, "\t\t\t\t\t %g %g 0.\n", val(v.x));
+        fprintf (fp, "\t\t\t\t\t %g 0 0.\n", val(v.x));
       #endif
       #if dimension == 2
           fprintf (fp, "\t\t\t\t\t %g %g 0.\n", val(v.x), val(v.y));
@@ -124,13 +121,13 @@ void output_vtu_ascii_foreach (scalar * list, vector * vlist, int n, FILE * fp, 
   foreach(){
     if (MY_BOX_CONDITION)
     #if dimension == 1
-      fprintf (fp, "\t\t\t\t\t %g %g %g %g \n", marker[], marker[1]);
+      fprintf (fp, "\t\t\t\t\t %d %d \n", (int)marker[], (int)marker[1]);
     #endif
     #if dimension == 2
-      fprintf (fp, "\t\t\t\t\t %g %g %g %g \n", marker[], marker[1,0], marker[1,1], marker[0,1]);
+      fprintf (fp, "\t\t\t\t\t %d %d %d %d \n", (int)marker[], (int)marker[1,0], (int)marker[1,1], (int)marker[0,1]);
     #endif
     #if dimension > 2
-      fprintf (fp, "\t\t\t\t\t %g %g %g %g %g %g %g %g\n", marker[], marker[1,0,0], marker[1,1,0], marker[0,1,0],marker[0,0,1], marker[1,0,1], marker[1,1,1], marker[0,1,1]);
+      fprintf (fp, "\t\t\t\t\t %d %d %d %d %d %d %d %d \n", (int)marker[], (int)marker[1,0,0], (int)marker[1,1,0], (int)marker[0,1,0], (int)marker[0,0,1], (int)marker[1,0,1], (int)marker[1,1,1], (int)marker[0,1,1]);
     #endif
   }
   fputs ("\t\t\t\t </DataArray>\n", fp);
@@ -211,20 +208,21 @@ using MPI. Also works with solids (when not using MPI).
 void output_vtu_bin_foreach (scalar * list, vector * vlist, int n, FILE * fp, bool linear, double shift)
 {
   int dim = 3;
-  coord Pmin = {X0 + shift, Y0 + shift, Z0 + shift};
-  coord Pmax = {X0 + L0 - shift, Y0 + L0 - shift, Z0 + L0 - shift};
+  coord Pmin = {X0 + shift - SMALL_VAL, Y0 + shift - SMALL_VAL, Z0 + shift - SMALL_VAL};
+  coord Pmax = {X0 + L0 - shift + SMALL_VAL, Y0 + L0 - shift + SMALL_VAL, Z0 + L0 - shift + SMALL_VAL};
 #if defined(_OPENMP)
   int num_omp = omp_get_max_threads();
   omp_set_num_threads(1);
 #endif
+  fprintf(ferr, "X0=%g Y0=%g L0=%g Pmin.x=%.12g Pmin.y=%.12g Pmax.x=%.12g Pmax.y=%.12g\n", X0, Y0, L0, Pmin.x, Pmin.y, Pmax.x, Pmax.y);
   vertex scalar marker[];
-  int no_points = 0, no_cells=0;
+  int no_points = 0, no_cells = 0;
   foreach_vertex(){
     if (MY_BOX_CONDITION) {
       marker[] = no_points;//_k; // !!!! see here
       no_points++;
     }else{
-    	marker[] = -1;
+    	marker[] = -1; //if you see 0 in vtu file=> there is a mistake
     }
   }
   foreach(){
@@ -257,14 +255,15 @@ void output_vtu_bin_foreach (scalar * list, vector * vlist, int n, FILE * fp, bo
   foreach(){
     if (MY_BOX_CONDITION) {
 #if dimension == 1
-	    fprintf (fp, "%g %g %g %g \n", marker[], marker[1]);
+	    fprintf (fp, "\t\t\t\t\t %d %d \n", (int)marker[], (int)marker[1]);
 #endif
 #if dimension == 2
-	    fprintf (fp, "%g %g %g %g \n", marker[], marker[1,0], marker[1,1], marker[0,1]);
+	    fprintf (fp, "\t\t\t\t\t %d %d %d %d \n", (int)marker[], (int)marker[1,0], (int)marker[1,1], (int)marker[0,1]);
 #endif
 #if dimension > 2
-	    fprintf (fp, "%g %g %g %g %g %g %g %g\n", marker[], marker[1,0,0], marker[1,1,0], marker[0,1,0],marker[0,0,1], marker[1,0,1], marker[1,1,1], marker[0,1,1]);
+	    fprintf (fp, "\t\t\t\t\t %d %d %d %d %d %d %d %d \n", (int)marker[], (int)marker[1,0,0], (int)marker[1,1,0], (int)marker[0,1,0], (int)marker[0,0,1], (int)marker[1,0,1], (int)marker[1,1,1], (int)marker[0,1,1]);
 #endif
+	    if(market)fprintf(ferr, "");
     }
   }
   fputs ("\t\t\t\t </DataArray>\n", fp);

@@ -27,7 +27,7 @@ We will vary the maximum level of refinement, starting from 5. */
 int maxlevel = 9;
 int minlevel = 4;
 #define diam 5e-3//meter 5e-3
-double Q = 1.e-5;//cm^3/s Q=v*S
+double Q = 3.e-5;//cm^3/s Q=v*S
 #define v_in 4.0*Q/(pi*sq(diam))//inlet velocity
 double hjet = 3e-2;//meter
 double length = 2.55e-2;//4.1e-3
@@ -35,7 +35,7 @@ double hbreak = 1.0e-2;
 double Tac = 1e-1;
 
 double SIGMA = 30e-3;//30-70e-3
-double MUL = 3.5e-3, MUG = 18.5e-4;
+double MUL = 3.5e-3, MUG = 18.5e-6;
 double RHOL = 1e+3, RHOG = 1.2;
 double grav =-9.8;
 scalar f0[], fs[], omega[];

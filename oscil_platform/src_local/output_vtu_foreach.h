@@ -9,15 +9,10 @@ using MPI.
 #define SMALL_VAL 1e-15
 #if dimension == 1
 	#define MY_BOX_CONDITION (x >= Pmin.x - SMALL_VAL) && (x <= Pmax.x + SMALL_VAL)
-//	#define MY_DELTA_BOX_CONDITION (x - 0.5*Delta >= Pmin.x - SMALL_VAL) && (x + 0.5*Delta <= Pmax.x + SMALL_VAL)
 #elif dimension == 2
 	#define MY_BOX_CONDITION (x >= Pmin.x - SMALL_VAL) && (x <= Pmax.x + SMALL_VAL) && (y >= Pmin.y - SMALL_VAL) && (y <= Pmax.y + SMALL_VAL)
-//	#define MY_DELTA_BOX_CONDITION (x >= Pmin.x - SMALL_VAL) && (x <= Pmax.x + SMALL_VAL) && (y >= Pmin.y - SMALL_VAL) && (y <= Pmax.y + SMALL_VAL)
-//	#define MY_DELTA_BOX_CONDITION (x - 0.5*Delta >= Pmin.x - SMALL_VAL) && (x + 0.5*Delta <= Pmax.x + SMALL_VAL) && (y - 0.5*Delta >= Pmin.y - SMALL_VAL) && (y + 0.5*Delta <= Pmax.y + SMALL_VAL)
 #elif dimension > 2
 	#define MY_BOX_CONDITION (x >= Pmin.x - SMALL_VAL) && (x <= Pmax.x + SMALL_VAL) && (y >= Pmin.y - SMALL_VAL) && (y <= Pmax.y + SMALL_VAL) && (z >= Pmin.z - SMALL_VAL) && (z <= Pmax.z + SMALL_VAL)
-//	#define MY_DELTA_BOX_CONDITION (x >= Pmin.x - SMALL_VAL) && (x <= Pmax.x + SMALL_VAL) && (y >= Pmin.y - SMALL_VAL) && (y <= Pmax.y + SMALL_VAL) && (z >= Pmin.z - SMALL_VAL) && (z <= Pmax.z + SMALL_VAL)
-	//#define MY_DELTA_BOX_CONDITION (x - 0.5*Delta >= Pmin.x - SMALL_VAL) && (x + 0.5*Delta <= Pmax.x + SMALL_VAL) && (y - 0.5*Delta >= Pmin.y - SMALL_VAL) && (y + 0.5*Delta <= Pmax.y + SMALL_VAL) && (z - 0.5*Delta >= Pmin.z - SMALL_VAL) && (z + 0.5*Delta <= Pmax.z + SMALL_VAL)
 #endif
 
 void output_pvtu_ascii (scalar * list, vector * vlist, int n, FILE * fp, char * subname)
@@ -68,8 +63,10 @@ void output_vtu_ascii_foreach (scalar * list, vector * vlist, int n, FILE * fp, 
   int no_points = 0, no_cells=0 ;
   foreach_vertex(){
     if (MY_BOX_CONDITION) {
-      marker[] = no_points;//_k; // !!!! see here
+      marker[] = _k; // !!!! see here
       no_points += 1;
+    }else{
+	  marker[] = 0;
     }
   }
   foreach(){
@@ -94,7 +91,7 @@ void output_vtu_ascii_foreach (scalar * list, vector * vlist, int n, FILE * fp, 
     foreach(){
       if (MY_BOX_CONDITION)
       #if dimension == 1
-        fprintf (fp, "\t\t\t\t\t %g %g 0.\n", val(v.x));
+        fprintf (fp, "\t\t\t\t\t %g 0 0.\n", val(v.x));
       #endif
       #if dimension == 2
           fprintf (fp, "\t\t\t\t\t %g %g 0.\n", val(v.x), val(v.y));
@@ -127,13 +124,13 @@ void output_vtu_ascii_foreach (scalar * list, vector * vlist, int n, FILE * fp, 
   foreach(){
     if (MY_BOX_CONDITION)
     #if dimension == 1
-      fprintf (fp, "\t\t\t\t\t %g %g %g %g \n", marker[], marker[1]);
+      fprintf (fp, "\t\t\t\t\t %d %d \n", (int)marker[], (int)marker[1]);
     #endif
     #if dimension == 2
-      fprintf (fp, "\t\t\t\t\t %g %g %g %g \n", marker[], marker[1,0], marker[1,1], marker[0,1]);
+      fprintf (fp, "\t\t\t\t\t %d %d %d %d \n", (int)marker[], (int)marker[1,0], (int)marker[1,1], (int)marker[0,1]);
     #endif
     #if dimension > 2
-      fprintf (fp, "\t\t\t\t\t %g %g %g %g %g %g %g %g\n", marker[], marker[1,0,0], marker[1,1,0], marker[0,1,0],marker[0,0,1], marker[1,0,1], marker[1,1,1], marker[0,1,1]);
+      fprintf (fp, "\t\t\t\t\t %d %d %d %d %d %d %d %d \n", (int)marker[], (int)marker[1,0,0], (int)marker[1,1,0], (int)marker[0,1,0], (int)marker[0,0,1], (int)marker[1,0,1], (int)marker[1,1,1], (int)marker[0,1,1]);
     #endif
   }
   fputs ("\t\t\t\t </DataArray>\n", fp);
@@ -224,10 +221,10 @@ void output_vtu_bin_foreach (scalar * list, vector * vlist, int n, FILE * fp, bo
   int no_points = 0, no_cells=0;
   foreach_vertex(){
     if (MY_BOX_CONDITION) {
-      marker[] = no_points;//_k; // !!!! see here
+      marker[] = _k; // !!!! see here
       no_points++;
     }else{
-    	marker[] = -1;
+    	marker[] = 0;
     }
   }
   foreach(){
@@ -260,13 +257,13 @@ void output_vtu_bin_foreach (scalar * list, vector * vlist, int n, FILE * fp, bo
   foreach(){
     if (MY_BOX_CONDITION) {
 #if dimension == 1
-	    fprintf (fp, "%g %g %g %g \n", marker[], marker[1]);
+	    fprintf (fp, "\t\t\t\t\t %d %d \n", (int)marker[], (int)marker[1]);
 #endif
 #if dimension == 2
-	    fprintf (fp, "%g %g %g %g \n", marker[], marker[1,0], marker[1,1], marker[0,1]);
+	    fprintf (fp, "\t\t\t\t\t %d %d %d %d \n", (int)marker[], (int)marker[1,0], (int)marker[1,1], (int)marker[0,1]);
 #endif
 #if dimension > 2
-	    fprintf (fp, "%g %g %g %g %g %g %g %g\n", marker[], marker[1,0,0], marker[1,1,0], marker[0,1,0],marker[0,0,1], marker[1,0,1], marker[1,1,1], marker[0,1,1]);
+	    fprintf (fp, "\t\t\t\t\t %d %d %d %d %d %d %d %d \n", (int)marker[], (int)marker[1,0,0], (int)marker[1,1,0], (int)marker[0,1,0], (int)marker[0,0,1], (int)marker[1,0,1], (int)marker[1,1,1], (int)marker[0,1,1]);
 #endif
     }
   }
