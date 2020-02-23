@@ -35,7 +35,7 @@ void obstacles (scalar fs, int ns)
 	double size = 0.25*dist;
 	for (int i = 0; i < ns; i++) {
 		xc[i] = 0.25 * L0;
-		yc[i] = -0.5 * L0 + (i + 0.5) * dist;// ((int)(ns / 2 + 1) % 2)
+		yc[i] = -0.5 * L0 + (i + 0) * dist;// ((int)(ns / 2 + 1) % 2)
 		R[i] = size;
 	}
 	vertex scalar phi[];
@@ -89,8 +89,8 @@ int main()
 {
 	size (1.0);
 	origin (-0.5*L0, -0.5*L0);
-	periodic (right);
-	periodic (top);
+	//periodic (right);
+	//periodic (top);
 	eta_s = 1e-15;
 	DT = 1e-3;
 	TOLERANCE = 1e-8;
@@ -136,14 +136,14 @@ event acceleration (i++) {
 }
 #endif
 
-event snapshot (t += 0.5; t <= 10.8) {
-	char name[80];
-	sprintf (name, "snapshot-%g", t);
-	scalar pid[];
-	foreach()	pid[] = fmod(pid()*(npe() + 37), npe());
-	boundary ({pid});
-	dump (name);
-}
+//event snapshot (t += 0.5; t <= 10.8) {
+//	char name[80];
+//	sprintf (name, "snapshot-%g", t);
+//	scalar pid[];
+//	foreach()	pid[] = fmod(pid()*(npe() + 37), npe());
+//	boundary ({pid});
+//	dump (name);
+//}
 #undef SEPS
 #define SEPS 1e-15
 event logfile (i+=100)
@@ -157,14 +157,15 @@ event logfile (i+=100)
 }
 
 //Output
-//event vtk_file (i++){
-event vtk_file (t += 0.01){
+event vtk_file (i++;i<20){
+//event vtk_file (t += 0.01){
 	char subname[80]; sprintf(subname, "mc");
 	scalar l[], npid[];
 	vorticity (u, omega);
 	foreach() {l[] = level; omega[] *= 1 - fs[]; npid[] = pid();}
 //	output_vtu_MPI( (scalar *) {fs, f}, (vector *) {u}, subname, L0/pow(2., minlevel));
-	output_vtu_MPI( (scalar *) {fs, f, omega, p, l}, (vector *) {u, a}, subname, L0*(pow(2., -minlevel) - pow(2., -maxlevel - 1)));
+	output_vtu_MPI( (scalar *) {fs, f, omega, p, l}, (vector *) {u, a}, subname, 0 );//- pow(2., -maxlevel - 1)
+//	output_vtu_MPI( (scalar *) {fs, f, omega, p, l}, (vector *) {u, a}, subname, L0*(pow(2., -minlevel+1) ));//- pow(2., -maxlevel - 1)
 }
 
 #define ADAPT_SCALARS {f, fs, u.x, u.y}
