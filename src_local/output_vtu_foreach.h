@@ -3,16 +3,15 @@ This function writes one XML file which allows to read the *.vtu files generated
 by output_vtu_ascii_foreach() when used in MPI. Tested in (quad- and oct-)trees
 using MPI.
 */
-#define SMALL_VAL 0e-12
+#define SMALL_VAL 1e-12
 #if dimension == 1
-	#define MY_BOX_CONDITION (x >= Pmin.x) && (x <= Pmax.x)
+    #define MY_BOX_CONDITION !periodic_bc || (x - Pmin.x - 0.5*Delta > 0) && (Pmax.x - x - 0.5*Delta > 0)
 #elif dimension == 2
-	#define MY_BOX_CONDITION (x - X0 - 0.5*Delta*shift - SMALL_VAL > 0) && (X0 + L0 - x - 0.5*Delta*shift - SMALL_VAL > 0) && (y - Y0 - 0.5*Delta*shift - SMALL_VAL > 0) && (Y0 + L0 - y - 0.5*Delta*shift - SMALL_VAL > 0)
-	//#define MY_BOX_CONDITION (X0 + L0 - x - 0.5*Delta - SMALL_VAL > 0 || x - Pmin.x >= -SMALL_VAL) && (x - X0 - 0.5*Delta - SMALL_VAL > 0 || Pmax.x - x >= -SMALL_VAL) && (Y0 + L0 - y - 0.5*Delta - SMALL_VAL > 0 || y - Pmin.y >= -SMALL_VAL)  && (y - Y0 - 0.5*Delta - SMALL_VAL > 0 || Pmax.y - y >= -SMALL_VAL )
-	//#define MY_BOX_CONDITION (x >= Pmin.x) && (x <= Pmax.x) && (y >= Pmin.y) && (y <= Pmax.y)
+	#define MY_BOX_CONDITION !periodic_bc || (x - Pmin.x - 0.5*Delta > 0) && (Pmax.x - x - 0.5*Delta > 0) && (y - Pmin.y - 0.5*Delta > 0) && (Pmax.y - y - 0.5*Delta > 0)
 #elif dimension > 2
-	#define MY_BOX_CONDITION (x >= Pmin.x) && (x <= Pmax.x) && (y >= Pmin.y) && (y <= Pmax.y) && (z >= Pmin.z) && (z <= Pmax.z)
+    #define MY_BOX_CONDITION !periodic_bc || (x - Pmin.x - 0.5*Delta > 0) && (Pmax.x - x - 0.5*Delta > 0) && (y - Pmin.y - 0.5*Delta > 0) && (Pmax.y - y - 0.5*Delta > 0) && (z - Pmin.z - 0.5*Delta > 0) && (Pmax.z - z - 0.5*Delta > 0)
 #endif
+
 
 void output_pvtu_ascii (scalar * list, vector * vlist, int n, FILE * fp, char * subname)
 {
@@ -51,7 +50,8 @@ using MPI. Also works with solids (when not using MPI).
 */
 void output_vtu_ascii_foreach (scalar * list, vector * vlist, int n, FILE * fp, bool linear, double shift)
 {
-	coord Pmin = {X0 + shift - SMALL_VAL, Y0 + shift - SMALL_VAL, Z0 + shift - SMALL_VAL};
+    int dim = 3; bool periodic_bc = shift > 0;
+    coord Pmin = {X0 + shift - SMALL_VAL, Y0 + shift - SMALL_VAL, Z0 + shift - SMALL_VAL};
 	coord Pmax = {X0 + L0 - shift + SMALL_VAL, Y0 + L0 - shift + SMALL_VAL, Z0 + L0 - shift + SMALL_VAL};
 #if defined(_OPENMP)
   int num_omp = omp_get_max_threads();
@@ -62,10 +62,9 @@ void output_vtu_ascii_foreach (scalar * list, vector * vlist, int n, FILE * fp, 
   int no_points = 0, no_cells=0 ;
   foreach_vertex(){
     if (MY_BOX_CONDITION) {
-      marker[] = no_points; // !!!! see here
-      no_points += 1;
+      marker[] = no_points++;
     }else{
-	  marker[] = 0;
+	  marker[] = -1;
     }
   }
   foreach(){
@@ -209,24 +208,20 @@ using MPI. Also works with solids (when not using MPI).
 
 void output_vtu_bin_foreach (scalar * list, vector * vlist, int n, FILE * fp, bool linear, double shift)
 {
-  int dim = 3;
-  coord Pmin = {X0 + shift - SMALL_VAL, Y0 + shift - SMALL_VAL, Z0 + shift - SMALL_VAL};
-  coord Pmax = {X0 + L0 - shift - SMALL_VAL, Y0 + L0 - shift - SMALL_VAL, Z0 + L0 - shift - SMALL_VAL};
+  int dim = 3; bool periodic_bc = shift > 0;
+  coord Pmin = {X0 + SMALL_VAL, Y0 + SMALL_VAL, Z0 + SMALL_VAL};
+  coord Pmax = {X0 + L0 - SMALL_VAL, Y0 + L0 - SMALL_VAL, Z0 + L0 - SMALL_VAL};
 #if defined(_OPENMP)
   int num_omp = omp_get_max_threads();
   omp_set_num_threads(1);
 #endif
-  char fileName[80];
-  sprintf(fileName, "nameYouWant-%d", pid());
-  FILE * fp1 = fopen(fileName, "a");
-  fprintf(fp1, "X0=%.12g Y0=%.12g L0=%.12g shift=%.12g Pmin.x=%.12g Pmin.y=%.12g Pmax.x=%.12g Pmax.y=%.12g\n", X0, Y0, L0, shift, Pmin.x, Pmin.y, Pmax.x, Pmax.y);
+//  fprintf(fp1, "X0=%.12g Y0=%.12g L0=%.12g shift=%.12g Pmin.x=%.12g Pmin.y=%.12g Pmax.x=%.12g Pmax.y=%.12g\n", X0, Y0, L0, shift, Pmin.x, Pmin.y, Pmax.x, Pmax.y);
 
   vertex scalar marker[];
   int no_points = 0, no_cells = 0;
   foreach_vertex(){
     if (MY_BOX_CONDITION) {
       marker[] = no_points++;
-		if (x > 0.498048 || y > 0.498048) fprintf(fp1,"x=%g y=%g\n", x, y);
     }else{
     	marker[] = -1; //if you see -1 in vtu file=> there is a mistake
     }
@@ -265,7 +260,6 @@ void output_vtu_bin_foreach (scalar * list, vector * vlist, int n, FILE * fp, bo
 #endif
 #if dimension == 2
 	    fprintf (fp, "\t\t\t\t\t %d %d %d %d \n", (int)marker[], (int)marker[1,0], (int)marker[1,1], (int)marker[0,1]);
-	    if((int)marker[]<0 || (int)marker[1,0] <0 || (int)marker[1,1]<0 || (int)marker[0,1] <0) fprintf(fp1, "ERROR: %d %d %d %d x=%.12g y=%.12g dD=%.12g level=%d \n", (int)marker[], (int)marker[1,0], (int)marker[1,1], (int)marker[0,1], x, y, Delta, level);
 #endif
 #if dimension > 2
 	    fprintf (fp, "\t\t\t\t\t %d %d %d %d %d %d %d %d \n", (int)marker[], (int)marker[1,0,0], (int)marker[1,1,0], (int)marker[0,1,0], (int)marker[0,0,1], (int)marker[1,0,1], (int)marker[1,1,1], (int)marker[0,1,1]);

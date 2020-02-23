@@ -1,7 +1,7 @@
 #define BRINKMAN_PENALIZATION 1
 #define DEBUG_BRINKMAN_PENALIZATION 1
 #define DEBUG_OUTPUT_VTU_MPI
-#define REDUCED 1
+#define REDUCED 0
 #define FILTERED
 #include "../src_local/centered-weugene.h"
 //#include "navier-stokes/double-projection.h"
@@ -15,13 +15,14 @@
 #include "view.h"
 #include "../src_local/output_vtu_foreach.h"
 
-int maxlevel = 9;
+int maxlevel = 8;
 int minlevel = 5;
 int Nobst = 2; //250
 scalar fs[], omega[];
 double U0=0.01, rhol=1e+3, sig=73e-3, Lchar=5e-3, mul=1e-3, grav=-9.8;
 double RE, CA, FR;//RE=500.0, CA=0.013, FR=20;
 double Rrho=1000, Rmu=53.73, Ggrav;
+double Radius_b = 0.125;
 double obstacle_pattern(double x, double y, double xc, double yc, double size){
 	return sq(x  - xc) + sq(y - yc) - sq(size);
 }
@@ -34,8 +35,8 @@ void obstacles (scalar fs, int ns)
 	double dist = L0/ns;
 	double size = 0.25*dist;
 	for (int i = 0; i < ns; i++) {
-		xc[i] = 0.25 * L0;
-		yc[i] = -0.5 * L0 + (i + 0) * dist;// ((int)(ns / 2 + 1) % 2)
+		xc[i] = 0.25*L0;
+		yc[i] = -0.5*L0 + 0.5*dist + dist*i;
 		R[i] = size;
 	}
 	vertex scalar phi[];
@@ -61,7 +62,7 @@ void bubbles (scalar f)
 	const int ns=1;
 	face vector ff[];
 	double xc[ns], yc[ns], R[ns];
-	xc[0] = -0.250000; yc[0] = 0.000000; R[0] = 0.125*L0;
+	xc[0] = -0.250000; yc[0] = 0.000000; R[0] = Radius_b*L0;
 //	xc[1] = -0.410100; yc[1] = -0.12890; R[1] = 0.02;
 //	xc[2] = -0.378900; yc[2] =  0.14000; R[2] = 0.03;
 //	xc[3] = -0.200000; yc[3] =  0.20000; R[3] = 0.10;
@@ -85,16 +86,21 @@ void bubbles (scalar f)
 The domain is the periodic unit square centered on the origin. */
 
 
-int main()
+int main(int argc, char * argv[])
 {
-	size (1.0);
+    if (argc > 1) {
+        Radius_b = atof(argv[1]); //convert from string to float
+    }
+    if (argc > 2) {
+        maxlevel = atoi(argv[2]); //convert from string to float
+    }
+    size (1.0);
 	origin (-0.5*L0, -0.5*L0);
-	//periodic (right);
-	//periodic (top);
-	eta_s = 1e-15;
+	periodic (right);
+	periodic (top);
+	eta_s = 1e-10;
 	DT = 1e-3;
 	TOLERANCE = 1e-8;
-//	NITERMAX = 100;
 	N = 1 << maxlevel;
 	RE=U0*Lchar*rhol/mul; CA=U0*mul/sig; FR=sq(U0)/(grav*Lchar);
 	rho1 = 1.; rho2 = rho1/Rrho;
@@ -129,6 +135,7 @@ event init (t = 0) {
 /**
 The gravity vector is aligned with the channel and viscosity is
 unity. */
+
 #if !REDUCED
 event acceleration (i++) {
 	face vector av = a;
@@ -157,15 +164,12 @@ event logfile (i+=100)
 }
 
 //Output
-event vtk_file (i++;i<20){
-//event vtk_file (t += 0.01){
+event vtk_file (t += 0.001; t<20){
 	char subname[80]; sprintf(subname, "mc");
 	scalar l[], npid[];
 	vorticity (u, omega);
 	foreach() {l[] = level; omega[] *= 1 - fs[]; npid[] = pid();}
-//	output_vtu_MPI( (scalar *) {fs, f}, (vector *) {u}, subname, L0/pow(2., minlevel));
-	output_vtu_MPI( (scalar *) {fs, f, omega, p, l}, (vector *) {u, a}, subname, 0 );//- pow(2., -maxlevel - 1)
-//	output_vtu_MPI( (scalar *) {fs, f, omega, p, l}, (vector *) {u, a}, subname, L0*(pow(2., -minlevel+1) ));//- pow(2., -maxlevel - 1)
+	output_vtu_MPI( (scalar *) {fs, f, omega, p, l, npid. rho}, (vector *) {u, a}, subname, 1 );
 }
 
 #define ADAPT_SCALARS {f, fs, u.x, u.y}
