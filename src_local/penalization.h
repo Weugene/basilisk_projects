@@ -5,9 +5,9 @@ const vector zerocf[] = {0.,0.,0.};
     extern scalar fs;
     double eta_s = 1e-15, nu_s = 0, lambda_slip = 0;
     (const) scalar a_br = unity, b_br = unity; // useful for Robin BC
-
+    (const) vector U_solid = zerocf;
     #if BRINKMAN_PENALIZATION == 1 //Dirichlet BC
-        (const) vector U_solid = zerocf, target_U = zerocf, n_sol = zerocf;
+        (const) target_U = zerocf, n_sol = zerocf;
         #define PLUS_BRINKMAN_RHS         + fbp*dt*(- (u.x[] - target_U.x[])/eta_s)
         #define PLUS_NUMERATOR_BRINKMAN   + fbp*dt*(sq(Delta)*target_U.x[]/eta_s)
         #define PLUS_DENOMINATOR_BRINKMAN + fbp*dt*(sq(Delta)/eta_s)
@@ -37,6 +37,11 @@ const vector zerocf[] = {0.,0.,0.};
     #else
         #define BRINKMAN_PENALIZATION_ERROR_BC 1
     #endif
+    #undef SEPS
+    #define SEPS 1e-15
+//    #ifdef CALC_GRAD
+//
+//    #endif
     #ifdef DEBUG_BRINKMAN_PENALIZATION
         vector dbp[], total_rhs[], utau[], grad_utau_n[];
         #define gradun grad_utau_n.x[]

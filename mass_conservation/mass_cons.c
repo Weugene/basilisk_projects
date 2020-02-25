@@ -1,4 +1,4 @@
-#define BRINKMAN_PENALIZATION 1
+#define BRINKMAN_PENALIZATION 4
 #define DEBUG_BRINKMAN_PENALIZATION 1
 #define DEBUG_OUTPUT_VTU_MPI
 #define REDUCED 0
@@ -111,6 +111,9 @@ int main(int argc, char * argv[])
 	G.x = Ggrav;
 	Z.x = 0;
 #endif
+#if BRINKMAN_PENALIZATION == 4
+    lambda_slip = L0*pow(2.0, -maxlevel-1);
+#endif
 	fprintf(ferr, "RE=%g CA=%g FR=%g \n"
 			   "mu1=%g mu2=%g rho1=%g rho2=%g \n"
 	           "sigma=%g grav=%g L0=%g\n",
@@ -143,6 +146,21 @@ event acceleration (i++) {
 }
 #endif
 
+event properties(i++){
+    double mag_n;
+    foreach() {
+        if (fs[] > SEPS && fs[] < 1 - SEPS) {
+            n_sol.x[] = (fs[] - fs[-1]) / Delta;
+            n_sol.y[] = (fs[] - fs[0, -1]) / Delta;
+            mag_n = sqrt(sq(n_sol.x[]) + sq(n_sol.y[]));
+            n_sol.x[] /= (mag_n + SEPS);
+            n_sol.y[] /= (mag_n + SEPS);
+        }else{
+            n_sol.x[] = 0.0;
+            n_sol.y[] = 0.0;
+        }
+    }
+}
 //event snapshot (t += 0.5; t <= 10.8) {
 //	char name[80];
 //	sprintf (name, "snapshot-%g", t);
@@ -151,8 +169,7 @@ event acceleration (i++) {
 //	boundary ({pid});
 //	dump (name);
 //}
-#undef SEPS
-#define SEPS 1e-15
+
 event logfile (i+=100)
 {
 	double avg = normf(u.x).avg, du = change (u.x, un)/(avg + SEPS);
@@ -163,13 +180,23 @@ event logfile (i+=100)
 	du, mgp.resa*dt, mgu.resa, statsf(u.x).sum, normf(p).max);
 }
 
+void correct_press(scalar p){
+    double press = 0;
+    foreach_vertex() {
+        if (fabs(x-X0) < SEPS && fabs(y-Y0) < SEPS) press = p[];
+    }
+    foreach(){
+        p[] -= press;
+    }
+}
 //Output
-event vtk_file (t += 0.001; t<20){
+event vtk_file (i++; t<20){
+//event vtk_file (t += 0.001; t<20){
 	char subname[80]; sprintf(subname, "mc");
 	scalar l[], npid[];
 	vorticity (u, omega);
 	foreach() {l[] = level; omega[] *= 1 - fs[]; npid[] = pid();}
-	output_vtu_MPI( (scalar *) {fs, f, omega, p, l, npid. rho}, (vector *) {u, a}, subname, 1 );
+	output_vtu_MPI( (scalar *) {fs, f, omega, p, l, npid, rho}, (vector *) {u, a, target_U, n_sol}, subname, 1 );
 }
 
 #define ADAPT_SCALARS {f, fs, u.x, u.y}
