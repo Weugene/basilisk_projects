@@ -7,7 +7,7 @@ const vector zerocf[] = {0.,0.,0.};
     (const) scalar a_br = unity, b_br = unity; // useful for Robin BC
     (const) vector U_solid = zerocf;
     #if BRINKMAN_PENALIZATION == 1 //Dirichlet BC
-        (const) target_U = zerocf, n_sol = zerocf;
+        (const) vector target_U = zerocf, n_sol = zerocf;
         #define PLUS_BRINKMAN_RHS         + fbp*dt*(- (u.x[] - target_U.x[])/eta_s)
         #define PLUS_NUMERATOR_BRINKMAN   + fbp*dt*(sq(Delta)*target_U.x[]/eta_s)
         #define PLUS_DENOMINATOR_BRINKMAN + fbp*dt*(sq(Delta)/eta_s)
@@ -77,15 +77,13 @@ void calc_target_U(const vector u, vector target_U, const vector normal){
         //    if (!is_constant(U_solid.x)) fprintf(ferr, "U_solid.x");
         foreach() {
             ubyn = 0;
-            foreach_dimension()
-            ubyn += (u.x[])*normal.x[];
-            foreach_dimension()
-            utau.x[] = u.x[] - ubyn*normal.x[];
+            foreach_dimension() ubyn += (u.x[])*normal.x[];
+            foreach_dimension() utau.x[] = u.x[] - ubyn*normal.x[];
         }
         if (!is_constant(U_solid.x)) foreach() foreach_dimension() u.x[] += U_solid.x[];
         foreach() {
             foreach_dimension() {
-                if (0 < fs[] && fs[] < 1) {
+                if (0 < fs[] ) { //See here!
                     gradun = ((1 - fs[-1])*utau.x[-1] - (1 - fs[-2])*utau.x[-2] + (1 - fs[2])*utau.x[2] - (1 - fs[1])*utau.x[1])*n_sol.x[] / Delta
                             #if dimension > 1
                             + ((1 - fs[0,-1])*utau.x[0,-1] - (1 - fs[0,-2])*utau.x[0,-2] + (1 - fs[0,2])*utau.x[0,2] - (1 - fs[0,1])*utau.x[0,1])*n_sol.y[]/Delta

@@ -4,6 +4,7 @@
 #define REDUCED 0
 #define FILTERED
 #include "../src_local/centered-weugene.h"
+//#include "navier-stokes/double-projection.h"
 #define mu(f)  (1./(clamp(f,0,1)*(1./mu1 - 1./mu2) + 1./mu2))
 #include "two-phase.h"
 #include "tension.h"
@@ -30,6 +31,7 @@ void obstacles (scalar fs, int ns)
 {
 	face vector ffs[];
 	double xc[ns], yc[ns], R[ns];
+	srand (0);
 	double dist = L0/ns;
 	double size = 0.25*dist;
 	for (int i = 0; i < ns; i++) {
@@ -144,50 +146,21 @@ event acceleration (i++) {
 }
 #endif
 
-void calc_norms(scalar fs, vector n_sol, int ns){
-    double xc[ns], yc[ns], R[ns];
-    double dist = L0/ns, magn2;
-    double size = 0.25*dist;
-    for (int i = 0; i < ns; i++) {
-        xc[i] = 0.25*L0;
-        yc[i] = -0.5*L0 + 0.5*dist + dist*i;
-        R[i] = size;
-        fprintf(ferr, "xcycR %g %g %g \n", xc[i], yc[i], R[i]);
-    }
-    trash ({n_sol});
+event properties(i++){
+    double mag_n;
     foreach() {
-        if (fs[]>0){
-            for(int i=0; i<ns; i++) {
-                magn2 = sq(x - xc[i]) + sq(y - yc[i]) + 1e-15;
-                if (magn2 <= sq(R[i])) {
-                    n_sol.x[] = (x - xc[i]) / sqrt(magn2);
-                    n_sol.y[] = (y - yc[i]) / sqrt(magn2);
-                    fprintf(ferr, "n %g %g %g %g %g \n", x, y, n_sol.x[], n_sol.y[], magn2);
-                }
-            }
+        if (fs[] > SEPS && fs[] < 1 - SEPS) {
+            n_sol.x[] = (fs[] - fs[-1]) / Delta;
+            n_sol.y[] = (fs[] - fs[0, -1]) / Delta;
+            mag_n = sqrt(sq(n_sol.x[]) + sq(n_sol.y[]));
+            n_sol.x[] /= (mag_n + SEPS);
+            n_sol.y[] /= (mag_n + SEPS);
         }else{
-            foreach_dimension() n_sol.x[] = 0;
+            n_sol.x[] = 0.0;
+            n_sol.y[] = 0.0;
         }
     }
 }
-
-#if BRINKMAN_PENALIZATION==4
-event properties(i++){
-    calc_norms(fs, n_sol, Nobst);
-//    foreach() {
-//        if (fs[] > SEPS && fs[] < 1 - SEPS) {
-//            n_sol.x[] = (fs[] - fs[-1]) / Delta;
-//            n_sol.y[] = (fs[] - fs[0, -1]) / Delta;
-//            mag_n = sqrt(sq(n_sol.x[]) + sq(n_sol.y[]));
-//            n_sol.x[] /= (mag_n + SEPS);
-//            n_sol.y[] /= (mag_n + SEPS);
-//        }else{
-//            n_sol.x[] = 0.0;
-//            n_sol.y[] = 0.0;
-//        }
-//    }
-}
-#endif
 //event snapshot (t += 0.5; t <= 10.8) {
 //	char name[80];
 //	sprintf (name, "snapshot-%g", t);
@@ -197,54 +170,33 @@ event properties(i++){
 //	dump (name);
 //}
 
-event logfile (t += 0.01)
+event logfile (i+=100)
 {
-	double avggas = sq(L0) - normf(f).avg;
-	fprintf (ferr, "%d %d %g %g %g \n",	maxlevel, i, t, dt, avggas);
+	double avg = normf(u.x).avg, du = change (u.x, un)/(avg + SEPS);
+	fprintf (ferr, "%d %d %g %g %d %d %d %d %d %d %.3g %.3g %.3g %.3g %.3g\n",
+	maxlevel, i, t, dt,
+	mgp.i, mgp.nrelax, mgp.minlevel,
+	mgu.i, mgu.nrelax, mgu.minlevel,
+	du, mgp.resa*dt, mgu.resa, statsf(u.x).sum, normf(p).max);
 }
 
-void correct_press(scalar p, int i){
+void correct_press(scalar p){
     double press = 0;
-    int ip = 0;
-//    FILE *fp1;
-//    char subname[80]; sprintf(subname, "nameYouWant-%d", pid());
-//    fp1 = fopen(subname, "a");
-#if 1 // Left bottom Corner
-    foreach(){
-        if (ip == 0){
-            press = p[];
-            ip++;
-            @if _MPI
-                MPI_Bcast(&press, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-            @endif
-        }
+    foreach_vertex() {
+        if (fabs(x-X0) < SEPS && fabs(y-Y0) < SEPS) press = p[];
     }
-#else //average value
-    press = normf(p).avg;
-#endif
     foreach(){
         p[] -= press;
     }
-//    fprintf(ferr, "p %g \n", press);
-//    fclose(fp1);
-}
-
-event end_timestep(i++){
-    correct_press(p, i);
 }
 //Output
-//event vtk_file (i++; t<20){
-event vtk_file (t += 0.01; t<20){
+event vtk_file (i++; t<20){
+//event vtk_file (t += 0.001; t<20){
 	char subname[80]; sprintf(subname, "mc");
 	scalar l[], npid[];
 	vorticity (u, omega);
 	foreach() {l[] = level; omega[] *= 1 - fs[]; npid[] = pid();}
-
-#ifndef DEBUG_BRINKMAN_PENALIZATION && BRINKMAN_PENALIZATION == 4
-	output_vtu_MPI( (scalar *) {fs, f, omega, p, l, npid}, (vector *) {u, a, n_sol}, subname, 1 );
-#else
-    output_vtu_MPI( (scalar *) {fs, f, omega, p, l, npid}, (vector *) {u, a, n_sol, target_U, dbp, total_rhs, utau, grad_utau_n}, subname, 1 );
-#endif
+	output_vtu_MPI( (scalar *) {fs, f, omega, p, l, npid, rho}, (vector *) {u, a, target_U, n_sol}, subname, 1 );
 }
 
 #define ADAPT_SCALARS {f, fs, u.x, u.y}

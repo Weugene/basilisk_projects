@@ -1,3 +1,6 @@
+#ifndef BASILISK_HEADER_3
+#define BASILISK_HEADER_3
+#line 1 "./../src_local/output_vtu_foreach.h"
 /*
 This function writes one XML file which allows to read the *.vtu files generated
 by output_vtu_ascii_foreach() when used in MPI. Tested in (quad- and oct-)trees
@@ -392,3 +395,5 @@ void face_vector2vector(face vector fv, vector mapped_data_lower, vector mapped_
         mapped_data_upper.x[] = fv.x[1];
     }
 }
+
+#endif
