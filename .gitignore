@@ -6,6 +6,8 @@ out
 *.vtu
 *.vtu.*
 log
+log_*
+out_*
 log-*
 *.log
 *log
