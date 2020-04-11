@@ -37,7 +37,7 @@ scalar f[], * interfaces = {f};
 
 #include "tension.h"
 #include "view.h"
-
+#include "../src_local/output_vtu_foreach.h"
 /**
 To set the contact angle, we allocate a [height-function
 field](/src/heights.h) and set the contact angle boundary condition on
@@ -49,7 +49,7 @@ vector h[];
 h.t[back] = contact_angle (theta0*pi/180.);
 h.r[back] = contact_angle (theta0*pi/180.);
 
-#define MAXLEVEL 5
+#define MAXLEVEL 8
 
 int main()
 {
@@ -70,7 +70,8 @@ int main()
   /**
   We set the surface tension coefficient and run for the range of
   contact angles. */
-  
+  size(2);
+  origin(-L0/2.0, -L0/2.0, 0);
   f.sigma = 1.;
 
   N = 1 << MAXLEVEL;
@@ -84,6 +85,7 @@ The initial drop is a quarter of a sphere. */
 event init (t = 0)
 {
   fraction (f, - (sq(x) + sq(y) + sq(z) - sq(0.5)));
+  event ("vtk_file");
 }
 
 /**
@@ -91,7 +93,7 @@ We log statistics on the maximum velocity, curvature and volume. If
 the standard deviation of curvature falls below $10^{-2}$, we assume
 that the steady shape is reached and we stop the calculation. */
 
-event logfile (i += 10; t <= 10)
+event logfile (i += 10; t < 10)
 {
   scalar kappa[];
   cstats cs = curvature (f, kappa);
@@ -121,7 +123,7 @@ event snapshots (i += 10)
 At equilibrium we output the (almost constant) radius, volume, maximum
 velocity and time. */
 
-event end (t = end)
+/*event end (t = tend)
 {
   scalar kappa[];
   curvature (f, kappa);
@@ -130,7 +132,7 @@ event end (t = end)
   fprintf (ferr, "%d %g %.5g %.3g %.5g %.3g %.5g\n",
 	   N, theta0, R, s.stddev, V, normf(u.x).max, t);
 }
-
+*/
 /**
 We make a movie of the relaxing interface for $\theta = 30^\circ$. We
 use symmetries since only a quarter of the drop is simulated. */
@@ -166,7 +168,10 @@ which seems to be necessary to reach balance (this should be
 improved). Note however that this is specific to this test case and
 should not generally be used in "production" runs, which should work
 fine with the default criterion. */
-
+event vtk_file (t += 0.01){
+    char subname[80]; sprintf(subname, "rs");
+    output_vtu_MPI( (scalar *) {f}, (vector *) {u}, subname, 0);
+}
 #if TREE
 event adapt (i++) {
 #if 1

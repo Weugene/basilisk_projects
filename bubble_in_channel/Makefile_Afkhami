@@ -1,0 +1,7 @@
+CFILE=Afkhami_bubble_in_channel
+Afkhami_bubble_in_channel:
+	rm -rf .qcc* log out bubble_in_channel_* snapshot-* nameYouWant*
+#	qcc -Wall -O2 -events $(CFILE).c -lm $(OPENGLIBS)
+#	./a.out > out 2> log
+	CC99='mpicc -std=c99' qcc -Wunused-result -O2 -D_MPI=1  $(CFILE).c -lm $(OPENGLIBS)
+	mpirun -np 4 ./a.out > out 2> log

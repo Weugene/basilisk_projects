@@ -5,12 +5,14 @@ We wish to approximate numerically the incompressible,
 variable-density Navier--Stokes equations
 $$
 \partial_t\mathbf{u}+\nabla\cdot(\mathbf{u}\otimes\mathbf{u}) = 
-\frac{1}{\rho}\left[-\nabla p + \nabla\cdot(\mu\nabla\mathbf{u})\right] + 
+\frac{1}{\rho}\left[-\nabla p + \nabla\cdot(2\mu\mathbf{D})\right] + 
 \mathbf{a}
 $$
 $$
 \nabla\cdot\mathbf{u} = 0
 $$
+with the deformation tensor 
+$\mathbf{D}=[\nabla\mathbf{u} + (\nabla\mathbf{u})^T]/2$.
 
 The scheme implemented here is close to that used in Gerris ([Popinet,
 2003](/src/references.bib#popinet2003), [Popinet,
@@ -19,12 +21,17 @@ The scheme implemented here is close to that used in Gerris ([Popinet,
 
 We will use the generic time loop, a CFL-limited timestep, the
 Bell-Collela-Glaz advection scheme and the implicit viscosity
-solver. */
+solver. If embedded boundaries are used, a different scheme is used
+for viscosity. */
 
 #include "run.h"
 #include "timestep.h"
 #include "bcg.h"
-#include "viscosity.h"
+#if EMBED
+# include "viscosity-embed.h"
+#else
+# include "viscosity.h"
+#endif
 
 /**
 The primary variables are the centered pressure field $p$ and the
@@ -74,21 +81,44 @@ means that, at the boundary, the acceleration $\mathbf{a}$ must be
 balanced by the pressure gradient. Taking care of boundary orientation
 and staggering of $\mathbf{a}$, this can be written */
 
-p[right] = neumann(a.x[ghost]*fm.x[ghost]/alpha.x[ghost]);
-p[left]  = neumann(-a.x[]*fm.x[]/alpha.x[]);
+#if EMBED
+# define neumann_pressure(i) (alpha.n[i] ? a.n[i]*fm.n[i]/alpha.n[i] :	\
+			      a.n[i]*rho[]/(cm[] + SEPS))
+#else
+# define neumann_pressure(i) (a.n[i]*fm.n[i]/alpha.n[i])
+#endif
+
+p[right] = neumann (neumann_pressure(ghost));
+p[left]  = neumann (- neumann_pressure(0));
 
 #if AXI
 uf.n[bottom] = 0.;
+uf.t[bottom] = dirichlet(0); // since uf is multiplied by the metric which
+                             // is zero on the axis of symmetry
+p[top]    = neumann (neumann_pressure(ghost));
 #else // !AXI
 #  if dimension > 1
-p[top]    = neumann(a.y[ghost]*fm.y[ghost]/alpha.y[ghost]);
-p[bottom] = neumann(-a.y[]*fm.y[]/alpha.y[]);
+p[top]    = neumann (neumann_pressure(ghost));
+p[bottom] = neumann (- neumann_pressure(0));
 #  endif
 #  if dimension > 2
-p[front]  = neumann(a.z[ghost]*fm.z[ghost]/alpha.z[ghost]);
-p[back]   = neumann(-a.z[]*fm.z[]/alpha.z[]);
+p[front]  = neumann (neumann_pressure(ghost));
+p[back]   = neumann (- neumann_pressure(0));
 #  endif
-#endif
+#endif // !AXI
+
+/**
+For [embedded boundaries on trees](/src/embed-tree.h), we need to
+define the pressure gradient for prolongation of pressure close to
+embedded boundaries. */
+
+#if TREE && EMBED
+void pressure_embed_gradient (Point point, scalar p, coord * g)
+{
+  foreach_dimension()
+    g->x = rho[]/(cm[] + SEPS)*(a.x[] + a.x[1])/2.;
+}
+#endif // TREE && EMBED
 
 /**
 ## Initial conditions */
@@ -123,7 +153,23 @@ event defaults (i = 0)
 
 #if TREE
   uf.x.refine = refine_face_solenoidal;
-#endif
+
+  /**
+  When using [embedded boundaries](/src/embed.h), the restriction and
+  prolongation operators need to take the boundary into account. */
+
+#if EMBED
+  uf.x.refine = refine_face;
+  foreach_dimension()
+    uf.x.prolongation = refine_embed_face_x;
+  for (scalar s in {p, pf, u, g}) {
+    s.restriction = restriction_embed_linear;
+    s.refine = s.prolongation = refine_embed_linear;
+  }
+  for (scalar s in {p, pf})
+    s.embed_gradient = pressure_embed_gradient;
+#endif // EMBED
+#endif // TREE
 }
 
 /**
@@ -137,7 +183,7 @@ event init (i = 0)
   boundary ((scalar *){u});
   trash ({uf});
   foreach_face()
-    uf.x[] = fm.x[]*(u.x[] + u.x[-1])/2.;
+    uf.x[] = fm.x[]*face_value (u.x, 0);
   boundary ((scalar *){uf});
 
   /**
@@ -163,7 +209,7 @@ timing of upcoming events. */
 event set_dtmax (i++,last) dtmax = DT;
 
 event stability (i++,last) {
-  dt = dtnext (timestep (uf, dtmax));
+  dt = dtnext (stokes ? dtmax : timestep (uf, dtmax));
 }
 
 /**
@@ -205,12 +251,24 @@ void prediction()
 
   if (u.x.gradient)
     foreach()
-      foreach_dimension()
-        du.x[] = u.x.gradient (u.x[-1], u.x[], u.x[1])/Delta;
+      foreach_dimension() {
+#if EMBED
+        if (!fs.x[] || !fs.x[1])
+	  du.x[] = 0.;
+	else
+#endif
+	  du.x[] = u.x.gradient (u.x[-1], u.x[], u.x[1])/Delta;
+      }
   else
     foreach()
-      foreach_dimension()
-        du.x[] = (u.x[1] - u.x[-1])/(2.*Delta);
+      foreach_dimension() {
+#if EMBED
+        if (!fs.x[] || !fs.x[1])
+	  du.x[] = 0.;
+	else
+#endif
+	  du.x[] = (u.x[1] - u.x[-1])/(2.*Delta);
+    }
   boundary ((scalar *){du});
 
   trash ({uf});
@@ -219,12 +277,16 @@ void prediction()
     int i = -(s + 1.)/2.;
     uf.x[] = u.x[i] + (g.x[] + g.x[-1])*dt/4. + s*(1. - s*un)*du.x[i]*Delta/2.;
     #if dimension > 1
+    if (fm.y[i,0] && fm.y[i,1]) {
       double fyy = u.y[i] < 0. ? u.x[i,1] - u.x[i] : u.x[i] - u.x[i,-1];
       uf.x[] -= dt*u.y[i]*fyy/(2.*Delta);
+    }
     #endif
     #if dimension > 2
+    if (fm.z[i,0,0] && fm.z[i,0,1]) {
       double fzz = u.z[i] < 0. ? u.x[i,0,1] - u.x[i] : u.x[i] - u.x[i,0,-1];
       uf.x[] -= dt*u.z[i]*fzz/(2.*Delta);
+    }
     #endif
     uf.x[] *= fm.x[];
   }
@@ -246,7 +308,7 @@ event advection_term (i++,last)
 {
   if (!stokes) {
     prediction();
-    mgpf = project (uf, pf, alpha, dt/2.);
+    mgpf = project (uf, pf, alpha, dt/2., mgpf.nrelax);
     advection ((scalar *){u}, uf, dt, (scalar *){g});
   }
 }
@@ -272,26 +334,21 @@ the implicit viscosity solver. We then remove the acceleration and
 pressure gradient terms as they will be replaced by their values at
 time $t+\Delta t$. */
 
-event before_viscous_term (i++,last);
-
 event viscous_term (i++,last)
 {
   if (constant(mu.x) != 0.) {
     correction (dt);
-    mgu = viscosity (u, mu, rho, dt);
+    mgu = viscosity (u, mu, rho, dt, mgu.nrelax);
     correction (-dt);
   }
 
   /**
-  The (provisionary) face velocity field at time $t+\Delta t$ is
-  obtained by simple interpolation. We also reset the acceleration
-  field (if it is not a constant). */
+  We reset the acceleration field (if it is not a constant). */
 
-  face vector af = a;
-  trash ({uf,af});
-  foreach_face() {
-    uf.x[] = fm.x[]*(u.x[] + u.x[-1])/2.;
-    if (!is_constant(af.x))
+  if (!is_constant(a.x)) {
+    face vector af = a;
+    trash ({af});
+    foreach_face()
       af.x[] = 0.;
   }
 }
@@ -307,34 +364,37 @@ surface tension or hydrostatic pressure in the presence of gravity.
 To ensure a consistent discretisation, the acceleration term is
 defined on faces as are pressure gradients and the centered combined
 acceleration and pressure gradient term $\mathbf{g}$ is obtained by
-averaging. */
+averaging. 
+
+The (provisionary) face velocity field at time $t+\Delta t$ is
+obtained by interpolation from the centered velocity field. The
+acceleration term is added. */
 
 event acceleration (i++,last)
 {
-  boundary ((scalar *){a});
+  trash ({uf});
   foreach_face()
-    uf.x[] += dt*fm.x[]*a.x[];
-  boundary ((scalar *){uf});
+    uf.x[] = fm.x[]*(face_value (u.x, 0) + dt*a.x[]);
+  boundary ((scalar *){uf, a});
 }
 
 /**
 ## Approximate projection
 
-To get the pressure field at time $t + \Delta t$ we project the face
-velocity field (which will also be used for tracer advection at the
-next timestep). */
+This function constructs the centered pressure gradient and
+acceleration field *g* using the face-centered acceleration field *a*
+and the cell-centered pressure field *p*. */
 
-event projection (i++,last)
+void centered_gradient (scalar p, vector g)
 {
-  mgp = project (uf, p, alpha, dt);
 
   /**
-  We then compute a face field $\mathbf{g}_f$ combining both
+  We first compute a face field $\mathbf{g}_f$ combining both
   acceleration and pressure gradient. */
 
   face vector gf[];
   foreach_face()
-    gf.x[] = a.x[] - alpha.x[]/fm.x[]*(p[] - p[-1])/Delta;
+    gf.x[] = fm.x[]*a.x[] - alpha.x[]*(p[] - p[-1])/Delta;
   boundary_flux ({gf});
 
   /**
@@ -344,24 +404,55 @@ event projection (i++,last)
   trash ({g});
   foreach()
     foreach_dimension()
-      g.x[] = (gf.x[] + gf.x[1])/2.;
+      g.x[] = (gf.x[] + gf.x[1])/(fm.x[] + fm.x[1] + SEPS);
   boundary ((scalar *){g});
+}
+
+/**
+To get the pressure field at time $t + \Delta t$ we project the face
+velocity field (which will also be used for tracer advection at the
+next timestep). Then compute the centered gradient field *g*. */
+
+event projection (i++,last)
+{
+  mgp = project (uf, p, alpha, dt, mgp.nrelax);
+  centered_gradient (p, g);
 
   /**
-  And finally add this term to the centered velocity field. */
+  We add the gradient field *g* to the centered velocity field. */
 
   correction (dt);
 }
 
-event after_projection(i++,last);
+/**
+Some derived solvers need to hook themselves at the end of the
+timestep. */
+
+event end_timestep (i++, last);
 
 /**
 ## Adaptivity
 
-After mesh adaptation fluid properties need to be updated. */
+After mesh adaptation fluid properties need to be updated. When using
+[embedded boundaries](/src/embed.h) the fluid fractions and face
+fluxes need to be checked for inconsistencies. */
 
 #if TREE
 event adapt (i++,last) {
+#if EMBED
+  fractions_cleanup (cs, fs);
+  foreach_face()
+    if (uf.x[] && !fs.x[])
+      uf.x[] = 0.;
+  boundary ((scalar *){uf});
+#endif
   event ("properties");
 }
 #endif
+
+/**
+## See also
+
+* [Double projection](double-projection.h)
+* [Performance monitoring](perfs.h)
+*/

@@ -1,4 +1,4 @@
-#define BRINKMAN_PENALIZATION 4
+#define BRINKMAN_PENALIZATION 1
 #define DEBUG_BRINKMAN_PENALIZATION 1
 #define DEBUG_OUTPUT_VTU_MPI
 #define REDUCED 0
@@ -18,7 +18,7 @@ int maxlevel = 8;
 int minlevel = 5;
 int Nobst = 2; //250
 scalar fs[], omega[];
-double U0=0.01, rhol=1e+3, sig=73e-3, Lchar=5e-3, mul=1e-3, grav=-9.8;
+double U0=0.01, rhol=1e+3, sig=73e-3, Lchar=5e-3, mul=1e-3, grav=9.8;
 double RE, CA, FR;//RE=500.0, CA=0.013, FR=20;
 double Rrho=1000, Rmu=53.73, Ggrav;
 double Radius_b = 0.125;
@@ -73,8 +73,7 @@ void bubbles (scalar f)
 		for (double xp = -L0; xp <= L0; xp += L0)
 			for (double yp = -L0; yp <= L0; yp += L0)
 				for (int i = 0; i < ns; i++)
-					for (int i = 0; i < ns; i++)
-						phi[] = intersection (phi[], (sq(x + xp - xc[i]) + sq(y + yp - yc[i]) - sq(R[i])));
+				    phi[] = intersection (phi[], (sq(x + xp - xc[i]) + sq(y + yp - yc[i]) - sq(R[i])));
 		//phi[] = -phi[];
 	}
 	boundary ({phi});
@@ -200,7 +199,10 @@ event properties(i++){
 event logfile (t += 0.01)
 {
 	double avggas = sq(L0) - normf(f).avg;
-	fprintf (ferr, "%d %d %g %g %g \n",	maxlevel, i, t, dt, avggas);
+	scalar umag[];
+	foreach() umag[] = norm(u); // the length of u
+	norm statu = normf_weugene(umag, fs); // outputs avg, rms, max, volume
+	fprintf (ferr, "%d %d %g %g %g %g %g %g \n", maxlevel, i, t, dt, avggas, statu.avg, statu.rms, statu.max);
 }
 
 void correct_press(scalar p, int i){
@@ -233,18 +235,24 @@ event end_timestep(i++){
     correct_press(p, i);
 }
 //Output
-//event vtk_file (i++; t<20){
-event vtk_file (t += 0.01; t<20){
+//event vtk_file (i++; t<10){
+event vtk_file (t += 0.01; t<10){
 	char subname[80]; sprintf(subname, "mc");
 	scalar l[], npid[];
 	vorticity (u, omega);
+//	vector n_ss[];
+//    calc_norms(fs, n_ss, Nobst);
 	foreach() {l[] = level; omega[] *= 1 - fs[]; npid[] = pid();}
-
-#ifndef DEBUG_BRINKMAN_PENALIZATION && BRINKMAN_PENALIZATION == 4
-	output_vtu_MPI( (scalar *) {fs, f, omega, p, l, npid}, (vector *) {u, a, n_sol}, subname, 1 );
-#else
-    output_vtu_MPI( (scalar *) {fs, f, omega, p, l, npid}, (vector *) {u, a, n_sol, target_U, dbp, total_rhs, utau, grad_utau_n}, subname, 1 );
-#endif
+    scalar divu[];
+    foreach() {
+        divu[]=0;
+        foreach_dimension() divu[] += (uf.x[1]-uf.x[])/Delta;
+    }
+//#ifndef DEBUG_BRINKMAN_PENALIZATION && BRINKMAN_PENALIZATION == 4
+	output_vtu_MPI( (scalar *) {fs, f, omega, p, l, npid, divu}, (vector *) {u, a}, subname, 1 );
+//#else
+//   output_vtu_MPI( (scalar *) {fs, f, omega, p, l, npid}, (vector *) {u, a, n_sol, target_U, dbp, total_rhs, utau, grad_utau_n}, subname, 1 );
+//#endif
 }
 
 #define ADAPT_SCALARS {f, fs, u.x, u.y}
@@ -256,3 +264,64 @@ event adapt (i++){
 	fs.refine = fs.prolongation = fraction_refine;
 	boundary({fs});
 }
+
+
+
+#if 0
+#!/usr/bin/gnuplot -c
+print "args:".ARG1
+if (strlen(ARG1) == 0) print "Usage: " . ARG0 . " picture case. 1-relative Err. 2-average velocity, 3-max velocity"; exit
+# Output W3C Scalable Vector Graphics
+##set terminal pdf
+set terminal postscript eps enhanced color font 'Helvetica,10'
+set grid
+set key spacing 2
+set key top left
+set tics font "Helvetica,10"
+set for [i=1:7] linetype i dt i
+set style line 1 lt 1 lc rgb "blue" lw 3 pt 1 ps 2
+set style line 2 lt 1 lc rgb "red" lw 3 pt 2 ps 2
+set style line 3 lt 1 lc rgb "green" lw 3 pt 4 ps 2
+set style line 4 lt 1 lc rgb "green" lw 3 pt 33 ps 1
+set style line 5 lt 1 lc rgb "blue" lw 3 pt 10 ps 1
+set style line 6 lt 1 lc rgb "red" lw 3 pt 12 ps 1
+set style line 7 lt 3 lc rgb "black" lw 3 pt 2 ps 1
+mcase=ARG1+0
+array A[3]
+array N[3]
+array Title[3]
+array MAXFi[3]
+array lstyles[3]
+A[1]=0.08
+A[2]=0.125
+A[3]=0.2
+tmax=0.4
+dataname(n) = sprintf("m%g",n)
+set xlabel 'time'  font ",10"
+
+do for [i=1:3] {
+    N[i]=sprintf("m%g",A[i]);
+    Title[i]=sprintf("r1=%g",A[i]);
+    stats  N[i] u 3:5 name "XX";
+    MAXFi[i]=XX_max_y;
+    lstyles[i]=i;
+}
+set xr [0:tmax]
+
+if (mcase==1){
+    set yr [-1e-5:1e-5];
+    set format y "10^{%L}"
+    set ylabel 'Relative Error, (fi-fi0)/fi0'  font ",10"
+    plot for[i=1:3] N[i] u 3:(($5 - MAXFi[i])/MAXFi[i]) t Title[i] w lp ls i;
+}
+
+if (mcase==2){
+    set ylabel 'Average velocity'  font ",10"
+    plot for[i=1:3] N[i] u 3:6 t Title[i]  w lp ls i
+}
+
+if (mcase==3){
+    set ylabel 'Max velocity'  font ",10"
+    plot for[i=1:3] N[i] u 3:8 t Title[i] w lp ls i
+}
+#endif

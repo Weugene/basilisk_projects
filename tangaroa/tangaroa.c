@@ -84,8 +84,8 @@ number](https://en.wikipedia.org/wiki/Froude_number) at runtime.
 long. If we assume that it moves at 20 knots (twice its actual cruise
 speed), this gives a Froude number of approx 0.4. */
 
-int MAXLEVEL = 12;
-int LEVEL = 9;
+int MAXLEVEL = 8;
+int LEVEL = 5;
 double FROUDE = 0.4;
 
 /**
@@ -96,14 +96,14 @@ scalar tangaroa[], f0[];
 
 int main (int argc, char * argv[])
 {
-    printf("main");
+  fprintf(ferr,"main");
   maxruntime (&argc, argv);
-    printf("level = %s", argv[1]);
+    fprintf(ferr,"level = %s", argv[1]);
   if (argc > 1) {
     LEVEL = atoi(argv[1]); //convert from string to int
 
   }
-    printf("froud = %s", argv[2]);
+    fprintf(ferr,"froud = %s", argv[2]);
   if (argc > 2) {
     FROUDE = atof(argv[2]);
 
@@ -117,8 +117,8 @@ int main (int argc, char * argv[])
   larger. We change the origin so that the ship is not too close to
   the inflow. */
 	      
-  size (5.);
-  origin (-L0/2.,-L0/3.,-L0/2.);
+  size (1.);
+  //origin (-L0/2.,-L0/3.,-L0/2.);
 
   /**
   We need to tell the code that both `tangaroa` and `f0` are volume
@@ -176,7 +176,7 @@ and velocity field. */
 event init (t = 0) {
   if (!restore (file = "restart")) {
     FILE * fp = fopen ("tangaroa.stl", "r");
-    fraction_from_stl (tangaroa, fp, 5e-4, MAXLEVEL);
+    fraction_from_stl (tangaroa, fp, 1e-3, MAXLEVEL);
     fclose (fp);
     fraction (f0, - z);
     foreach() {
@@ -224,7 +224,7 @@ the top of the steep primary Kelvin waves is particularly noticeable.
 The computations above were done on the Irene supercomputer using 12
 levels of refinement. */
 	      
-event movie (t += 0.01; t <= 10)
+event movie (i += 1; t <= 10)
 {
   view (fov = 5.86528,
     quat = {0.5,0.1,0.2,0.8},//	quat = {0.515965,0.140691,0.245247,0.808605},
@@ -250,7 +250,7 @@ event movie (t += 0.01; t <= 10)
 }
 
 #if DUMP
-event snapshot (i += 100)
+event snapshot (i += 1)
 //event snapshot (i++)
 {
   char name[80];

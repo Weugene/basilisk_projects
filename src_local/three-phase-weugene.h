@@ -33,15 +33,14 @@ face vector alphav[];
 scalar rhov[];
 
 event defaults (i = 0) {
-  alpha = alphav;
-  rho = rhov;
+    alpha = alphav;
+    rho = rhov;
 
-  /**
-  If the viscosity is non-zero, we need to allocate the face-centered
-  viscosity field. */
+    /**
+    If the viscosity is non-zero, we need to allocate the face-centered
+    viscosity field. */
 
-  if (mu1 || mu2)
-    mu = new face vector;
+    if (mu1 || mu2) mu = new face vector;
 }
 
 /**
@@ -54,10 +53,14 @@ The reason we choose this equation because the sum of coefficients of $A_i$ is z
 */
 
 #ifndef rho
-#define rho(f, fs) (clamp(f,0.,1.)*(rho1 - rho2) + rho2 + clamp(fs,0.,1.)*(rho3 - rho2))
+#define rho(f, fs) ((1-fs)*(f*rho1 + (1 - f)*rho2) + fs*rho3)
+//#define rho(f, fs) ((1 - clamp(fs,0,1))*(clamp(f,0.,1.)*rho1 + (1 - clamp(f,0,1))*rho2) + clamp(fs,0.,1.)*rho3)
+//#define rho(f, fs) (1.0/((1 - clamp(fs,0,1))*(clamp(f,0.,1.)/rho1 + (1 - clamp(f,0,1))/rho2) + clamp(fs,0.,1.)/rho3))
 #endif
 #ifndef mu
-#define mu(f, fs)  (clamp(f,0.,1.)*(mu1 - mu2) + mu2 + clamp(fs,0.,1.)*(mu3 - mu2))
+#define mu(f, fs) ((1-fs)*(f*mu1 + (1 - f)*mu2) + fs*mu3)
+//#define mu(f, fs) ((1 - clamp(fs,0,1))*(clamp(f,0.,1.)*mu1 + (1 - clamp(f,0,1))*mu2) + clamp(fs,0.,1.)*mu3)
+//#define mu(f, fs)  (1.0/((1 - clamp(fs,0,1))*(clamp(f,0.,1.)/mu1 + (1 - clamp(f,0,1))/mu2) + clamp(fs,0.,1.)/mu3))
 #endif
 
 /**
@@ -65,107 +68,66 @@ We have the option of using some "smearing" of the density/viscosity
 jump. */
 
 #ifdef FILTERED
-scalar sf1[], sf2[], *smearInterfaces = {sf1, sf2};
+    scalar sf1[], sf2[], *smearInterfaces = {sf1, sf2};
 #else
-#define sf1 f
-#define sf2 fs
-scalar *smearInterfaces = {sf1, sf2};
+    #define sf1 f
+    #define sf2 fs
+    scalar *smearInterfaces = {sf1, sf2};
 #endif
 
 event properties (i++) {
-  /**
-  I do not understand this part of the code. In principle, f2 > 0.5 and f1 < 0.5
-  should not occur because of the way they are described.
-  But I see it happening sometimes (usually at triple contact point).
-  Hence, I include this if-else loop.
-  */
-//  if (i > 1){
-//    foreach(){
-//      if (f2[] > 0.5 & f1[] < 0.5){
-//        f1[] = f2[];
-//      }
-//    }
-//  }
-
-  /**
-  When using smearing of the density jump, we initialise sf_i with the
-  vertex-average of f_i. */
+    /**
+    When using smearing of the density jump, we initialise sf_i with the
+    vertex-average of f_i. */
 #ifdef FILTERED
-
-  for (scalar sf, f in smearInterfaces, interfaces_all){
-        // fprintf(ferr, "%s %s\n", sf.name, f.name);
-      #if dimension <= 2
-          foreach(){
-            sf[] = (4.*f[] +
-        	    2.*(f[0,1] + f[0,-1] + f[1,0] + f[-1,0]) +
-        	    f[-1,-1] + f[1,-1] + f[1,1] + f[-1,1])/16.;
-          }
-      #else // dimension == 3
-          foreach(){
-            sf[] = (8.*f[] +
-        	    4.*(f[-1] + f[1] + f[0,1] + f[0,-1] + f[0,0,1] + f[0,0,-1]) +
-        	    2.*(f[-1,1] + f[-1,0,1] + f[-1,0,-1] + f[-1,-1] +
-        		f[0,1,1] + f[0,1,-1] + f[0,-1,1] + f[0,-1,-1] +
-        		f[1,1] + f[1,0,1] + f[1,-1] + f[1,0,-1]) +
-        	    f[1,-1,1] + f[-1,1,1] + f[-1,1,-1] + f[1,1,1] +
-        	    f[1,1,-1] + f[-1,-1,-1] + f[1,-1,-1] + f[-1,-1,1])/64.;
-          }
-      #endif
-  }
+    #if dimension == 2
+        foreach(){
+            sf1[] = (4.*f[] +
+                2.*(f[0,1] + f[0,-1] + f[1,0] + f[-1,0]) +
+                f[-1,-1] + f[1,-1] + f[1,1] + f[-1,1])/16.;
+            sf2[] = (4.*fs[] +
+                2.*(fs[0,1] + fs[0,-1] + fs[1,0] + fs[-1,0]) +
+                fs[-1,-1] + fs[1,-1] + fs[1,1] + fs[-1,1])/16.;
+        }
+    #endif
+    #if dimension == 3
+        foreach(){
+            sf1[] = (8.*f[] +
+                4.*(f[-1] + f[1] + f[0,1] + f[0,-1] + f[0,0,1] + f[0,0,-1]) +
+                2.*(f[-1,1] + f[-1,0,1] + f[-1,0,-1] + f[-1,-1] +
+                f[0,1,1] + f[0,1,-1] + f[0,-1,1] + f[0,-1,-1] +
+                f[1,1] + f[1,0,1] + f[1,-1] + f[1,0,-1]) +
+                f[1,-1,1] + f[-1,1,1] + f[-1,1,-1] + f[1,1,1] +
+                f[1,1,-1] + f[-1,-1,-1] + f[1,-1,-1] + f[-1,-1,1])/64.;
+            sf2[] = (8.*fs[] +
+                4.*(fs[-1] + fs[1] + fs[0,1] + fs[0,-1] + fs[0,0,1] + fs[0,0,-1]) +
+                2.*(fs[-1,1] + fs[-1,0,1] + fs[-1,0,-1] + fs[-1,-1] +
+                fs[0,1,1] + fs[0,1,-1] + fs[0,-1,1] + fs[0,-1,-1] +
+                fs[1,1] + fs[1,0,1] + fs[1,-1] + fs[1,0,-1]) +
+                fs[1,-1,1] + fs[-1,1,1] + fs[-1,1,-1] + fs[1,1,1] +
+                fs[1,1,-1] + fs[-1,-1,-1] + fs[1,-1,-1] + fs[-1,-1,1])/64.;
+        }
+    #endif
 #endif
 
 #if TREE
-  for (scalar sf in smearInterfaces){
-    sf.prolongation = refine_bilinear;
-    boundary ({sf});
-  }
+    sf1.prolongation = refine_bilinear;
+    sf2.prolongation = refine_bilinear;
+    boundary ({sf1, sf2});
 #endif
 
-  foreach_face() {
-    double ff1 = (sf1[] + sf1[-1])/2.;
-    double ff2 = (sf2[] + sf2[-1])/2.;
-    alphav.x[] = fm.x[]/rho(ff1, ff2);
-    face vector muv = mu;
-    muv.x[] = fm.x[]*mu(ff1, ff2);
-  }
-  foreach()
-    rhov[] = cm[]*rho(sf1[], sf2[]);
-
+    foreach_face() {
+        double ff1 = face_value(sf1, 0);
+        double ff2 = face_value(sf2, 0);
+        alphav.x[] = fm.x[]/rho(ff1, ff2);
+        face vector muv = mu;
+        muv.x[] = fm.x[]*mu(ff1, ff2);
+    }
+    foreach() rhov[] = cm[]*rho(sf1[], sf2[]);
 #if TREE
-  for (scalar sf in smearInterfaces){
-    sf.prolongation = fraction_refine;
-    boundary ({sf});
-  }
+    for (scalar sf in smearInterfaces){
+        sf.prolongation = fraction_refine;
+        boundary ({sf});
+    }
 #endif
 }
-
-
-
-//  int counter1 = 0;
-//  for (scalar sf in smearInterfaces){
-//    counter1++;
-//    int counter2 = 0;
-//    for (scalar f in interfaces_all){
-//      counter2++;
-//      if (counter1 == counter2){
-//        // fprintf(ferr, "%s %s\n", sf.name, f.name);
-//      #if dimension <= 2
-//          foreach(){
-//            sf[] = (4.*f[] +
-//        	    2.*(f[0,1] + f[0,-1] + f[1,0] + f[-1,0]) +
-//        	    f[-1,-1] + f[1,-1] + f[1,1] + f[-1,1])/16.;
-//          }
-//      #else // dimension == 3
-//          foreach(){
-//            sf[] = (8.*f[] +
-//        	    4.*(f[-1] + f[1] + f[0,1] + f[0,-1] + f[0,0,1] + f[0,0,-1]) +
-//        	    2.*(f[-1,1] + f[-1,0,1] + f[-1,0,-1] + f[-1,-1] +
-//        		f[0,1,1] + f[0,1,-1] + f[0,-1,1] + f[0,-1,-1] +
-//        		f[1,1] + f[1,0,1] + f[1,-1] + f[1,0,-1]) +
-//        	    f[1,-1,1] + f[-1,1,1] + f[-1,1,-1] + f[1,1,1] +
-//        	    f[1,1,-1] + f[-1,-1,-1] + f[1,-1,-1] + f[-1,-1,1])/64.;
-//          }
-//      #endif
-//      }
-//    }
-//  }

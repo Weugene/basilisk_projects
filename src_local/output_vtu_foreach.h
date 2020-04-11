@@ -5,11 +5,14 @@ using MPI.
 */
 #define SMALL_VAL 1e-12
 #if dimension == 1
-    #define MY_BOX_CONDITION (!periodic_bc) || (x - Pmin.x - 0.5*Delta > 0) && (Pmax.x - x - 0.5*Delta > 0)
+    #define MY_BOX_CONDITION (!periodic_bc) || (Pmax.x - x - 0.5*Delta > 0)
+//    #define MY_BOX_CONDITION (!periodic_bc) || (x - Pmin.x - 0.5*Delta > 0) && (Pmax.x - x - 0.5*Delta > 0)
 #elif dimension == 2
-	#define MY_BOX_CONDITION (!periodic_bc) || (x - Pmin.x - 0.5*Delta > 0) && (Pmax.x - x - 0.5*Delta > 0) && (y - Pmin.y - 0.5*Delta > 0) && (Pmax.y - y - 0.5*Delta > 0)
+	#define MY_BOX_CONDITION (!periodic_bc) || (Pmax.x - x - 0.5*Delta > 0) && (Pmax.y - y - 0.5*Delta > 0)
+//	#define MY_BOX_CONDITION (!periodic_bc) || (x - Pmin.x - 0.5*Delta > 0) && (Pmax.x - x - 0.5*Delta > 0) && (y - Pmin.y - 0.5*Delta > 0) && (Pmax.y - y - 0.5*Delta > 0)
 #elif dimension > 2
-    #define MY_BOX_CONDITION (!periodic_bc) || (x - Pmin.x - 0.5*Delta > 0) && (Pmax.x - x - 0.5*Delta > 0) && (y - Pmin.y - 0.5*Delta > 0) && (Pmax.y - y - 0.5*Delta > 0) && (z - Pmin.z - 0.5*Delta > 0) && (Pmax.z - z - 0.5*Delta > 0)
+    #define MY_BOX_CONDITION (!periodic_bc) || (Pmax.x - x - 0.5*Delta > 0) && (Pmax.y - y - 0.5*Delta > 0) && (Pmax.z - z - 0.5*Delta > 0)
+//    #define MY_BOX_CONDITION (!periodic_bc) || (x - Pmin.x - 0.5*Delta > 0) && (Pmax.x - x - 0.5*Delta > 0) && (y - Pmin.y - 0.5*Delta > 0) && (Pmax.y - y - 0.5*Delta > 0) && (z - Pmin.z - 0.5*Delta > 0) && (Pmax.z - z - 0.5*Delta > 0)
 #endif
 
 
@@ -51,8 +54,8 @@ using MPI. Also works with solids (when not using MPI).
 void output_vtu_ascii_foreach (scalar * list, vector * vlist, int n, FILE * fp, bool linear, double shift)
 {
     int dim = 3; bool periodic_bc = shift > 0;
-    coord Pmin = {X0 + shift - SMALL_VAL, Y0 + shift - SMALL_VAL, Z0 + shift - SMALL_VAL};
-	coord Pmax = {X0 + L0 - shift + SMALL_VAL, Y0 + L0 - shift + SMALL_VAL, Z0 + L0 - shift + SMALL_VAL};
+    coord Pmin = {X0 + SMALL_VAL, Y0 + SMALL_VAL, Z0 + SMALL_VAL};
+    coord Pmax = {X0 + L0 - SMALL_VAL, Y0 + L0 - SMALL_VAL, Z0 + L0 - SMALL_VAL};
 #if defined(_OPENMP)
   int num_omp = omp_get_max_threads();
   omp_set_num_threads(1);
@@ -329,6 +332,8 @@ void output_vtu_bin_foreach (scalar * list, vector * vlist, int n, FILE * fp, bo
         fwrite (&vz, sizeof (double), 1, fp);
       #endif
       #if dimension > 2
+        fwrite (&val(v.x), sizeof (double), 1, fp);
+        fwrite (&val(v.y), sizeof (double), 1, fp);
         fwrite (&val(v.z), sizeof (double), 1, fp);
       #endif
       }

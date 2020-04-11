@@ -1,15 +1,15 @@
 const vector zerocf[] = {0.,0.,0.};
 #ifdef BRINKMAN_PENALIZATION
-    #define frhs (1 - fs[])
+    #define frhs 1
     #define fbp (fs[])
     extern scalar fs;
-    double eta_s = 1e-15, nu_s = 0, lambda_slip = 0;
+    double eta_s = 1e-15, nu_s = 1, lambda_slip = 0;
     (const) scalar a_br = unity, b_br = unity; // useful for Robin BC
     (const) vector U_solid = zerocf;
     #if BRINKMAN_PENALIZATION == 1 //Dirichlet BC
         (const) vector target_U = zerocf, n_sol = zerocf;
-        #define PLUS_BRINKMAN_RHS         + fbp*dt*(- (u.x[] - target_U.x[])/eta_s)
-        #define PLUS_NUMERATOR_BRINKMAN   + fbp*dt*(sq(Delta)*target_U.x[]/eta_s)
+        #define PLUS_BRINKMAN_RHS         + fbp*dt*( - (u.x[] - target_U.x[])/eta_s )
+        #define PLUS_NUMERATOR_BRINKMAN   + 0
         #define PLUS_DENOMINATOR_BRINKMAN + fbp*dt*(sq(Delta)/eta_s)
     #elif BRINKMAN_PENALIZATION == 2 //Neumann BC
         vector target_U[], n_sol[];
@@ -45,6 +45,8 @@ const vector zerocf[] = {0.,0.,0.};
     #ifdef DEBUG_BRINKMAN_PENALIZATION
         vector dbp[], total_rhs[], utau[], grad_utau_n[];
         #define gradun grad_utau_n.x[]
+    #else
+        double gradun;
     #endif
 #else
     #define frhs 1
@@ -61,8 +63,6 @@ struct Brinkman {
     face vector uf;
     scalar rho;
     double dt;
-//    int nrelax;
-//    scalar*res;
 };
 
 
@@ -119,16 +119,19 @@ void brinkman_correction_uf (face vector uf, double dt){
     double fs_face, target_U_face;
     foreach_face(){
         fs_face = face_value(fs, 0);
-        target_U_face = face_value(target_U.x, 0);
+        target_U_face = (((fs[-1] > 0)*target_U.x[-1] + (fs[] > 0)*target_U.x[])/((fs[-1] > 0) + (fs[] > 0) + 1e-20));//face_value(target_U.x, 0);
         uf.x[] = (uf.x[] + (fs_face*dt/eta_s)*target_U_face)/(1 +fs_face*dt/eta_s);
     }
     boundary ((scalar *){uf});
 }
+
 void brinkman_correction (struct Brinkman p){
-    vector u = p.u; face vector uf = p.uf; scalar rho = p.rho; double dt = p.dt;
+    vector u = p.u; face vector uf = p.uf; double dt = p.dt;
     brinkman_correction_u (u, dt);
-    brinkman_correction_uf (uf, dt);
+//    brinkman_correction_uf (uf, dt);
 }
+
+
 
 //void calc_target_Uf(face vector uf, vector U_solid, face vector target_U, vector normal){
 //    double ubyn;

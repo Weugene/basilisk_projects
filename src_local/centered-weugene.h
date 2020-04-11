@@ -320,9 +320,19 @@ field. */
 event advection_term (i++,last)
 {
   if (!stokes) {
+    //event("vtk_file");//1
     prediction();
+    //event("vtk_file");//2
+#if BRINKMAN_PENALIZATION
+    mgpf = project_bp (uf, pf, alpha, 0.5*dt, mgpf.nrelax, fs, target_U, u, eta_s);//Weugene: chi^{n+1/2}
+#else
     mgpf = project (uf, pf, alpha, dt/2., mgpf.nrelax);
-    advection ((scalar *){u}, uf, dt, (scalar *){g});
+//      mgpf = project_bp (uf, pf, alpha, 0.5*dt, mgpf.nrelax, fs, target_U, u, eta_s);//Weugene: chi^{n+1/2}
+#endif
+//    advection ((scalar *){u}, uf, dt);//corrected: Weugene
+    //event("vtk_file");//3
+    advection ((scalar *){u}, uf, dt, (scalar *){g});// original version
+    //event("vtk_file");//4
   }
 }
 
@@ -336,8 +346,13 @@ static void correction (double dt)
 {
   foreach()
     foreach_dimension()
-      u.x[] += dt*g.x[];
-  boundary ((scalar *){u});  
+//#if BRINKMAN_PENALIZATION
+//      u.x[] = (u.x[] + (1.0 - fs[])*dt*g.x[] + (dt/eta_s)*fs[]*target_U.x[])/(1 + (dt/eta_s)*fs[]); //corrected: Weugene
+//#else
+//      u.x[] = (u.x[] + (1.0 - fs[])*dt*g.x[] + (dt/eta_s)*fs[]*target_U.x[])/(1 + (dt/eta_s)*fs[]); //corrected: Weugene
+      u.x[] += (1.0 - fs[])*dt*g.x[]; //original version
+//#endif
+  boundary ((scalar *){u});
 }
 
 /**
@@ -350,9 +365,12 @@ time $t+\Delta t$. */
 event viscous_term (i++,last)
 {
   if (constant(mu.x) != 0.) {
-    correction (dt);
-    mgu = viscosity (u, mu, rho, dt, mgu.nrelax);
-    correction (-dt);
+    correction (dt);//Weugene correction: chi^{n+1}
+    //event("vtk_file");//5
+    mgu = viscosity (u, mu, rho, dt, mgu.nrelax);//Weugene: chi^{n+1}
+    //event("vtk_file");//6
+    correction (-dt);//Weugene: chi^n
+    //event("vtk_file");//7
   }
 
   /**
@@ -365,6 +383,8 @@ event viscous_term (i++,last)
       af.x[] = 0.;
   }
 }
+
+
 
 /**
 ### Acceleration term
@@ -386,8 +406,26 @@ acceleration term is added. */
 event acceleration (i++,last)
 {
   trash ({uf});
+//  double fss, target_Uf;
   foreach_face()
-    uf.x[] = fm.x[]*(face_value (u.x, 0) + dt*a.x[]);
+    {
+#if BRINKMAN_PENALIZATION
+//      fss = face_value(fs, 0);
+//      target_Uf= face_value(target_U.x, 0);
+//      uf.x[] = fm.x[] *
+//                 (face_value(u.x, 0) + (1 - fss) * dt * a.x[] + fss * (dt / eta_s) * target_Uf) /
+//                 (1 + fss * (dt / eta_s));//face vector a: Weugene's comment
+        uf.x[] = fm.x[]*(face_value (u.x, 0) + (1 - fs_face.x[])*dt*a.x[]);
+#else
+//        fss = face_value(fs, 0);
+//        target_Uf= face_value(target_U.x, 0);
+//        uf.x[] = fm.x[] *
+//                 (face_value(u.x, 0) + (1 - fss) * dt * a.x[] + fss * (dt / eta_s) * target_Uf) /
+//                 (1 + fss * (dt / eta_s));//face vector a: Weugene's comment
+      uf.x[] = fm.x[]*(face_value (u.x, 0) + dt*a.x[]);//original version
+#endif
+    }
+    //event("vtk_file");//8
   boundary ((scalar *){uf, a});
 }
 
@@ -417,7 +455,7 @@ void centered_gradient (scalar p, vector g)
   trash ({g});
   foreach()
     foreach_dimension()
-      g.x[] = (gf.x[] + gf.x[1])/(fm.x[] + fm.x[1] + SEPS);
+      g.x[] = (gf.x[] + gf.x[1])/(fm.x[] + fm.x[1] + SEPS); //!!! ???: Weugene, numerator = gf.x[]*fm.x[] + gf.x[1]*fm.x[1]
   boundary ((scalar *){g});
 }
 
@@ -428,20 +466,26 @@ next timestep). Then compute the centered gradient field *g*. */
 
 event projection (i++,last)
 {
+#if BRINKMAN_PENALIZATION
+  mgp = project_bp (uf, p, alpha, dt, mgp.nrelax, fs, target_U, u, eta_s);// Weugene: chi^{n+1}
+#else
   mgp = project (uf, p, alpha, dt, mgp.nrelax);
+//  mgp = project_bp (uf, p, alpha, dt, mgp.nrelax, fs, target_U, u, eta_s);// Weugene: chi^{n+1}
+#endif
   centered_gradient (p, g);
-
+  //event("vtk_file");//9
   /**
   We add the gradient field *g* to the centered velocity field. */
-
   correction (dt);//Weugene: why here?
+  //event("vtk_file");//10
 }
 
-#if BRINKMAN_PENALIZATION
-event brinkman_penalization(i++, last){
-    brinkman_correction(u, uf, rho, dt);
-}
-#endif
+//#if BRINKMAN_PENALIZATION
+//event brinkman_penalization(i++, last){
+//    brinkman_correction(u, uf, rho, dt);
+////    event("vtk_file");
+//}
+//#endif
 /**
 Some derived solvers need to hook themselves at the end of the
 timestep. */
@@ -497,6 +541,8 @@ void MinMaxValues(scalar * list, double * arr_eps) {// for each scalar min and m
   for (int i = 0; i < ilist; i++){
 #if EPS_MAXA == 1
     arr_eps[i] *=arr[i][1];
+#elif EPS_MAXA == 2
+    arr_eps[i] *= arr[i][1] - arr[i][0];
 #else
     arr_eps[i] *= 0.5*(arr[i][0] + arr[i][1]);
 #endif
