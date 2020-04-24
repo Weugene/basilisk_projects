@@ -1,6 +1,3 @@
-#ifndef BASILISK_HEADER_32
-#define BASILISK_HEADER_32
-#line 1 "./../src_local/../src_local/poisson-weugene.h"
 /**
 # Multigrid Poisson--Helmholtz solvers
 
@@ -385,7 +382,6 @@ static double residual (scalar * al, scalar * bl, scalar * resl, void * data)
       maxres = fabs (res[]);
   }
   boundary (resl);
-  fprintf(ferr, "maxres= %g \n", maxres);
   return maxres;
 }
 
@@ -427,10 +423,6 @@ mgstats poisson (struct Poisson p)
     TOLERANCE = p.tolerance;
 
   scalar a = p.a, b = p.b;
-#if EMBED
-  if (!p.embed_flux && a.boundary[embed] != symmetry)
-    p.embed_flux = embed_flux;
-#endif // EMBED
   mgstats s = mg_solve ({a}, {b}, residual, relax,
 			&p, p.nrelax, p.res, minlevel = max(1, p.minlevel));
 
@@ -466,127 +458,48 @@ struct Project {
   face vector alpha; // optional: default unityf
   double dt;         // optional: default one
   int nrelax;        // optional: default four
-  scalar fs;
-  vector target_U;   // optional: default 0
-  vector u;
-  double eta_s;         // optional: default 1e-10
 };
 
 trace
 mgstats project (struct Project q)
 {
-    face vector uf = q.uf;
-    scalar p = q.p;
-    (const) face vector alpha = q.alpha.x.i ? q.alpha : unityf;
-    double dt = q.dt ? q.dt : 1.;
-    int nrelax = q.nrelax ? q.nrelax : 4;
-
-    /**
-    We allocate a local scalar field and compute the divergence of
-    $\mathbf{u}_f$. The divergence is scaled by *dt* so that the
-    pressure has the correct dimension. */
-
-    scalar div[];
-    foreach() {
-        div[] = 0.;
-        foreach_dimension()
-        div[] += uf.x[1] - uf.x[];
-        div[] /= dt*Delta;
-    }
-
-    /**
-    We solve the Poisson problem. The tolerance (set with *TOLERANCE*) is
-    the maximum relative change in volume of a cell (due to the divergence
-    of the flow) during one timestep i.e. the non-dimensional quantity
-    $$
-    |\nabla\cdot\mathbf{u}_f|\Delta t
-    $$
-    Given the scaling of the divergence above, this gives */
-
-    mgstats mgp = poisson (p, div, alpha,
-                           tolerance = TOLERANCE/dt, nrelax = nrelax);
-
-    /**
-    And compute $\mathbf{u}_f^{n+1}$ using $\mathbf{u}_f$ and $p$. */
-
-    foreach_face()
-    uf.x[] -= dt*alpha.x[]*face_gradient_x (p, 0);
-    boundary ((scalar *){uf});
-
-    return mgp;
-}
-//#define solid_vel (target_Uf.x[])
-//#define solid_vel ((target_U.x[-1] + target_U.x[])/2.0)
-//#define solid_vel ((fs[-1]*target_U.x[-1] + fs[]*target_U.x[])/(fs[-1] + fs[] + 1e-20))
-//#define solid_vel (((fs[-1] > 0)*target_U.x[-1] + (fs[] > 0)*target_U.x[])/((fs[-1] > 0) + (fs[] > 0) + 1e-20))
-extern scalar f;
-trace
-mgstats project_bp (struct Project q)
-{
   face vector uf = q.uf;
-  face vector u_rhs[], alpha_mod[];//, target_Uf[];
-  vector u = q.u;
   scalar p = q.p;
   (const) face vector alpha = q.alpha.x.i ? q.alpha : unityf;
-  double dt = q.dt ? q.dt : 1., tmp;
+  double dt = q.dt ? q.dt : 1.;
   int nrelax = q.nrelax ? q.nrelax : 4;
-
+  
   /**
   We allocate a local scalar field and compute the divergence of
   $\mathbf{u}_f$. The divergence is scaled by *dt* so that the
   pressure has the correct dimension. */
 
-  double adv=0;
-//  foreach_face(){
-//    target_Uf.x[] = solid_vel;
-//  }
-//  boundary((scalar *){target_Uf});
-  foreach_face(){
-//      tmp = 0;
-//      adv = 0;
-      tmp = dt*fs_face.x[]/eta_s;
-//      tmp = dt*face_value(fs, 0)/eta_s;
-      adv = 1*(u.x[] - u.x[-1])/Delta; //see down!
-//      adv = target_Uf.x[]*(u.x[] - u.x[-1])/Delta; //see down!
-      u_rhs.x[] = (uf.x[] + tmp*(target_Uf.x[] - eta_s*adv))/(1.0 + tmp);
-      alpha_mod.x[] = alpha.x[]/(1.0 + tmp);
-//      if (fs[]>0) fprintf(ferr, "tmp=%g urhs=%g uf=%g alphaM=%g alpha=%g eta_s=%g fs=%g Ut=%g \n", tmp, u_rhs.x[], uf.x[], alpha_mod.x[], alpha.x[], eta_s, face_value(fs, 0), face_value(target_U.x,0));
-  }
-  boundary ((scalar *){u_rhs, alpha_mod});
   scalar div[];
   foreach() {
     div[] = 0.;
     foreach_dimension()
-      div[] += u_rhs.x[1] - u_rhs.x[];
+      div[] += uf.x[1] - uf.x[];
     div[] /= dt*Delta;
   }
-//    fprintf(ferr, "div done\n");
+
   /**
   We solve the Poisson problem. The tolerance (set with *TOLERANCE*) is
   the maximum relative change in volume of a cell (due to the divergence
-  of the flow) during one timestep i.e. the non-dimensional quantity
+  of the flow) during one timestep i.e. the non-dimensional quantity 
   $$
-  |\nabla\cdot\mathbf{u}_f|\Delta t
-  $$
+  |\nabla\cdot\mathbf{u}_f|\Delta t 
+  $$ 
   Given the scaling of the divergence above, this gives */
-  mgstats mgp = poisson (p, div, alpha_mod, tolerance = TOLERANCE/dt, nrelax = nrelax); //corrected: WEUGENE
+
+  mgstats mgp = poisson (p, div, alpha,
+			 tolerance = TOLERANCE/sq(dt), nrelax = nrelax);
+
   /**
   And compute $\mathbf{u}_f^{n+1}$ using $\mathbf{u}_f$ and $p$. */
-//  int idir=0;
-  foreach_face(){
-//      adv=0;
-      tmp = dt*fs_face.x[]/eta_s;
-//      tmp = dt*face_value(fs, 0)/eta_s;
-        adv = 1*(u.x[] - u.x[-1])/Delta; //see up!
-//      adv = target_Uf.x[]*(u.x[] - u.x[-1])/Delta; //see up!
-      uf.x[] = (uf.x[] - dt * alpha.x[] * face_gradient_x(p, 0) + tmp*(target_Uf.x[] - eta_s*adv)) / (1.0 + tmp);
-//      if (face_value(fs,0)>0 && face_value(fs,0)<1) fprintf(ferr, "%d: fs[]=%g %g tmp=%g uf.x=%g ? Usol=%g f=%g %g\n", ((idir++) % 2),fs[-1], fs[], tmp, uf.x[], solid_vel, f[-1], f[]);
-//      if (!(fs[-1]==1 && fs[]==1 && fs[1]==1 || fs[-1]==0 && fs[]==0 && fs[1]==0)) fprintf(ferr, "%d: fs[]=%g %g %g tmp=%g uf.x=%g %g %g Usol=%g f=%g %g %g\n", ((idir++) % 2),fs[-1], fs[], fs[1], tmp, uf.x[-1], uf.x[], uf.x[1], solid_vel, f[-1], f[], f[1]);
-  }
+
+  foreach_face()
+    uf.x[] -= dt*alpha.x[]*face_gradient_x (p, 0);
   boundary ((scalar *){uf});
 
   return mgp;
 }
-
-
-#endif

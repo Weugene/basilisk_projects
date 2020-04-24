@@ -1,18 +1,20 @@
 #define BRINKMAN_PENALIZATION 1
 //#define DEBUG_BRINKMAN_PENALIZATION 1
 #define DEBUG_MINMAXVALUES 1
-
+#define FILTERED
+#define JACOBI 1
 #undef SEPS
 #define SEPS 1e-30
-scalar fs[], f0[], divu[];
+scalar f0[], divu[];
 face vector fs_face[];
 
 #include "grid/octree.h"
 #include "../src_local/centered-weugene.h"
-#include "two-phase.h"
-#include "tension.h"
+//#include "two-phase.h"
+#include "../src_local/three-phase-weugene.h"
+//#include "tension.h"
 //#include "navier-stokes/conserving.h"
-#include "fracface.h"
+//#include "fracface.h"
 /**
 We also need to compute distance functions (to describe the solid geometry
 ), use visualisation functions. */
@@ -68,10 +70,12 @@ void fraction_from_stl (scalar f, FILE * fp, double eps, int maxlevel){
 
 int minlevel = 5, maxlevel = 8;
 int level = 6;
-double Ldomain = 1.02, Lch = 6e-3;
+double Ldomain = 1.02, Lch = 1.02;//6e-3
 double uemax = 0.1;
-double rhol = 1600, rhog = 10, mul = 1, mug = 1e-3;
-double sig = 0.074, pdelta = 330.0;
+double rhol = 1, rhog = 10, mul = 1, mug = 1e-1;
+double sig = 0.0005, pdelta = 1;
+//double rhol = 1600, rhog = 10, mul = 1, mug = 1e-3;
+//double sig = 0.074, pdelta = 330.0;
 double U0, RE, CA, LA, WE;
 /**
 We need additional (fraction) fields for the composite geometry and for the
@@ -95,9 +99,12 @@ int main (int argc, char * argv[]) {
     WE = rhol*sq(U0)*Lch/sig;
 	rho1 = 1.0; // water
 	rho2 = rhog/rhol; // air
+	rho3= 10*max(rho1, rho2); // air
 	mu1 = 1.0/RE;
 	mu2 = mug/mul/RE;
-	f.sigma = 1.0/WE;
+	mu2 = 10*max(mu1, mu2);
+//	f.sigma = 1.0/WE;
+    fprintf(ferr, "Tension.h module is switched off\n");
     eta_s= 1e-7;
 
 	size (Ldomain);
@@ -105,7 +112,7 @@ int main (int argc, char * argv[]) {
 	origin (-sh,-sh,-sh);
     fprintf(ferr, "U0=%g dp=%g Lch=%g sigma=%g"
                   "mu1=%g mu2=%g rho1=%g rho2=%g"
-                  "Re=%g Ca=%g We=%g La=%g", U0, pdelta, Lch, sig,
+                  "Re=%g Ca=%g We=%g La=%g\n", U0, pdelta, Lch, sig,
                    mu1, mu2, rho1, rho2, RE, CA, WE, LA);
 	/**
 	We need to tell the code that both `fs` and `f0` are volume
@@ -118,15 +125,15 @@ int main (int argc, char * argv[]) {
 /**
 ## Boundary conditions
 The inflow condition */
-u.n[left] = dirichlet(U0*(1-fs[]));
+u.n[left] = neumann(0);//dirichlet(U0*(1-fs[]));
 u.t[left] = neumann(0);
 u.r[left] = neumann(0);
 uf.n[left] = neumann(0);
 uf.t[left] = neumann(0);
 uf.r[left] = neumann(0);
-p[left]   = neumann(pdelta);
-pf[left]  = neumann(pdelta);
-f[left]   = dirichlet(1);
+p[left]   = dirichlet(pdelta);
+pf[left]  = dirichlet(pdelta);
+f[left]   = dirichlet(1.0 - fs[]);
 /*The outflow condition */
 u.n[right] = neumann(0);
 u.t[right] = neumann(0);
@@ -159,28 +166,26 @@ event init (t = 0) {
 		fraction_from_stl (fs, fp, 1e-3, maxlevel);
 		fprintf(ferr, "stl saved in fs \n");
 //		face_fraction (fs, fs_face);
-		foreach_face() fs_face.x[] =face_value(fs,0);
+        foreach_face() fs_face.x[] = 0.5*(fs[-1] + fs[]);
+        boundary((scalar *){fs_face});
 
 		fclose (fp);
 //        foreach() {f[] += fs[]; f0[] = f[];}
 		refine(x < X0 + Ldomain/pow(2., minlevel) && level < maxlevel);
-		boundary ({f, f0, u});
-		DT=1e-10;
-		event("snapshot");
+		boundary ({fs, f, f0, u});
+		DT=1e-9;
 	}
 }
 
 event set_dtmax (i++) if (i<500) DT *= 1.05;
 
-event vof(i++){
-	foreach_face() uf.x[] *= 1 - fs_face.x[];
-}
 
-event logfile (i++){
+
+event end_timestep (i+=2){
 	double avggas = sq(L0) - normf(f).avg;
 	foreach() {
 		divu[] = 0;
-		foreach_dimension() divu[] += (uf.x[1]-uf.x[])/Delta;
+		foreach_dimension() divu[] += (uf.x[1] - uf.x[])/Delta;
 	}
 	double Linf_u = -10;
 	foreach( reduction(max:Linf_u) ){
@@ -201,8 +206,8 @@ solid fraction fs) and of the gas-liquid interface, colored with the
 height.
 The computations above were done on the Irene supercomputer using 12
 levels of refinement. */
-//event movie (t += 0.01; t <= 10) {
-event movie (i += 100; t <= 10) {
+event movie (t += 0.01; t <= 10) {
+//event movie (i += 100) {
     view (fov = 50, camera="iso",
         tx = 0, ty = 0.2,
         width = 1024, height = 768);
@@ -226,6 +231,7 @@ event snapshot (i +=100) {
 	char name[80];
 	sprintf (name, "dump-%d", i);
 	dump (file = name);
+	fprintf(ferr,"dumped file=%s in t=%g dt=%g i=%d \n", name, t, dt, i);
 }
 #endif
 
@@ -233,10 +239,10 @@ event snapshot (i +=100) {
 //event vtk_file (t += 0.01){
 event vtk_file (i += 1){
     char subname[80]; sprintf(subname, "comp");
-    //scalar l[];
+    scalar l[];
     //vorticity (u, omega);
-    //foreach() {l[] = level; omega[] *= 1 - fs[];}
-    output_vtu_MPI( (scalar *) {f, fs}, (vector *) {u}, subname, 0);
+    foreach() {l[] = level;}
+    output_vtu_MPI( (scalar *) {f, fs, l}, (vector *) {u}, subname, 0);
 }
 
 /**
@@ -245,7 +251,7 @@ event vtk_file (i += 1){
 This computation is only feasible thanks to mesh adaptation, based
 both on volume fraction and velocity accuracy. */
 #define ADAPT_SCALARS {f, fs, u}
-#define ADAPT_EPS_SCALARS {1e-3,1e-3,uemax,uemax,uemax}
+#define ADAPT_EPS_SCALARS {1e-4,1e-4,uemax,uemax,uemax}
 event adapt (i++){
     double eps_arr[] = ADAPT_EPS_SCALARS;
     MinMaxValues(ADAPT_SCALARS, eps_arr);
@@ -253,3 +259,5 @@ event adapt (i++){
 	fs.refine = fs.prolongation = fraction_refine;
 	boundary({fs});
 }
+
+event stop(t = 10);

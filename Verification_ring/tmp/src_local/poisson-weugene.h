@@ -1,5 +1,5 @@
-#ifndef BASILISK_HEADER_33
-#define BASILISK_HEADER_33
+#ifndef BASILISK_HEADER_30
+#define BASILISK_HEADER_30
 #line 1 "./../src_local/./../src_local/poisson-weugene.h"
 /**
 # Multigrid Poisson--Helmholtz solvers
@@ -515,7 +515,7 @@ mgstats project (struct Project q)
 
     return mgp;
 }
-#define solid_vel (fs_face.x[]*(target_U.x[-1] + target_U.x[])/2.0)
+#define solid_vel ((target_U.x[-1] + target_U.x[])/2.0)
 //#define solid_vel ((fs[-1]*target_U.x[-1] + fs[]*target_U.x[])/(fs[-1] + fs[] + 1e-20))
 //#define solid_vel (((fs[-1] > 0)*target_U.x[-1] + (fs[] > 0)*target_U.x[])/((fs[-1] > 0) + (fs[] > 0) + 1e-20))
 extern scalar f;
@@ -539,7 +539,7 @@ mgstats project_bp (struct Project q)
   foreach_face(){
     target_Uf.x[] = solid_vel;
   }
-
+  boundary((scalar *){target_Uf});
   foreach_face(){
 //      tmp = 0;
       adv = 0;
@@ -550,7 +550,7 @@ mgstats project_bp (struct Project q)
       alpha_mod.x[] = alpha.x[]/(1.0 + tmp);
 //      if (fs[]>0) fprintf(ferr, "tmp=%g urhs=%g uf=%g alphaM=%g alpha=%g eta_s=%g fs=%g Ut=%g \n", tmp, u_rhs.x[], uf.x[], alpha_mod.x[], alpha.x[], eta_s, face_value(fs, 0), face_value(target_U.x,0));
   }
-  boundary ({u_rhs, alpha_mod});
+  boundary ((scalar *){u_rhs, alpha_mod});
   scalar div[];
   foreach() {
     div[] = 0.;

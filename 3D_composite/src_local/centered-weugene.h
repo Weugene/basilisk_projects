@@ -1,5 +1,5 @@
-#ifndef BASILISK_HEADER_36
-#define BASILISK_HEADER_36
+#ifndef BASILISK_HEADER_26
+#define BASILISK_HEADER_26
 #line 1 "./../src_local/centered-weugene.h"
 /**
 # Incompressible Navier--Stokes solver (centered formulation)

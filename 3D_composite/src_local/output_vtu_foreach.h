@@ -335,6 +335,8 @@ void output_vtu_bin_foreach (scalar * list, vector * vlist, int n, FILE * fp, bo
         fwrite (&vz, sizeof (double), 1, fp);
       #endif
       #if dimension > 2
+        fwrite (&val(v.x), sizeof (double), 1, fp);
+        fwrite (&val(v.y), sizeof (double), 1, fp);
         fwrite (&val(v.z), sizeof (double), 1, fp);
       #endif
       }

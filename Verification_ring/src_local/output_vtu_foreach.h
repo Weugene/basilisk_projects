@@ -1,5 +1,5 @@
-#ifndef BASILISK_HEADER_14
-#define BASILISK_HEADER_14
+#ifndef BASILISK_HEADER_15
+#define BASILISK_HEADER_15
 #line 1 "./../src_local/output_vtu_foreach.h"
 /*
 This function writes one XML file which allows to read the *.vtu files generated
@@ -335,6 +335,8 @@ void output_vtu_bin_foreach (scalar * list, vector * vlist, int n, FILE * fp, bo
         fwrite (&vz, sizeof (double), 1, fp);
       #endif
       #if dimension > 2
+        fwrite (&val(v.x), sizeof (double), 1, fp);
+        fwrite (&val(v.y), sizeof (double), 1, fp);
         fwrite (&val(v.z), sizeof (double), 1, fp);
       #endif
       }

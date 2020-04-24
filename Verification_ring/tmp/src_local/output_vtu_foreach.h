@@ -1,5 +1,5 @@
-#ifndef BASILISK_HEADER_1
-#define BASILISK_HEADER_1
+#ifndef BASILISK_HEADER_14
+#define BASILISK_HEADER_14
 #line 1 "./../src_local/output_vtu_foreach.h"
 /*
 This function writes one XML file which allows to read the *.vtu files generated
@@ -8,14 +8,14 @@ using MPI.
 */
 #define SMALL_VAL 1e-12
 #if dimension == 1
-    #define MY_BOX_CONDITION (!periodic_bc) || (Pmax.x - x - 0.5*Delta > 0)
-//    #define MY_BOX_CONDITION (!periodic_bc) || (x - Pmin.x - 0.5*Delta > 0) && (Pmax.x - x - 0.5*Delta > 0)
+//    #define MY_BOX_CONDITION (!periodic_bc) || (Pmax.x - x - 0.5*Delta > 0)
+    #define MY_BOX_CONDITION (!periodic_bc) || (x - Pmin.x - 0.5*Delta > 0) && (Pmax.x - x - 0.5*Delta > 0)
 #elif dimension == 2
-	#define MY_BOX_CONDITION (!periodic_bc) || (Pmax.x - x - 0.5*Delta > 0) && (Pmax.y - y - 0.5*Delta > 0)
-//	#define MY_BOX_CONDITION (!periodic_bc) || (x - Pmin.x - 0.5*Delta > 0) && (Pmax.x - x - 0.5*Delta > 0) && (y - Pmin.y - 0.5*Delta > 0) && (Pmax.y - y - 0.5*Delta > 0)
+//	#define MY_BOX_CONDITION (!periodic_bc) || (Pmax.x - x - 0.5*Delta > 0) && (Pmax.y - y - 0.5*Delta > 0)
+	#define MY_BOX_CONDITION (!periodic_bc) || (x - Pmin.x - 0.5*Delta > 0) && (Pmax.x - x - 0.5*Delta > 0) && (y - Pmin.y - 0.5*Delta > 0) && (Pmax.y - y - 0.5*Delta > 0)
 #elif dimension > 2
-    #define MY_BOX_CONDITION (!periodic_bc) || (Pmax.x - x - 0.5*Delta > 0) && (Pmax.y - y - 0.5*Delta > 0) && (Pmax.z - z - 0.5*Delta > 0)
-//    #define MY_BOX_CONDITION (!periodic_bc) || (x - Pmin.x - 0.5*Delta > 0) && (Pmax.x - x - 0.5*Delta > 0) && (y - Pmin.y - 0.5*Delta > 0) && (Pmax.y - y - 0.5*Delta > 0) && (z - Pmin.z - 0.5*Delta > 0) && (Pmax.z - z - 0.5*Delta > 0)
+//    #define MY_BOX_CONDITION (!periodic_bc) || (Pmax.x - x - 0.5*Delta > 0) && (Pmax.y - y - 0.5*Delta > 0) && (Pmax.z - z - 0.5*Delta > 0)
+    #define MY_BOX_CONDITION (!periodic_bc) || (x - Pmin.x - 0.5*Delta > 0) && (Pmax.x - x - 0.5*Delta > 0) && (y - Pmin.y - 0.5*Delta > 0) && (Pmax.y - y - 0.5*Delta > 0) && (z - Pmin.z - 0.5*Delta > 0) && (Pmax.z - z - 0.5*Delta > 0)
 #endif
 
 

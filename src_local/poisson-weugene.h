@@ -382,7 +382,7 @@ static double residual (scalar * al, scalar * bl, scalar * resl, void * data)
       maxres = fabs (res[]);
   }
   boundary (resl);
-  fprintf(ferr, "maxres=%g \n", maxres);
+  fprintf(ferr, "maxres= %g \n", maxres);
   return maxres;
 }
 
@@ -512,7 +512,8 @@ mgstats project (struct Project q)
 
     return mgp;
 }
-#define solid_vel (fs_face.x[]*(target_U.x[-1] + target_U.x[])/2.0)
+//#define solid_vel (target_Uf.x[])
+//#define solid_vel ((target_U.x[-1] + target_U.x[])/2.0)
 //#define solid_vel ((fs[-1]*target_U.x[-1] + fs[]*target_U.x[])/(fs[-1] + fs[] + 1e-20))
 //#define solid_vel (((fs[-1] > 0)*target_U.x[-1] + (fs[] > 0)*target_U.x[])/((fs[-1] > 0) + (fs[] > 0) + 1e-20))
 extern scalar f;
@@ -520,7 +521,7 @@ trace
 mgstats project_bp (struct Project q)
 {
   face vector uf = q.uf;
-  face vector u_rhs[], alpha_mod[], target_Uf[];
+  face vector u_rhs[], alpha_mod[];//, target_Uf[];
   vector u = q.u;
   scalar p = q.p;
   (const) face vector alpha = q.alpha.x.i ? q.alpha : unityf;
@@ -533,21 +534,22 @@ mgstats project_bp (struct Project q)
   pressure has the correct dimension. */
 
   double adv=0;
-  foreach_face(){
-    target_Uf.x[] = solid_vel;
-  }
-
+//  foreach_face(){
+//    target_Uf.x[] = solid_vel;
+//  }
+//  boundary((scalar *){target_Uf});
   foreach_face(){
 //      tmp = 0;
-      adv = 0;
+//      adv = 0;
       tmp = dt*fs_face.x[]/eta_s;
 //      tmp = dt*face_value(fs, 0)/eta_s;
-      //adv = target_Uf.x[]*(u.x[] - u.x[-1])/Delta; //see down!
-      u_rhs.x[] = (uf.x[] + tmp*(solid_vel - eta_s*adv))/(1.0 + tmp);
+      adv = 1*(u.x[] - u.x[-1])/Delta; //see down!
+//      adv = target_Uf.x[]*(u.x[] - u.x[-1])/Delta; //see down!
+      u_rhs.x[] = (uf.x[] + tmp*(target_Uf.x[] - eta_s*adv))/(1.0 + tmp);
       alpha_mod.x[] = alpha.x[]/(1.0 + tmp);
 //      if (fs[]>0) fprintf(ferr, "tmp=%g urhs=%g uf=%g alphaM=%g alpha=%g eta_s=%g fs=%g Ut=%g \n", tmp, u_rhs.x[], uf.x[], alpha_mod.x[], alpha.x[], eta_s, face_value(fs, 0), face_value(target_U.x,0));
   }
-  boundary ({u_rhs, alpha_mod});
+  boundary ((scalar *){u_rhs, alpha_mod});
   scalar div[];
   foreach() {
     div[] = 0.;
@@ -555,7 +557,7 @@ mgstats project_bp (struct Project q)
       div[] += u_rhs.x[1] - u_rhs.x[];
     div[] /= dt*Delta;
   }
-    fprintf(ferr, "div done\n");
+//    fprintf(ferr, "div done\n");
   /**
   We solve the Poisson problem. The tolerance (set with *TOLERANCE*) is
   the maximum relative change in volume of a cell (due to the divergence
@@ -569,11 +571,12 @@ mgstats project_bp (struct Project q)
   And compute $\mathbf{u}_f^{n+1}$ using $\mathbf{u}_f$ and $p$. */
 //  int idir=0;
   foreach_face(){
-      adv=0;
+//      adv=0;
       tmp = dt*fs_face.x[]/eta_s;
 //      tmp = dt*face_value(fs, 0)/eta_s;
-     // adv = target_Uf.x[]*(u.x[] - u.x[-1])/Delta; //see up!
-      uf.x[] = (uf.x[] - dt * alpha.x[] * face_gradient_x(p, 0) + tmp*(solid_vel - eta_s*adv)) / (1.0 + tmp);
+        adv = 1*(u.x[] - u.x[-1])/Delta; //see up!
+//      adv = target_Uf.x[]*(u.x[] - u.x[-1])/Delta; //see up!
+      uf.x[] = (uf.x[] - dt * alpha.x[] * face_gradient_x(p, 0) + tmp*(target_Uf.x[] - eta_s*adv)) / (1.0 + tmp);
 //      if (face_value(fs,0)>0 && face_value(fs,0)<1) fprintf(ferr, "%d: fs[]=%g %g tmp=%g uf.x=%g ? Usol=%g f=%g %g\n", ((idir++) % 2),fs[-1], fs[], tmp, uf.x[], solid_vel, f[-1], f[]);
 //      if (!(fs[-1]==1 && fs[]==1 && fs[1]==1 || fs[-1]==0 && fs[]==0 && fs[1]==0)) fprintf(ferr, "%d: fs[]=%g %g %g tmp=%g uf.x=%g %g %g Usol=%g f=%g %g %g\n", ((idir++) % 2),fs[-1], fs[], fs[1], tmp, uf.x[-1], uf.x[], uf.x[1], solid_vel, f[-1], f[], f[1]);
   }
