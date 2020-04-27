@@ -515,6 +515,12 @@ mgstats project (struct Project q)
 
     return mgp;
 }
+//double UnablaU(scalar ux){
+//    double sum = target_Uf.x[]*(ux[]-ux[-1]);
+//#dimension>1
+//    sum += target_Uf.y[]*(ux[]-ux[-1])
+//    return target_Uf.x[]*(ux[]-ux[-1])
+//}}
 //#define solid_vel (target_Uf.x[])
 //#define solid_vel ((target_U.x[-1] + target_U.x[])/2.0)
 //#define solid_vel ((fs[-1]*target_U.x[-1] + fs[]*target_U.x[])/(fs[-1] + fs[] + 1e-20))
@@ -545,9 +551,8 @@ mgstats project_bp (struct Project q)
 //      tmp = 0;
 //      adv = 0;
       tmp = dt*fs_face.x[]/eta_s;
-//      tmp = dt*face_value(fs, 0)/eta_s;
       adv = 1*(u.x[] - u.x[-1])/Delta; //see down!
-//      adv = target_Uf.x[]*(u.x[] - u.x[-1])/Delta; //see down!
+//      adv = target_Uf.x[]*(u.x[] - u.x[-1])/Delta; //not correct!
       u_rhs.x[] = (uf.x[] + tmp*(target_Uf.x[] - eta_s*adv))/(1.0 + tmp);
       alpha_mod.x[] = alpha.x[]/(1.0 + tmp);
 //      if (fs[]>0) fprintf(ferr, "tmp=%g urhs=%g uf=%g alphaM=%g alpha=%g eta_s=%g fs=%g Ut=%g \n", tmp, u_rhs.x[], uf.x[], alpha_mod.x[], alpha.x[], eta_s, face_value(fs, 0), face_value(target_U.x,0));
@@ -576,9 +581,8 @@ mgstats project_bp (struct Project q)
   foreach_face(){
 //      adv=0;
       tmp = dt*fs_face.x[]/eta_s;
-//      tmp = dt*face_value(fs, 0)/eta_s;
         adv = 1*(u.x[] - u.x[-1])/Delta; //see up!
-//      adv = target_Uf.x[]*(u.x[] - u.x[-1])/Delta; //see up!
+//      adv = target_Uf.x[]*(u.x[] - u.x[-1])/Delta; //incorrect!
       uf.x[] = (uf.x[] - dt * alpha.x[] * face_gradient_x(p, 0) + tmp*(target_Uf.x[] - eta_s*adv)) / (1.0 + tmp);
 //      if (face_value(fs,0)>0 && face_value(fs,0)<1) fprintf(ferr, "%d: fs[]=%g %g tmp=%g uf.x=%g ? Usol=%g f=%g %g\n", ((idir++) % 2),fs[-1], fs[], tmp, uf.x[], solid_vel, f[-1], f[]);
 //      if (!(fs[-1]==1 && fs[]==1 && fs[1]==1 || fs[-1]==0 && fs[]==0 && fs[1]==0)) fprintf(ferr, "%d: fs[]=%g %g %g tmp=%g uf.x=%g %g %g Usol=%g f=%g %g %g\n", ((idir++) % 2),fs[-1], fs[], fs[1], tmp, uf.x[-1], uf.x[], uf.x[1], solid_vel, f[-1], f[], f[1]);

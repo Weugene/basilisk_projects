@@ -271,20 +271,30 @@ void prediction()
       foreach_dimension() {
 #if EMBED
         if (!fs.x[] || !fs.x[1])
-	  du.x[] = 0.;
-	else
+            du.x[] = 0.;
+	    else
 #endif
-	  du.x[] = u.x.gradient (u.x[-1], u.x[], u.x[1])/Delta;
+#ifdef BRINKMAN_PENALIZATION
+        if (fabs(fs_face.x[] - 1) < SEPS || fabs(fs_face.x[1] - 1) < SEPS)
+	        du.x[] = 0.; // inside solids
+	    else
+#endif
+	        du.x[] = u.x.gradient (u.x[-1], u.x[], u.x[1])/Delta;
       }
   else
     foreach()
-      foreach_dimension() {
+        foreach_dimension() {
 #if EMBED
-        if (!fs.x[] || !fs.x[1])
-	  du.x[] = 0.;
-	else
+            if (!fs.x[] || !fs.x[1])
+	            du.x[] = 0.;
+	        else
 #endif
-	  du.x[] = (u.x[1] - u.x[-1])/(2.*Delta);
+#ifdef BRINKMAN_PENALIZATION
+            if (fabs(fs_face.x[] - 1) < SEPS || fabs(fs_face.x[1] - 1) < SEPS)
+	            du.x[] = 0.; // inside solids
+	        else
+#endif
+	            du.x[] = (u.x[1] - u.x[-1])/(2.*Delta);
     }
   boundary ((scalar *){du});
 
@@ -350,12 +360,13 @@ static void correction (double dt)
 {
   foreach()
     foreach_dimension()
-//#if BRINKMAN_PENALIZATION
+#if BRINKMAN_PENALIZATION
 //      u.x[] = (u.x[] + (1.0 - fs[])*dt*g.x[] + (dt/eta_s)*fs[]*target_U.x[])/(1 + (dt/eta_s)*fs[]); //corrected: Weugene
-//#else
-//      u.x[] = (u.x[] + (1.0 - fs[])*dt*g.x[] + (dt/eta_s)*fs[]*target_U.x[])/(1 + (dt/eta_s)*fs[]); //corrected: Weugene
-      u.x[] += (1.0 - fs[])*dt*g.x[]; //original version
-//#endif
+    if (fabs(1 - fs_face.x[]) > SEPS || fabs(1 - fs_face.x[1]) > SEPS)// in fluid
+        u.x[] += dt*g.x[]; //original version
+#else
+    u.x[] += dt*g.x[]; //original version
+#endif
   boundary ((scalar *){u});
 }
 
@@ -411,13 +422,13 @@ event acceleration (i++,last)
 {
   trash ({uf});
   face vector ia =a;
-  foreach_face()
-    {
+  foreach_face(){
 #if BRINKMAN_PENALIZATION
-        ia.x[] *= 1 - fs_face.x[];
-        uf.x[] = fm.x[]*(face_value (u.x, 0) + dt*a.x[]);
+      uf.x[] = fm.x[]*(face_value (u.x, 0));
+      if (fabs(1 - fs_face.x[]) > SEPS || fabs(1 - fs_face.x[1]) > SEPS)// in fluid
+          uf.x[] += fm.x[]*dt*a.x[];
 #else
-      uf.x[] = fm.x[]*(face_value (u.x, 0) + dt*a.x[]);//original version
+        uf.x[] = fm.x[]*(face_value (u.x, 0) + dt*a.x[]);//original version
 #endif
     }
     //event("vtk_file");//8
@@ -467,7 +478,7 @@ event projection (i++,last)
   mgp = project (uf, p, alpha, dt, mgp.nrelax);
 //  mgp = project_bp (uf, p, alpha, dt, mgp.nrelax, fs, target_U, u, eta_s);// Weugene: chi^{n+1}
 #endif
-  centered_gradient (p, g);
+  centered_gradient (p, g); //calc gf, g using p^{n+1}, a^{n+1/2}
   //event("vtk_file");//9
   /**
   We add the gradient field *g* to the centered velocity field. */

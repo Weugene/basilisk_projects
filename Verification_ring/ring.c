@@ -123,66 +123,67 @@ double posx (double t){
 void soild_fs(scalar fs, face vector fs_face, double t){
     double tt = max(t-deltaT,0);
     double x00 = posx(tt);
-    foreach(){
-        fs[] = 0;
-        for (int xi=-L0; xi <=L0; xi +=L0) {
-            double x1 = x00 + xi;
-            fs[] += solid_function(x1, vc.y * tt, x, y);
-//            if (fs[]>0) fprintf(ferr, "fs=%g\n", fs[]);
-        }
-    }
-    foreach_face(x) {
-        fs_face.x[] = 0;
-        for (int xi=-L0; xi <=L0; xi +=L0) {
-            double x1 = x00 + xi;
-            fs_face.x[] += solid_function(x1, vc.y * tt, x, y);
-        }
-    }
-    foreach_face(y) {
-        fs_face.y[] = 0;
-        for (int xi=-L0; xi <=L0; xi +=L0) {
-            double x1 = x00 + xi;
-            fs_face.y[] += solid_function(x1, vc.y * tt, x, y);
-        }
-    }
-    boundary((scalar *){fs_face});
-//    vertex scalar phi[];
-//    foreach_vertex() {
-//        phi[] = HUGE;
+//    foreach(){
+//        fs[] = 0;
 //        for (int xi=-L0; xi <=L0; xi +=L0) {
 //            double x1 = x00 + xi;
-//            phi[] = intersection(phi[], (sq(x - x1) + sq(y - vc.y * tt) - sq(rad)));
+//            fs[] += solid_function(x1, vc.y * tt, x, y);
 //        }
-//        phi[] = -phi[];
 //    }
-//    boundary ({phi});
-//    fractions (phi, fs, fs_face);
-//    foreach_face() {
-//        fs_face.x[] = face_value(fs,0);
+//    foreach_face(x) {
+//        fs_face.x[] = 0;
+//        for (int xi=-L0; xi <=L0; xi +=L0) {
+//            double x1 = x00 + xi;
+//            fs_face.x[] += solid_function(x1, vc.y * tt, x, y);
+//        }
 //    }
+//    foreach_face(y) {
+//        fs_face.y[] = 0;
+//        for (int xi=-L0; xi <=L0; xi +=L0) {
+//            double x1 = x00 + xi;
+//            fs_face.y[] += solid_function(x1, vc.y * tt, x, y);
+//        }
+//    }
+//    boundary((scalar *){fs_face});
+
+
+    vertex scalar phi[];
+    foreach_vertex() {
+        phi[] = HUGE;
+        for (int xi=-L0; xi <=L0; xi +=L0) {
+            double x1 = x00 + xi;
+            phi[] = intersection(phi[], (sq(x - x1) + sq(y - vc.y * tt) - sq(rad)));
+        }
+        phi[] = -phi[];
+    }
+    boundary ({phi});
+    fractions (phi, fs, fs_face);
+    foreach_face() {
+        fs_face.x[] = face_value(fs,0);
+    }
     fs.refine = fs.prolongation = fraction_refine;
     boundary({fs});
 }
 void bubbles (scalar f){
-    foreach(){
-        f[] = 0.5*(1 - tanh((sq(x - xs0) + sq(y) - sq(1.0*rad))/thickness));
-        f[] += 0.5*(tanh((sq(x - xs0) + sq(y) - sq(2.5*rad))/thickness) + 1);
-    }
-    boundary({f});
-//    vertex scalar phi[];
-//    face vector ff[];
-//    foreach_vertex() {
-//        phi[] = HUGE;
-//        for (int xi=-L0; xi <=L0; xi +=L0) {
-//            double x1 = xs0 + xi;
-////            phi[] = intersection(phi[], sq(x - x1) + sq(y) > sq(2.5*rad)  ? 1 : -1);
-////            phi[] = intersection(phi[], (sq(x - x1) + sq(y) > sq(2.5*rad) || sq(x - x1) + sq(y) < sq(1.05*rad) ) ? 1 : -1);
-//            phi[] = intersection(phi[], sq(x - x1) + sq(y) - sq(2.5*rad)  );
-//            phi[] = union(phi[], -sq(x - x1) - sq(y) + sq(1.05*rad) );
-//        }
+//    foreach(){
+//        f[] = 0.5*(1 - tanh((sq(x - xs0) + sq(y) - sq(1.0*rad))/thickness));
+//        f[] += 0.5*(tanh((sq(x - xs0) + sq(y) - sq(2.5*rad))/thickness) + 1);
 //    }
-//    boundary ({phi});
-//    fractions (phi, f, ff);
+//    boundary({f});
+    vertex scalar phi[];
+    face vector ff[];
+    foreach_vertex() {
+        phi[] = HUGE;
+        for (int xi=-L0; xi <=L0; xi +=L0) {
+            double x1 = xs0 + xi;
+//            phi[] = intersection(phi[], sq(x - x1) + sq(y) > sq(2.5*rad)  ? 1 : -1);
+//            phi[] = intersection(phi[], (sq(x - x1) + sq(y) > sq(2.5*rad) || sq(x - x1) + sq(y) < sq(1.05*rad) ) ? 1 : -1);
+            phi[] = intersection(phi[], sq(x - x1) + sq(y) - sq(2.5*rad)  );
+            phi[] = union(phi[], -sq(x - x1) - sq(y) + sq(1.0*rad) );
+        }
+    }
+    boundary ({phi});
+    fractions (phi, f, ff);
 }
 event init (t = 0) {
     if (!restore (file = "restart")) {
@@ -215,10 +216,10 @@ event vof(i++){
 
 //    if(i>200){
         foreach_face() {
-//            if (fabs(fs[] - 1) < SEPS) {
-//                uf.x[] = target_Uf.x[];
-//            }
-            uf.x[] = (1.0 - fs_face.x[])*uf.x[] + fs_face.x[]*target_Uf.x[];
+            if (fabs(fs_face[] - 1) < SEPS) {
+                uf.x[] = target_Uf.x[];
+            }
+//            uf.x[] = (1.0 - fs_face.x[])*uf.x[] + fs_face.x[]*target_Uf.x[];
         }
         boundary ((scalar*){uf});
 

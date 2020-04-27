@@ -1,5 +1,3 @@
-//#define BRINKMAN_PENALIZATION 1
-//#define DEBUG_BRINKMAN_PENALIZATION 1
 #define DEBUG_OUTPUT_VTU_MPI
 #define FILTERED
 #define JACOBI 1
@@ -12,14 +10,11 @@ face vector fs_face[];
 #include "view.h"
 #include "../src_local/output_vtu_foreach.h"
 #include "../src_local/utils-weugene.h"
-//#include "../src_local/three-phase-weugene.h"
 #include "two-phase.h"
 #include "tension.h"
 
 int maxlevel = 10;
 int minlevel = 4;
-//double U0=0.01, rhol=1e+3, sig=73e-3, Lchar=5e-3, mul=1e-3, Lb=0.3, Rb=0.125;
-//double Rrho=1000, Rmu=53.73;
 double U0=1, rhol=1, sig=0.0005, Lchar=1, mul=1, Lb=0.3, Rb=0.0625;
 double Rrho=1, Rmu=1;
 double RE, CA, Rrad;
@@ -28,23 +23,10 @@ coord vc = {1.0, 0.0, 0.0};
 double signvc = 1;
 double deltaT=0.0;
 double thickness, Dmin, meps=0.01;
+bool flag_vof=true;
 /**
 The domain is the periodic unit square centered on the origin. */
 
-/**
-The fluid is injected on the left boundary with a unit velocity. The
-tracer is injected in the lower-half of the left boundary. An outflow
-condition is used on the right boundary. */
-
-//u.n[left]  = dirichlet(0);
-//u.t[left]  = dirichlet(0);
-//p[left]    = neumann(0);
-//pf[left]   = neumann(0);
-//
-//u.n[right] = neumann(0.);
-//u.t[right] = neumann(0.);
-//p[right]   = neumann(0.);
-//pf[right]  = neumann(0.);
 
 int main(int argc, char * argv[])
 {
@@ -69,9 +51,11 @@ int main(int argc, char * argv[])
     if (argc > 6) {
         maxlevel = atoi(argv[6]);
     }
+    if (argc > 7) {
+        flag_vof = (atoi(argv[7]) == 1);//event moving_cylinder(false)  vs  vof (true)
+    }
     size (1.0);
     origin (-0.5*L0, -0.5*L0);
-//    eta_s = 1e-6;
     TOLERANCE = 1e-6;
     NITERMAX = 50;
     N = 1 << minlevel;
@@ -79,22 +63,20 @@ int main(int argc, char * argv[])
     periodic(right);
 
     Rb = Rrad*rad;
-    rho1 = 1.; rho2 = rho1/Rrho; //rho3 = max(rho1, rho2);
-    mu1 = 1./RE; mu2 = mu1/Rmu; //mu3 = max(mu1, mu2);
+    rho1 = 1.; rho2 = rho1/Rrho;
+    mu1 = 1./RE; mu2 = mu1/Rmu;
     f.sigma = 1./RE/CA;
 //    fprintf(ferr,"NO SURFACE TENSION!\n");
     signvc = (vc.x > 0) ? 1 : (vc.x < 0)? -1 : 0;
     Dmin = L0*pow(2., -maxlevel);
     thickness = (2*rad + Dmin)*Dmin/atanh(1 - 2*meps);
-    fprintf(ferr, "maxlevel=%d tol=%g NITERMAX=%d Dmin=%g thickness=%g\n"
+    fprintf(ferr, "maxlevel=%d flag_vof=%d tol=%g NITERMAX=%d Dmin=%g thickness=%g\n"
                   "RE=%g CA=%g Rb/rad=%g rho1/rho2=%g mu1/mu2=%g\n"
                   "mu1=%g mu2=%g rho1=%g rho2=%g sigma=%g\n",
-            maxlevel, TOLERANCE, NITERMAX, Dmin, thickness,
+            maxlevel, flag_vof, TOLERANCE, NITERMAX, Dmin, thickness,
             RE, CA, Rrad, Rrho, Rmu,
             mu1, mu2, rho1, rho2, f.sigma);
 
-//    const vector U_sol[] = {vc.x, vc.y, vc.z};
-//    target_U = U_sol;
     const face vector U_solf[] = {vc.x, vc.y, vc.z};
     target_Uf = U_solf;
     run();
@@ -102,11 +84,6 @@ int main(int argc, char * argv[])
 
 
 scalar divu[];
-double solid_function(double xc, double yc, double x, double y){
-//    double xz=0.5*(1 - tanh((sq(x - xc) + sq(y - yc) - sq(rad))/thickness));
-//    if (xz>0) fprintf(ferr, "xc= %g, yc= %g x= %g y= %g thickness= %g xz=%g\n", xc, yc, x, y, thickness, xz);
-    return 0.5*(1 - tanh((sq(x - xc) + sq(y - yc) - sq(rad))/thickness)); // 1 in cylindrical solid, 0 is outside
-}
 #define tmpposx (xs0 + vc.x*t)
 #define outOfBox ((positionX < X0) || (positionX > X0 +L0))
 double posx (double t){
@@ -119,66 +96,37 @@ double posx (double t){
 void soild_fs(scalar fs, face vector fs_face, double t){
     double tt = max(t-deltaT,0);
     double x00 = posx(tt);
-    foreach(){
-        fs[] = 0;
+    vertex scalar phi[];
+    foreach_vertex() {
+        phi[] = HUGE;
         for (int xi=-L0; xi <=L0; xi +=L0) {
             double x1 = x00 + xi;
-            fs[] += solid_function(x1, vc.y * tt, x, y);
-//            if (fs[]>0) fprintf(ferr, "fs=%g\n", fs[]);
+            phi[] = intersection(phi[], (sq(x - x1) + sq(y - vc.y * tt) - sq(rad)));
         }
+        phi[] = -phi[];
     }
-    foreach_face(x) {
-        fs_face.x[] = 0;
-        for (int xi=-L0; xi <=L0; xi +=L0) {
-            double x1 = x00 + xi;
-            fs_face.x[] += solid_function(x1, vc.y * tt, x, y);
-        }
-    }
-    foreach_face(y) {
-        fs_face.y[] = 0;
-        for (int xi=-L0; xi <=L0; xi +=L0) {
-            double x1 = x00 + xi;
-            fs_face.y[] += solid_function(x1, vc.y * tt, x, y);
-        }
+    boundary ({phi});
+    fractions (phi, fs, fs_face);
+    foreach_face() {
+        fs_face.x[] = face_value(fs,0);
     }
     boundary((scalar *){fs_face});
-//    vertex scalar phi[];
-//    foreach_vertex() {
-//        phi[] = HUGE;
-//        for (int xi=-L0; xi <=L0; xi +=L0) {
-//            double x1 = x00 + xi;
-//            phi[] = intersection(phi[], (sq(x - x1) + sq(y - vc.y * tt) - sq(rad)));
-//        }
-//        phi[] = -phi[];
-//    }
-//    boundary ({phi});
-//    fractions (phi, fs, fs_face);
-//    foreach_face() {
-//        fs_face.x[] = face_value(fs,0);
-//    }
     fs.refine = fs.prolongation = fraction_refine;
     boundary({fs});
 }
 void bubbles (scalar f){
-    foreach(){
-        f[] = 0.5*(1 - tanh((sq(x - xs0) + sq(y) - sq(1.0*rad))/thickness));
-        f[] += 0.5*(tanh((sq(x - xs0) + sq(y) - sq(2.5*rad))/thickness) + 1);
+    vertex scalar phi[];
+    face vector ff[];
+    foreach_vertex() {
+        phi[] = HUGE;
+        for (int xi=-L0; xi <=L0; xi +=L0) {
+            double x1 = xs0 + xi;
+            phi[] = intersection(phi[], sq(x - x1) + sq(y) - sq(2.5*rad)  );
+            phi[] = union(phi[], -sq(x - x1) - sq(y) + sq(1.05*rad) );
+        }
     }
-    boundary({f});
-//    vertex scalar phi[];
-//    face vector ff[];
-//    foreach_vertex() {
-//        phi[] = HUGE;
-//        for (int xi=-L0; xi <=L0; xi +=L0) {
-//            double x1 = xs0 + xi;
-////            phi[] = intersection(phi[], sq(x - x1) + sq(y) > sq(2.5*rad)  ? 1 : -1);
-////            phi[] = intersection(phi[], (sq(x - x1) + sq(y) > sq(2.5*rad) || sq(x - x1) + sq(y) < sq(1.05*rad) ) ? 1 : -1);
-//            phi[] = intersection(phi[], sq(x - x1) + sq(y) - sq(2.5*rad)  );
-//            phi[] = union(phi[], -sq(x - x1) - sq(y) + sq(1.05*rad) );
-//        }
-//    }
-//    boundary ({phi});
-//    fractions (phi, f, ff);
+    boundary ({phi});
+    fractions (phi, f, ff);
 }
 event init (t = 0) {
     if (!restore (file = "restart")) {
@@ -191,7 +139,6 @@ event init (t = 0) {
                 u.y[] = 0;
             }
             boundary({f,fs,u});
-            //call viscosity
         }while (adapt_wavelet({f, fs, u}, (double []){1e-5, 1e-5, 1e-2, 1e-2}, maxlevel=maxlevel, minlevel=minlevel).nf != 0 && ++it <= 10);
         refine((sq(x-xs0) + sq(y) <sq(1.2*rad)) && (sq(x-xs0) + sq(y) >sq(0.8*rad)) && level <10);
         DT = 1e-7;
@@ -200,42 +147,43 @@ event init (t = 0) {
 
 event set_dtmax (i++) if (i<500) DT *= 1.05;
 
-event vof(i++){
-    soild_fs(fs, fs_face, t + 0.5*dt);
-    //    soild_fs(fs, fs_face, t + dt);
-
-    if(i>200){
-            foreach_face() {
-    ////            if (fabs(fs[] - 1) < SEPS) {
-    ////                uf.x[] = target_Uf.x[];
-    ////            }
-                uf.x[] = (1.0 - fs_face.x[])*uf.x[] + fs_face.x[]*target_Uf.x[];
-            }
-            boundary ((scalar*){uf});
-
-    double Linf_u = -10;
-
-    foreach (reduction(max:Linf_u)) {
-    divu[] = 0;
-    foreach_dimension() divu[] += (uf.x[1]-uf.x[])/Delta;
-    if (fabs(divu[]) > Linf_u) Linf_u = fabs(divu[]);
+event moving_cylinder (i++) {
+    if (flag_vof == false){
+        soild_fs(fs, fs_face, t);
+        foreach()
+            foreach_dimension()
+                u.x[] = fs[]*vc.x + (1. - fs[])*u.x[];
+        boundary ((scalar *){u});
+        foreach_face() {
+            uf.x[] = (1.0 - fs_face.x[])*uf.x[] + fs_face.x[]*target_Uf.x[];
+        }
+        boundary ((scalar*){uf});
     }
-    fprintf(ferr, "divu_max= %g", Linf_u);
-    }
-    //    event("vtk_file");
 }
-//event properties (i++) {
-//    soild_fs(fs, fs_face, t + 0.5*dt);
-//    soild_fs(fs, fs_face, t + dt);
-//    foreach_face() fs_face.x[] = 0.5*(fs[-1] + fs[]);
-//    boundary((scalar *){fs_face});
-//}
-//event advection_term (i++){
-//    soild_fs(fs, fs_face, t + 0.5*dt);
-//}
-//event viscous_term (i++){
-//    soild_fs(fs, fs_face, t + dt);
-//}
+
+event vof(i++){
+    if (flag_vof == true){
+        soild_fs(fs, fs_face, t + 0.5*dt);
+        foreach_face() {
+            uf.x[] = (1.0 - fs_face.x[])*uf.x[] + fs_face.x[]*target_Uf.x[];
+        }
+        boundary ((scalar*){uf});
+        foreach()
+            foreach_dimension()
+                u.x[] = fs[]*vc.x + (1. - fs[])*u.x[];
+        boundary ((scalar *){u});
+
+        double Linf_u = -10;
+
+        foreach (reduction(max:Linf_u)) {
+            divu[] = 0;
+            foreach_dimension() divu[] += (uf.x[1]-uf.x[])/Delta;
+            if (fabs(divu[]) > Linf_u) Linf_u = fabs(divu[]);
+        }
+        fprintf(ferr, "divu_max= %g", Linf_u);
+    }
+}
+
 void correct_press(scalar p, int i){
     double press = 0;
     int ip = 0;
@@ -379,4 +327,132 @@ event stop(t = 10);
 //    }
 //    boundary ({phi});
 //    fractions (phi, f, ff);
+//}
+
+
+//double solid_function(double xc, double yc, double x, double y){
+//    return 0.5*(1 - tanh((sq(x - xc) + sq(y - yc) - sq(rad))/thickness)); // 1 in cylindrical solid, 0 is outside
+//}
+//#define tmpposx (xs0 + vc.x*t)
+//#define outOfBox ((positionX < X0) || (positionX > X0 +L0))
+//double posx (double t){
+//    double positionX = tmpposx;
+//    while(outOfBox){
+//        positionX -= signvc*L0;
+//    }
+//    return positionX;
+//}
+//void soild_fs(scalar fs, face vector fs_face, double t){
+//    double tt = max(t-deltaT,0);
+//    double x00 = posx(tt);
+//    foreach(){
+//        fs[] = 0;
+//        for (int xi=-L0; xi <=L0; xi +=L0) {
+//            double x1 = x00 + xi;
+//            fs[] += solid_function(x1, vc.y * tt, x, y);
+////            if (fs[]>0) fprintf(ferr, "fs=%g\n", fs[]);
+//        }
+//    }
+//    foreach_face(x) {
+//        fs_face.x[] = 0;
+//        for (int xi=-L0; xi <=L0; xi +=L0) {
+//            double x1 = x00 + xi;
+//            fs_face.x[] += solid_function(x1, vc.y * tt, x, y);
+//        }
+//    }
+//    foreach_face(y) {
+//        fs_face.y[] = 0;
+//        for (int xi=-L0; xi <=L0; xi +=L0) {
+//            double x1 = x00 + xi;
+//            fs_face.y[] += solid_function(x1, vc.y * tt, x, y);
+//        }
+//    }
+//    boundary((scalar *){fs_face});
+
+
+
+
+//    vertex scalar phi[];
+//    foreach_vertex() {
+//        phi[] = HUGE;
+//        for (int xi=-L0; xi <=L0; xi +=L0) {
+//            double x1 = x00 + xi;
+//            phi[] = intersection(phi[], (sq(x - x1) + sq(y - vc.y * tt) - sq(rad)));
+//        }
+//        phi[] = -phi[];
+//    }
+//    boundary ({phi});
+//    fractions (phi, fs, fs_face);
+//    foreach_face() {
+//        fs_face.x[] = face_value(fs,0);
+//    }
+//    boundary((scalar *){fs_face});
+//    fs.refine = fs.prolongation = fraction_refine;
+//    boundary({fs});
+//}
+//void bubbles (scalar f){
+//    foreach(){
+//        f[] = 0.5*(1 - tanh((sq(x - xs0) + sq(y) - sq(1.0*rad))/thickness));
+//        f[] += 0.5*(tanh((sq(x - xs0) + sq(y) - sq(2.5*rad))/thickness) + 1);
+//    }
+//    boundary({f});
+////    vertex scalar phi[];
+////    face vector ff[];
+////    foreach_vertex() {
+////        phi[] = HUGE;
+////        for (int xi=-L0; xi <=L0; xi +=L0) {
+////            double x1 = xs0 + xi;
+//////            phi[] = intersection(phi[], sq(x - x1) + sq(y) > sq(2.5*rad)  ? 1 : -1);
+//////            phi[] = intersection(phi[], (sq(x - x1) + sq(y) > sq(2.5*rad) || sq(x - x1) + sq(y) < sq(1.05*rad) ) ? 1 : -1);
+////            phi[] = intersection(phi[], sq(x - x1) + sq(y) - sq(2.5*rad)  );
+////            phi[] = union(phi[], -sq(x - x1) - sq(y) + sq(1.05*rad) );
+////        }
+////    }
+////    boundary ({phi});
+////    fractions (phi, f, ff);
+//}
+//event init (t = 0) {
+//    if (!restore (file = "restart")) {
+//        int it = 0;
+//        do {
+//            soild_fs (fs, fs_face, 0);
+//            bubbles(f);
+//            foreach() {
+//                u.x[] = U0*fs[]*(fabs(deltaT)<SEPS);
+//                u.y[] = 0;
+//            }
+//            boundary({f,fs,u});
+//            //call viscosity
+//        }while (adapt_wavelet({f, fs, u}, (double []){1e-5, 1e-5, 1e-2, 1e-2}, maxlevel=maxlevel, minlevel=minlevel).nf != 0 && ++it <= 10);
+//        refine((sq(x-xs0) + sq(y) <sq(1.2*rad)) && (sq(x-xs0) + sq(y) >sq(0.8*rad)) && level <10);
+//        DT = 1e-7;
+//    }
+//}
+//
+//event set_dtmax (i++) if (i<500) DT *= 1.05;
+//
+//event vof(i++){
+////    soild_fs(fs, fs_face, t + 0.5*dt);
+////    soild_fs(fs, fs_face, t + dt);
+//
+//
+//foreach_face() {
+//    uf.x[] = (1.0 - fs_face.x[])*uf.x[] + fs_face.x[]*target_Uf.x[];
+//}
+//boundary ((scalar*){uf});
+//foreach()
+//foreach_dimension()
+//u.x[] = cylinder[]*vc.x + (1. - cylinder[])*u.x[];
+//boundary ((scalar *){u});
+//
+//double Linf_u = -10;
+//
+//foreach (reduction(max:Linf_u)) {
+//divu[] = 0;
+//foreach_dimension() divu[] += (uf.x[1]-uf.x[])/Delta;
+//if (fabs(divu[]) > Linf_u) Linf_u = fabs(divu[]);
+//}
+//fprintf(ferr, "divu_max= %g", Linf_u);
+////    }
+////    event("vtk_file");
 //}

@@ -68,11 +68,11 @@ void fraction_from_stl (scalar f, FILE * fp, double eps, int maxlevel){
 	fractions (phi, f);
 }
 
-int minlevel = 5, maxlevel = 8;
+int minlevel = 5, maxlevel = 9;
 int level = 6;
 double Ldomain = 1.02, Lch = 1.02;//6e-3
 double uemax = 0.1;
-double rhol = 1, rhog = 10, mul = 1, mug = 1e-1;
+double rhol = 1, rhog = 0.1, mul = 1, mug = 1e-1;
 double sig = 0.0005, pdelta = 1;
 //double rhol = 1600, rhog = 10, mul = 1, mug = 1e-3;
 //double sig = 0.074, pdelta = 330.0;
@@ -92,27 +92,28 @@ int main (int argc, char * argv[]) {
 	//periodic(top);
 	//periodic(front);
 	init_grid (1 << level);
-    U0 = pdelta*sq(Lch/10.0)/(2.0*mul*Lch);
-    RE = rhol*U0*Lch/mul;
-    CA = mul*U0/sig;
-    LA = sig*rhol*Lch/sq(mul);
-    WE = rhol*sq(U0)*Lch/sig;
+    	U0 = pdelta*sq(Lch/10.0)/(2.0*mul*Lch);
+    	RE = rhol*U0*Lch/mul;
+    	CA = mul*U0/sig;
+    	LA = sig*rhol*Lch/sq(mul);
+    	WE = rhol*sq(U0)*Lch/sig;
 	rho1 = 1.0; // water
 	rho2 = rhog/rhol; // air
-	rho3= 10*max(rho1, rho2); // air
+	rho3 = max(rho1, rho2); // air
 	mu1 = 1.0/RE;
 	mu2 = mug/mul/RE;
-	mu2 = 10*max(mu1, mu2);
+	mu2 = max(mu1, mu2);
 //	f.sigma = 1.0/WE;
-    fprintf(ferr, "Tension.h module is switched off\n");
-    eta_s= 1e-7;
-
+    	fprintf(ferr, "Tension.h module is switched off");
+    	eta_s= 1e-6;
+	TOLERANCE = 1e-3;
+	NITERMAX = 15;
 	size (Ldomain);
-    double sh=0.0*L0;
+    	double sh=0.0*L0;
 	origin (-sh,-sh,-sh);
-    fprintf(ferr, "U0=%g dp=%g Lch=%g sigma=%g"
+	fprintf(ferr, "U0=%g dp=%g Lch=%g sigma=%g"
                   "mu1=%g mu2=%g rho1=%g rho2=%g"
-                  "Re=%g Ca=%g We=%g La=%g\n", U0, pdelta, Lch, sig,
+                  "Re=%g Ca=%g We=%g La=%g", U0, pdelta, Lch, sig,
                    mu1, mu2, rho1, rho2, RE, CA, WE, LA);
 	/**
 	We need to tell the code that both `fs` and `f0` are volume
@@ -161,27 +162,29 @@ event init (t = 0) {
 				 "Run in serial save dump, then rename it to restart, then run in parallel", pid());
 			exit(1992);
 		}
-        FILE * fp = fopen ("cube.stl", "r");
+        	FILE * fp = fopen ("cube.stl", "r");
 		fprintf(ferr, "opened. \n");
 		fraction_from_stl (fs, fp, 1e-3, maxlevel);
 		fprintf(ferr, "stl saved in fs \n");
 //		face_fraction (fs, fs_face);
-        foreach_face() fs_face.x[] = 0.5*(fs[-1] + fs[]);
-        boundary((scalar *){fs_face});
+        	foreach_face() fs_face.x[] = 0.5*(fs[-1] + fs[]);
+        	boundary((scalar *){fs_face});
 
 		fclose (fp);
-//        foreach() {f[] += fs[]; f0[] = f[];}
+//        	foreach() {f[] += fs[]; f0[] = f[];}
 		refine(x < X0 + Ldomain/pow(2., minlevel) && level < maxlevel);
 		boundary ({fs, f, f0, u});
-		DT=1e-9;
+		DT = 1e-9;
+		event("snapshot");
 	}
+	??DT = 1e-6;
 }
 
 event set_dtmax (i++) if (i<500) DT *= 1.05;
 
 
 
-event end_timestep (i+=2){
+event end_timestep (i+=100){
 	double avggas = sq(L0) - normf(f).avg;
 	foreach() {
 		divu[] = 0;
