@@ -2,7 +2,7 @@
 #define DEBUG_BRINKMAN_PENALIZATION 1
 #define DEBUG_OUTPUT_VTU_MPI
 #define FILTERED
-#define MODIFIED_CHORIN 1
+#define MODIFIED_CHORIN 0
 #define JACOBI 1
 #define EPS_MAXA 2
 //#define FIXED
@@ -250,8 +250,8 @@ We produce animations of the vorticity and tracer fields... */
 
 //Output
 //event vtk_file (i>1000000){
-event vtk_file (i += 1){
-//event vtk_file (t += 0.01){
+//event vtk_file (i += 1){
+event vtk_file (t += 0.01){
     char subname[80]; sprintf(subname, "rk");
     scalar l[];
     foreach() {l[] = level;}

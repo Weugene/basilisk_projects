@@ -482,7 +482,7 @@ mgstats project (struct Project q)
     We allocate a local scalar field and compute the divergence of
     $\mathbf{u}_f$. The divergence is scaled by *dt* so that the
     pressure has the correct dimension. */
-
+    fprintf(ferr, "Conventional Chorin..\n");
     scalar div[];
     foreach() {
         div[] = 0.;
@@ -538,21 +538,16 @@ mgstats project_bp (struct Project q)
   We allocate a local scalar field and compute the divergence of
   $\mathbf{u}_f$. The divergence is scaled by *dt* so that the
   pressure has the correct dimension. */
-
+  fprintf(ferr, "Modified Chorin..\n");
   double adv=0;
-//  foreach_face(){
-//    target_Uf.x[] = solid_vel;
-//  }
-//  boundary((scalar *){target_Uf});
   foreach_face(){
 //      tmp = 0;
-//      adv = 0;
+      adv = 0;
       tmp = dt*fs_face.x[]/eta_s;
-      adv = 1*(u.x[] - u.x[-1])/Delta; //see down!
+//      adv = 1*(u.x[] - u.x[-1])/Delta; //see down!
 //      adv = target_Uf.x[]*(u.x[] - u.x[-1])/Delta; //not correct!
       u_rhs.x[] = (uf.x[] + tmp*(target_Uf.x[] - eta_s*adv))/(1.0 + tmp);
       alpha_mod.x[] = alpha.x[]/(1.0 + tmp);
-//      if (fs[]>0) fprintf(ferr, "tmp=%g urhs=%g uf=%g alphaM=%g alpha=%g eta_s=%g fs=%g Ut=%g \n", tmp, u_rhs.x[], uf.x[], alpha_mod.x[], alpha.x[], eta_s, face_value(fs, 0), face_value(target_U.x,0));
   }
   boundary ((scalar *){u_rhs, alpha_mod});
   scalar div[];
@@ -562,7 +557,6 @@ mgstats project_bp (struct Project q)
       div[] += u_rhs.x[1] - u_rhs.x[];
     div[] /= dt*Delta;
   }
-//    fprintf(ferr, "div done\n");
   /**
   We solve the Poisson problem. The tolerance (set with *TOLERANCE*) is
   the maximum relative change in volume of a cell (due to the divergence
@@ -574,15 +568,12 @@ mgstats project_bp (struct Project q)
   mgstats mgp = poisson (p, div, alpha_mod, tolerance = TOLERANCE/dt, nrelax = nrelax); //corrected: WEUGENE
   /**
   And compute $\mathbf{u}_f^{n+1}$ using $\mathbf{u}_f$ and $p$. */
-//  int idir=0;
   foreach_face(){
-//      adv=0;
+      adv=0;
       tmp = dt*fs_face.x[]/eta_s;
-        adv = 1*(u.x[] - u.x[-1])/Delta; //see up!
+//        adv = 1*(u.x[] - u.x[-1])/Delta; //see up!
 //      adv = target_Uf.x[]*(u.x[] - u.x[-1])/Delta; //incorrect!
       uf.x[] = (uf.x[] - dt * alpha.x[] * face_gradient_x(p, 0) + tmp*(target_Uf.x[] - eta_s*adv)) / (1.0 + tmp);
-//      if (face_value(fs,0)>0 && face_value(fs,0)<1) fprintf(ferr, "%d: fs[]=%g %g tmp=%g uf.x=%g ? Usol=%g f=%g %g\n", ((idir++) % 2),fs[-1], fs[], tmp, uf.x[], solid_vel, f[-1], f[]);
-//      if (!(fs[-1]==1 && fs[]==1 && fs[1]==1 || fs[-1]==0 && fs[]==0 && fs[1]==0)) fprintf(ferr, "%d: fs[]=%g %g %g tmp=%g uf.x=%g %g %g Usol=%g f=%g %g %g\n", ((idir++) % 2),fs[-1], fs[], fs[1], tmp, uf.x[-1], uf.x[], uf.x[1], solid_vel, f[-1], f[], f[1]);
   }
   boundary ((scalar *){uf});
 

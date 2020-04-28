@@ -12,7 +12,7 @@ face vector fs_face[];
 #include "../src_local/utils-weugene.h"
 #include "two-phase.h"
 #include "tension.h"
-
+#include "../src_local/utils-weugene.h"
 int maxlevel = 10;
 int minlevel = 4;
 double U0=1, rhol=1, sig=0.0005, Lchar=1, mul=1, Lb=0.3, Rb=0.0625;
@@ -107,10 +107,6 @@ void soild_fs(scalar fs, face vector fs_face, double t){
     }
     boundary ({phi});
     fractions (phi, fs, fs_face);
-    foreach_face() {
-        fs_face.x[] = face_value(fs,0);
-    }
-    boundary((scalar *){fs_face});
     fs.refine = fs.prolongation = fraction_refine;
     boundary({fs});
 }
@@ -211,7 +207,7 @@ event end_timestep(i++){
 }
 
 event end_timestep (i++) {
-    double avggas = sq(L0) - normf(f).avg, avggas_out_solid = sq(L0) - normf(f).avg,  u_mag;
+    double avggas = sq(L0) - normf(f).avg, avggas_out_solid = sq(L0) - normf_weugene(f, fs).avg,  u_mag;
     foreach() {
         divu[] = 0;
         foreach_dimension() divu[] += (uf.x[1]-uf.x[])/Delta;
@@ -266,11 +262,11 @@ event vtk_file (t += 0.01){
             mapped_data_upper.x[] = uf.x[1];
         }
     }
-    output_vtu_MPI( (scalar *) {fs, f, rho, omega, p, l, divu, my_kappa}, (vector *) {u, g, a, mapped_data_lower, mapped_data_upper}, subname, 1 );
+    output_vtu_MPI( (scalar *) {fs, f, omega, rho, p, l, divu, my_kappa}, (vector *) {u, g, a, mapped_data_lower, mapped_data_upper}, subname, 1 );
 }
 
 #define ADAPT_SCALARS {f, fs, omega}
-#define ADAPT_EPS_SCALARS {1e-5, 1e-4, 1e-2}
+#define ADAPT_EPS_SCALARS {1e-3, 1e-3, 1e-2}
 event adapt (i++){
     double eps_arr[] = ADAPT_EPS_SCALARS;
     MinMaxValues(ADAPT_SCALARS, eps_arr);

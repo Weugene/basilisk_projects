@@ -1,0 +1,11 @@
+<VTKFile type="Collection" version="1.0" byte_order="LittleEndian" header_type="UInt64">
+	 <Collection>
+		<DataSet timestep="0" part="0" file="res/rk_0_0000.pvtu"/>
+		<DataSet timestep="0" part="0" file="res/rk_0_0001.pvtu"/>
+		<DataSet timestep="9.09091e-09" part="0" file="res/rk_0_0002.pvtu"/>
+		<DataSet timestep="3.53045e-08" part="0" file="res/rk_0_0003.pvtu"/>
+		<DataSet timestep="6.96588e-08" part="0" file="res/rk_0_0004.pvtu"/>
+		<DataSet timestep="1.1194e-07" part="0" file="res/rk_0_0005.pvtu"/>
+		<DataSet timestep="1.6198e-07" part="0" file="res/rk_0_0006.pvtu"/>
+	 </Collection>
+ </VTKFile>

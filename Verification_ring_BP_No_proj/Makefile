@@ -16,7 +16,7 @@ ring_Popinet:
 	$(eval CFILE=ring_Popinet)
 	$(eval ARGS=100 0.01 1 1 1 10 1)
 	$(eval solver=a$(CFILE).out)
-	$(eval dir=res_$(CFILE)_vof)
+	$(eval dir=res_$(CFILE)_dir)
 	$(eval FILENAME=rk_)
 	@echo file:$(CFILE).c solver:$(solver) dir:$(dir) filename:$(FILENAME) args:$(ARGS)
 	qcc -O2 -events $(CFILE).c -lm $(OPENGLIBS) -o $(solver)

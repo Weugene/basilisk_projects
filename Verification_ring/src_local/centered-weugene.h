@@ -337,8 +337,8 @@ event advection_term (i++,last)
     //event("vtk_file");//1
     prediction();
     //event("vtk_file");//2
-#if BRINKMAN_PENALIZATION
-    mgpf = project_bp (uf, pf, alpha, 0.5*dt, mgpf.nrelax, fs, target_U, u, eta_s);//Weugene: chi^{n+1/2}
+#if BRINKMAN_PENALIZATION && MODIFIED_CHORIN
+        mgpf = project_bp (uf, pf, alpha, 0.5*dt, mgpf.nrelax, fs, target_U, u, eta_s);//Weugene: chi^{n+1/2}
 #else
     mgpf = project (uf, pf, alpha, dt/2., mgpf.nrelax);
 //      mgpf = project_bp (uf, pf, alpha, 0.5*dt, mgpf.nrelax, fs, target_U, u, eta_s);//Weugene: chi^{n+1/2}
@@ -362,7 +362,7 @@ static void correction (double dt)
     foreach_dimension()
 #if BRINKMAN_PENALIZATION
 //      u.x[] = (u.x[] + (1.0 - fs[])*dt*g.x[] + (dt/eta_s)*fs[]*target_U.x[])/(1 + (dt/eta_s)*fs[]); //corrected: Weugene
-    if (fabs(1 - fs_face.x[]) > SEPS || fabs(1 - fs_face.x[1]) > SEPS)// in fluid
+    if (fabs(1 - fs_face.x[]) > SEPS || fabs(1 - fs_face.x[1]) > SEPS)// in fluid, if right or left fs_face != 1
         u.x[] += dt*g.x[]; //original version
 #else
     u.x[] += dt*g.x[]; //original version
@@ -425,8 +425,11 @@ event acceleration (i++,last)
   foreach_face(){
 #if BRINKMAN_PENALIZATION
       uf.x[] = fm.x[]*(face_value (u.x, 0));
-      if (fabs(1 - fs_face.x[]) > SEPS || fabs(1 - fs_face.x[1]) > SEPS)// in fluid
-          uf.x[] += fm.x[]*dt*a.x[];
+//      if (fabs(1 - fs_face.x[]) > SEPS)// in fluid not in solid && if fs_face=0.99 => add full acceleration->mistale?
+//          uf.x[] += fm.x[]*dt*a.x[];
+//      if (fabs(fs_face.x[]) < SEPS)// in fluid only pure water & can give sticking->mistale?
+//          uf.x[] += fm.x[]*dt*a.x[];
+      uf.x[] += fm.x[]*dt*a.x[]*(1 - fs_face.x[]);//add
 #else
         uf.x[] = fm.x[]*(face_value (u.x, 0) + dt*a.x[]);//original version
 #endif
@@ -472,7 +475,7 @@ next timestep). Then compute the centered gradient field *g*. */
 
 event projection (i++,last)
 {
-#if BRINKMAN_PENALIZATION
+#if BRINKMAN_PENALIZATION && MODIFIED_CHORIN
   mgp = project_bp (uf, p, alpha, dt, mgp.nrelax, fs, target_U, u, eta_s);// Weugene: chi^{n+1}
 #else
   mgp = project (uf, p, alpha, dt, mgp.nrelax);
