@@ -9,7 +9,7 @@ from paraview.simple import *
 paraview.simple._DisableFirstRenderCameraReset()
 
 # find source
-porous_BP_0 = FindSource('rk_00*')
+porous_BP_0 = GetActiveSource() #FindSource('rk.pvd')
 
 # create a new 'Calculator'
 calculator2 = Calculator(Input=porous_BP_0)
@@ -99,7 +99,7 @@ renderView1 = GetActiveViewOrCreate('RenderView')
 # renderView1.ViewSize = [1152, 1150]
 
 # hide data in view
-Hide(rk_00, renderView1)
+Hide(porous_BP_0, renderView1)
 
 # find source
 calculator1 = FindSource('Calculator1')

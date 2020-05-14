@@ -28,7 +28,7 @@ The advantages of EBM are high accuracy and MPI parallelization, however, it wor
 If Brinkman Penalization method for solid treatment is used,
 then a penalization term is added implicitly with the viscous term.
 In this case $\mathbf{a} = -\frac{\chi}{\eta_s}\left(\mathbf{u} - \mathbf{U_t} \right)$
-BPM can work for multiphase flow with MPI paarallelization with sufficient accuracy.
+BPM can work for multiphase flow with MPI parallelization with sufficient accuracy.
 Detailed information about comparison you can find here.
  */
 
@@ -223,6 +223,8 @@ event set_dtmax (i++,last) dtmax = DT;
 
 event stability (i++,last) {
   dt = dtnext (stokes ? dtmax : timestep (uf, dtmax));
+
+  fprintf(ferr, "stability: dt=%g DT=%g dtmax=%g", dt, DT, dtmax );
 }
 
 /**
@@ -271,11 +273,11 @@ void prediction()
             du.x[] = 0.;
 	    else
 #endif
-#ifdef BRINKMAN_PENALIZATION
-        if (fabs(fs_face.x[] - 1) < SEPS || fabs(fs_face.x[1] - 1) < SEPS)
-	        du.x[] = 0.; // inside solids
-	    else
-#endif
+//#ifdef BRINKMAN_PENALIZATION
+//        if (fabs(fs_face.x[] - 1) < SEPS || fabs(fs_face.x[1] - 1) < SEPS)
+//	        du.x[] = 0.; // inside solids
+//	    else
+//#endif
 	        du.x[] = u.x.gradient (u.x[-1], u.x[], u.x[1])/Delta;
       }
   else
@@ -286,11 +288,11 @@ void prediction()
 	            du.x[] = 0.;
 	        else
 #endif
-#ifdef BRINKMAN_PENALIZATION
-            if (fabs(fs_face.x[] - 1) < SEPS || fabs(fs_face.x[1] - 1) < SEPS)
-	            du.x[] = 0.; // inside solids
-	        else
-#endif
+//#ifdef BRINKMAN_PENALIZATION
+//            if (fabs(fs_face.x[] - 1) < SEPS || fabs(fs_face.x[1] - 1) < SEPS)
+//	            du.x[] = 0.; // inside solids
+//	        else
+//#endif
 	            du.x[] = (u.x[1] - u.x[-1])/(2.*Delta);
     }
   boundary ((scalar *){du});
@@ -359,7 +361,7 @@ static void correction (double dt)
     foreach_dimension()
 #if BRINKMAN_PENALIZATION
 //      u.x[] = (u.x[] + (1.0 - fs[])*dt*g.x[] + (dt/eta_s)*fs[]*target_U.x[])/(1 + (dt/eta_s)*fs[]); //corrected: Weugene
-    if (fabs(1 - fs_face.x[]) > SEPS || fabs(1 - fs_face.x[1]) > SEPS)// in fluid, if right or left fs_face != 1
+//    if (fabs(1 - fs_face.x[]) > SEPS || fabs(1 - fs_face.x[1]) > SEPS)// in fluid, if right or left fs_face != 1
         u.x[] += dt*g.x[]; //original version
 #else
     u.x[] += dt*g.x[]; //original version
@@ -421,12 +423,14 @@ event acceleration (i++,last)
   face vector ia =a;
   foreach_face(){
 #if BRINKMAN_PENALIZATION
-      uf.x[] = fm.x[]*(face_value (u.x, 0));
+//      uf.x[] = fm.x[]*(face_value (u.x, 0));
+//      uf.x[] += fm.x[]*dt*a.x[]*(1 - fs_face.x[]);//add
 //      if (fabs(1 - fs_face.x[]) > SEPS)// in fluid not in solid && if fs_face=0.99 => add full acceleration->mistale?
 //          uf.x[] += fm.x[]*dt*a.x[];
 //      if (fabs(fs_face.x[]) < SEPS)// in fluid only pure water & can give sticking->mistale?
 //          uf.x[] += fm.x[]*dt*a.x[];
-      uf.x[] += fm.x[]*dt*a.x[]*(1 - fs_face.x[]);//add
+
+        uf.x[] = fm.x[]*(face_value (u.x, 0) + dt*a.x[]);//original version
 #else
         uf.x[] = fm.x[]*(face_value (u.x, 0) + dt*a.x[]);//original version
 #endif

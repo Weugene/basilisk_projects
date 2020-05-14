@@ -99,7 +99,7 @@ tolerance by *TOLERANCE* with the default values below. */
 
 int NITERMAX = 100, NITERMIN = 1;
 double TOLERANCE = 1e-3;
-
+double RELATIVE_RES_TOLERANCE = 0.1;
 /**
 Information about the convergence of the solver is returned in a structure. */
 
@@ -178,7 +178,9 @@ mgstats mg_solve (struct MGSolve p)
   We then iterate until convergence or until *NITERMAX* is reached. Note
   also that we force the solver to apply at least one cycle, even if the
   initial residual is lower than *TOLERANCE*. */
-
+  double res_previous1 = 0;
+  double res_previous2 = 0;
+  int patient = 0;
   if (p.tolerance == 0.)
     p.tolerance = TOLERANCE;
   for (s.i = 0;
@@ -211,6 +213,27 @@ mgstats mg_solve (struct MGSolve p)
 #endif
 
     resb = s.resa;
+//break if resudual does not change. Weugene correction
+#ifdef RELATIVE_RESIDUAL
+      double res1 = 0.5*(res_previous1+res_previous2);
+      double res2 = 0.5*(res_previous1+s.resa);
+      if (s.i == 2 && fabs(s.resa) < 1e-30) break;
+      if( fabs(res1 - res2)/(res1 + 1e-30) < RELATIVE_RES_TOLERANCE && patient > 3){
+//          scalar v = p.a[0];
+//          fprintf (ferr,
+//             "WARNING: Relative residual did not reach convergence for %s after %d iterations\n"
+//             "  res: %g prev_res: %g %g sum: %g nrelax: %d\n",
+//             v.name, s.i, s.resa, res_previous1, res_previous2, s.sum, s.nrelax);
+//          fflush (ferr);
+          break;
+      }
+      else{
+          res_previous2 = res_previous1;
+          res_previous1 = s.resa;
+          patient++;
+      }
+
+#endif
   }
   s.minlevel = p.minlevel;
   

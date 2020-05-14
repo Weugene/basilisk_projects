@@ -31,7 +31,7 @@ The advantages of EBM are high accuracy and MPI parallelization, however, it wor
 If Brinkman Penalization method for solid treatment is used,
 then a penalization term is added implicitly with the viscous term.
 In this case $\mathbf{a} = -\frac{\chi}{\eta_s}\left(\mathbf{u} - \mathbf{U_t} \right)$
-BPM can work for multiphase flow with MPI paarallelization with sufficient accuracy.
+BPM can work for multiphase flow with MPI parallelization with sufficient accuracy.
 Detailed information about comparison you can find here.
  */
 
@@ -44,7 +44,8 @@ Detailed information about comparison you can find here.
 #ifndef BRINKMAN_PENALIZATION
 #include "viscosity.h"
 #else
-#include "./viscosity-weugene.h"
+#include "viscosity-weugene.h"
+#include "utils-weugene.h"
 #endif
 #endif
 
@@ -225,6 +226,8 @@ event set_dtmax (i++,last) dtmax = DT;
 
 event stability (i++,last) {
   dt = dtnext (stokes ? dtmax : timestep (uf, dtmax));
+
+  fprintf(ferr, "stability: dt=%g DT=%g dtmax=%g", dt, DT, dtmax );
 }
 
 /**
@@ -270,20 +273,30 @@ void prediction()
       foreach_dimension() {
 #if EMBED
         if (!fs.x[] || !fs.x[1])
-	  du.x[] = 0.;
-	else
+            du.x[] = 0.;
+	    else
 #endif
-	  du.x[] = u.x.gradient (u.x[-1], u.x[], u.x[1])/Delta;
+//#ifdef BRINKMAN_PENALIZATION
+//        if (fabs(fs_face.x[] - 1) < SEPS || fabs(fs_face.x[1] - 1) < SEPS)
+//	        du.x[] = 0.; // inside solids
+//	    else
+//#endif
+	        du.x[] = u.x.gradient (u.x[-1], u.x[], u.x[1])/Delta;
       }
   else
     foreach()
-      foreach_dimension() {
+        foreach_dimension() {
 #if EMBED
-        if (!fs.x[] || !fs.x[1])
-	  du.x[] = 0.;
-	else
+            if (!fs.x[] || !fs.x[1])
+	            du.x[] = 0.;
+	        else
 #endif
-	  du.x[] = (u.x[1] - u.x[-1])/(2.*Delta);
+//#ifdef BRINKMAN_PENALIZATION
+//            if (fabs(fs_face.x[] - 1) < SEPS || fabs(fs_face.x[1] - 1) < SEPS)
+//	            du.x[] = 0.; // inside solids
+//	        else
+//#endif
+	            du.x[] = (u.x[1] - u.x[-1])/(2.*Delta);
     }
   boundary ((scalar *){du});
 
@@ -323,9 +336,19 @@ field. */
 event advection_term (i++,last)
 {
   if (!stokes) {
+    //event("vtk_file");//1
     prediction();
+    //event("vtk_file");//2
+#if BRINKMAN_PENALIZATION && MODIFIED_CHORIN
+        mgpf = project_bp (uf, pf, alpha, 0.5*dt, mgpf.nrelax, fs, target_U, u, eta_s);//Weugene: chi^{n+1/2}
+#else
     mgpf = project (uf, pf, alpha, dt/2., mgpf.nrelax);
-    advection ((scalar *){u}, uf, dt, (scalar *){g});
+//      mgpf = project_bp (uf, pf, alpha, 0.5*dt, mgpf.nrelax, fs, target_U, u, eta_s);//Weugene: chi^{n+1/2}
+#endif
+//    advection ((scalar *){u}, uf, dt);//corrected: Weugene
+    //event("vtk_file");//3
+    advection ((scalar *){u}, uf, dt, (scalar *){g});// original version
+    //event("vtk_file");//4
   }
 }
 
@@ -339,8 +362,14 @@ static void correction (double dt)
 {
   foreach()
     foreach_dimension()
-      u.x[] += dt*g.x[];
-  boundary ((scalar *){u});  
+#if BRINKMAN_PENALIZATION
+//      u.x[] = (u.x[] + (1.0 - fs[])*dt*g.x[] + (dt/eta_s)*fs[]*target_U.x[])/(1 + (dt/eta_s)*fs[]); //corrected: Weugene
+//    if (fabs(1 - fs_face.x[]) > SEPS || fabs(1 - fs_face.x[1]) > SEPS)// in fluid, if right or left fs_face != 1
+        u.x[] += dt*g.x[]; //original version
+#else
+    u.x[] += dt*g.x[]; //original version
+#endif
+  boundary ((scalar *){u});
 }
 
 /**
@@ -353,9 +382,12 @@ time $t+\Delta t$. */
 event viscous_term (i++,last)
 {
   if (constant(mu.x) != 0.) {
-    correction (dt);
-    mgu = viscosity (u, mu, rho, dt, mgu.nrelax);
-    correction (-dt);
+    correction (dt);//Weugene correction: chi^{n+1}
+    //event("vtk_file");//5
+    mgu = viscosity (u, mu, rho, dt, mgu.nrelax);//Weugene: chi^{n+1}
+    //event("vtk_file");//6
+    correction (-dt);//Weugene: chi^n
+    //event("vtk_file");//7
   }
 
   /**
@@ -368,6 +400,8 @@ event viscous_term (i++,last)
       af.x[] = 0.;
   }
 }
+
+
 
 /**
 ### Acceleration term
@@ -389,8 +423,22 @@ acceleration term is added. */
 event acceleration (i++,last)
 {
   trash ({uf});
-  foreach_face()
-    uf.x[] = fm.x[]*(face_value (u.x, 0) + dt*a.x[]);
+  face vector ia =a;
+  foreach_face(){
+#if BRINKMAN_PENALIZATION
+//      uf.x[] = fm.x[]*(face_value (u.x, 0));
+//      uf.x[] += fm.x[]*dt*a.x[]*(1 - fs_face.x[]);//add
+//      if (fabs(1 - fs_face.x[]) > SEPS)// in fluid not in solid && if fs_face=0.99 => add full acceleration->mistale?
+//          uf.x[] += fm.x[]*dt*a.x[];
+//      if (fabs(fs_face.x[]) < SEPS)// in fluid only pure water & can give sticking->mistale?
+//          uf.x[] += fm.x[]*dt*a.x[];
+
+        uf.x[] = fm.x[]*(face_value (u.x, 0) + dt*a.x[]);//original version
+#else
+        uf.x[] = fm.x[]*(face_value (u.x, 0) + dt*a.x[]);//original version
+#endif
+    }
+    //event("vtk_file");//8
   boundary ((scalar *){uf, a});
 }
 
@@ -420,7 +468,7 @@ void centered_gradient (scalar p, vector g)
   trash ({g});
   foreach()
     foreach_dimension()
-      g.x[] = (gf.x[] + gf.x[1])/(fm.x[] + fm.x[1] + SEPS);
+      g.x[] = (gf.x[] + gf.x[1])/(fm.x[] + fm.x[1] + SEPS); //!!! ???: Weugene, numerator = gf.x[]*fm.x[] + gf.x[1]*fm.x[1]
   boundary ((scalar *){g});
 }
 
@@ -431,20 +479,26 @@ next timestep). Then compute the centered gradient field *g*. */
 
 event projection (i++,last)
 {
+#if BRINKMAN_PENALIZATION && MODIFIED_CHORIN
+  mgp = project_bp (uf, p, alpha, dt, mgp.nrelax, fs, target_U, u, eta_s);// Weugene: chi^{n+1}
+#else
   mgp = project (uf, p, alpha, dt, mgp.nrelax);
-  centered_gradient (p, g);
-
+//  mgp = project_bp (uf, p, alpha, dt, mgp.nrelax, fs, target_U, u, eta_s);// Weugene: chi^{n+1}
+#endif
+  centered_gradient (p, g); //calc gf, g using p^{n+1}, a^{n+1/2}
+  //event("vtk_file");//9
   /**
   We add the gradient field *g* to the centered velocity field. */
-
   correction (dt);//Weugene: why here?
+  //event("vtk_file");//10
 }
 
-#if BRINKMAN_PENALIZATION
-event brinkman_penalization(i++, last){
-    brinkman_correction(u, uf, rho, dt);
-}
-#endif
+//#if BRINKMAN_PENALIZATION
+//event brinkman_penalization(i++, last){
+//    brinkman_correction(u, uf, rho, dt);
+////    event("vtk_file");
+//}
+//#endif
 /**
 Some derived solvers need to hook themselves at the end of the
 timestep. */
@@ -482,107 +536,8 @@ event adapt (i++,last) {
 * [Performance monitoring](perfs.h)
 */
 
-void MinMaxValues(scalar * list, double * arr_eps) {// for each scalar min and max
-  double arr[10][2];
-  int ilist = 0;
-  for (scalar s in list) {
-    double mina= HUGE, maxa= -HUGE;
-    foreach( reduction(min:mina) reduction(max:maxa) ){
-      if (fabs(s[]) < mina) mina = fabs(s[]);
-      if (fabs(s[]) > maxa) maxa = fabs(s[]);
-    }
-    arr[ilist][0] = mina;
-    arr[ilist][1] = maxa;
-    ilist++;
-//        fprintf(stderr, "arr for i=%d", ilist);
-  }
 
-  for (int i = 0; i < ilist; i++){
-#if EPS_MAXA == 1
-    arr_eps[i] *=arr[i][1];
-#else
-    arr_eps[i] *= 0.5*(arr[i][0] + arr[i][1]);
-#endif
-#ifdef DEBUG_MINMAXVALUES
-    fprintf(stderr, "MinMaxValues: i=%d, min=%g, max=%g, eps=%g\n", i, arr[i][0], arr[i][1], arr_eps[i]);
-#endif
-  }
-}
 
-stats statsf_weugene (scalar f, scalar fs)
-{
-    double dvr, min = 1e100, max = -1e100, sum = 0., sum2 = 0., volume = 0.;
-    foreach(reduction(+:sum) reduction(+:sum2) reduction(+:volume)
-    reduction(max:max) reduction(min:min))
-    if (fs[] < 1. && f[] != nodata) {
-        dvr = dv()*(1. - fs[]);
-        volume += dvr;
-        sum    += dvr*f[];
-        sum2   += dvr*sq(f[]);
-        if (f[] > max) max = f[];
-        if (f[] < min) min = f[];
-    }
-    stats s;
-    s.min = min, s.max = max, s.sum = sum, s.volume = volume;
-    if (volume > 0.)
-        sum2 -= sum*sum/volume;
-    s.stddev = sum2 > 0. ? sqrt(sum2/volume) : 0.;
-    return s;
-}
 
-stats statsf_weugene2 (scalar f, scalar fs)
-{
-    double dvr, min = 1e100, max = -1e100, sum = 0., sum2 = 0., volume = 0.;
-    foreach(reduction(+:sum) reduction(+:sum2) reduction(+:volume)
-    reduction(max:max) reduction(min:min))
-    if (fs[] == 0. && f[] != nodata) {
-        dvr = dv()*(1. - fs[]);
-        volume += dvr;
-        sum    += dvr*f[];
-        sum2   += dvr*sq(f[]);
-        if (f[] > max) max = f[];
-        if (f[] < min) min = f[];
-    }
-    stats s;
-    s.min = min, s.max = max, s.sum = sum, s.volume = volume;
-    if (volume > 0.)
-        sum2 -= sum*sum/volume;
-    s.stddev = sum2 > 0. ? sqrt(sum2/volume) : 0.;
-    return s;
-}
 
-norm normf_weugene (scalar f, scalar fs)
-{
-  double dvr, avg = 0., rms = 0., max = 0., volume = 0.;
-  foreach(reduction(max:max) reduction(+:avg)
-  reduction(+:rms) reduction(+:volume))
-  if (fs[] < 1. && f[] != nodata) {
-    dvr = dv()*(1. - fs[]);
-    double v = fabs(f[]);
-    if (v > max) max = v;
-    volume += dvr;
-    avg    += dvr*v;
-    rms    += dvr*sq(v);
-  }
-  norm n;
-  n.avg = volume ? avg/volume : 0.;
-  n.rms = volume ? sqrt(rms/volume) : 0.;
-  n.max = max;
-  n.volume = volume;
-  return n;
-}
-
-double change_weugene (scalar s, scalar sn, scalar fs)
-{
-  double max = 0.;
-  foreach(reduction(max:max)) {
-    if (fs[] < 1) {
-      double ds = fabs (s[] - sn[]);
-      if (ds > max)
-        max = ds;
-    }
-    sn[] = s[];
-  }
-  return max;
-}
 #endif

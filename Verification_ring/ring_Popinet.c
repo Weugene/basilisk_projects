@@ -13,7 +13,7 @@ face vector fs_face[];
 #include "two-phase.h"
 #include "tension.h"
 #include "../src_local/utils-weugene.h"
-int maxlevel = 10;
+int maxlevel = 9;
 int minlevel = 4;
 double U0=1, rhol=1, sig=0.0005, Lchar=1, mul=1, Lb=0.3, Rb=0.0625;
 double Rrho=1, Rmu=1;
@@ -33,6 +33,7 @@ int main(int argc, char * argv[])
     RE = U0*Lchar*rhol/mul;
     CA = U0*mul/sig;
     Rrad = Rb/rad;
+    fprintf(ferr, "ARGC=%d\n", argc);
     if (argc > 1) {
         RE = atof(argv[1]);
     }
@@ -52,8 +53,9 @@ int main(int argc, char * argv[])
         maxlevel = atoi(argv[6]);
     }
     if (argc > 7) {
-        flag_vof = (atoi(argv[7]) == 1);//event moving_cylinder(false)  vs  vof (true)
+        flag_vof = (bool) atoi(argv[7]);//event moving_cylinder(false)  vs  vof (true)
     }
+
     size (1.0);
     origin (-0.5*L0, -0.5*L0);
     TOLERANCE = 1e-6;
@@ -70,10 +72,10 @@ int main(int argc, char * argv[])
     signvc = (vc.x > 0) ? 1 : (vc.x < 0)? -1 : 0;
     Dmin = L0*pow(2., -maxlevel);
     thickness = (2*rad + Dmin)*Dmin/atanh(1 - 2*meps);
-    fprintf(ferr, "maxlevel=%d flag_vof=%d tol=%g NITERMAX=%d Dmin=%g thickness=%g\n"
+    fprintf(ferr, "maxlevel=%d flag_vof=%s tol=%g NITERMAX=%d Dmin=%g thickness=%g\n"
                   "RE=%g CA=%g Rb/rad=%g rho1/rho2=%g mu1/mu2=%g\n"
                   "mu1=%g mu2=%g rho1=%g rho2=%g sigma=%g\n",
-            maxlevel, flag_vof, TOLERANCE, NITERMAX, Dmin, thickness,
+            maxlevel, (flag_vof)?"VOF":"Moving Cyl", TOLERANCE, NITERMAX, Dmin, thickness,
             RE, CA, Rrad, Rrho, Rmu,
             mu1, mu2, rho1, rho2, f.sigma);
 
@@ -266,7 +268,7 @@ event vtk_file (t += 0.01){
 }
 
 #define ADAPT_SCALARS {f, fs, omega}
-#define ADAPT_EPS_SCALARS {1e-3, 1e-3, 1e-2}
+#define ADAPT_EPS_SCALARS {1e-5, 1e-5, 1e-2}
 event adapt (i++){
     double eps_arr[] = ADAPT_EPS_SCALARS;
     MinMaxValues(ADAPT_SCALARS, eps_arr);

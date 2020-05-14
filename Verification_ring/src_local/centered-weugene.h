@@ -362,7 +362,7 @@ static void correction (double dt)
     foreach_dimension()
 #if BRINKMAN_PENALIZATION
 //      u.x[] = (u.x[] + (1.0 - fs[])*dt*g.x[] + (dt/eta_s)*fs[]*target_U.x[])/(1 + (dt/eta_s)*fs[]); //corrected: Weugene
-    if (fabs(1 - fs_face.x[]) > SEPS || fabs(1 - fs_face.x[1]) > SEPS)// in fluid, if right or left fs_face != 1
+//    if (fabs(1 - fs_face.x[]) > SEPS || fabs(1 - fs_face.x[1]) > SEPS)// in fluid, if right or left fs_face != 1
         u.x[] += dt*g.x[]; //original version
 #else
     u.x[] += dt*g.x[]; //original version
@@ -424,12 +424,14 @@ event acceleration (i++,last)
   face vector ia =a;
   foreach_face(){
 #if BRINKMAN_PENALIZATION
-      uf.x[] = fm.x[]*(face_value (u.x, 0));
+//      uf.x[] = fm.x[]*(face_value (u.x, 0));
+//      uf.x[] += fm.x[]*dt*a.x[]*(1 - fs_face.x[]);//add
 //      if (fabs(1 - fs_face.x[]) > SEPS)// in fluid not in solid && if fs_face=0.99 => add full acceleration->mistale?
 //          uf.x[] += fm.x[]*dt*a.x[];
 //      if (fabs(fs_face.x[]) < SEPS)// in fluid only pure water & can give sticking->mistale?
 //          uf.x[] += fm.x[]*dt*a.x[];
-      uf.x[] += fm.x[]*dt*a.x[]*(1 - fs_face.x[]);//add
+
+        uf.x[] = fm.x[]*(face_value (u.x, 0) + dt*a.x[]);//original version
 #else
         uf.x[] = fm.x[]*(face_value (u.x, 0) + dt*a.x[]);//original version
 #endif
@@ -520,6 +522,9 @@ event adapt (i++,last) {
     if (uf.x[] && !fs.x[])
       uf.x[] = 0.;
   boundary ((scalar *){uf});
+#endif
+#if BRINKMAN_PENALIZATION == 1
+
 #endif
   event ("properties");
 }

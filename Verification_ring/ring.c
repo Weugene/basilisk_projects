@@ -5,6 +5,7 @@
 #define MODIFIED_CHORIN 1
 #define JACOBI 1
 #define EPS_MAXA 2
+#define SURFACE_TENSION 0
 //#define FIXED
 scalar omega[], my_kappa[];
 scalar fs[];
@@ -15,9 +16,10 @@ face vector fs_face[];
 #include "../src_local/output_vtu_foreach.h"
 //#include "../src_local/three-phase-weugene.h"//rho3, mu3
 #include "two-phase.h"
+#if SURFACE_TENSION == 1
 #include "tension.h"//f.sigma
-
-int maxlevel = 10;
+#endif
+int maxlevel = 9;
 int minlevel = 4;
 double U0 = 1, rhol = 1, sig = 0.0005, Lchar = 1, mul = 1, Lb = 0.3, Rb = 0.0625;
 double Rrho = 1, Rmu = 1;
@@ -31,6 +33,8 @@ double xs0 = -0.2, rad = 0.0625;
 double signvc = 1;
 double deltaT = 0.0;
 double thickness, Dmin, meps=0.01;
+bool vtk_file_flag = false;
+
 /**
 The domain is the periodic unit square centered on the origin. */
 
@@ -59,7 +63,7 @@ int main(int argc, char * argv[])
     }
     size (1.0);
     origin (-0.5*L0, -0.5*L0);
-    eta_s = 1e-6;
+    eta_s = 1e-8;
     TOLERANCE = 1e-6;
     NITERMAX = 50;
     N = 1 << minlevel;
@@ -69,18 +73,29 @@ int main(int argc, char * argv[])
     Rb = Rrad*rad;
     rho1 = 1.; rho2 = rho1/Rrho; //rho3 = 10*max(rho1, rho2);
     mu1 = 1./RE; mu2 = mu1/Rmu; //mu3 = 10*max(mu1, mu2);
+#if SURFACE_TENSION == 1
     f.sigma = 1./RE/CA;
-//    fprintf(ferr,"NO SURFACE TENSION!\n");
+#else
+    fprintf(ferr,"NO SURFACE TENSION!\n");
+#endif
     signvc = (vc.x > 0) ? 1 : (vc.x < 0)? -1 : 0;
     Dmin = L0*pow(2., -maxlevel);
     thickness = (2*rad + Dmin)*Dmin/atanh(1 - 2*meps);
+#if SURFACE_TENSION == 1
     fprintf(ferr, "maxlevel=%d tol=%g NITERMAX=%d Dmin=%g thickness=%g\n"
                   "RE=%g CA=%g Rb/rad=%g rho1/rho2=%g mu1/mu2=%g\n"
                   "mu1=%g mu2=%g rho1=%g rho2=%g sigma=%g\n",
             maxlevel, TOLERANCE, NITERMAX, Dmin, thickness,
             RE, CA, Rrad, Rrho, Rmu,
             mu1, mu2, rho1, rho2, f.sigma);
-
+#else
+    fprintf(ferr, "maxlevel=%d tol=%g NITERMAX=%d Dmin=%g thickness=%g\n"
+                  "RE=%g CA=%g Rb/rad=%g rho1/rho2=%g mu1/mu2=%g\n"
+                  "mu1=%g mu2=%g rho1=%g rho2=%g sigma=0\n",
+            maxlevel, TOLERANCE, NITERMAX, Dmin, thickness,
+            RE, CA, Rrad, Rrho, Rmu,
+            mu1, mu2, rho1, rho2);
+#endif
     const vector U_sol[] = {vc.x, vc.y, vc.z};
     target_U = U_sol;
     const face vector U_solf[] = {vc.x, vc.y, vc.z};
@@ -154,34 +169,50 @@ event init (t = 0) {
     }
 }
 
-event set_dtmax (i++) if (i<500) DT *= 1.05;
+event set_dtmax (i++) {
+    if (i<500) DT *= 1.05;
+    if (DT>0.000047619) DT=0.000047619;
+}
 
 event vof(i++){
-    soild_fs(fs, fs_face, t + 0.5*dt);
-    foreach_face() {
-//            if (fabs(fs_face[] - 1) < SEPS) {
-//                uf.x[] = target_Uf.x[]*(fabs(fs_face[] - 1) < SEPS);
-//            }
-        uf.x[] = (1.0 - fs_face.x[])*uf.x[] + fs_face.x[]*target_Uf.x[];
-    }
-    boundary ((scalar*){uf});
-
-    double Linf_u = -10;
-
-    foreach (reduction(max:Linf_u)) {
-        divu[] = 0;
-        foreach_dimension() divu[] += (uf.x[1]-uf.x[])/Delta;
-        if (fabs(divu[]) > Linf_u) Linf_u = fabs(divu[]);
-    }
-    fprintf(ferr, "divu_max= %g", Linf_u);
-
-}
-event advection_term (i++){
+    soild_fs(fs, fs_face, t);
 //    soild_fs(fs, fs_face, t + 0.5*dt);
+//    foreach() {
+//        if (fabs(fs[] - 1) < SEPS) {
+//            u.x[] = target_U.x[];
+//            u.y[] = target_U.y[];
+//        }
+//        u.x[] = (1.0 - fs[])*u.x[] + fs[]*target_U.x[];
+//    }
+
+//    foreach_face() {
+//            if (fabs(fs_face.x[] - 1) < SEPS) {
+//                uf.x[] = target_Uf.x[];
+//            }
+//        uf.x[] = (1.0 - fs_face.x[])*uf.x[] + fs_face.x[]*target_Uf.x[];
+//    }
+//    boundary ((scalar*){uf});
+//
+//    double Linf_u = -10;
+//
+//    foreach (reduction(max:Linf_u)) {
+//        divu[] = 0;
+//        foreach_dimension() divu[] += (uf.x[1]-uf.x[])/Delta;
+//        if (fabs(divu[]) > Linf_u) Linf_u = fabs(divu[]);
+//    }
+//    fprintf(ferr, "divu_max= %g", Linf_u);
+//    if(vtk_file_flag){
+//        event("vtk_file");
+//        vtk_file_flag = false;
+//    }
+
 }
-event viscous_term (i++){
-    soild_fs(fs, fs_face, t + dt);
-}
+//event advection_term (i++){
+////    soild_fs(fs, fs_face, t + 0.5*dt);
+//}
+//event viscous_term (i++){
+//    soild_fs(fs, fs_face, t + dt);
+//}
 void correct_press(scalar p, int i){
     double press = 0;
     int ip = 0;
@@ -212,7 +243,8 @@ event end_timestep (i++) {
     double avggas = sq(L0) - normf(f).avg, avggas_out_solid = sq(L0) - normf_weugene(f, fs).avg,  u_mag;
     foreach() {
         divu[] = 0;
-        foreach_dimension() divu[] += (uf.x[1]-uf.x[])/Delta;
+        foreach_dimension()
+        divu[] += (uf.x[1]-uf.x[])/Delta;
     }
     double Linf_u = -10, Linf_omega_min = 1e10, Linf_omega_max = -10;
     double u_min_mag = 1e+10, u_max_mag = -1e+10, u_min_x = 1e+10, u_max_x = -1e+10, u_min_y = 1e+10, u_max_y = -1e+10;
@@ -250,8 +282,9 @@ We produce animations of the vorticity and tracer fields... */
 
 //Output
 //event vtk_file (i>1000000){
-event vtk_file (i += 1){
-//event vtk_file (t += 0.01){
+//event vtk_file (i += 1){
+event vtk_file (t += 0.01){
+    vtk_file_flag = true;
     char subname[80]; sprintf(subname, "rk");
     scalar l[];
     foreach() {l[] = level;}
@@ -266,11 +299,16 @@ event vtk_file (i += 1){
             fs_upper.x[] = fs_face.x[1];
         }
     }
+#if SURFACE_TENSION == 1
     output_vtu_MPI( (scalar *) {fs, f, omega, rho, p, l, divu, my_kappa}, (vector *) {u, g, a, dbp, total_rhs, mapped_data_lower, mapped_data_upper, fs_lower, fs_upper}, subname, 1 );
+#else
+    output_vtu_MPI( (scalar *) {fs, f, omega, rho, p, l, divu}, (vector *) {u, g, dbp, total_rhs, mapped_data_lower, mapped_data_upper, fs_lower, fs_upper}, subname, 1 );
+#endif
 }
 
+
 #define ADAPT_SCALARS {f, fs, omega}
-#define ADAPT_EPS_SCALARS {1e-3, 1e-3, 1e-2}
+#define ADAPT_EPS_SCALARS {1e-5, 1e-5, 1e-2}
 event adapt (i++){
     double eps_arr[] = ADAPT_EPS_SCALARS;
     MinMaxValues(ADAPT_SCALARS, eps_arr);

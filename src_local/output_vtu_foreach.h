@@ -401,6 +401,7 @@ void output_vtu_MPI(scalar * list, vector * vlist, char * subname, double shift)
         char name_pvtu[80], tmp[80];
 	    sprintf(name_pvtu, "res/%s_0_%4.4d.pvtu", subname, nf);
         sprintf(tmp, "%s_%4.4d", subname, nf);
+        fprintf(ferr, "+++vtk_file: %s, %s\n", name_pvtu, name_vtu);
         fp = fopen(name_pvtu, "w");
         output_pvtu_bin(list, vlist, 64, fp, tmp);
         fclose(fp);

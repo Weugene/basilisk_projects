@@ -71,11 +71,11 @@ stats statsf_weugene2 (scalar f, scalar fs)
 
 norm normf_weugene (scalar f, scalar fs)
 {
-    double dvr, avg = 0., rms = 0., max = 0., volume = 0.;
+    double avg = 0., rms = 0., max = 0., volume = 0.;
     foreach(reduction(max:max) reduction(+:avg)
     reduction(+:rms) reduction(+:volume))
-    if (fs[] < 1. && f[] != nodata) {
-        dvr = dv()*(1. - fs[]);
+    if (f[] != nodata) {
+        double dvr = dv()*(1. - fs[]);
         double v = fabs(f[]);
         if (v > max) max = v;
         volume += dvr;

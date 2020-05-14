@@ -7,6 +7,8 @@ by output_vtu_ascii_foreach() when used in MPI. Tested in (quad- and oct-)trees
 using MPI.
 */
 #define SMALL_VAL 1e-12
+
+#ifdef _MPI
 #if dimension == 1
     #define MY_BOX_CONDITION (!periodic_bc) || (x - Pmin.x - 0.5*Delta > 0) && (Pmax.x - x - 0.5*Delta > 0)
 #elif dimension == 2
@@ -14,8 +16,19 @@ using MPI.
 #elif dimension > 2
     #define MY_BOX_CONDITION (!periodic_bc) || (x - Pmin.x - 0.5*Delta > 0) && (Pmax.x - x - 0.5*Delta > 0) && (y - Pmin.y - 0.5*Delta > 0) && (Pmax.y - y - 0.5*Delta > 0) && (z - Pmin.z - 0.5*Delta > 0) && (Pmax.z - z - 0.5*Delta > 0)
 #endif
+#else
+#if dimension == 1
+    #define MY_BOX_CONDITION (!periodic_bc) || (Pmax.x - x - 0.5*Delta > 0)
+#elif dimension == 2
+    #define MY_BOX_CONDITION (!periodic_bc) || (Pmax.x - x - 0.5*Delta > 0) && (Pmax.y - y - 0.5*Delta > 0)
+#elif dimension > 2
+    #define MY_BOX_CONDITION (!periodic_bc) || (Pmax.x - x - 0.5*Delta > 0) && (Pmax.y - y - 0.5*Delta > 0) && (Pmax.z - z - 0.5*Delta > 0)
+#endif
+#endif
 
-
+@include <sys/types.h>
+@include <sys/stat.h>
+@include <unistd.h>
 void output_pvtu_ascii (scalar * list, vector * vlist, int n, FILE * fp, char * subname)
 {
     fputs ("<?xml version=\"1.0\"?>\n"
@@ -54,8 +67,8 @@ using MPI. Also works with solids (when not using MPI).
 void output_vtu_ascii_foreach (scalar * list, vector * vlist, int n, FILE * fp, bool linear, double shift)
 {
     int dim = 3; bool periodic_bc = shift > 0;
-    coord Pmin = {X0 + shift - SMALL_VAL, Y0 + shift - SMALL_VAL, Z0 + shift - SMALL_VAL};
-	coord Pmax = {X0 + L0 - shift + SMALL_VAL, Y0 + L0 - shift + SMALL_VAL, Z0 + L0 - shift + SMALL_VAL};
+    coord Pmin = {X0 + SMALL_VAL, Y0 + SMALL_VAL, Z0 + SMALL_VAL};
+    coord Pmax = {X0 + L0 - SMALL_VAL, Y0 + L0 - SMALL_VAL, Z0 + L0 - SMALL_VAL};
 #if defined(_OPENMP)
   int num_omp = omp_get_max_threads();
   omp_set_num_threads(1);
@@ -332,6 +345,8 @@ void output_vtu_bin_foreach (scalar * list, vector * vlist, int n, FILE * fp, bo
         fwrite (&vz, sizeof (double), 1, fp);
       #endif
       #if dimension > 2
+        fwrite (&val(v.x), sizeof (double), 1, fp);
+        fwrite (&val(v.y), sizeof (double), 1, fp);
         fwrite (&val(v.z), sizeof (double), 1, fp);
       #endif
       }
@@ -355,24 +370,50 @@ void output_vtu_bin_foreach (scalar * list, vector * vlist, int n, FILE * fp, bo
 #endif
 }
 
+void output_pvd_file(FILE * fp, int nf, float * file_timesteps, char * subname){
+//    fputs("<?xml version=\"1.0\"?>\n",fp);
+    fputs ("<VTKFile type=\"Collection\" version=\"1.0\" byte_order=\"LittleEndian\" header_type=\"UInt64\">\n"
+           "\t <Collection>\n", fp);
+    for (int i=0; i<=nf; i++) {
+        fprintf(fp, "\t\t<DataSet timestep=\"%g\" part=\"0\" file=\"res/%s_0_%4.4d.pvtu\"/>\n", file_timesteps[i], subname, i);
+    }//12.9g
+    fputs ("\t </Collection>\n "
+           "</VTKFile>\n", fp);
+}
 /* output_vtu_MPI produces *.pvtu files and *.vtu files. The user needs to specify list of scalars and vectors and subname.
 */
+struct stat st = {0};
 static int iter_fp=0;
+static float file_timesteps[9999];
 void output_vtu_MPI(scalar * list, vector * vlist, char * subname, double shift){
     int nf = iter_fp;
     char name_vtu[80];
+    if (iter_fp == 0) {
+        if (stat("res", &st) == -1) {
+            mkdir("res", 0755);
+        }
+    }
     FILE *fp;
     if (nf>9999) { fprintf(stderr, "too many files, more than 9999"); exit(1); }
-    sprintf(name_vtu, "%s_%4.4d_n%3.3d.vtu", subname, nf, pid());
+    sprintf(name_vtu, "res/%s_%4.4d_n%3.3d.vtu", subname, nf, pid());
     fp = fopen(name_vtu, "w");
     output_vtu_bin_foreach(list, vlist, 64, fp, true, shift);//64 and true is useless. It needs to support the interface
     fclose(fp);
     if (pid() == 0) {
+        //pvtu file
         char name_pvtu[80], tmp[80];
-	    sprintf(name_pvtu, "%s_%4.4d.pvtu", subname, nf);
+	    sprintf(name_pvtu, "res/%s_0_%4.4d.pvtu", subname, nf);
         sprintf(tmp, "%s_%4.4d", subname, nf);
+        fprintf(ferr, "+++vtk_file: %s, %s\n", name_pvtu, name_vtu);
         fp = fopen(name_pvtu, "w");
         output_pvtu_bin(list, vlist, 64, fp, tmp);
+        fclose(fp);
+        //pvd file with timesteps
+        char name_pvd[80];
+        sprintf(name_pvtu, "%s.pvd", subname);
+        fp = fopen(name_pvtu, "w");
+        file_timesteps[nf] = t;
+        output_pvd_file(fp, nf, file_timesteps, subname);
         fclose(fp);
     }
     @if _MPI

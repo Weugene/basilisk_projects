@@ -115,11 +115,9 @@ tracer fields. */
 #define ADAPT_SCALARS {cs, omega}
 #define ADAPT_EPS_SCALARS {1e-3,1e-3,1e-3,1e-3}
 event adapt (i++) {
-  fprintf(stderr, "before");
   double eps_arr[] = ADAPT_EPS_SCALARS;
 //  MinMaxValues(ADAPT_SCALARS, eps_arr);
   adapt_wavelet ((scalar *) ADAPT_SCALARS, eps_arr, maxlevel = 10, minlevel = 4);
-  fprintf(stderr, "after");
 }
 
 

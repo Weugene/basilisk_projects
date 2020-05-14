@@ -270,7 +270,7 @@ event vtk_file (t += 0.01){
 }
 
 #define ADAPT_SCALARS {f, fs, omega}
-#define ADAPT_EPS_SCALARS {1e-3, 1e-3, 1e-2}
+#define ADAPT_EPS_SCALARS {1e-5, 1e-5, 1e-2}
 event adapt (i++){
     double eps_arr[] = ADAPT_EPS_SCALARS;
     MinMaxValues(ADAPT_SCALARS, eps_arr);
