@@ -5,6 +5,7 @@ out
 *.pvtu
 *.vtu
 *.vtu.*
+*.pvd
 log
 log_*
 out_*

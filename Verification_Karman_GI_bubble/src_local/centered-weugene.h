@@ -31,7 +31,7 @@ The advantages of EBM are high accuracy and MPI parallelization, however, it wor
 If Brinkman Penalization method for solid treatment is used,
 then a penalization term is added implicitly with the viscous term.
 In this case $\mathbf{a} = -\frac{\chi}{\eta_s}\left(\mathbf{u} - \mathbf{U_t} \right)$
-BPM can work for multiphase flow with MPI paarallelization with sufficient accuracy.
+BPM can work for multiphase flow with MPI parallelization with sufficient accuracy.
 Detailed information about comparison you can find here.
  */
 
@@ -276,11 +276,11 @@ void prediction()
             du.x[] = 0.;
 	    else
 #endif
-#ifdef BRINKMAN_PENALIZATION
-        if (fabs(fs_face.x[] - 1) < SEPS || fabs(fs_face.x[1] - 1) < SEPS)
-	        du.x[] = 0.; // inside solids
-	    else
-#endif
+//#ifdef BRINKMAN_PENALIZATION
+//        if (fabs(fs_face.x[] - 1) < SEPS || fabs(fs_face.x[1] - 1) < SEPS)
+//	        du.x[] = 0.; // inside solids
+//	    else
+//#endif
 	        du.x[] = u.x.gradient (u.x[-1], u.x[], u.x[1])/Delta;
       }
   else
@@ -291,11 +291,11 @@ void prediction()
 	            du.x[] = 0.;
 	        else
 #endif
-#ifdef BRINKMAN_PENALIZATION
-            if (fabs(fs_face.x[] - 1) < SEPS || fabs(fs_face.x[1] - 1) < SEPS)
-	            du.x[] = 0.; // inside solids
-	        else
-#endif
+//#ifdef BRINKMAN_PENALIZATION
+//            if (fabs(fs_face.x[] - 1) < SEPS || fabs(fs_face.x[1] - 1) < SEPS)
+//	            du.x[] = 0.; // inside solids
+//	        else
+//#endif
 	            du.x[] = (u.x[1] - u.x[-1])/(2.*Delta);
     }
   boundary ((scalar *){du});
@@ -340,10 +340,10 @@ event advection_term (i++,last)
     prediction();
     //event("vtk_file");//2
 #if BRINKMAN_PENALIZATION && MODIFIED_CHORIN
-        mgpf = project_bp (uf, pf, alpha, 0.5*dt, mgpf.nrelax, fs, target_U, u, eta_s);//Weugene: chi^{n+1/2}
+        mgpf = project_bp (uf, pf, alpha, 0.5*dt, mgpf.nrelax, fs, target_U, u, eta_chorin);//Weugene: chi^{n+1/2}
 #else
     mgpf = project (uf, pf, alpha, dt/2., mgpf.nrelax);
-//      mgpf = project_bp (uf, pf, alpha, 0.5*dt, mgpf.nrelax, fs, target_U, u, eta_s);//Weugene: chi^{n+1/2}
+//      mgpf = project_bp (uf, pf, alpha, 0.5*dt, mgpf.nrelax, fs, target_U, u, eta_chorin);//Weugene: chi^{n+1/2}
 #endif
 //    advection ((scalar *){u}, uf, dt);//corrected: Weugene
     //event("vtk_file");//3
@@ -480,10 +480,10 @@ next timestep). Then compute the centered gradient field *g*. */
 event projection (i++,last)
 {
 #if BRINKMAN_PENALIZATION && MODIFIED_CHORIN
-  mgp = project_bp (uf, p, alpha, dt, mgp.nrelax, fs, target_U, u, eta_s);// Weugene: chi^{n+1}
+  mgp = project_bp (uf, p, alpha, dt, mgp.nrelax, fs, target_U, u, eta_chorin);// Weugene: chi^{n+1}
 #else
   mgp = project (uf, p, alpha, dt, mgp.nrelax);
-//  mgp = project_bp (uf, p, alpha, dt, mgp.nrelax, fs, target_U, u, eta_s);// Weugene: chi^{n+1}
+//  mgp = project_bp (uf, p, alpha, dt, mgp.nrelax, fs, target_U, u, eta_chorin);// Weugene: chi^{n+1}
 #endif
   centered_gradient (p, g); //calc gf, g using p^{n+1}, a^{n+1/2}
   //event("vtk_file");//9
@@ -493,12 +493,12 @@ event projection (i++,last)
   //event("vtk_file");//10
 }
 
-//#if BRINKMAN_PENALIZATION
-//event brinkman_penalization(i++, last){
-//    brinkman_correction(u, uf, rho, dt);
-////    event("vtk_file");
-//}
-//#endif
+#if BRINKMAN_PENALIZATION
+event brinkman_penalization(i++, last){
+    brinkman_correction(u, uf, rho, dt);
+//    event("vtk_file");
+}
+#endif
 /**
 Some derived solvers need to hook themselves at the end of the
 timestep. */
@@ -525,8 +525,11 @@ event adapt (i++,last) {
       uf.x[] = 0.;
   boundary ((scalar *){uf});
 #endif
-#if BRINKMAN_PENALIZATION == 1
-
+#if BRINKMAN_PENALIZATION
+  foreach_face()
+    if ((uf.x[] - target_Uf.x[]) && !fs_face.x[])
+        uf.x[] = target_Uf.x[];
+  boundary ((scalar *){uf});
 #endif
   event ("properties");
 }

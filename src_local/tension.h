@@ -34,7 +34,7 @@ with $\rho_m=(\rho_1+\rho_2)/2.$ and $\rho_1$, $\rho_2$ the densities
 on either side of the interface. */
 
 event stability (i++) {
-#ifndef NOT_CFL_SIGMA
+
   /**
   We first compute the minimum and maximum values of $\alpha/f_m =
   1/\rho$, as well as $\Delta_{min}$. */
@@ -45,6 +45,7 @@ event stability (i++) {
     if (alpha.x[]/fm.x[] < amin) amin = alpha.x[]/fm.x[];
     if (Delta < dmin) dmin = Delta;
   }
+  fprintf(ferr, "amin=%g amax=%g", amin, amax);//Weugene: added
   double rhom = (1./amin + 1./amax)/2.;
 
   /**
@@ -55,11 +56,11 @@ event stability (i++) {
   for (scalar c in interfaces)
     sigma += c.sigma;
   if (sigma) {
+      fprintf(ferr, "sigma=%g", sigma);//Weugene: added
     double dt = sqrt (rhom*cube(dmin)/(pi*sigma));
     if (dt < dtmax)
       dtmax = dt;
   }
-#endif
 }
 
 /**
@@ -89,5 +90,6 @@ event acceleration (i++)
 	curvature (f, phi, f.sigma, add = false);
 	f.phi = phi;
       }
+      foreach() my_kappa[]=phi[];//Weugene: added
     }
 }

@@ -91,11 +91,6 @@ static void relax_viscosity (scalar*a, scalar*b, int l, void*data)
             foreach_dimension()
                 u.x[] = (u.x[] + 2.*w.x[])/3.;
     #endif
-//    fprintf(ferr, "norm(u)>0.001\n");
-//    foreach_level_or_leaf (l) if (norm(u)>0.001) fprintf(ferr, "+++tU: %g %g u: %15.10g %15.10g r.x[]: %g %g w: %15.10g %15.10g dbp: %15.10g %15.10g rhs: %g %g fs: %g dbpN: %15.10g %15.10g Num: %15.10g %15.10g Den: %15.10g\n", target_U.x[], target_U.y[], u.x[], u.y[], r.x[], r.y[], w.x[], w.y[], dbp.x[], dbp.y[], total_rhs.x[], total_rhs.y[], fs[], fbp*(- (u.x[] - target_U.x[])/eta_s), fbp*(- (u.y[] - target_U.y[])/eta_s), fbp*dt*(sq(Delta)*target_U.x[]/eta_s), fbp*dt*(sq(Delta)*target_U.y[]/eta_s), fbp*dt*(sq(Delta)/eta_s));
-//
-//    fprintf(ferr, "fs[]>0\n");
-//    foreach_level_or_leaf (l) if (fs[]>0.1)      fprintf(ferr, "===tU: %g %g u: %15.10g %15.10g r.x[]: %g %g w: %15.10g %15.10g dbp: %15.10g %15.10g rhs: %g %g fs: %g dbpN: %15.10g %15.10g Num: %15.10g %15.10g Den: %15.10g\n", target_U.x[], target_U.y[], u.x[], u.y[], r.x[], r.y[], w.x[], w.y[], dbp.x[], dbp.y[], total_rhs.x[], total_rhs.y[], fs[], fbp*(- (u.x[] - target_U.x[])/eta_s), fbp*(- (u.y[] - target_U.y[])/eta_s), fbp*dt*(sq(Delta)*target_U.x[]/eta_s), fbp*dt*(sq(Delta)*target_U.y[]/eta_s), fbp*dt*(sq(Delta)/eta_s));
 
     #if TRASH
         vector u1[];
@@ -162,10 +157,7 @@ static double residual_viscosity (scalar * a, scalar * b, scalar * resl, void * 
         }
 #endif
     fprintf(ferr, "visc:maxres/dt=%g maxres=%g \n", maxres/dt, maxres);
-//    fprintf(ferr, "visc:maxres=%g\n", maxres);
-//    event("vtk_file");
-//    return maxres;
-    return maxres/dt;
+    return maxres/dt; // Corrected by Weugene: return residual = rhs - du/dt
 }
 
 #undef lambda

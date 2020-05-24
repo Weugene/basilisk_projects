@@ -92,13 +92,17 @@ void advection (struct Advection p)
 
   assert (list_len(p.tracers) == list_len(lsrc));
   scalar f, src;
+  face vector uf = p.u;
   for (f,src in p.tracers,lsrc) {
     face vector flux[];
     tracer_fluxes (f, p.u, flux, p.dt, src);
 #if !EMBED
-    foreach()
+    foreach(){
       foreach_dimension()
+      {
         f[] += p.dt*(flux.x[] - flux.x[1])/(Delta*cm[]);
+      }
+    }
 #else // EMBED
     update_tracer (f, p.u, flux, p.dt);
 #endif // EMBED

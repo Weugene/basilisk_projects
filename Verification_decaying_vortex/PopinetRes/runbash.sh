@@ -1,7 +1,7 @@
 #!/bin/bash
 echo "Usage: No arguments"
 solver=./a.out
-plist=(7 8 9 10 11)
+plist=(7 8 9 10)
 
 for a in "${plist[@]}"; do
 	echo "./a.out arg=$a"

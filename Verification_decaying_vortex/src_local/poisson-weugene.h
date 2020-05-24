@@ -1,7 +1,7 @@
-#ifndef BASILISK_HEADER_19
-#define BASILISK_HEADER_19
+#ifndef BASILISK_HEADER_9
+#define BASILISK_HEADER_9
 #line 1 "./../src_local/../src_local/poisson-weugene.h"
-/**
+    /**
 # Multigrid Poisson--Helmholtz solvers
 
 We want to solve Poisson--Helmholtz equations of the general form
@@ -492,16 +492,17 @@ struct Project {
   scalar fs;
   vector target_U;   // optional: default 0
   vector u;
-  double eta_s;         // optional: default 1e-10
+  double eta_chorin;         // optional: default 1e-10
 };
 
+extern scalar divutmp;
 trace
 mgstats project (struct Project q)
 {
     face vector uf = q.uf;
     scalar p = q.p;
     (const) face vector alpha = q.alpha.x.i ? q.alpha : unityf;
-    double dt = q.dt ? q.dt : 1.;
+    double dt = q.dt ? q.dt : 1., d;
     int nrelax = q.nrelax ? q.nrelax : 4;
 
     /**
@@ -510,13 +511,19 @@ mgstats project (struct Project q)
     pressure has the correct dimension. */
     fprintf(ferr, "Conventional Chorin..\n");
     scalar div[];
+    foreach_face() uintermediate.x[] = uf.x[];
+    boundary((scalar *){uintermediate});
     foreach() {
-        div[] = 0.;
-        foreach_dimension()
-        div[] += uf.x[1] - uf.x[];
-        div[] /= dt*Delta;
+        d = 0.;
+        foreach_dimension(){
+            d += uf.x[1] - uf.x[];
+        }
+        div[] = d*(fs[] < 1)/(dt*Delta);
+//        div[] = d*(1.0 - fs[])/(dt*Delta); // big errors at boundary solid
+        //if (fabs(div[]) > 1000 ) fprintf(ferr, "*** div %g ufx %g %g ufy %g %g d= %g\n", div[], uf.x[], uf.x[1], uf.y[], uf.y[1], d);
+        divutmp[] = d/(dt*Delta);
     }
-
+    boundary((scalar*){div, divutmp});
     /**
     We solve the Poisson problem. The tolerance (set with *TOLERANCE*) is
     the maximum relative change in volume of a cell (due to the divergence
@@ -525,10 +532,17 @@ mgstats project (struct Project q)
     |\nabla\cdot\mathbf{u}_f|\Delta t
     $$
     Given the scaling of the divergence above, this gives */
-
+//    event ("vtk_file");
     mgstats mgp = poisson (p, div, alpha,
-                           tolerance = TOLERANCE/dt, nrelax = nrelax);
+                           tolerance = TOLERANCE/sq(dt), nrelax = nrelax);
 
+//    double xref = X0 + 0.5*L0, yref = Y0 + 0.5*L0, zref = Z0 + 0.5*L0; //reference location
+    double xref = -0.5, yref = Y0 + 0.5*L0, zref = Z0 + 0.5*L0; //reference location
+    double pref = 0;                                                   //reference pressure
+    double pcor = interpolate (p, xref, yref, zref) - pref;
+    foreach()
+        p[] -= pcor;
+    boundary ({p});
     /**
     And compute $\mathbf{u}_f^{n+1}$ using $\mathbf{u}_f$ and $p$. */
 
@@ -536,6 +550,15 @@ mgstats project (struct Project q)
     uf.x[] -= dt*alpha.x[]*face_gradient_x (p, 0);
     boundary ((scalar *){uf});
 
+    foreach() {
+        d = 0.;
+        foreach_dimension(){
+            d += uf.x[1] - uf.x[];
+        }
+        divutmpAfter[] = d/(dt*Delta);
+    }
+    boundary((scalar*){divutmpAfter});
+//    event ("vtk_file");
     return mgp;
 }
 //double UnablaU(scalar ux){
@@ -569,20 +592,26 @@ mgstats project_bp (struct Project q)
   foreach_face(){
 //      tmp = 0;
       adv = 0;
-      tmp = dt*fs_face.x[]/eta_s;
+      tmp = dt*fs_face.x[]/eta_chorin;
 //      adv = 1*(u.x[] - u.x[-1])/Delta; //see down!
 //      adv = target_Uf.x[]*(u.x[] - u.x[-1])/Delta; //not correct!
-      u_rhs.x[] = (uf.x[] + tmp*(target_Uf.x[] - eta_s*adv))/(1.0 + tmp);
+      u_rhs.x[] = (uf.x[] + tmp*(target_Uf.x[] - eta_chorin*adv))/(1.0 + tmp);
       alpha_mod.x[] = alpha.x[]/(1.0 + tmp);
+      my_u_rhs.x[] = u_rhs.x[];
+      my_alpha.x[] = alpha_mod.x[];
+      uintermediate.x[] = uf.x[];
   }
-  boundary ((scalar *){u_rhs, alpha_mod});
+  boundary ((scalar *){u_rhs, alpha_mod, my_u_rhs, my_alpha});
   scalar div[];
   foreach() {
     div[] = 0.;
     foreach_dimension()
       div[] += u_rhs.x[1] - u_rhs.x[];
-    div[] /= dt*Delta;
+    div[] *= (1.0 - fs[])/(dt*Delta);
+//    div[] /= dt*Delta;
+    divutmp[] = div[];
   }
+  boundary((scalar*){div, divutmp});
   /**
   We solve the Poisson problem. The tolerance (set with *TOLERANCE*) is
   the maximum relative change in volume of a cell (due to the divergence
@@ -591,15 +620,22 @@ mgstats project_bp (struct Project q)
   |\nabla\cdot\mathbf{u}_f|\Delta t
   $$
   Given the scaling of the divergence above, this gives */
-  mgstats mgp = poisson (p, div, alpha_mod, tolerance = TOLERANCE/dt, nrelax = nrelax); //corrected: WEUGENE
+  mgstats mgp = poisson (p, div, alpha_mod, tolerance = TOLERANCE/sq(dt), nrelax = nrelax); //corrected: WEUGENE
+//  double xref = X0 + 0.5*L0, yref = Y0 + 0.5*L0, zref = Z0 + 0.5*L0; //reference location
+  double xref = -0.5, yref = Y0 + 0.5*L0, zref = Z0 + 0.5*L0; //reference location
+  double pref = 0;                                                   //reference pressure
+  double pcor = interpolate (p, xref, yref, zref) - pref;
+  foreach()
+    p[] -= pcor;
+  boundary ({p});
   /**
   And compute $\mathbf{u}_f^{n+1}$ using $\mathbf{u}_f$ and $p$. */
   foreach_face(){
       adv=0;
-      tmp = dt*fs_face.x[]/eta_s;
+      tmp = dt*fs_face.x[]/eta_chorin;
 //        adv = 1*(u.x[] - u.x[-1])/Delta; //see up!
 //      adv = target_Uf.x[]*(u.x[] - u.x[-1])/Delta; //incorrect!
-      uf.x[] = (uf.x[] - dt * alpha.x[] * face_gradient_x(p, 0) + tmp*(target_Uf.x[] - eta_s*adv)) / (1.0 + tmp);
+      uf.x[] = (uf.x[] - dt * alpha.x[] * face_gradient_x(p, 0) + tmp*(target_Uf.x[] - eta_chorin*adv)) / (1.0 + tmp);
   }
   boundary ((scalar *){uf});
 

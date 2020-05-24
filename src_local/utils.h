@@ -192,15 +192,15 @@ static double generic_limiter (double r, double beta)
 }
 
 double minmod (double s0, double s1, double s2) {
-  return generic_limiter ((s2 - s1)/(s1 - s0), 1.)*(s1 - s0);
+  return s1 == s0 ? 0. : generic_limiter ((s2 - s1)/(s1 - s0), 1.)*(s1 - s0);
 }
 
 double superbee (double s0, double s1, double s2) {
-  return generic_limiter ((s2 - s1)/(s1 - s0), 2.)*(s1 - s0);
+  return s1 == s0 ? 0. : generic_limiter ((s2 - s1)/(s1 - s0), 2.)*(s1 - s0);
 }
 
 double sweby (double s0, double s1, double s2) {
-  return generic_limiter ((s2 - s1)/(s1 - s0), 1.5)*(s1 - s0);
+  return s1 == s0 ? 0. : generic_limiter ((s2 - s1)/(s1 - s0), 1.5)*(s1 - s0);
 }
 
 /**
@@ -301,12 +301,65 @@ double change (scalar s, scalar sn)
   return max;
 }
 
-#include "output.h"
+/**
+These functions return the scalar/vector fields called *name*, or
+-1 if they don't exist. */
 
-#if dimension == 1
-#define scalar_a_by_b(a, b) (a.x[]*b.x[])
-#elif dimension == 2
-#define scalar_a_by_b(a, b) (a.x[]*b.x[] + a.y[]*b.y[])
-#else // dimension == 3
-#define scalar_a_by_b(a, b) (a.x[]*b.x[] + a.y[]*b.y[] + a.z[]*b.z[])
-#endif
+scalar lookup_field (const char * name)
+{
+  if (name)
+    for (scalar s in all)
+      if (!strcmp (s.name, name))
+	return s;
+  return (scalar){-1};
+}
+
+vector lookup_vector (const char * name)
+{
+  if (name) {
+    char component[strlen(name) + 3];
+    strcpy (component, name);
+    strcat (component, ".x");
+    for (scalar s in all)
+      if (!strcmp (s.name, component))
+	return s.v;
+  }
+  return (vector){{-1}};
+}
+
+/**
+The function below traverses the set of sub-segments intersecting the
+mesh and spanning the [A:B] segment. The pair of coordinates defining
+the sub-segment contained in each cell are defined by `p[0]` and
+`p[1]`. */
+
+@def foreach_segment(_S,_p) {
+  coord t = {(_S)[1].x - (_S)[0].x, (_S)[1].y - (_S)[0].y};
+  double norm = sqrt(sq(t.x) + sq(t.y));
+  assert (norm > 0.);
+  t.x = t.x/norm + 1e-6, t.y = t.y/norm - 1.5e-6;
+  double alpha = ((_S)[0].x*((_S)[1].y - (_S)[0].y) -
+		  (_S)[0].y*((_S)[1].x - (_S)[0].x))/norm;
+  foreach()
+    if (fabs(t.y*x - t.x*y - alpha) < 0.708*Delta) {
+      coord _o = {x,y}, _p[2];
+      int _n = 0;
+      foreach_dimension()
+	if (t.x)
+	  for (int _i = -1; _i <= 1 && _n < 2; _i += 2) {
+	    _p[_n].x = _o.x + _i*Delta/2.;
+	    double a = (_p[_n].x - (_S)[0].x)/t.x;
+	    _p[_n].y = (_S)[0].y + a*t.y;
+	    if (fabs(_p[_n].y - _o.y) <= Delta/2.) {
+	      a = clamp (a, 0., norm);
+	      _p[_n].x = (_S)[0].x + a*t.x, _p[_n].y = (_S)[0].y + a*t.y;
+	      if (fabs(_p[_n].x - _o.x) <= Delta/2. &&
+		  fabs(_p[_n].y - _o.y) <= Delta/2.)
+		_n++;
+	    }
+	  }
+      if (_n == 2) {
+@
+@define end_foreach_segment() } } end_foreach(); }
+
+#include "output.h"

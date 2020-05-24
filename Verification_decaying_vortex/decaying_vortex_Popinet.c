@@ -25,10 +25,10 @@ vector uexact[];
 scalar pexact[];
 scalar omega[];
 scalar cs[];
-int maxlevel = 8;
+int maxlevel = 6;
 int minlevel = 4;
 double Ldomain = 3.0, RE = 30.;
-double ueps = 1e-3, cseps = 1e-5, peps=1e-3;
+double ueps = 1e-5, cseps = 1e-5, peps=1e-3;
 
 void frame_Popinet(scalar cs, face vector fs, double t){
     vertex scalar phi[];
@@ -54,26 +54,22 @@ void theory(vector u, scalar p, double t, double RE){
 //$$u(x, y, t) = − \cos 􏱲x \sin 􏱲y \exp{−2􏱲\pi^2 t/Re}$$
 //$$v(x, y, t) =   \sin 􏱲x \cos 􏱲y \exp{−2􏱲\pi^2 t/Re}$$
 //$$p(x, y, t) =  −\frac14(\cos 2􏱲x + \cos 2􏱲y)\exp{−4\pi^2 t/Re}$$
-
-u.n[left]  = neumann(0);
+//in 2D each cells must have 2 BC, in 3D - 3BC
 u.t[left]  = neumann(0);
-p[left]    = dirichlet(pexact[]);
-pf[left]   = dirichlet(pexact[]);
+p[left]    = dirichlet(pxe);
+pf[left]   = dirichlet( pxe);
 
-u.n[right] = neumann(0);
 u.t[right] = neumann(0);
-p[right]   = dirichlet(pexact[]);
-pf[right]  = dirichlet(pexact[]);
+p[right]   = dirichlet( pxe);
+pf[right]  = dirichlet( pxe);
 
-u.n[top] = neumann(0);
 u.t[top] = neumann(0);
-p[top]   = dirichlet(pexact[]);
-pf[top]  = dirichlet(pexact[]);
+p[top]   = dirichlet( pxe);
+pf[top]  = dirichlet( pxe);
 
-u.n[bottom] = neumann(0);
 u.t[bottom] = neumann(0);
-p[bottom]   = dirichlet(pexact[]);
-pf[bottom]  = dirichlet(pexact[]);
+p[bottom]   = dirichlet( pxe);
+pf[bottom]  = dirichlet( pxe);
 
 int main(int argc, char * argv[]) {
     if (argc > 1) {
@@ -82,7 +78,7 @@ int main(int argc, char * argv[]) {
     size (Ldomain);
     origin (-0.5*Ldomain, -0.5*Ldomain);
 //    DT = 1e-8;
-    DT = 1e-4;
+    DT = 1e-5;
     CFL = 0.4;
     TOLERANCE = 1e-8;
     RELATIVE_RES_TOLERANCE = 0.1;
@@ -91,6 +87,8 @@ int main(int argc, char * argv[]) {
 
 //    for(maxlevel=7; maxlevel<=11; maxlevel++) {
     N = 1<<maxlevel;
+    fprintf(ferr, "maxlevel=%d TOL=%g NITERMAX=%d Re=%g Rel_res_tol=%g\n", maxlevel, TOLERANCE, NITERMAX, RE, RELATIVE_RES_TOLERANCE);
+    fprintf(ferr, "CFL=%g cseps=%g peps=%g ueps=%g\n", CFL, cseps, peps, ueps);
     run();
 //    }
 }
@@ -110,13 +108,13 @@ event wall  (i++)
         u.x[] = cs[]*u.x[] + uxe*(1 - cs[]);
         u.y[] = cs[]*u.y[] + uye*(1 - cs[]);
     }
-
+    boundary ((scalar *){u});
     foreach_face() {
         muv.x[] = fm.x[]/RE;
 //        uf.x[] = fs.x[]*uf.x[] + uxe*(1 - fs.x[]);
 //        uf.y[] = fs.y[]*uf.y[] + uye*(1 - fs.y[]);
     }
-    boundary ({u, muv});
+    boundary ((scalar *){muv});
 }
 
 event init (t = 0)
@@ -126,7 +124,7 @@ event init (t = 0)
         do {
             frame_Popinet (cs, fs, 0);
             theory(uexact, pexact, 0, RE);
-        } while ( ++it <= 10 && adapt_wavelet({cs, pexact, uexact}, (double []){cseps, peps, ueps, ueps}, maxlevel=maxlevel, minlevel=minlevel).nf != 0);
+        } while ( ++it <= 10 && adapt_wavelet((scalar *){cs, pexact, uexact}, (double []){cseps, peps, ueps, ueps}, maxlevel=maxlevel, minlevel=minlevel).nf != 0);
     }
     foreach() {
         p[] = pexact[];// useless
@@ -167,7 +165,7 @@ void correct_press(scalar p, scalar cs, int i){
 #else //average value
     foreach(reduction(+:press)){
         if (fabs(1 - cs[]) < SEPS) {
-            press += p[];
+            press += p[]*dv()*cs[];
         }
     }
     @if _MPI
@@ -180,12 +178,14 @@ void correct_press(scalar p, scalar cs, int i){
     foreach(){
         p[] -= press;
     }
+//    boundary((scalar *){p});
     fprintf(ferr, "correct_press= %g \n", press);
 }
 
 
 event end_timestep (i++){
-    correct_press(p, cs, i);
+//    correct_press(p, cs, i);
+    vorticity (u, omega);
     double Luinf = 0, Lpinf = 0, du, dp, maxp = 0, maxu = 0;
     theory(uexact, pexact, t+dt, RE);
     foreach(reduction(max:Luinf) reduction(max:Lpinf) reduction(max:maxu) reduction(max:maxp)){
@@ -220,17 +220,15 @@ We produce animations of the vorticity and tracer fields... */
 
 //Output
 //event vtk_file (i++){
-event vtk_file (t += 0.03){
+event vtk_file (t += 0.01){
     char subname[80]; sprintf(subname, "vortex_Popinet");
-    scalar l[], omega[];
-    vorticity (u, omega);
-    foreach() {l[] = level;}
+    scalar l[]; foreach() l[] = level;
     output_vtu_MPI( (scalar *) {cs, omega, p, pexact, l, divutmp}, (vector *) {u, uexact}, subname, 0 );
 }
 /**
 We adapt according to the error on the embedded geometry, velocity*/
-#define ADAPT_SCALARS {cs, p, u}
-#define ADAPT_EPS_SCALARS {cseps, peps, ueps, ueps}
+#define ADAPT_SCALARS {cs, omega}
+#define ADAPT_EPS_SCALARS {cseps, ueps}
 event adapt (i++){
     double eps_arr[] = ADAPT_EPS_SCALARS;
     MinMaxValues(ADAPT_SCALARS, eps_arr);

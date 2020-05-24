@@ -141,6 +141,8 @@ void soild_fs(scalar fs, double t){
     }
     boundary ({phi});
     fractions (phi, fs, ff);
+
+
     fs.refine = fs.prolongation = fraction_refine;
     boundary({fs});
 }
