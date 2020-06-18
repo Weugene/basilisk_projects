@@ -25,7 +25,7 @@ vector uexact[];
 scalar pexact[];
 scalar omega[];
 scalar cs[];
-int maxlevel = 6;
+int maxlevel = 8;
 int minlevel = 4;
 double Ldomain = 3.0, RE = 30.;
 double ueps = 1e-5, cseps = 1e-5, peps=1e-3;
@@ -41,12 +41,12 @@ void frame_Popinet(scalar cs, face vector fs, double t){
 
 #define uxe (-cos(pi*x) * sin(pi*y) * exp(-2.0 * sq(pi) * t / RE))
 #define uye ( sin(pi*x) * cos(pi*y) * exp(-2.0 * sq(pi) * t / RE))
-#define pxe (-0.25 *  (cos(2*pi*x) + cos(2.0*pi*y)) * exp(-4.0 * sq(pi) * t / RE))
+#define pe (-0.25 *  (cos(2*pi*x) + cos(2.0*pi*y)) * exp(-4.0 * sq(pi) * t / RE))
 void theory(vector u, scalar p, double t, double RE){
     foreach(){
         u.x[] = uxe;
         u.y[] = uye;
-        p[]   = pxe;
+        p[]   = pe;
     }
     boundary({u, p});
     fprintf(ferr, "theory  t= %g\n", t);
@@ -56,20 +56,20 @@ void theory(vector u, scalar p, double t, double RE){
 //$$p(x, y, t) =  −\frac14(\cos 2􏱲x + \cos 2􏱲y)\exp{−4\pi^2 t/Re}$$
 //in 2D each cells must have 2 BC, in 3D - 3BC
 u.t[left]  = neumann(0);
-p[left]    = dirichlet(pxe);
-pf[left]   = dirichlet( pxe);
+p[left]    = neumann(0);
+pf[left]   = neumann(0);
 
 u.t[right] = neumann(0);
-p[right]   = dirichlet( pxe);
-pf[right]  = dirichlet( pxe);
+p[right]   = neumann(0);
+pf[right]  = neumann(0);
 
 u.t[top] = neumann(0);
-p[top]   = dirichlet( pxe);
-pf[top]  = dirichlet( pxe);
+p[top]   = neumann(0);
+pf[top]  = neumann(0);
 
 u.t[bottom] = neumann(0);
-p[bottom]   = dirichlet( pxe);
-pf[bottom]  = dirichlet( pxe);
+p[bottom]   = neumann(0);
+pf[bottom]  = neumann(0);
 
 int main(int argc, char * argv[]) {
     if (argc > 1) {
@@ -85,12 +85,10 @@ int main(int argc, char * argv[]) {
     NITERMAX = 30;
     mu = muv;
 
-//    for(maxlevel=7; maxlevel<=11; maxlevel++) {
     N = 1<<maxlevel;
     fprintf(ferr, "maxlevel=%d TOL=%g NITERMAX=%d Re=%g Rel_res_tol=%g\n", maxlevel, TOLERANCE, NITERMAX, RE, RELATIVE_RES_TOLERANCE);
     fprintf(ferr, "CFL=%g cseps=%g peps=%g ueps=%g\n", CFL, cseps, peps, ueps);
     run();
-//    }
 }
 
 /**
@@ -111,8 +109,8 @@ event wall  (i++)
     boundary ((scalar *){u});
     foreach_face() {
         muv.x[] = fm.x[]/RE;
-//        uf.x[] = fs.x[]*uf.x[] + uxe*(1 - fs.x[]);
-//        uf.y[] = fs.y[]*uf.y[] + uye*(1 - fs.y[]);
+        uf.x[] = fs.x[]*uf.x[] + uxe*(1 - fs.x[]);
+        uf.y[] = fs.y[]*uf.y[] + uye*(1 - fs.y[]);
     }
     boundary ((scalar *){muv});
 }
@@ -135,56 +133,18 @@ event init (t = 0)
 
 event set_dtmax (i++) {
     if (i<=100) {
-        NITERMIN=100;
-        NITERMAX=150;
+        NITERMIN=5;
+        NITERMAX=100;
     }else{
-        NITERMIN=10;
-        NITERMAX=30;
+        NITERMIN=1;
+        NITERMAX=100;
     }
     DT *= 1.05;
     DT = min(DT, CFL*Ldomain/pow(2, maxlevel+3));
     fprintf(ferr, "set_dtmax: tnext= %g Dt= %g", tnext, DT);
 }
 
-
-/**
-We check the number of iterations of the Poisson and viscous
-problems. */
-//scalar ptmp[];
-void correct_press(scalar p, scalar cs, int i){
-    double press = 0;
-    int ip = 0;
-#if 0 // Left bottom Corner
-    foreach(){
-        if (ip == 0){
-            press = p[];
-            ip++;
-            break;
-        }
-    }
-#else //average value
-    foreach(reduction(+:press)){
-        if (fabs(1 - cs[]) < SEPS) {
-            press += p[]*dv()*cs[];
-        }
-    }
-    @if _MPI
-        MPI_Bcast(&press, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-    @endif
-
-    press /=4; // inner frame are is 4
-#endif
-
-    foreach(){
-        p[] -= press;
-    }
-//    boundary((scalar *){p});
-    fprintf(ferr, "correct_press= %g \n", press);
-}
-
-
 event end_timestep (i++){
-//    correct_press(p, cs, i);
     vorticity (u, omega);
     double Luinf = 0, Lpinf = 0, du, dp, maxp = 0, maxu = 0;
     theory(uexact, pexact, t+dt, RE);
@@ -199,6 +159,8 @@ event end_timestep (i++){
         }
     }
     fprintf (ferr, "i= %d t+dt= %g dt= %g Luinf= %g Lpinf= %g Luinf_rel= %g Lpinf_rel= %g iter_p= %d iter_u= %d \n", i, t+dt, dt, Luinf, Lpinf, Luinf/maxu, Lpinf/maxp, mgp.i, mgu.i);
+double eps_arr[] = {1, 1, 1, 1, 1, 1, 1, 1};
+MinMaxValues((scalar *){p, pexact, u.x, u.y, uexact.x, uexact.y, omega, divutmp}, eps_arr);
 }
 /**
 We produce animations of the vorticity and tracer fields... */
@@ -229,11 +191,11 @@ event vtk_file (t += 0.01){
 We adapt according to the error on the embedded geometry, velocity*/
 #define ADAPT_SCALARS {cs, omega}
 #define ADAPT_EPS_SCALARS {cseps, ueps}
-event adapt (i++){
-    double eps_arr[] = ADAPT_EPS_SCALARS;
-    MinMaxValues(ADAPT_SCALARS, eps_arr);
-    adapt_wavelet ((scalar *) ADAPT_SCALARS, eps_arr, maxlevel = maxlevel, minlevel = minlevel);
-}
+//event adapt (i++){
+//    double eps_arr[] = ADAPT_EPS_SCALARS;
+//    MinMaxValues(ADAPT_SCALARS, eps_arr);
+//    adapt_wavelet ((scalar *) ADAPT_SCALARS, eps_arr, maxlevel = maxlevel, minlevel = minlevel);
+//}
 
 event stop (t = 0.3);
 /**

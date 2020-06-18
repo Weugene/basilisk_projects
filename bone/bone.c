@@ -27,7 +27,12 @@ We also need to compute distance functions (to describe the solid geometry
 
 int maxlevel = 8;
 int minlevel = 5;
-double grav = 1;
+double cseps=1e-3, ueps=1e-3;
+#define flux  1e-4 // 4-6 л\мин или 67-100 см^3\сек
+#define S 4e-6 //cross section
+#define RHO  1050 //плотность 1,050—1,060 г/см³
+#define MU 5e-3 //вязкость похоже вот 4-5 мПа×с
+#define v_in (flux/S)
 void bone (scalar cs, face vector fs){
     double eps = 1e-3;
     FILE * fp = fopen ("cube.stl", "r");
@@ -56,7 +61,8 @@ void bone (scalar cs, face vector fs){
     foreach(reduction(+:no_cells)){
         no_cells++;
     }
-    fprintf(ferr, "it= %d number of cells= %d\n", it, no_cells);
+    int nc_max = (int) pow(2, dimension*maxlevel);
+    fprintf(ferr, "it= %d number of cells = %d, max number of cells = %d, compression ratio = %g\n", it, no_cells, nc_max, (double) no_cells/nc_max );
 
     /**
     We also compute the volume fraction from the distance field. We
@@ -73,6 +79,16 @@ void bone (scalar cs, face vector fs){
     fclose (fp);
 }
 
+u.n[left] = dirichlet(v_in);
+u.t[left] = dirichlet(0);
+u.r[left] = dirichlet(0);
+//p[left] = neumann(0);
+//pf[left] = neumann(0);
+
+u.n[right] = neumann(0);
+u.t[right] = neumann(0);
+p[right] = dirichlet(0);
+pf[right] = dirichlet(0);
 /**
 The boundary condition is zero velocity on the embedded boundary. */
 
@@ -86,7 +102,8 @@ int main(int argc, char * argv[])
 //    origin (-0.5, -0.5, -0.5);
     size(1.0);
     foreach_dimension()
-    periodic (right);
+    periodic (top);
+    periodic (front);
 
     /**
     We turn off the advection term. The choice of the maximum timestep
@@ -98,18 +115,16 @@ int main(int argc, char * argv[])
     DT = 1e-9;
     TOLERANCE = 1e-4;
     NITERMIN = 2;
-    N = 1 << 5;
-    /**
-    The gravity vector is aligned with the Ox and viscosity is unity. */
-
-    const face vector g[] = {1.,0.};
-    a = g;
-    mu = fm;
+    N = 1 << 7;
+    v_in =
+    const face vector muc[] = {MU,MU,MU};
+    mu = muc;
+    (const) scalar rhoc[] = RHO;
+    rho = rhoc;
     run();
 }
 
 scalar un[];
-
 
 event init (t = 0) {
     if (!restore (file = "restart")) {
@@ -131,13 +146,6 @@ event init (t = 0) {
 }
 
 event set_dtmax (i++) {
-    if (i<=100) {
-        NITERMIN=100;
-        NITERMAX=150;
-    }else{
-        NITERMIN=10;
-        NITERMAX=30;
-    }
     DT *= 1.05;
     DT = min(DT, CFL/pow(2, maxlevel+3));
     fprintf(ferr, "set_dtmax: tnext= %g DT= %g", tnext, DT);
@@ -239,7 +247,7 @@ event logfile (i++; i <= 500)
 
 //event vtk_file (i += 50){
 event vtk_file (t += 0.01){
-    char subname[80]; sprintf(subname, "rk");
+    char subname[80]; sprintf(subname, "bone");
     scalar l[];
     foreach() {l[] = level;}
     output_vtu_MPI( (scalar *) {cs, p, l}, (vector *) {u}, subname, 1 );
@@ -258,11 +266,11 @@ event snapshot (i +=100) {
 This computation is only feasible thanks to mesh adaptation, based
 both on volume fraction and velocity accuracy. */
 #define ADAPT_SCALARS {cs, u}
-#define ADAPT_EPS_SCALARS {1e-2,4e-6,4e-6,4e-6}
+#define ADAPT_EPS_SCALARS {cseps, ueps, ueps, ueps}
 event adapt (i++){
-    double eps_arr[] = ADAPT_EPS_SCALARS;
-    //MinMaxValues(ADAPT_SCALARS, eps_arr);
-    adapt_wavelet ((scalar *) ADAPT_SCALARS, eps_arr, maxlevel = maxlevel, minlevel = minlevel);
+//    double eps_arr[] = ADAPT_EPS_SCALARS;
+//    MinMaxValues(ADAPT_SCALARS, eps_arr);
+    adapt_wavelet ((scalar *) {cs, u}, {cseps, ueps, ueps, ueps}, maxlevel = maxlevel, minlevel = minlevel);
 }
 /**
 ![Boundary of the bone medium. Fluid is flowing inside this

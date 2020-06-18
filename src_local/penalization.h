@@ -1,6 +1,6 @@
 const vector zerocf[] = {0.,0.,0.};
 #ifdef BRINKMAN_PENALIZATION
-    #define frhs (1 - fs[])
+    #define frhs (1)
     #define fbp (fs[])
     extern scalar fs;
     extern face vector fs_face;
@@ -10,8 +10,8 @@ const vector zerocf[] = {0.,0.,0.};
     #if BRINKMAN_PENALIZATION == 1 //Dirichlet BC
         (const) vector target_U = zerocf, n_sol = zerocf;
         (const) face vector target_Uf = zerof;
-        #define PLUS_BRINKMAN_RHS         + fbp*dt*( - (u.x[] - target_U.x[])/eta_s )
-        #define PLUS_NUMERATOR_BRINKMAN   + 0
+        #define PLUS_BRINKMAN_RHS         - fbp*( (u.x[] - target_U.x[])/eta_s + conv.x )
+        #define PLUS_NUMERATOR_BRINKMAN   + 0.5*fbp*dt*Delta*conv.x
         #define PLUS_DENOMINATOR_BRINKMAN + fbp*dt*(sq(Delta)/eta_s)
     #elif BRINKMAN_PENALIZATION == 2 //Neumann BC
         vector target_U[], n_sol[];
@@ -108,25 +108,22 @@ void brinkman_correction_u (vector u, double dt){
     foreach() {
         foreach_dimension(){
             u.x[] = (u.x[] + (fbp*dt/eta_s)*target_U.x[])/(1. + fbp*dt/eta_s);
-#ifdef DEBUG_BRINKMAN_PENALIZATION
-            dbp.x[] = (PLUS_BRINKMAN_RHS)/dt;
-#endif
         }
     }
     boundary ((scalar *){u});
 }
 
-void brinkman_correction_uf (face vector uf, double dt){
-//    foreach_face(){
-//        uf.x[] = (uf.x[] + (fs_face.x[]*dt/eta_s)*target_Uf.x[])/(1 +fs_face.x[]*dt/eta_s);
-//    }
+//void brinkman_correction_uf (face vector uf, double dt){
+////    foreach_face(){
+////        uf.x[] = (uf.x[] + (fs_face.x[]*dt/eta_s)*target_Uf.x[])/(1 +fs_face.x[]*dt/eta_s);
+////    }
+////    boundary ((scalar *){uf});
+//
+//    foreach_face()
+//    if ((uf.x[] - target_Uf.x[]) && !fs_face.x[])
+//        uf.x[] = target_Uf.x[];
 //    boundary ((scalar *){uf});
-
-    foreach_face()
-    if ((uf.x[] - target_Uf.x[]) && !fs_face.x[])
-        uf.x[] = target_Uf.x[];
-    boundary ((scalar *){uf});
-}
+//}
 
 void brinkman_correction (struct Brinkman p){
     vector u = p.u; double dt = p.dt;

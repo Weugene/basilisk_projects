@@ -1,0 +1,38 @@
+# -*-Makefile-*-
+
+# how to launch the C99 compiler
+CC99 = gcc -std=c99 -Wno-unused-result -Wno-unused-function 
+
+# how to strip unused code
+# STRIPFLAGS = -fdata-sections -ffunction-sections -Wl,--gc-sections -w
+
+# other useful (non-standard) flags
+CFLAGS += -g -Wall -pipe -I/$(BASILISK) -I/opt/local/include/
+
+# if you have valgrind, otherwise comment this out
+# VALGRIND = valgrind -q --tool=memcheck \
+#        --suppressions=$(BASILISK)/openmpi.supp \
+# 	 --leak-check=full
+
+# if gnuplot supports pngcairo, otherwise comment this out
+# PNG = pngcairo
+
+# if you don't have md5sum, replace it with something equivalent
+GENSUM = shasum
+CHECKSUM = shasum -c --status
+
+# OpenGL libraries
+# see bview-server.c#installation for explanations
+# OPENGLIBS = -lfb_glx -lGLU -lGLEW -lGL -lX11
+#OPENGLIBS = -L/opt/local/lib/ -lfb_osmesa -lGLU -lOSMesa 
+OPENGLIBS = -L/opt/local/lib/ -lfb_osmesa -lOSMesa -framework OpenGL -framework GLUT
+#OPENGLIBS =-L$(BASILISK)/gl  -lglutils -lfb_osmesa  -lfb_glx
+
+# Compiler and libraries to use with CADNA.
+# See [README.cadna]() for more documentation.
+CADNACC = clang -D_CADNA=1 -x c++ -m64 \
+	-Wno-unused-function \
+	-Wno-unused-result \
+	-Wno-c++11-compat-deprecated-writable-strings \
+	-Wno-address-of-array-temporary
+CADNALIBS = -lcadnaC -lstdc++

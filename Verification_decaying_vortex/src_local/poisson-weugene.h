@@ -408,7 +408,7 @@ static double residual (scalar * al, scalar * bl, scalar * resl, void * data)
       maxres = fabs (res[]);
   }
   boundary (resl);
-  fprintf(ferr, "maxres= %g \n", maxres);
+  fprintf(stderr, "prank=%d maxres= %g maxres*dt = %g\n", pid(), maxres, maxres*dt);
   return maxres;
 }
 
@@ -492,10 +492,11 @@ struct Project {
   scalar fs;
   vector target_U;   // optional: default 0
   vector u;
-  double eta_chorin;         // optional: default 1e-10
+  double eta_s; // optional: default 1e-10
 };
-
-extern scalar divutmp;
+#ifdef DEBUG_MODE
+    extern scalar divutmpAfter;
+#endif
 trace
 mgstats project (struct Project q)
 {
@@ -509,21 +510,30 @@ mgstats project (struct Project q)
     We allocate a local scalar field and compute the divergence of
     $\mathbf{u}_f$. The divergence is scaled by *dt* so that the
     pressure has the correct dimension. */
-    fprintf(ferr, "Conventional Chorin..\n");
+
+#if DIVRHS == 1
+        fprintf(ferr, "(1.0 - fs) d/dt/Delta Conventional Chorin..\n");
+#elif DIVRHS == 2
+        fprintf(ferr, "(fs[] < 1) d/dt/Delta Conventional Chorin..\n");
+#else
+        fprintf(ferr, "d/dt/Delta Conventional Chorin..\n");
+#endif
+
     scalar div[];
-    foreach_face() uintermediate.x[] = uf.x[];
-    boundary((scalar *){uintermediate});
     foreach() {
         d = 0.;
         foreach_dimension(){
             d += uf.x[1] - uf.x[];
         }
+#if DIVRHS == 1
+        div[] = d*(1.0 - fs[])/(dt*Delta); // big errors at boundary solid??
+#elif DIVRHS == 2
         div[] = d*(fs[] < 1)/(dt*Delta);
-//        div[] = d*(1.0 - fs[])/(dt*Delta); // big errors at boundary solid
-        //if (fabs(div[]) > 1000 ) fprintf(ferr, "*** div %g ufx %g %g ufy %g %g d= %g\n", div[], uf.x[], uf.x[1], uf.y[], uf.y[1], d);
-        divutmp[] = d/(dt*Delta);
+#else
+        div[] = d/(dt*Delta);
+#endif
     }
-    boundary((scalar*){div, divutmp});
+    boundary((scalar*){div});
     /**
     We solve the Poisson problem. The tolerance (set with *TOLERANCE*) is
     the maximum relative change in volume of a cell (due to the divergence
@@ -532,24 +542,26 @@ mgstats project (struct Project q)
     |\nabla\cdot\mathbf{u}_f|\Delta t
     $$
     Given the scaling of the divergence above, this gives */
-//    event ("vtk_file");
-    mgstats mgp = poisson (p, div, alpha,
-                           tolerance = TOLERANCE/sq(dt), nrelax = nrelax);
+
+    mgstats mgp = poisson (p, div , alpha,
+                           tolerance = TOLERANCE/dt, nrelax = nrelax);
 
 //    double xref = X0 + 0.5*L0, yref = Y0 + 0.5*L0, zref = Z0 + 0.5*L0; //reference location
     double xref = -0.5, yref = Y0 + 0.5*L0, zref = Z0 + 0.5*L0; //reference location
-    double pref = 0;                                                   //reference pressure
+    double pref = 0;                                            //reference pressure
     double pcor = interpolate (p, xref, yref, zref) - pref;
+#if _MPI
+        MPI_Allreduce (MPI_IN_PLACE, &pcor, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
+#endif
     foreach()
         p[] -= pcor;
     boundary ({p});
     /**
     And compute $\mathbf{u}_f^{n+1}$ using $\mathbf{u}_f$ and $p$. */
 
-    foreach_face()
-    uf.x[] -= dt*alpha.x[]*face_gradient_x (p, 0);
+    foreach_face() uf.x[] -= dt*alpha.x[]*face_gradient_x (p, 0);
     boundary ((scalar *){uf});
-
+#ifdef DEBUG_MODE
     foreach() {
         d = 0.;
         foreach_dimension(){
@@ -558,89 +570,96 @@ mgstats project (struct Project q)
         divutmpAfter[] = d/(dt*Delta);
     }
     boundary((scalar*){divutmpAfter});
-//    event ("vtk_file");
+#endif
     return mgp;
 }
-//double UnablaU(scalar ux){
-//    double sum = target_Uf.x[]*(ux[]-ux[-1]);
-//#dimension>1
-//    sum += target_Uf.y[]*(ux[]-ux[-1])
-//    return target_Uf.x[]*(ux[]-ux[-1])
-//}}
-//#define solid_vel (target_Uf.x[])
-//#define solid_vel ((target_U.x[-1] + target_U.x[])/2.0)
-//#define solid_vel ((fs[-1]*target_U.x[-1] + fs[]*target_U.x[])/(fs[-1] + fs[] + 1e-20))
-//#define solid_vel (((fs[-1] > 0)*target_U.x[-1] + (fs[] > 0)*target_U.x[])/((fs[-1] > 0) + (fs[] > 0) + 1e-20))
-extern scalar f;
-trace
-mgstats project_bp (struct Project q)
-{
-  face vector uf = q.uf;
-  face vector u_rhs[], alpha_mod[];//, target_Uf[];
-  vector u = q.u;
-  scalar p = q.p;
-  (const) face vector alpha = q.alpha.x.i ? q.alpha : unityf;
-  double dt = q.dt ? q.dt : 1., tmp;
-  int nrelax = q.nrelax ? q.nrelax : 4;
 
-  /**
-  We allocate a local scalar field and compute the divergence of
-  $\mathbf{u}_f$. The divergence is scaled by *dt* so that the
-  pressure has the correct dimension. */
-  fprintf(ferr, "Modified Chorin..\n");
-  double adv=0;
-  foreach_face(){
-//      tmp = 0;
-      adv = 0;
-      tmp = dt*fs_face.x[]/eta_chorin;
-//      adv = 1*(u.x[] - u.x[-1])/Delta; //see down!
-//      adv = target_Uf.x[]*(u.x[] - u.x[-1])/Delta; //not correct!
-      u_rhs.x[] = (uf.x[] + tmp*(target_Uf.x[] - eta_chorin*adv))/(1.0 + tmp);
-      alpha_mod.x[] = alpha.x[]/(1.0 + tmp);
-      my_u_rhs.x[] = u_rhs.x[];
-      my_alpha.x[] = alpha_mod.x[];
-      uintermediate.x[] = uf.x[];
-  }
-  boundary ((scalar *){u_rhs, alpha_mod, my_u_rhs, my_alpha});
-  scalar div[];
-  foreach() {
-    div[] = 0.;
-    foreach_dimension()
-      div[] += u_rhs.x[1] - u_rhs.x[];
-    div[] *= (1.0 - fs[])/(dt*Delta);
-//    div[] /= dt*Delta;
-    divutmp[] = div[];
-  }
-  boundary((scalar*){div, divutmp});
-  /**
-  We solve the Poisson problem. The tolerance (set with *TOLERANCE*) is
-  the maximum relative change in volume of a cell (due to the divergence
-  of the flow) during one timestep i.e. the non-dimensional quantity
-  $$
-  |\nabla\cdot\mathbf{u}_f|\Delta t
-  $$
-  Given the scaling of the divergence above, this gives */
-  mgstats mgp = poisson (p, div, alpha_mod, tolerance = TOLERANCE/sq(dt), nrelax = nrelax); //corrected: WEUGENE
-//  double xref = X0 + 0.5*L0, yref = Y0 + 0.5*L0, zref = Z0 + 0.5*L0; //reference location
-  double xref = -0.5, yref = Y0 + 0.5*L0, zref = Z0 + 0.5*L0; //reference location
-  double pref = 0;                                                   //reference pressure
-  double pcor = interpolate (p, xref, yref, zref) - pref;
-  foreach()
-    p[] -= pcor;
-  boundary ({p});
-  /**
-  And compute $\mathbf{u}_f^{n+1}$ using $\mathbf{u}_f$ and $p$. */
-  foreach_face(){
-      adv=0;
-      tmp = dt*fs_face.x[]/eta_chorin;
-//        adv = 1*(u.x[] - u.x[-1])/Delta; //see up!
-//      adv = target_Uf.x[]*(u.x[] - u.x[-1])/Delta; //incorrect!
-      uf.x[] = (uf.x[] - dt * alpha.x[] * face_gradient_x(p, 0) + tmp*(target_Uf.x[] - eta_chorin*adv)) / (1.0 + tmp);
-  }
-  boundary ((scalar *){uf});
-
-  return mgp;
-}
+//trace
+//mgstats project_bp (struct Project q)
+//{
+//  face vector uf = q.uf;
+//  face vector u_rhs[];
+//  vector u = q.u;
+//  scalar p = q.p;
+//  (const) face vector alpha = q.alpha.x.i ? q.alpha : unityf;
+//  double dt = q.dt ? q.dt : 1., tmp, d;
+//  int nrelax = q.nrelax ? q.nrelax : 4;
+//  face vector alpha_mod[];
+//
+//  /**
+//  We allocate a local scalar field and compute the divergence of
+//  $\mathbf{u}_f$. The divergence is scaled by *dt* so that the
+//  pressure has the correct dimension. */
+//
+//#if DIVRHS == 1
+//        fprintf(ferr, "(1.0 - fs) d/dt/Delta Modified Chorin..\n");
+//#elif DIVRHS == 2
+//        fprintf(ferr, "(fs[] < 1) d/dt/Delta Modified Chorin..\n");
+//#else
+//        fprintf(ferr, "d/dt/Delta Modified Chorin..\n");
+//#endif
+//  double adv=0;
+//  foreach_face(){
+//      tmp = dt*fs_face.x[]/eta_s;
+////      adv = 1*(u.x[] - u.x[-1])/Delta; //see down!
+//      u_rhs.x[] = (uf.x[] + tmp*(target_Uf.x[] - eta_s*adv))/(1.0 + tmp);
+//      alpha_mod.x[] = alpha.x[]/(1.0 + tmp);
+//  }
+//  boundary ((scalar *){u_rhs});
+//  scalar div[];
+//  foreach() {
+//    d = 0.;
+//    foreach_dimension()
+//        d += u_rhs.x[1] - u_rhs.x[];
+//#if DIVRHS == 1
+//    div[] = d*(1.0 - fs[])/(dt*Delta); // big errors at boundary solid??
+//#elif DIVRHS == 2
+//    div[] = d*(fs[] < 1)/(dt*Delta);
+//#else
+//    div[] = d/(dt*Delta);
+//#endif
+//  }
+//  boundary((scalar*){div});
+//  /**
+//  We solve the Poisson problem. The tolerance (set with *TOLERANCE*) is
+//  the maximum relative change in volume of a cell (due to the divergence
+//  of the flow) during one timestep i.e. the non-dimensional quantity
+//  $$
+//  |\nabla\cdot\mathbf{u}_f|\Delta t
+//  $$
+//  Given the scaling of the divergence above, this gives */
+//  mgstats mgp = poisson (p, div, alpha_mod, tolerance = TOLERANCE/dt, nrelax = nrelax); //corrected: WEUGENE
+////  double xref = X0 + 0.5*L0, yref = Y0 + 0.5*L0, zref = Z0 + 0.5*L0; //reference location
+//  double xref = -0.5, yref = Y0 + 0.5*L0, zref = Z0 + 0.5*L0; //reference location
+//  double pref = 0;                                                   //reference pressure
+//  double pcor = interpolate (p, xref, yref, zref) - pref;
+//#if _MPI
+//  MPI_Allreduce (MPI_IN_PLACE, &pcor, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
+//#endif
+//  foreach()
+//    p[] -= pcor;
+//  boundary ({p});
+//  /**
+//  And compute $\mathbf{u}_f^{n+1}$ using $\mathbf{u}_f$ and $p$. */
+//  foreach_face(){
+//      adv=0;
+//      tmp = dt*fs_face.x[]/eta_s;
+////        adv = 1*(u.x[] - u.x[-1])/Delta; //see up!
+//      uf.x[] = (uf.x[] - dt * alpha.x[] * face_gradient_x(p, 0) + tmp*(target_Uf.x[] - eta_s*adv)) / (1.0 + tmp);
+//  }
+//  boundary ((scalar *){uf});
+//#ifdef DEBUG_MODE
+//  foreach() {
+//     d = 0.;
+//    foreach_dimension(){
+//        d += uf.x[1] - uf.x[];
+//     }
+//     divutmpAfter[] = d/(dt*Delta);
+//  }
+//  boundary((scalar*){divutmpAfter});
+//#endif
+//  return mgp;
+//}
 
 
 #endif

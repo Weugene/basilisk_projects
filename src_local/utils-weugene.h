@@ -7,6 +7,10 @@ void MinMaxValues(scalar * list, double * arr_eps) {// for each scalar min and m
             if (fabs(s[]) < mina) mina = fabs(s[]);
             if (fabs(s[]) > maxa) maxa = fabs(s[]);
         }
+#if _MPI
+        MPI_Allreduce (MPI_IN_PLACE, &mina, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
+        MPI_Allreduce (MPI_IN_PLACE, &maxa, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
+#endif
         arr[ilist][0] = mina;
         arr[ilist][1] = maxa;
         ilist++;
@@ -26,6 +30,13 @@ void MinMaxValues(scalar * list, double * arr_eps) {// for each scalar min and m
 #endif
         i++;
     }
+}
+
+int count_cells(){
+    int tnc = 0;
+    foreach( reduction(+:tnc) )
+        tnc++;
+    return tnc;
 }
 // statistical values inside cells with liquid
 stats statsf_weugene (scalar f, scalar fs)

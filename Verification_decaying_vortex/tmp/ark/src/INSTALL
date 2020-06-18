@@ -1,0 +1,152 @@
+# Getting the source code
+
+You have two ways of getting the most recent source code:
+
+## Using [darcs](http://darcs.net)
+
+This is the recommended way of installing Basilisk.
+
+This is useful if you want to modify the code (because everything is
+version-controlled) and also if you want to maintain your version
+up-to-date.
+
+On a Debian-like system (i.e. Debian, Ubuntu etc...) installing darcs
+is as easy as
+
+~~~bash
+sudo apt-get install darcs flex make
+~~~
+
+To get the latest Basilisk source code do
+
+~~~bash
+darcs get --lazy http://basilisk.fr/basilisk
+~~~
+
+If later you want to update the source code, you just need to do
+
+~~~bash
+cd basilisk
+darcs pull
+~~~
+
+and recompile using
+
+~~~bash
+make clean
+make
+~~~
+
+Note that the [Basilisk View installation](#visualisation) may also
+need separate recompilation.
+
+## Using a tarball
+
+If for some reason you can't use darcs, you can use this instead. You
+will get exactly the same version as with darcs, but the code will not
+be version-controlled.
+
+~~~bash
+wget http://basilisk.fr/basilisk/basilisk.tar.gz
+tar xzf basilisk.tar.gz
+~~~
+
+If you don't have `wget`, just follow the
+[link](/basilisk/basilisk.tar.gz), save the file or
+extract the archive where you want to install it.
+
+# Compilation
+
+For compilation, the only requirement is a C99-compliant compiler and
+the `make` utility (a version of `make` compatible with GNU make is
+recommended but not essential).
+
+If you are using gcc on a UNIX-like system, this should work:
+
+~~~bash
+cd basilisk/src
+export BASILISK=$PWD
+export PATH=$PATH:$PWD
+ln -s config.gcc config
+make -k
+make
+~~~
+
+Note that on 32-bits systems you need to use *config.gcc.32bits*
+instead.
+
+If you are using another system/compiler (for example Mac OSX), find a
+config file which looks close to yours, then try
+
+~~~bash
+cd basilisk/src
+ls config.*
+cp config.[your pick] config
+make
+~~~
+
+You can also edit this file to customise things for your system
+(please also consider sharing your new config file).
+
+To avoid having to re-type the two export commands above everytime you
+login, you should also add them to your `$HOME/.bashrc` file. You can
+either edit `$HOME/.bashrc` manually or do
+
+~~~bash
+cd basilisk/src
+echo "export BASILISK=$PWD" >> ~/.bashrc
+echo "export PATH=\$PATH:$BASILISK" >> ~/.bashrc
+~~~
+
+# Useful additional packages
+
+- gnuplot (> 4.2)
+- imagemagick
+- libav-tools
+- smpeg-plaympeg
+- graphviz
+- valgrind
+- gifsicle
+- pstoedit
+
+and also
+[gprof2dot](http://code.google.com/p/jrfonseca/wiki/Gprof2Dot). On a
+Debian-like system (i.e. Debian, Ubuntu, Mint etc...) you just need to do
+
+~~~bash
+sudo apt-get install gnuplot imagemagick libav-tools smpeg-plaympeg graphviz valgrind gifsicle pstoedit
+~~~
+
+# Visualisation
+
+Online visualisation with [Basilisk View](view.h) requires a separate
+[installation](gl/INSTALL).
+
+Offline (interactive) [visualisation](bview) requires the
+[installation](bview-server.c#installation) of the [Basilisk View
+servers](bview-server.c).
+
+A short recipe for installation of both the interactive and non-interactive
+versions of Basilisk View is:
+
+~~~bash
+cd $BASILISK/gl
+make
+cd ..
+make bview-servers
+~~~
+
+# Using Basilisk with python
+
+You will need [SWIG](http://www.swig.org/) which can easily be installed with
+
+~~~bash
+sudo apt-get install swig libpython-dev
+~~~
+
+You also need to setup the *MDFLAGS* and *PYTHONINCLUDE* variables in your
+*config* file.
+
+# Getting started
+
+The best place to start is the [tutorial](/Tutorial).
