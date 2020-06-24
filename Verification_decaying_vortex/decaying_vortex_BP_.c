@@ -17,20 +17,16 @@ advect the passive tracer *f*. */
 //#define DEBUG_MINMAXVALUES
 #define DEBUG_MODE
 #define FILTERED
-//#define JACOBI 1
+#define JACOBI 1
 #define EPS_MAXA 2
 #define RELATIVE_RESIDUAL
 #define MODIFIED_CHORIN 0
-//#define PERIODIC_BC
+#define PERIODIC_BC
 scalar omega[], fs[];
 vector target_Uv[];
 vector deltag[];
 scalar deltap[];
 double mydt = 0;
-int maxlevel;
-int minlevel;
-double Ldomain = 4.0, RE = 30., rho1 = 1, G = 1, h = 1, U = 1;
-double eps = 1e-2;
 #ifdef DEBUG_MODE
     scalar divutmp[], divutmpAfter[];
     scalar mod_du_dx[];
@@ -48,32 +44,42 @@ double eps = 1e-2;
 #include "fractions.h"
 face vector muv[];
 
-
+int maxlevel;
+int minlevel;
+//int cells_per_zone;
+double Ldomain = 4.0, RE = 30., rho1 = 1;
+double eps = 1e-2;
+//double dx_min;
 
 void frame_BP(scalar fs, double t){
     vertex scalar phi[];
     face vector fs_face[];
     foreach_vertex() {
-//        phi[] = 0;
-//        phi[] = -( pow(x,10) + pow(y,10) - 0.117 );
-//        phi[] = ( fabs(x) <= 1 && fabs(y) <= 1 ) ? 0 : 1;
-        phi[] = ( y <= 1.001 && y>=-0.001) ? 0 : 1;
+        phi[] = ( fabs(x) <= 1 && fabs(y) <= 1 ) ? 0 : 1;
     }
     boundary ({phi});
     fractions (phi, fs, fs_face);
 }
 
-#define uxe(x,y,t) (((G/(2*mu.x[]))*y*(h-y) + U*y/h)*(1.0 - fs[]) + fs[]*target_Uv.x[]);
-#define uye(x,y,t) 0
-#define pe(x,y,t)  G*(0.5*Ldomain - x)
-#define u0 1
-#define p0 1
+#define uxe(x,y,t) (-cos(pi*(x)) * sin(pi*(y)) * exp(-2.0 * sq(pi) * (t) / RE))
+#define uye(x,y,t) ( sin(pi*(x)) * cos(pi*(y)) * exp(-2.0 * sq(pi) * (t) / RE))
+#define pe(x,y,t)  (-0.25 * (cos(2*pi*(x)) + cos(2.0*pi*(y))) * exp(-4.0 * sq(pi) * (t) / RE))
+#define u0 (exp(-2.0 * sq(pi) * (t) / RE))
+#define p0 (-0.5 * exp(-4.0 * sq(pi) * (t) / RE))
 
-#define dpdx(x_,y_,t_) (-G)
-#define dpdy(x_,y_,t_) 0
+//#define dpdx(x_,y_,t_,shift_) 0
+//#define dpdy(x_,y_,t_,shift_) 0
+//#define dpdx(x,y,t) (0.5 * pi * sin(2*pi*x) * exp(-4.0 * sq(pi) * t / RE))
+//#define dpdy(x,y,t) (0.5 * pi * sin(2*pi*y) * exp(-4.0 * sq(pi) * t / RE))
+//#define dpdx(x,y,t) rho1*( -(uxe(x,y,t) - uf.x[ghost])/dt + (uf.x[ghost] - uxe(x,y,t))/eta_s)
+//#define dpdy(x,y,t) rho1*( -(uye(x,y,t) - uf.y[ghost])/dt + (uf.y[ghost] - uye(x,y,t))/eta_s)
+//#define dpdx(x_,y_,dt_,shift_) rho1*( -(uxe((x_),(y_),t+dt_) - uf.x[shift_,0])/dt_ )
+//#define dpdy(x_,y_,dt_,shift_) rho1*( -(uye((x_),(y_),t+dt_) - uf.y[0,shift_])/dt_ )
+#define dpdx(x_,y_,dt_,shift_) rho1*( -(uxe((x_),(y_),t+dt_) - uxe((x_),(y_),t))/dt_ )
+#define dpdy(x_,y_,dt_,shift_) rho1*( -(uye((x_),(y_),t+dt_) - uye((x_),(y_),t))/dt_ )
 
-#define dudxe 0
-#define dudye 0
+#define dudxe (pi * sin(pi*(x)) * sin(pi*(y)) * exp(-2.0 * sq(pi) * (t) / RE))
+#define dudye (pi * sin(pi*(x)) * sin(pi*(y)) * exp(-2.0 * sq(pi) * (t) / RE))
 void theory(vector u, scalar p, double t, double RE){
     foreach(){
         u.x[] = uxe(x,y,t);
@@ -83,55 +89,56 @@ void theory(vector u, scalar p, double t, double RE){
     boundary({u, p});
     fprintf(ferr, "theory  t= %g\n", t);
 }
+//$$u(x, y, t) = − \cos 􏱲x \sin 􏱲y \exp{−2􏱲\pi^2 t/Re}$$
+//$$v(x, y, t) =   \sin 􏱲x \cos 􏱲y \exp{−2􏱲\pi^2 t/Re}$$
+//$$p(x, y, t) =  −\frac14(\cos 2􏱲x + \cos 2􏱲y)\exp{−4\pi^2 t/Re}$$
 //in 2D each cells must have 2 BC, in 3D - 3BC
-u.t[left]  = neumann(0); // available x,y,z at the computational domain
-u.n[left]  = neumann(0);
-p[left]    = dirichlet(pe(x,y,t));
-//pf[left]   = dirichlet(pe(x,y,t));
+u.t[left]  = dirichlet(uye(x,y,t+dt)); // available x,y,z at the computational domain
+u.n[left]  = dirichlet(uxe(x,y,t+dt));
+p[left]    = neumann(dpdx(x,y,dt,0));
+//pf[left]   = neumann(dpdx(x,y,0.5*dt,0));
 //p[left]    = dirichlet(pe(x,y,t+dt));
 //pf[left]   = dirichlet(pe(x,y,t+0.5*dt));
 
-//u.t[right] = dirichlet(uye(x,y,t+dt));
-//u.n[right] = dirichlet(uxe(x,y,t+dt));
-u.t[right] = neumann(0);
-u.n[right] = neumann(0);
-p[right]   = dirichlet(pe(x,y,t));
-//pf[right]  = dirichlet(pe(x,y,t));
+u.t[right] = dirichlet(uye(x,y,t+dt));
+u.n[right] = dirichlet(uxe(x,y,t+dt));
+p[right]   = neumann(0);
+//pf[right]  = neumann(dpdx(x,y,0.5*dt,1));
 //p[right]   = dirichlet(pe(x,y,t+dt));
 //pf[right]  = dirichlet(pe(x,y,t+0.5*dt));
 
-u.t[bottom] = dirichlet(0);
-u.n[bottom] = dirichlet(0);
-p[bottom] = neumann(0);
-//pf[bottom]= neumann(0);
-//p[bottom] = dirichlet(pe(x,y,t+dt));
-//pf[bottom]= dirichlet(pe(x,y,t+0.5*dt));
+u.t[bottom] = dirichlet(uxe(x,y,t+dt));
+u.n[bottom] = dirichlet(uye(x,y,t+dt));
+p[bottom]     = neumann(0);
+//pf[bottom]    = neumann(dpdy(x,y,0.5*dt,0));
+//p[bottom]    = dirichlet(pe(x,y,t+dt));
+//pf[bottom]   = dirichlet(pe(x,y,t+0.5*dt));
 
-u.t[top] = dirichlet(1);
-u.n[top] = dirichlet(0);
-p[top]   = neumann(0);
-//pf[top]  = neumann(0);
+u.t[top] = dirichlet(uxe(x,y,t+dt));
+u.n[top] = dirichlet(uye(x,y,t+dt));
+p[top]     = neumann(0);
+//pf[top]    = neumann(dpdy(x,y,0.5*dt,1));
 //p[top]   = dirichlet(pe(x,y,t+dt));
 //pf[top]  = dirichlet(pe(x,y,t+0.5*dt));
 
-//uf.n[left]   = neumann(0);
-//uf.t[left]   = neumann(0);
-//uf.n[right]  = neumann(0);
-//uf.t[right]  = neumann(0);
-uf.n[bottom] = dirichlet(0);
-uf.t[bottom] = dirichlet(0);
-uf.n[top]    = dirichlet(0);
-uf.t[top]    = dirichlet(1);
+//uf.t[left]   = uye(x,y,t);
+//uf.n[left]   = uxe(x,y,t);
+//uf.t[right]  = uye(x,y,t);
+//uf.n[right]  = uxe(x,y,t);
+//uf.t[bottom] = uxe(x,y,t);
+//uf.n[bottom] = uye(x,y,t);
+//uf.t[top]    = uxe(x,y,t);
+//uf.n[top]    = uye(x,y,t);
 
-deltap[left]   = dirichlet(0);
-deltap[right]  = dirichlet(0);
+deltap[left]   = neumann(0);
+deltap[right]  = neumann(0);
 deltap[bottom] = neumann(0);
 deltap[top]    = neumann(0);
 
 int main(int argc, char * argv[]) {
     minlevel = 4;
     maxlevel = 10;
-    eta_s=1e-4;
+    eta_s=1e-5;
 //    cells_per_zone = 2;
     eps = 1e-3;
     if (argc > 1) {
@@ -143,18 +150,20 @@ int main(int argc, char * argv[]) {
     if (argc > 3) {
         eps = atof(argv[3]);
     }
+//    dx_min = Ldomain/pow(2,maxlevel);
 #ifdef PERIODIC_BC
+    periodic(right);
     periodic(top);
 #endif
+//    eta_s = sq(cells_per_zone*dx_min);
     size (Ldomain);
     origin (-0.5*Ldomain, -0.5*Ldomain);
-    DT = 1e-2;
-    CFL = 0.1;
+    DT = 1e-5;
+    CFL = 0.4;
     TOLERANCE = 1e-8;
     RELATIVE_RES_TOLERANCE = 0.1;
     NITERMAX = 30;
     mu = muv;
-    stokes = true;
 
     target_U = target_Uv;
     N = 1<<minlevel;
@@ -166,8 +175,8 @@ int main(int argc, char * argv[]) {
 
 void update_targetU(vector target_Uv, double t){
     foreach() {
-        target_Uv.x[] = (y>=0.5)? 1 : 0;
-        target_Uv.y[] = 0;
+        target_Uv.x[] = uxe(x,y,t);
+        target_Uv.y[] = uye(x,y,t);
     }
     boundary((scalar *){target_Uv});
 }
@@ -179,16 +188,21 @@ event init (t = 0)
     if (!restore (file = "restart")) {
         int it = 0;
         do {
-            event ("properties");
+            frame_BP (fs, 0);
             theory(uexact, pexact, 0, RE);
-            foreach() u.x[] = fs[]*target_Uv.x[];
-            boundary({u});
-        } while ( ++it <= 10 && adapt_wavelet((scalar *){fs, u}, (double []){eps, eps, eps}, maxlevel=maxlevel, minlevel=minlevel).nf != 0);
+        } while ( ++it <= 10 && adapt_wavelet((scalar *){fs, uexact}, (double []){eps, eps, eps}, maxlevel=maxlevel, minlevel=minlevel).nf != 0);
+
         foreach() {
-            p[] = 0;//pexact[];// my initial guess
-            pf[] = 0;//pexact[];// my initial guess
+            p[] = pexact[];// my initial guess
+//            pf[] = pexact[];// my initial guess
+            foreach_dimension() {
+                u.x[] = uexact.x[];
+            }
+
         }
-        boundary({p, pf});
+//        foreach_face() uf.x
+        boundary({p, u});
+        update_targetU(target_Uv, 0);
     }
     event("vtk_file");
 
@@ -211,11 +225,36 @@ event set_dtmax (i++) {
     NITERMAX=100;
 
     DT *= 1.05;
-//    DT = min(DT, CFL*Ldomain/pow(2, maxlevel+3));
+    DT = min(DT, CFL*Ldomain/pow(2, maxlevel+3));
 
     fprintf(ferr, "set_dtmax: tnext= %g Dt= %g", tnext, DT);
 }
 
+event advection_term(i++){
+//    uf.t[left]   = uye(x,y,t+0.5*dt); // face location at x
+//    uf.n[left]   = uxe(x,y,t+0.5*dt);
+//    uf.t[right]  = uye(x,y,t+0.5*dt);
+//    uf.n[right]  = uxe(x,y,t+0.5*dt);
+//    uf.t[bottom] = uxe(x,y,t+0.5*dt);
+//    uf.n[bottom] = uye(x,y,t+0.5*dt);
+//    uf.t[top]    = uxe(x,y,t+0.5*dt);
+//    uf.n[top]    = uye(x,y,t+0.5*dt);
+
+    mydt = 0.5*dt;
+    fprintf(ferr, "dt=%g", dt);
+};
+
+event acceleration(i++){
+//    uf.t[left]   = uye(x,y,t+dt); // face location at x
+//    uf.n[left]   = uxe(x,y,t+dt);
+//    uf.t[right]  = uye(x,y,t+dt);
+//    uf.n[right]  = uxe(x,y,t+dt);
+//    uf.t[bottom] = uxe(x,y,t+dt);
+//    uf.n[bottom] = uye(x,y,t+dt);
+//    uf.t[top]    = uxe(x,y,t+dt);
+//    uf.n[top]    = uye(x,y,t+dt);
+    mydt = dt;
+}
 
 event end_timestep (i += 100){
     vector uexact[];
@@ -267,10 +306,10 @@ We produce animations of the vorticity and tracer fields... */
 //}
 
 //Output
-//event vtk_file (i++){
-event vtk_file (i+=5){
+event vtk_file (i++){
+//event vtk_file (i+=5){
 //event vtk_file (t += 0.01){
-    char subname[80]; sprintf(subname, "vortex_BP_parallel_not_periodic_cc");
+    char subname[80]; sprintf(subname, "vortex_BP_not_periodic");
     scalar l[], pid_num[]; foreach() {l[] = level; pid_num[] = pid();}
     vector uexact[];
     scalar pexact[];
@@ -356,7 +395,7 @@ event adapt (i++){
 }
 
 //event stop (i = 30){
-event stop (t = 300){
+event stop (t = 0.3){
     event("end_timestep");
 };
 //event stop (i = 10);

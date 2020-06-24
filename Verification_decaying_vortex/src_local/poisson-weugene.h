@@ -525,15 +525,18 @@ mgstats project (struct Project q)
         foreach_dimension(){
             d += uf.x[1] - uf.x[];
         }
-#if DIVRHS == 1
-        div[] = d*(1.0 - fs[])/(dt*Delta); // big errors at boundary solid??
-#elif DIVRHS == 2
-        div[] = d*(fs[] < 1)/(dt*Delta);
-#else
+//#if DIVRHS == 1
+//        div[] = d*(1.0 - fs[])/(dt*Delta); // big errors at boundary solid??
+//#elif DIVRHS == 2
+//        div[] = d*(fs[] < 1)/(dt*Delta);
+//#else
         div[] = d/(dt*Delta);
+//#endif
+#ifdef DEBUG_MODE
+        divutmp[] = div[]*dt;
 #endif
     }
-    boundary((scalar*){div});
+    boundary((scalar*){div, divutmp});
     /**
     We solve the Poisson problem. The tolerance (set with *TOLERANCE*) is
     the maximum relative change in volume of a cell (due to the divergence
@@ -542,20 +545,21 @@ mgstats project (struct Project q)
     |\nabla\cdot\mathbf{u}_f|\Delta t
     $$
     Given the scaling of the divergence above, this gives */
+// res=div(u + u*)/dt - laplace p
+// res=div(u*)/dt - laplace delta p ~ dt
+    mgstats mgp = poisson (p, div , alpha, tolerance = TOLERANCE, nrelax = nrelax);
 
-    mgstats mgp = poisson (p, div , alpha,
-                           tolerance = TOLERANCE/dt, nrelax = nrelax);
-
-//    double xref = X0 + 0.5*L0, yref = Y0 + 0.5*L0, zref = Z0 + 0.5*L0; //reference location
-    double xref = -0.5, yref = Y0 + 0.5*L0, zref = Z0 + 0.5*L0; //reference location
-    double pref = 0;                                            //reference pressure
-    double pcor = interpolate (p, xref, yref, zref) - pref;
-#if _MPI
-        MPI_Allreduce (MPI_IN_PLACE, &pcor, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
-#endif
-    foreach()
-        p[] -= pcor;
-    boundary ({p});
+//    double xref = X0 + L0 - L0/pow(2,maxlevel), yref = Y0 + 0.75*L0, zref = Z0; //reference location
+////    double xref = -0.5, yref = Y0 + 0.5*L0, zref = Z0 + 0.5*L0; //reference location
+//    double pref = 0;                                            //reference pressure
+//    double pcor = interpolate (p, xref, yref, zref) - pref;
+//    fprintf(ferr, "pcorr=%g at x=%g y=%g z=%g\n", pcor, xref, yref, zref);
+//#if _MPI
+//        MPI_Allreduce (MPI_IN_PLACE, &pcor, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
+//#endif
+//    foreach()
+//        p[] -= pcor;
+//    boundary ({p});
     /**
     And compute $\mathbf{u}_f^{n+1}$ using $\mathbf{u}_f$ and $p$. */
 
