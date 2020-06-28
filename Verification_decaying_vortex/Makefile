@@ -12,9 +12,13 @@ decaying_vortex_Popinet:
 	rm -rf .qcc* log out res/vortex_Popinet_* snapshot-* nameYouWant*
 	qcc $(CFLAG)  decaying_vortex_Popinet.c -lm $(OPENGLIBS)
 	./a.out > out_P 2> log_P
-decaying_vortex_BP_:
+decaying_vortex_BP:
 	rm -rf .qcc* log out snapshot-* nameYouWant*
-	qcc $(CFLAG) decaying_vortex_BP_.c -lm $(OPENGLIBS)
+	qcc $(CFLAG) decaying_vortex_BP.c -lm $(OPENGLIBS)
 	./a.out > out_BP 2> log_BP
 #	CC99='mpicc -std=c99' qcc -Wall -O2 -DDUMP=1 -D_MPI=1 decaying_vortex_BP.c -lm $(OPENGLIBS) -o parallel.out
 #	mpirun -np 4 ./parallel.out > out_BP 2> log_BP
+couette:
+	rm -rf .qcc* log out snapshot-* nameYouWant*
+	qcc $(CFLAG) couette.c -lm $(OPENGLIBS)
+	./a.out > out_BP 2> log_BP

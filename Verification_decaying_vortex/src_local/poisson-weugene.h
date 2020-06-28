@@ -349,6 +349,10 @@ static void relax (scalar * al, scalar * bl, int l, void * data)
 #endif // EMBED
       c[] = n/d;
   }
+//    u_clip=a[0];
+//  foreach_level_or_leaf (l){
+//    c[] -= u_clip;
+//  }
 
   /**
   For weighted Jacobi we under-relax with a weight of 2/3. */

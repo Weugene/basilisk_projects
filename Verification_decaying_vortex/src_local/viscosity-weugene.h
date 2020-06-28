@@ -104,8 +104,11 @@ static void relax_viscosity (scalar*a, scalar*b, int l, void*data)
             foreach_dimension()
                 u.x[] = (u.x[] + 2.*w.x[])/3.;
     #endif
-//    fprintf(ferr, "relax\n");
-//    event("vtk_file");
+    boundary({u});
+    fprintf(ferr, "relax\n");
+//    foreach() foreach_dimension() tmp_err_u.x[] = -10;
+//    foreach_level_or_leaf (l) foreach_dimension() tmp_err_u.x[] = w.x[];
+    event("vtk_file");
     #if TRASH
         vector u1[];
         foreach_level_or_leaf (l)  foreach_dimension() u1.x[] = u.x[];
@@ -172,13 +175,14 @@ static double residual_viscosity (scalar * a, scalar * b, scalar * resl, void * 
 #ifdef DEBUG_BRINKMAN_PENALIZATION
             conv_term.x[] = conv.x;
             dbp.x[] = PLUS_BRINKMAN_RHS;
-            total_rhs.x[] = divtauu.x[];// - (r.x[]- lambda.x*u.x[])/dt;//du/dt=RHS
+            total_rhs.x[] = divtauu.x[];//- (r.x[]- lambda.x*u.x[])/dt;//du/dt=RHS
 #endif
         }
     }
     boundary (resl);
+    foreach() foreach_dimension() tmp_err_u.x[] = res.x[];
     fprintf(ferr, "visc: maxres=%g maxres/dt=%g \n", maxres, maxres/dt);
-//    event("vtk_file");
+    event("vtk_file");
     return maxres/dt; // Corrected by Weugene: return residual = rhs - du/dt
 }
 

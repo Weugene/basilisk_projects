@@ -120,6 +120,25 @@ p[back]   = neumann (- neumann_pressure(0));
 #  endif
 #endif // !AXI
 
+deltap[right] = neumann (neumann_pressure(ghost));
+deltap[left]  = neumann (- neumann_pressure(0));
+
+#if AXI
+uf.n[bottom] = 0.;
+uf.t[bottom] = dirichlet(0); // since uf is multiplied by the metric which
+                             // is zero on the axis of symmetry
+deltap[top]    = neumann (neumann_pressure(ghost));
+#else // !AXI
+#  if dimension > 1
+deltap[top]    = neumann (neumann_pressure(ghost));
+deltap[bottom] = neumann (- neumann_pressure(0));
+#  endif
+#  if dimension > 2
+deltap[front]  = neumann (neumann_pressure(ghost));
+deltap[back]   = neumann (- neumann_pressure(0));
+#  endif
+#endif // !AXI
+
 /**
 For [embedded boundaries on trees](/src/embed-tree.h), we need to
 define the pressure gradient for prolongation of pressure close to
@@ -208,7 +227,6 @@ void centered_gradient (scalar deltap, vector deltag)
   deltagf.x[] = fm.x[]*(a.x[] - aold.x[]) - alpha.x[]*(deltap[] - deltap[-1])/Delta;
 //    gf.x[] = fm.x[]*a.x[] - alpha.x[]*(p[] - p[-1])/Delta;
   boundary_flux ({deltagf});
-
   /**
   We average these face values to obtain the centered, combined
   acceleration and pressure gradient field. */
@@ -229,9 +247,13 @@ event init (i = 0)
   foreach_face()
     uf.x[] = fm.x[]*face_value (u.x, 0);
   boundary ((scalar *){uf});
-  mgp = project (uf, p, alpha, dt, mgp.nrelax);
 
-  centered_gradient (p, g); //calc gf^{n+1}, g^{n+1} using p^{n+1}, a^{n+1/2}
+//  mgp = project (uf, phi);
+//  event("vtk_file");
+  scalar rhs_zero[];
+//  mgstats mgp = poisson (p, rhs_zero);
+  centered_gradient (p, g);
+  event("vtk_file");
   /**
   We update fluid properties. */
 
@@ -393,10 +415,11 @@ event viscous_term (i++,last)
 {
   if (constant(mu.x) != 0.) {
     correction (dt);
+    event("vtk_file");
     mgu = viscosity (u, mu, rho, dt, mgu.nrelax);
 //    correction (-dt);//original
   }
-//    event("vtk_file");
+    event("vtk_file");
   /**
   We reset the acceleration field (if it is not a constant). */
 
@@ -477,7 +500,7 @@ event projection (i++,last)
     }
     p[] += deltap[];
   }
-  boundary ((scalar *){u, g, p});
+  boundary ((scalar *){u, g});
 
   if (!is_constant(a.x)) {
       face vector af = aold;

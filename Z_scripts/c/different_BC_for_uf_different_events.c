@@ -36,6 +36,7 @@
 
 // The "Solver" code
 face vector uf[];
+vector u[], uold[];
 scalar s[];
 event event1 (i++) {
     boundary({uf,s});
@@ -105,9 +106,18 @@ event event2 (i++) {
         assert(s[ghost] == 2);
         assert(s[0,1] == 2);
     }
-    return 1;
-}
 
+}
+event event3 (i++) {
+    foreach_boundary(left){
+        fprintf(ferr, "uold:%g %g %g\n", uold.x[-1], uold.x[], uold.x[1] );
+        assert(uold.x[ghost] == 1.1);
+        assert(uold.y[ghost] == 1.2);
+        assert(uold.x[-1,0] == 1.1);
+    }
+
+    if (i==2) return 1;
+}
 // The setup code:
 int main() {
     run();
@@ -124,6 +134,11 @@ event event1 (i++) {
     uf.t[top] = 44;
     s[bottom] = 3;
     s[top] = 4;
+
+    u.n[left] = 1.1;
+    u.t[left] = 1.2;
+    foreach()  s[] = 12;
+    uold.n[left] = s[];
 }
 
 event event2 (i++) {
@@ -135,6 +150,12 @@ event event2 (i++) {
     s[top] = 2;
 }
 
+event event3(i++){
+    foreach(){
+        foreach_dimension() uold.x[] = u.x[];
+    }
+    boundary({uold});
+}
 
 //#include "run.h"
 //

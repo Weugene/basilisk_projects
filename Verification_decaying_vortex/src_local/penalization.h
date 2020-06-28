@@ -16,6 +16,9 @@ const vector zerocf[] = {0.,0.,0.};
         #define PLUS_BRINKMAN_RHS         - fbp*( (u.x[] - target_U.x[])/eta_s + conv.x )
         #define PLUS_NUMERATOR_BRINKMAN   + 0.5*fbp*dt*Delta*conv.x
         #define PLUS_DENOMINATOR_BRINKMAN + fbp*dt*(sq(Delta)/eta_s)
+//        #define PLUS_BRINKMAN_RHS         + 0
+//        #define PLUS_NUMERATOR_BRINKMAN   + 0
+//        #define PLUS_DENOMINATOR_BRINKMAN + 0
     #elif BRINKMAN_PENALIZATION == 2 //Neumann BC
         vector target_U[], n_sol[];
         #define CALC_GRAD
