@@ -101,7 +101,6 @@ int main (int argc, char * argv[])
     fprintf(ferr,"level = %s", argv[1]);
   if (argc > 1) {
     LEVEL = atoi(argv[1]); //convert from string to int
-
   }
     fprintf(ferr,"froud = %s", argv[2]);
   if (argc > 2) {

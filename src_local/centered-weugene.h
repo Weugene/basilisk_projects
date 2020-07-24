@@ -80,7 +80,7 @@ $\nabla\cdot(\mathbf{u}\otimes\mathbf{u})$ is omitted. This is a
 reference to [Stokes flows](http://en.wikipedia.org/wiki/Stokes_flow)
 for which inertia is negligible compared to viscosity. */
 
-(const) face vector mu = zerof, a = zerof, aold = zerof, alpha = unityf, kappa = zerof;
+(const) face vector mu = zerof, a = zerof, alpha = unityf, kappa = zerof;
 (const) scalar rho = unity;
 mgstats mgp, mgpf, mgu;
 bool stokes = false;
@@ -117,25 +117,6 @@ p[bottom] = neumann (- neumann_pressure(0));
 #  if dimension > 2
 p[front]  = neumann (neumann_pressure(ghost));
 p[back]   = neumann (- neumann_pressure(0));
-#  endif
-#endif // !AXI
-
-deltap[right] = neumann (neumann_pressure(ghost));
-deltap[left]  = neumann (- neumann_pressure(0));
-
-#if AXI
-uf.n[bottom] = 0.;
-uf.t[bottom] = dirichlet(0); // since uf is multiplied by the metric which
-                             // is zero on the axis of symmetry
-deltap[top]    = neumann (neumann_pressure(ghost));
-#else // !AXI
-#  if dimension > 1
-deltap[top]    = neumann (neumann_pressure(ghost));
-deltap[bottom] = neumann (- neumann_pressure(0));
-#  endif
-#  if dimension > 2
-deltap[front]  = neumann (neumann_pressure(ghost));
-deltap[back]   = neumann (- neumann_pressure(0));
 #  endif
 #endif // !AXI
 
@@ -208,36 +189,6 @@ event defaults (i = 0)
 After user initialisation, we initialise the face velocity and fluid
 properties. */
 
-/**
-## Approximate projection
-
-This function constructs the centered pressure gradient and
-acceleration field *g* using the face-centered acceleration field *a*
-and the cell-centered pressure field *p*. */
-
-void centered_gradient (scalar deltap, vector deltag)
-{
-
-  /**
-  We first compute a face field $\mathbf{g}_f$ combining both
-  acceleration and pressure gradient. */
-
-  face vector deltagf[];
-  foreach_face()
-  deltagf.x[] = fm.x[]*(a.x[] - aold.x[]) - alpha.x[]*(deltap[] - deltap[-1])/Delta;
-//    gf.x[] = fm.x[]*a.x[] - alpha.x[]*(p[] - p[-1])/Delta;
-  boundary_flux ({deltagf});
-  /**
-  We average these face values to obtain the centered, combined
-  acceleration and pressure gradient field. */
-
-  trash ({deltag});
-  foreach()
-  foreach_dimension()
-  deltag.x[] = (deltagf.x[] + deltagf.x[1])/(fm.x[] + fm.x[1] + SEPS); //!!! ???: Weugene, numerator = gf.x[]*fm.x[] + gf.x[1]*fm.x[1]
-  boundary ((scalar *){deltag});
-}
-
 double dtmax;
 
 event init (i = 0)
@@ -248,12 +199,6 @@ event init (i = 0)
     uf.x[] = fm.x[]*face_value (u.x, 0);
   boundary ((scalar *){uf});
 
-//  mgp = project (uf, phi);
-//  event("vtk_file");
-  scalar rhs_zero[];
-//  mgstats mgp = poisson (p, rhs_zero);
-  centered_gradient (p, g);
-  event("vtk_file");
   /**
   We update fluid properties. */
 
@@ -279,7 +224,7 @@ event set_dtmax (i++,last) dtmax = DT;
 event stability (i++,last) {
   dt = dtnext (stokes ? dtmax : timestep (uf, dtmax));
 
-  fprintf(ferr, "stability: dt=%g DT=%g dtmax=%g\n", dt, DT, dtmax );
+  fprintf(ferr, "stability: dt=%g DT=%g dtmax=%g", dt, DT, dtmax );
 }
 
 /**
@@ -315,7 +260,7 @@ $\mathbf{g}$). */
 void prediction()
 {
   vector du;
-  foreach_dimension(){
+  foreach_dimension() {
     scalar s = new scalar;
     du.x = s;
   }
@@ -338,6 +283,11 @@ void prediction()
 	            du.x[] = 0.;
 	        else
 #endif
+//#ifdef BRINKMAN_PENALIZATION
+//            if (fabs(fs_face.x[] - 1) < SEPS || fabs(fs_face.x[1] - 1) < SEPS)
+//	            du.x[] = 0.; // inside solids
+//	        else
+//#endif
 	            du.x[] = (u.x[1] - u.x[-1])/(2.*Delta);
     }
   boundary ((scalar *){du});
@@ -377,11 +327,10 @@ field. */
 
 event advection_term (i++,last)
 {
-//  event("vtk_file");
   if (!stokes) {
     prediction();
 #if BRINKMAN_PENALIZATION && MODIFIED_CHORIN
-    mgpf = project_bp (uf, pf, alpha, 0.5*dt, mgpf.nrelax, fs, target_U, u, eta_chorin);
+        mgpf = project_bp (uf, pf, alpha, 0.5*dt, mgpf.nrelax, fs, target_U, u, eta_chorin);
 #else
     mgpf = project (uf, pf, alpha, dt/2., mgpf.nrelax);
 #endif
@@ -415,20 +364,18 @@ event viscous_term (i++,last)
 {
   if (constant(mu.x) != 0.) {
     correction (dt);
-    event("vtk_file");
     mgu = viscosity (u, mu, rho, dt, mgu.nrelax);
-//    correction (-dt);//original
+    correction (-dt);
   }
-    event("vtk_file");
+
   /**
   We reset the acceleration field (if it is not a constant). */
 
   if (!is_constant(a.x)) {
     face vector af = a;
     trash ({af});
-    foreach_face(){
+    foreach_face()
       af.x[] = 0.;
-    }
   }
 }
 
@@ -454,14 +401,42 @@ acceleration term is added. */
 event acceleration (i++,last)
 {
   trash ({uf});
-  boundary ((scalar *){a});
+  face vector ia =a;
   foreach_face(){
-    uf.x[] = fm.x[]*(face_value (u.x, 0) + dt*(a.x[] - aold.x[]));
+    uf.x[] = fm.x[]*(face_value (u.x, 0) + dt*a.x[]);
   }
-  boundary ((scalar *){uf});
-//  event("vtk_file");
+  boundary ((scalar *){uf, a});
 }
 
+/**
+## Approximate projection
+
+This function constructs the centered pressure gradient and
+acceleration field *g* using the face-centered acceleration field *a*
+and the cell-centered pressure field *p*. */
+
+void centered_gradient (scalar p, vector g)
+{
+
+  /**
+  We first compute a face field $\mathbf{g}_f$ combining both
+  acceleration and pressure gradient. */
+
+  face vector gf[];
+  foreach_face()
+    gf.x[] = fm.x[]*a.x[] - alpha.x[]*(p[] - p[-1])/Delta;
+  boundary_flux ({gf});
+
+  /**
+  We average these face values to obtain the centered, combined
+  acceleration and pressure gradient field. */
+
+  trash ({g});
+  foreach()
+    foreach_dimension()
+      g.x[] = (gf.x[] + gf.x[1])/(fm.x[] + fm.x[1] + SEPS); //!!! ???: Weugene, numerator = gf.x[]*fm.x[] + gf.x[1]*fm.x[1]
+  boundary ((scalar *){g});
+}
 
 /**
 To get the pressure field at time $t + \Delta t$ we project the face
@@ -470,48 +445,19 @@ next timestep). Then compute the centered gradient field *g*. */
 
 event projection (i++,last)
 {
-//  scalar deltap[];
-//  vector deltag[];
-//  trash({deltap, deltag});
-
-//  foreach() {
-//      ptotal[] = p[];
-//      p[] = 0;
-//  }
-//      foreach(){
-//        deltap[]=0;
-//        foreach_dimension() deltag.x[]=0;
-//      }
 #if BRINKMAN_PENALIZATION && MODIFIED_CHORIN
-  mgp = project_bp (uf, deltap, alpha, dt, mgp.nrelax, fs, target_U, u, eta_chorin);
+  mgp = project_bp (uf, p, alpha, dt, mgp.nrelax, fs, target_U, u, eta_chorin);
 #else
-  mgp = project (uf, deltap, alpha, dt, mgp.nrelax);
+  mgp = project (uf, p, alpha, dt, mgp.nrelax);
 #endif
-
-//  event("vtk_file");
-  centered_gradient (deltap, deltag); //calc gf^{n+1}, g^{n+1} using p^{n+1}, a^{n+1/2}
+  centered_gradient (p, g); //calc gf^{n+1}, g^{n+1} using p^{n+1}, a^{n+1/2}
   /**
   We add the gradient field *g* to the centered velocity field. */
-  foreach(){
-    foreach_dimension()
-    {
-      u.x[] += dt*deltag.x[];
-      g.x[] += deltag.x[];
-    }
-    p[] += deltap[];
-  }
-  boundary ((scalar *){u, g});
-
-  if (!is_constant(a.x)) {
-      face vector af = aold;
-      foreach_face()
-      {
-          af.x[] = aold.x[];
-      }
-  }
-
-//  event("vtk_file");
 //  correction (dt);
+  foreach()
+    foreach_dimension()
+      u.x[] += dt*g.x[]*(1 - fs[]); //original version
+  boundary ((scalar *){u});
 }
 
 //#if BRINKMAN_PENALIZATION

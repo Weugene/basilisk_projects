@@ -1,6 +1,10 @@
 #include "../src_local/penalization.h"
+//#include "poisson.h"
 #include "../src_local/poisson-weugene.h"
 
+#undef SEPS
+#define SEPS 1e-12
+bool relative_residual_viscous = false;
 #if AXI
 #define lambda ((coord){1., 1. + dt/rho[]*(mu.x[] + mu.x[1] + \
                                 mu.y[] + mu.y[0,1])/2./sq(y)})
@@ -37,6 +41,7 @@ struct Viscosity {
     double dt;
     int nrelax;
     scalar * res;
+    double maxb;
 };
 
 static void relax_viscosity (scalar*a, scalar*b, int l, void*data)
@@ -101,11 +106,23 @@ static void relax_viscosity (scalar*a, scalar*b, int l, void*data)
             foreach_dimension()
                 u.x[] = (u.x[] + 2.*w.x[])/3.;
     #endif
-    boundary({u});
-    fprintf(ferr, "relax\n");
+
+//    for (scalar s in {u.x, u.y}) {
+//        double mina= HUGE, maxa= -HUGE;
+//        foreach( reduction(min:mina) reduction(max:maxa) ){
+//            if (fabs(s[]) < mina) mina = fabs(s[]);
+//            if (fabs(s[]) > maxa) maxa = fabs(s[]);
+//        }
+//#if _MPI
+//        MPI_Allreduce (MPI_IN_PLACE, &mina, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
+//        MPI_Allreduce (MPI_IN_PLACE, &maxa, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
+//#endif
+////        fprintf(stderr, "arr for %s min=%g max=%g\n", s.name, mina, maxa);
+//    }
+//    fprintf(ferr, "relax\n");
 //    foreach() foreach_dimension() tmp_err_u.x[] = -10;
 //    foreach_level_or_leaf (l) foreach_dimension() tmp_err_u.x[] = w.x[];
-    event("vtk_file");
+//    event("vtk_file");
     #if TRASH
         vector u1[];
         foreach_level_or_leaf (l)  foreach_dimension() u1.x[] = u.x[];
@@ -121,24 +138,25 @@ static double residual_viscosity (scalar * a, scalar * b, scalar * resl, void * 
     double dt = p->dt;
     vector u = vector(a[0]), r = vector(b[0]), res = vector(resl[0]);
     vector divtauu[];// added: Weugene
-    double maxres = 0, d = 0;
+    double maxres = 0, d = 0, maxb = p->maxb;
+    coord LU;
 //    fprintf(ferr, "residual_viscosity\n");
     #ifdef CALC_GRAD_U_TAU
         calc_target_U(u, target_U, n_sol);
     #endif
     foreach_dimension()
     {
-        vector taux[];
-        foreach()
+        face vector taux[];
+        foreach_face(x)
             taux.x[] = 2.*mu.x[]*(u.x[] - u.x[-1])/Delta;
 #if dimension > 1
-        foreach()
+        foreach_face(y)
             taux.y[] = mu.y[]*(u.x[] - u.x[0,-1] +
                      (u.y[1,-1] + u.y[1,0])/4. -
                      (u.y[-1,-1] + u.y[-1,0])/4.)/Delta;
 #endif
 #if dimension > 2
-        foreach()
+        foreach_face(z)
             taux.z[] = mu.z[]*(u.x[] - u.x[0,0,-1] +
                      (u.z[1,0,-1] + u.z[1,0,0])/4. -
                      (u.z[-1,0,-1] + u.z[-1,0,0])/4.)/Delta;
@@ -150,9 +168,10 @@ static double residual_viscosity (scalar * a, scalar * b, scalar * resl, void * 
             foreach_dimension() {
                 d += taux.x[1] - taux.x[];
             }
-            divtauu.x[] = d;
+            divtauu.x[] = d/Delta;
         }
     }
+    boundary((scalar *){divtauu});
     coord conv;
     foreach (reduction(max:maxres)) {
 #if BRINKMAN_PENALIZATION
@@ -165,22 +184,26 @@ static double residual_viscosity (scalar * a, scalar * b, scalar * resl, void * 
     #endif
 #endif
         foreach_dimension(){
-            res.x[] = ((r.x[]- lambda.x*u.x[])/dt
-                      PLUS_BRINKMAN_RHS
-                       + divtauu.x[]/(Delta*rho[]))*dt;
+            LU.x = - divtauu.x[]*dt/(rho[])
+                    + lambda.x*u.x[]
+                     -(PLUS_VARIABLE_BRINKMAN_RHS)*dt;
+            res.x[] = r.x[] - LU.x;
             if (fabs (res.x[]) > maxres) maxres = fabs (res.x[]);
 #ifdef DEBUG_BRINKMAN_PENALIZATION
             conv_term.x[] = conv.x;
             dbp.x[] = PLUS_BRINKMAN_RHS;
-            total_rhs.x[] = divtauu.x[];//- (r.x[]- lambda.x*u.x[])/dt;//du/dt=RHS
+            total_rhs.x[] = res.x[];//divtauu.x[] - (r.x[]- lambda.x*u.x[])/dt;  //du/dt=RHS
 #endif
         }
     }
     boundary (resl);
+#ifdef DEBUG_MODE
     foreach() foreach_dimension() tmp_err_u.x[] = res.x[];
-    fprintf(ferr, "visc: maxres=%g maxres/dt=%g \n", maxres, maxres/dt);
-    event("vtk_file");
-    return maxres/dt; // Corrected by Weugene: return residual = rhs - du/dt
+#endif
+    fprintf(ferr, "visc: maxres=%g maxb=%g maxres/maxb=%g\n", maxres, maxb, maxres/maxb);
+//    event("vtk_file");
+    return maxres/maxb; // Corrected by Weugene: return residual = rhs - du/dt
+
 }
 
 #undef lambda
@@ -196,9 +219,20 @@ mgstats viscosity (struct Viscosity p){
         exit(1);
     #endif
     vector u = p.u, r[];
-    foreach() foreach_dimension(){ r.x[] = u.x[];}
+    foreach() foreach_dimension(){ r.x[] = u.x[] + PLUS_CONSTANT_BRINKMAN_RHS*dt;}
     face vector mu = p.mu;
     scalar rho = p.rho;
     restriction ({mu,rho});
+    if (relative_residual_viscous) {
+        double maxb = 0;
+        foreach(reduction(max:maxb)){
+            if (fabs(r.x[]) > maxb) maxb = fabs(r.x[]);
+        }
+        if (maxb < SEPS) maxb = 1;
+        p.maxb = maxb;
+    }else{
+        p.maxb = 1;
+    }
+    fprintf(ferr, "maxb = %g\n", p.maxb);
     return mg_solve ((scalar *){u}, (scalar *){r}, residual_viscosity, relax_viscosity, &p, p.nrelax, p.res);
 }

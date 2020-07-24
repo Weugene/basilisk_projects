@@ -1,5 +1,5 @@
-#ifndef BASILISK_HEADER_3
-#define BASILISK_HEADER_3
+#ifndef BASILISK_HEADER_4
+#define BASILISK_HEADER_4
 #line 1 "./../src_local/output_vtu_foreach.h"
 /*
 This function writes one XML file which allows to read the *.vtu files generated
@@ -10,31 +10,74 @@ using MPI.
 
 #ifdef _MPI
 #if dimension == 1
-    #define MY_BOX_CONDITION (!periodic_bc) || (x - Pmin.x - 0.5*Delta > 0) && (Pmax.x - x - 0.5*Delta > 0)
+    #define MY_BOX_CONDITION ((!Period.x) || ((x - Pmin.x - 0.5*Delta > 0) && (Pmax.x - x - 0.5*Delta > 0)))
 #elif dimension == 2
-	#define MY_BOX_CONDITION (!periodic_bc) || (x - Pmin.x - 0.5*Delta > 0) && (Pmax.x - x - 0.5*Delta > 0) && (y - Pmin.y - 0.5*Delta > 0) && (Pmax.y - y - 0.5*Delta > 0)
+	#define MY_BOX_CONDITION (((!Period.x) || ((x - Pmin.x - 0.5*Delta > 0) && (Pmax.x - x - 0.5*Delta > 0))) && ((!Period.y) || ((y - Pmin.y - 0.5*Delta > 0) && (Pmax.y - y - 0.5*Delta > 0))))
 #elif dimension > 2
-    #define MY_BOX_CONDITION (!periodic_bc) || (x - Pmin.x - 0.5*Delta > 0) && (Pmax.x - x - 0.5*Delta > 0) && (y - Pmin.y - 0.5*Delta > 0) && (Pmax.y - y - 0.5*Delta > 0) && (z - Pmin.z - 0.5*Delta > 0) && (Pmax.z - z - 0.5*Delta > 0)
+    #define MY_BOX_CONDITION (((!Period.x) || ((x - Pmin.x - 0.5*Delta > 0) && (Pmax.x - x - 0.5*Delta > 0))) && ((!Period.y) || ((y - Pmin.y - 0.5*Delta > 0) && (Pmax.y - y - 0.5*Delta > 0))) && ((!Period.z) || ((z - Pmin.z - 0.5*Delta > 0) && (Pmax.z - z - 0.5*Delta > 0))))
 #endif
 #else
 #if dimension == 1
-    #define MY_BOX_CONDITION (!periodic_bc) || (Pmax.x - x - 0.5*Delta > 0)
+    #define MY_BOX_CONDITION ((!Period.x) || (Pmax.x - x - 0.5*Delta > 0))
 #elif dimension == 2
-    #define MY_BOX_CONDITION (!periodic_bc) || (Pmax.x - x - 0.5*Delta > 0) && (Pmax.y - y - 0.5*Delta > 0)
+    #define MY_BOX_CONDITION (((!Period.x) || (Pmax.x - x - 0.5*Delta > 0)) && ((!Period.y) || (Pmax.y - y - 0.5*Delta > 0)))
 #elif dimension > 2
-    #define MY_BOX_CONDITION (!periodic_bc) || (Pmax.x - x - 0.5*Delta > 0) && (Pmax.y - y - 0.5*Delta > 0) && (Pmax.z - z - 0.5*Delta > 0)
+    #define MY_BOX_CONDITION (((!Period.x) || (Pmax.x - x - 0.5*Delta > 0)) && ((!Period.y) || (Pmax.y - y - 0.5*Delta > 0)) && ((!Period.z) || (Pmax.z - z - 0.5*Delta > 0)))
 #endif
 #endif
+
+#ifdef PRINT_ALL_VALUES
+#if dimension == 1
+    #define LISTDIM 3
+    #define FVLISTDIM 2
+#elif dimension == 2
+    #define LISTDIM 5
+    #define FVLISTDIM 8
+#elif dimension > 2
+    #define LISTDIM 7
+    #define FVLISTDIM 18
+#endif
+#else
+    #define LISTDIM 1
+    #define FVLISTDIM 8
+#endif
+
+#if dimension == 1
+    char components_name[] = "ComponentName0=\"left_X\" ComponentName1=\"right_X\" ";
+#elif dimension == 2
+    char components_name[] = "ComponentName0=\"left_X\" ComponentName1=\"left_Y\" "
+                             "ComponentName2=\"right_X\" ComponentName3=\"right_Y\" "
+                             "ComponentName4=\"bottom_X\" ComponentName5=\"bottom_Y\" "
+                             "ComponentName6=\"top_X\" ComponentName7=\"top_Y\" ";
+#elif dimension > 2
+    char components_name[] = "ComponentName0=\"left_X\" ComponentName1=\"left_Y\" ComponentName2=\"left_Z\" "
+                             "ComponentName3=\"right_X\" ComponentName4=\"right_Y\" ComponentName5=\"right_Z\" "
+                             "ComponentName6=\"bottom_X\" ComponentName7=\"bottom_Y\" ComponentName8=\"bottom_Z\" "
+                             "ComponentName9=\"top_X\" ComponentName10=\"top_Y\" ComponentName11=\"top_Z\" "
+                             "ComponentName12=\"back_X\" ComponentName13=\"back_Y\" ComponentName14=\"back_Z\" "
+                             "ComponentName15=\"front_X\" ComponentName16=\"front_Y\" ComponentName17=\"fronts_Z\" ";
+#endif
+#define MAX_STRING_SIZE 40
+char array_subname[][MAX_STRING_SIZE] = { "left", "center", "right",
+                                          "bottom", "top",
+                                          "back", "front"
+                                        };
+int aid[7][3] = { {-1,0,0}, {0,0,0}, {1,0,0},
+                  {0,-1,0}, {0,1,0},
+                  {0,0,-1}, {0,0,1}
+                };
 
 @include <sys/types.h>
 @include <sys/stat.h>
 @include <unistd.h>
-void output_pvtu_ascii (scalar * list, vector * vlist, int n, FILE * fp, char * subname)
+void output_pvtu_ascii (scalar * list, vector * vlist, vector * fvlist, int n, FILE * fp, char * subname)
 {
+    int dim=3;
     fputs ("<?xml version=\"1.0\"?>\n"
     "<VTKFile type=\"PUnstructuredGrid\" version=\"1.0\" byte_order=\"LittleEndian\" header_type=\"UInt64\">\n", fp);
     fputs ("\t <PUnstructuredGrid GhostLevel=\"0\">\n", fp);
     fputs ("\t\t\t <PCellData Scalars=\"scalars\">\n", fp);
+#ifndef PRINT_ALL_VALUES
     for (scalar s in list) {
       fprintf (fp,"\t\t\t\t <PDataArray type=\"Float64\" Name=\"%s\" format=\"ascii\">\n", s.name);
       fputs ("\t\t\t\t </PDataArray>\n", fp);
@@ -42,6 +85,22 @@ void output_pvtu_ascii (scalar * list, vector * vlist, int n, FILE * fp, char * 
     for (vector v in vlist) {
       fprintf (fp,"\t\t\t\t <PDataArray type=\"Float64\" NumberOfComponents=\"3\" Name=\"%s\" format=\"ascii\">\n", v.x.name);
       fputs ("\t\t\t\t </PDataArray>\n", fp);
+    }
+#else
+    for (scalar s in list) {
+      for (int i=0; i<LISTDIM; i++)
+            fprintf (fp,"\t\t\t\t <PDataArray type=\"Float64\" Name=\"%s_%s\" format=\"ascii\">\n", s.name, array_subname[i]);
+      fputs ("\t\t\t\t </PDataArray>\n", fp);
+    }
+    for (vector v in vlist) {
+        for (int i=0; i<LISTDIM; i++)
+            fprintf (fp,"\t\t\t\t <PDataArray type=\"Float64\" NumberOfComponents=\"%d\" Name=\"%s_%s\" format=\"ascii\">\n", dim, v.x.name, array_subname[i]);
+      fputs ("\t\t\t\t </PDataArray>\n", fp);
+    }
+#endif
+    for (vector v in fvlist) {
+        fprintf (fp,"\t\t\t\t <PDataArray type=\"Float64\" NumberOfComponents=\"%d\" %s Name=\"%s\" format=\"ascii\">\n", FVLISTDIM, components_name, v.x.name);
+        fputs ("\t\t\t\t </PDataArray>\n", fp);
     }
     fputs ("\t\t\t </PCellData>\n", fp);
     fputs ("\t\t\t <PPoints>\n", fp);
@@ -64,9 +123,9 @@ one *.vtu file per PID process this function may be combined with
 output_pvtu_ascii() above to read in parallel. Tested in (quad- and oct-)trees
 using MPI. Also works with solids (when not using MPI).
 */
-void output_vtu_ascii_foreach (scalar * list, vector * vlist, int n, FILE * fp, bool linear, double shift)
+void output_vtu_ascii_foreach (scalar * list, vector * vlist, vector * fvlist, int n, FILE * fp, bool linear)
 {
-    int dim = 3; bool periodic_bc = shift > 0;
+    int dim = 3;
     coord Pmin = {X0 + SMALL_VAL, Y0 + SMALL_VAL, Z0 + SMALL_VAL};
     coord Pmax = {X0 + L0 - SMALL_VAL, Y0 + L0 - SMALL_VAL, Z0 + L0 - SMALL_VAL};
 #if defined(_OPENMP)
@@ -92,6 +151,7 @@ void output_vtu_ascii_foreach (scalar * list, vector * vlist, int n, FILE * fp, 
   fputs ("\t <UnstructuredGrid>\n", fp);
   fprintf (fp,"\t\t <Piece NumberOfPoints=\"%d\" NumberOfCells=\"%d\">\n", no_points, no_cells);
   fputs ("\t\t\t <CellData Scalars=\"scalars\">\n", fp);
+#ifndef PRINT_ALL_VALUES
   for (scalar s in list) {
     fprintf (fp,"\t\t\t\t <DataArray type=\"Float64\" Name=\"%s\" format=\"ascii\">\n", s.name);
     foreach(){
@@ -103,33 +163,88 @@ void output_vtu_ascii_foreach (scalar * list, vector * vlist, int n, FILE * fp, 
   for (vector v in vlist) {
     fprintf (fp,"\t\t\t\t <DataArray type=\"Float64\" NumberOfComponents=\"3\" Name=\"%s\" format=\"ascii\">\n", v.x.name);
     foreach(){
-      if (MY_BOX_CONDITION)
-      #if dimension == 1
-        fprintf (fp, "\t\t\t\t\t %g 0 0.\n", val(v.x));
-      #endif
-      #if dimension == 2
+      if (MY_BOX_CONDITION){
+#if dimension == 1
+          fprintf (fp, "\t\t\t\t\t %g 0 0.\n", val(v.x));
+#endif
+#if dimension == 2
           fprintf (fp, "\t\t\t\t\t %g %g 0.\n", val(v.x), val(v.y));
-      #endif
-      #if dimension > 2
+#endif
+#if dimension > 2
           fprintf (fp, "\t\t\t\t\t %g %g %g\n", val(v.x), val(v.y), val(v.z));
-      #endif
+#endif
+      }
     }
     fputs ("\t\t\t\t </DataArray>\n", fp);
   }
+#else
+  for (scalar s in list) {
+      for (int i=0; i<LISTDIM; i++){
+          fprintf (fp,"\t\t\t\t <DataArray type=\"Float64\" Name=\"%s_%s\" format=\"ascii\">\n", s.name, array_subname[i]);
+          foreach(){
+              if (MY_BOX_CONDITION)
+                fprintf (fp, "\t\t\t\t\t %g \n",s[aid[i][0], aid[i][1], aid[i][2]]);
+          }
+      }
+      fputs ("\t\t\t\t </DataArray>\n", fp);
+  }
+  for (vector v in vlist) {
+      for (int i=0; i<LISTDIM; i++){
+          fprintf (fp,"\t\t\t\t <DataArray type=\"Float64\" NumberOfComponents=\"%d\" Name=\"%s_%s\" format=\"ascii\">\n", dim, v.x.name, array_subname[i]);
+          foreach(){
+              if (MY_BOX_CONDITION){
+                  #if dimension == 1
+                    fprintf (fp, "\t\t\t\t\t %g 0 0.\n", v.x[aid[i][0],aid[i][1],aid[i][2]]);
+                  #endif
+                  #if dimension == 2
+                    fprintf (fp, "\t\t\t\t\t %g %g 0.\n", v.x[aid[i][0],aid[i][1],aid[i][2]], v.y[aid[i][0],aid[i][1],aid[i][2]]);
+                  #endif
+                  #if dimension > 2
+                    fprintf (fp, "\t\t\t\t\t %g %g %g\n", v.x[aid[i][0],aid[i][1],aid[i][2]], v.y[aid[i][0],aid[i][1],aid[i][2]], v.z[aid[i][0],aid[i][1],aid[i][2]]);
+                  #endif
+              }
+          }
+    }
+    fputs ("\t\t\t\t </DataArray>\n", fp);
+  }
+#endif
+  for (vector v in fvlist) {
+    fprintf (fp,"\t\t\t\t <DataArray type=\"Float64\" NumberOfComponents=\"%d\" %s Name=\"%s\" format=\"ascii\">\n", FVLISTDIM, components_name, v.x.name);
+    foreach(){
+      if (MY_BOX_CONDITION){
+#if dimension == 1
+        double arr[FVLISTDIM]={v.x[], v.x[1]};
+#endif
+#if dimension == 2
+        double arr[FVLISTDIM]={v.x[0,0], v.y[-1,0],
+                                     v.x[1,0], v.y[1,0],
+                                     v.x[0,-1], v.y[0,0],
+                                     v.x[0,1], v.y[0,1]};
+#endif
+#if dimension > 2
+        double arr[FVLISTDIM]={v.x[0,0], v.y[-1,0], v.z[-1,0],
+                                     v.x[1,0], v.y[1,0], v.z[1,0],
+                                     v.x[0,-1], v.y[0,0], v.z[0,-1],
+                                     v.x[0,1], v.y[0,1], v.z[0,1],
+                                     v.x[0,0,-1], v.y[0,0,-1], v.z[0,0,0],
+                                     v.x[0,0,1], v.y[0,0,1], v.z[0,0,1]};
+#endif
+        fprintf (fp, "\t\t\t\t\t ");
+        for (int i = 0; i < FVLISTDIM; i++){
+            fprintf (fp, "%g ", arr[i]);
+        }
+        fprintf (fp, "\n");
+      }
+    }
+    fputs ("\t\t\t\t </DataArray>\n", fp);
+  }
+
   fputs ("\t\t\t </CellData>\n", fp);
   fputs ("\t\t\t <Points>\n", fp);
   fputs ("\t\t\t\t <DataArray type=\"Float64\" NumberOfComponents=\"3\" format=\"ascii\">\n", fp);
   foreach_vertex(){
     if (MY_BOX_CONDITION)
-    #if dimension == 1
-      fprintf (fp, "\t\t\t\t\t %g %g %g\n", x, y, z);
-    #endif
-    #if dimension == 2
-      fprintf (fp, "\t\t\t\t\t %g %g %g\n", x, y, z);
-    #endif
-    #if dimension > 2
-      fprintf (fp, "\t\t\t\t\t %g %g %g\n", x, y, z);
-    #endif
+        fprintf (fp, "\t\t\t\t\t %g %g %g\n", x, y, z);
   }
   fputs ("\t\t\t\t </DataArray>\n", fp);
   fputs ("\t\t\t </Points>\n", fp);
@@ -188,18 +303,32 @@ This function writes one XML file which allows to read the *.vtu files generated
 by output_vtu_bin_foreach() when used in MPI. Tested in (quad- and oct-)trees
 using MPI.
 */
-void output_pvtu_bin (scalar * list, vector * vlist, int n, FILE * fp, char * subname)
+void output_pvtu_bin (scalar * list, vector * vlist, vector * fvlist, int n, FILE * fp, char * subname)
 {
-    int dim = 3;
+    int dim=3;
     fputs ("<?xml version=\"1.0\"?>\n"
     "<VTKFile type=\"PUnstructuredGrid\" version=\"1.0\" byte_order=\"LittleEndian\" header_type=\"UInt64\">\n", fp);
     fputs ("\t <PUnstructuredGrid GhostLevel=\"0\">\n", fp);
     fputs ("\t\t\t <PCellData Scalars=\"scalars\">\n", fp);
+#ifndef PRINT_ALL_VALUES
     for (scalar s in list) {
       fprintf (fp,"\t\t\t\t <PDataArray type=\"Float64\" Name=\"%s\" format=\"appended\"/>\n", s.name);
     }
     for (vector v in vlist) {
       fprintf (fp,"\t\t\t\t <PDataArray type=\"Float64\" NumberOfComponents=\"%d\" Name=\"%s\" format=\"appended\"/>\n", dim, v.x.name);
+    }
+#else
+    for (scalar s in list) {
+        for (int i=0; i<LISTDIM; i++)
+            fprintf (fp,"\t\t\t\t <PDataArray type=\"Float64\" Name=\"%s_%s\" format=\"appended\"/>\n", s.name, array_subname[i]);
+    }
+    for (vector v in vlist) {
+        for (int i=0; i<LISTDIM; i++)
+            fprintf (fp,"\t\t\t\t <PDataArray type=\"Float64\" NumberOfComponents=\"%d\" Name=\"%s_%s\" format=\"appended\"/>\n", dim, v.x.name, array_subname[i]);
+    }
+#endif
+    for (vector v in fvlist) {
+        fprintf (fp,"\t\t\t\t <PDataArray type=\"Float64\" NumberOfComponents=\"%d\" %s Name=\"%s\" format=\"appended\"/>\n", FVLISTDIM, components_name, v.x.name);
     }
     fputs ("\t\t\t </PCellData>\n", fp);
     fputs ("\t\t\t <PPoints>\n", fp);
@@ -222,17 +351,15 @@ output_pvtu_bin() above to read in parallel. Tested in (quad- and oct-)trees
 using MPI. Also works with solids (when not using MPI).
 */
 
-void output_vtu_bin_foreach (scalar * list, vector * vlist, int n, FILE * fp, bool linear, double shift)
+void output_vtu_bin_foreach (scalar * list, vector * vlist, vector * fvlist, int n, FILE * fp, bool linear)
 {
-  int dim = 3; bool periodic_bc = shift > 0;
+  int dim = 3;
   coord Pmin = {X0 + SMALL_VAL, Y0 + SMALL_VAL, Z0 + SMALL_VAL};
   coord Pmax = {X0 + L0 - SMALL_VAL, Y0 + L0 - SMALL_VAL, Z0 + L0 - SMALL_VAL};
 #if defined(_OPENMP)
   int num_omp = omp_get_max_threads();
   omp_set_num_threads(1);
 #endif
-//  fprintf(fp1, "X0=%.12g Y0=%.12g L0=%.12g shift=%.12g Pmin.x=%.12g Pmin.y=%.12g Pmax.x=%.12g Pmax.y=%.12g\n", X0, Y0, L0, shift, Pmin.x, Pmin.y, Pmax.x, Pmax.y);
-
   vertex scalar marker[];
   int no_points = 0, no_cells = 0;
   foreach_vertex(){
@@ -251,14 +378,36 @@ void output_vtu_bin_foreach (scalar * list, vector * vlist, int n, FILE * fp, bo
   fprintf (fp,"\t\t <Piece NumberOfPoints=\"%d\" NumberOfCells=\"%d\">\n", no_points, no_cells);
   fputs ("\t\t\t <CellData Scalars=\"scalars\">\n", fp);
   int count = 0;
+#ifndef PRINT_ALL_VALUES
   for (scalar s in list) {
-    fprintf (fp,"\t\t\t\t <DataArray type=\"Float64\" Name=\"%s\" format=\"appended\" offset=\"%d\">\n", s.name,count);
+    fprintf (fp,"\t\t\t\t <DataArray type=\"Float64\" Name=\"%s\" format=\"appended\" offset=\"%d\">\n", s.name, count);
     count += ((no_cells)+1)*8;
     fputs ("\t\t\t\t </DataArray>\n", fp);
   }
   for (vector v in vlist) {
     fprintf (fp,"\t\t\t\t <DataArray type=\"Float64\" Name=\"%s\" NumberOfComponents=\"%d\"  format=\"appended\" offset=\"%d\">\n", v.x.name, dim, count);
     count += (no_cells*dim+1)*8;
+    fputs ("\t\t\t\t </DataArray>\n", fp);
+  }
+#else
+  for (scalar s in list) {
+      for (int i=0; i<LISTDIM; i++){
+        fprintf (fp,"\t\t\t\t <DataArray type=\"Float64\" Name=\"%s_%s\" format=\"appended\" offset=\"%d\">\n", s.name, array_subname[i], count);
+        count += ((no_cells)+1)*8;
+        fputs ("\t\t\t\t </DataArray>\n", fp);
+      }
+  }
+  for (vector v in vlist) {
+      for (int i=0; i<LISTDIM; i++){
+        fprintf (fp,"\t\t\t\t <DataArray type=\"Float64\" Name=\"%s_%s\" NumberOfComponents=\"%d\"  format=\"appended\" offset=\"%d\">\n", v.x.name, array_subname[i], dim, count);
+        count += (no_cells*dim+1)*8;
+        fputs ("\t\t\t\t </DataArray>\n", fp);
+      }
+  }
+#endif
+  for (vector v in fvlist) {
+    fprintf (fp,"\t\t\t\t <DataArray type=\"Float64\" Name=\"%s\" NumberOfComponents=\"%d\"  %s format=\"appended\" offset=\"%d\">\n", v.x.name, FVLISTDIM, components_name, count);
+    count += (no_cells*FVLISTDIM+1)*8;
     fputs ("\t\t\t\t </DataArray>\n", fp);
   }
   fputs ("\t\t\t </CellData>\n", fp);
@@ -323,6 +472,7 @@ void output_vtu_bin_foreach (scalar * list, vector * vlist, int n, FILE * fp, bo
 #if dimension == 2
   double z=0, vz=0;
 #endif
+#ifndef PRINT_ALL_VALUES
   for (scalar s in list) {
     fwrite (&block_len, sizeof (unsigned long long), 1, fp);
     foreach()
@@ -349,6 +499,72 @@ void output_vtu_bin_foreach (scalar * list, vector * vlist, int n, FILE * fp, bo
         fwrite (&val(v.y), sizeof (double), 1, fp);
         fwrite (&val(v.z), sizeof (double), 1, fp);
       #endif
+      }
+    }
+  }
+#else
+  for (scalar s in list) {
+      for (int i=0; i<LISTDIM; i++){
+          fwrite (&block_len, sizeof (unsigned long long), 1, fp);
+          foreach()
+            if (MY_BOX_CONDITION)
+                fwrite (&val(s, aid[i][0], aid[i][1], aid[i][2]), sizeof (double), 1, fp);
+    }
+  }
+  block_len=no_cells*8*dim;
+  for (vector v in vlist) {
+      for (int i=0; i<LISTDIM; i++){
+        int ai=aid[i][0], aj=aid[i][1], ak=aid[i][2];
+        fwrite (&block_len, sizeof (unsigned long long), 1, fp);
+        foreach(){
+          if (MY_BOX_CONDITION){
+          #if dimension == 1
+            fwrite (&val(v.x, ai, aj, ak), sizeof (double), 1, fp);
+            fwrite (&vy, sizeof (double), 1, fp);
+            fwrite (&vz, sizeof (double), 1, fp);
+          #endif
+          #if dimension == 2
+            fwrite (&val(v.x, ai, aj, ak), sizeof (double), 1, fp);
+            fwrite (&val(v.y, ai, aj, ak), sizeof (double), 1, fp);
+            fwrite (&vz, sizeof (double), 1, fp);
+          #endif
+          #if dimension > 2
+            fwrite (&val(v.x, ai, aj, ak), sizeof (double), 1, fp);
+            fwrite (&val(v.y, ai, aj, ak), sizeof (double), 1, fp);
+            fwrite (&val(v.z, ai, aj, ak), sizeof (double), 1, fp);
+          #endif
+          }
+        }
+    }
+  }
+#endif
+  block_len=no_cells*8*FVLISTDIM;
+  for (vector v in fvlist) {
+    fwrite (&block_len, sizeof (unsigned long long), 1, fp);
+    foreach(){
+      if (MY_BOX_CONDITION){
+#if dimension == 1
+        double arr[FVLISTDIM]={v.x[], v.x[1]};
+#endif
+#if dimension == 2
+//        double arr[FVLISTDIM]={  v.x[0,1], v.x[0,0], v.x[0,-1], v.x[1,1], v.x[1,0], v.x[1,-1],
+//                                 v.y[-1,0], v.y[0,0], v.y[1,0], v.y[-1,1], v.y[0,1], v.y[1,1]};
+          double arr[FVLISTDIM]={  v.x[0,0], v.y[-1,0],
+                                   v.x[1,0], v.y[1,0],
+                                   v.x[0,-1], v.y[0,0],
+                                   v.x[0,1], v.y[0,1]
+                                };
+#endif
+#if dimension > 2
+          double arr[FVLISTDIM]={  v.x[0,0], v.y[-1,0], v.z[-1,0],
+                                   v.x[1,0], v.y[1,0], v.z[1,0],
+                                   v.x[0,-1], v.y[0,0], v.z[0,-1],
+                                   v.x[0,1], v.y[0,1], v.z[0,1],
+                                   v.x[0,0,-1], v.y[0,0,-1], v.z[0,0,0],
+                                   v.x[0,0,1], v.y[0,0,1], v.z[0,0,1]
+                                };
+#endif
+        fwrite (&arr, FVLISTDIM*sizeof(double), 1, fp);
       }
     }
   }
@@ -382,10 +598,24 @@ void output_pvd_file(FILE * fp, int nf, float * file_timesteps, char * subname){
 }
 /* output_vtu_MPI produces *.pvtu files and *.vtu files. The user needs to specify list of scalars and vectors and subname.
 */
+
+struct PVD_output {
+    char * subname;
+    double myt;
+    scalar * list;
+    vector * vlist;
+    vector * fvlist;
+};
+
 struct stat st = {0};
 static int iter_fp=0;
 static float file_timesteps[9999];
-void output_vtu_MPI(scalar * list, vector * vlist, char * subname, double shift){
+void output_vtu_MPI(struct PVD_output o){
+    scalar * list = o.list;
+    vector * vlist = o.vlist;
+    vector * fvlist = o.fvlist;
+    char * subname = o.subname;
+    double myt = o.myt;
     int nf = iter_fp;
     char name_vtu[80];
     if (iter_fp == 0) {
@@ -397,21 +627,22 @@ void output_vtu_MPI(scalar * list, vector * vlist, char * subname, double shift)
     if (nf>9999) { fprintf(stderr, "too many files, more than 9999"); exit(1); }
     sprintf(name_vtu, "res/%s_%4.4d_n%3.3d.vtu", subname, nf, pid());
     fp = fopen(name_vtu, "w");
-    output_vtu_bin_foreach(list, vlist, 64, fp, true, shift);//64 and true is useless. It needs to support the interface
+    output_vtu_bin_foreach(list, vlist, fvlist, 64, fp, true);//64 and true is useless. It needs to support the interface
     fclose(fp);
     if (pid() == 0) {
         //pvtu file
         char name_pvtu[80], tmp[80];
 	    sprintf(name_pvtu, "res/%s_0_%4.4d.pvtu", subname, nf);
         sprintf(tmp, "%s_%4.4d", subname, nf);
+        fprintf(ferr, "+++vtk_file: %s, %s\n", name_pvtu, name_vtu);
         fp = fopen(name_pvtu, "w");
-        output_pvtu_bin(list, vlist, 64, fp, tmp);
+        output_pvtu_bin(list, vlist, fvlist, 64, fp, tmp);
         fclose(fp);
         //pvd file with timesteps
         char name_pvd[80];
-        sprintf(name_pvtu, "%s.pvd", subname);
-        fp = fopen(name_pvtu, "w");
-        file_timesteps[nf] = t;
+        sprintf(name_pvd, "%s.pvd", subname);
+        fp = fopen(name_pvd, "w");
+        file_timesteps[nf] = myt;
         output_pvd_file(fp, nf, file_timesteps, subname);
         fclose(fp);
     }

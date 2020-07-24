@@ -2,17 +2,19 @@
 # Stokes flow past a periodic array of cylinders
 We compare the numerical results with the solution given by the
 multipole expansion of [Sangani and Acrivos, 1982](#sangani1982). */
-
 #define BRINKMAN_PENALIZATION 1
 #define DEBUG_BRINKMAN_PENALIZATION 1
+#define RELATIVE_RESIDUAL
 #undef SEPS
 #define SEPS 1e-30
-//#define DEBUG_MINMAXVALUES
-//#define DEBUG_OUTPUT_VTU_MPI
+#define DEBUG_MINMAXVALUES
+#define DEBUG_OUTPUT_VTU_MPI
 
 scalar fs[], omega[];
 vector Us[];
-
+scalar divutmp[], deltap[];
+vector conv_term[], deltag[];
+const face vector grav[] = {1.,0.};
 #include "../src_local/centered-weugene.h"
 #include "view.h"
 #include "../src_local/output_vtu_foreach.h"
@@ -42,13 +44,13 @@ case in the table above, the radius of the cylinder will be computed
 using the volume fraction $\Phi$. */
 
 int maxlevel = 8, minlevel = 4, nc;
-double radius, epsthresh=1e-4;
+double radius, epsthresh=1e-2;
 
 void calc_solid(scalar fs){
   vertex scalar phi[];
   face vector face_fs[];
   foreach_vertex() {
-    phi[] = (sq(x) + sq(y) < sq(radius) ) ? 1 : -1;
+    phi[] = sq(radius) - sq(x) - sq(y);
   }
   boundary ({phi});
   fractions (phi, fs, face_fs);
@@ -74,15 +76,20 @@ int main(int argc, char * argv[]){
     periodic (right);
     periodic (top);
     /**
+    And set acceleration and viscosity to unity. */
+
+    a = grav;
+    mu = fm;
+    /**
     We turn off the advection term. The choice of the maximum timestep
-    and of tqhe tolerance on the Poisson and viscous solves is not
+    and of the tolerance on the Poisson and viscous solves is not
     trivial. This was adjusted by trial and error to minimize (possibly)
     splitting errors and optimize convergence speed. */
 
     stokes = true;
     DT = 1e-3;
     TOLERANCE = 1e-8;
-    NITERMIN = 5;
+//    NITERMIN = 1;
     /**
     We do the 9 cases computed by Sangani & Acrivos. The radius is
     computed from the volume fraction. */
@@ -102,26 +109,28 @@ event init (t = 0){
     int it = 0;
     do {
         calc_solid(fs);
-    }while (adapt_wavelet({fs}, (double []){1e-6},
+    }while (adapt_wavelet({fs}, (double []){1e-3},
                           maxlevel = maxlevel, minlevel=minlevel).nf != 0 && ++it <= 10);
     /**
-    And set acceleration and viscosity to unity. */
-
-    const face vector g[] = {1.,0.};
-    a = g;
-    mu = fm;
-
-    /**
     We initialize the reference velocity. */
-    foreach() un[] = u.y[];
+    foreach() {
+        un[] = u.y[];
+        g.x[] = grav.x[];
+    }
     //event("vtk_file");
+}
+
+event end_timestep(i++)
+{
+    double eps_arr[] = {1, 1, 1, 1, 1, 1, 1};
+    MinMaxValues((scalar *){p, u.x, u.y, g.x, g.y}, eps_arr);
 }
 
 /**
 We check for a stationary solution. */
 
 //event logfile (i++; t <= 0.27){
-event logfile (i++; i <= 1000){
+event logfile (i++; i <= 5000){
     double avg = normf_weugene(u.x, fs).avg;
     double du = change_weugene (u.x, un, fs)/(avg + SEPS); //change 1) Linf  2) un = u
     fprintf (fout, "%d %d %d %d %d %d %d %d %.3g %.3g %.3g %.3g %.3g\n",
@@ -139,59 +148,52 @@ event logfile (i++; i <= 1000){
 //        double F = sq(L0)/(1. - Phi);
 //        fprintf (ferr, "%d %g %g %g %g %d| %g=%g? %g %g\n", maxlevel, sangani[nc][0], F/U, sangani[nc][1], fabs(F/U - sangani[nc][1])/sangani[nc][1], i, Phi, Phia, U, F);
 //    }
-//    if (t >= 0.267) {
-    if (((i > 1) && (du/dt < 1e-2))|| (i == 1000)) {
+    if (i>1){
         /**
-        We output the non-dimensional force per unit length on the
-        cylinder $F/(\mu U)$, together with the corresponding value from
-        Sangani & Acrivos and the relative error. */
+            We output the non-dimensional force per unit length on the
+            cylinder $F/(\mu U)$, together with the corresponding value from
+            Sangani & Acrivos and the relative error. */
         stats s = statsf_weugene(u.x, fs);
-        double Phi = 1. - s.volume/sq(L0);
-        double Phia = pi*sq(radius)/sq(L0);
-        double U = s.sum/s.volume;
-        double F = sq(L0)/(1. - Phi);
-        fprintf (ferr, "%d %g %g %g %g i=%d ifp=%d| %g=%g? F:%g dt:%g t:%g U:%g Uw:%g Ua:%g\n", maxlevel, sangani[nc][0], F/U, sangani[nc][1], fabs(F/U - sangani[nc][1])/sangani[nc][1], i, iter_fp, Phi, Phia, F, dt, t, U);
-//        stats s = statsf(u);
-//        double Phi = 1. - s.volume/sq(L0);
-//        double U = s.sum/s.volume;
-//        double F = sq(L0)/(1. - Phi);
-//        fprintf (ferr,
-//        "%d %g %g %g %g %d\n", maxlevel, sangani[nc][0], F/U, sangani[nc][1],
-//        fabs(F/U - sangani[nc][1])/sangani[nc][1], i);
+        double Phi = 1. - s.volume / sq(L0);
+        double Phia = pi * sq(radius) / sq(L0);
+        double U = s.sum / s.volume;
+        double F = sq(L0) / (1. - Phi);
+        fprintf (ferr,
+        "+++%d vol.fr.theory=%g F/U=%g F/Uth=%g delta(F/U-theory)=%g i=%d ifp=%d| %g=%g? F:%g dt:%g t:%g U:%g\n", maxlevel, sangani[nc][0], F/U, sangani[nc][1],
+        fabs(F/U - sangani[nc][1])/sangani[nc][1], i, iter_fp, Phi, Phia, F, dt, t, U);
+        fprintf (fout, "stationary flow nc = %d i = %d du = %g", nc, i, du);
+        fflush (fout);
 
-//        view (fov = 9.78488, tx = 0.250594, ty = -0.250165);
-//        draw_vof ("fs",  lc = {1,0,0}, lw = 2); // draw line lc -color, lw -width
-//        squares ("u.x", linear = 1, spread = -1); // spread<0 => color is distributed min max
-//        cells();
-//        char subname[80]; sprintf(subname, "mesh-%d.png", nc);
-//        save (subname);
-//
-        fprintf(fout, "stationary flow nc = %d i = %d du = %g", nc, i, du);
-        fflush(fout);
-		event("vtk_file");
-        return 9;
+        if (((i > 1) && (du/dt < 1e-2))|| (i == 5000)) {
+            fprintf (ferr,
+            "%d vol.fr.theory=%g F/U=%g F/Uth=%g delta(F/U-theory)=%g i=%d ifp=%d| %g=%g? F:%g dt:%g t:%g U:%g\n", maxlevel, sangani[nc][0], F/U, sangani[nc][1],
+            fabs(F/U - sangani[nc][1])/sangani[nc][1], i, iter_fp, Phi, Phia, F, dt, t, U);
+            event("vtk_file");
+            return 9;
+        }
     }
+
 }
 
 //Output
-event vtk_file (t = 0){
-    char subname[80]; sprintf(subname, "br");
+event vtk_file (t += 0.1){
+    char subname[80]; sprintf(subname, "cyl_br");
     scalar l[];
     vorticity (u, omega);
     foreach() {l[] = level; omega[] *= 1 - fs[];}
 //    output_vtu_MPI( (scalar *) {l, omega, fs, p}, (vector *) {u, uf, dbp, utau, grad_utau_n, n_sol, target_U}, subname, L0/pow(2, minlevel));
-    output_vtu_MPI( (scalar *) {l, omega, fs, p}, (vector *) {u, uf, dbp, utau}, subname, L0/pow(2, minlevel));
+    output_vtu_MPI( (scalar *) {l, omega, fs, p}, (vector *) {u, dbp, utau, total_rhs, conv_term, g},(vector *) {uf}, subname, t+dt);
 }
 
-#define ADAPT_SCALARS {fs, u.x, u.y, omega}
-#define ADAPT_EPS_SCALARS {epsthresh, 10*epsthresh, 10*epsthresh, epsthresh}
+#define ADAPT_SCALARS {u.x, u.y}
+#define ADAPT_EPS_SCALARS {epsthresh, epsthresh}
 event adapt (i++){
     double eps_arr[] = ADAPT_EPS_SCALARS;
     MinMaxValues(ADAPT_SCALARS, eps_arr);
     adapt_wavelet ((scalar *) ADAPT_SCALARS, eps_arr, maxlevel = maxlevel, minlevel = minlevel);
-	fs.refine = fs.prolongation = fraction_refine;
-	boundary({fs});
 	calc_solid(fs);
+    fs.refine = fs.prolongation = fraction_refine;
+    boundary({fs});
 }
 
 /**

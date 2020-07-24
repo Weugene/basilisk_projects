@@ -98,16 +98,16 @@ static double residual_viscosity (scalar * a, scalar * b, scalar * resl,
   foreach_dimension() {
     face vector taux[];
     foreach_face(x)
-      taux.x[] = 2.*mu.x[]*(u.x[] - u.x[-1])/Delta;
+        taux.x[] = 2.*mu.x[]*(u.x[] - u.x[-1])/Delta;
     #if dimension > 1
-      foreach_face(y)
-	taux.y[] = mu.y[]*(u.x[] - u.x[0,-1] + 
+    foreach_face(y)
+	    taux.y[] = mu.y[]*(u.x[] - u.x[0,-1] +
 			   (u.y[1,-1] + u.y[1,0])/4. -
 			   (u.y[-1,-1] + u.y[-1,0])/4.)/Delta;
     #endif
     #if dimension > 2
-      foreach_face(z)
-	taux.z[] = mu.z[]*(u.x[] - u.x[0,0,-1] + 
+    foreach_face(z)
+	    taux.z[] = mu.z[]*(u.x[] - u.x[0,0,-1] +
 			   (u.z[1,0,-1] + u.z[1,0,0])/4. -
 			   (u.z[-1,0,-1] + u.z[-1,0,0])/4.)/Delta;
     #endif
@@ -150,7 +150,7 @@ static double residual_viscosity (scalar * a, scalar * b, scalar * resl,
 	maxres = fabs (res.x[]);
     }
 #endif
-  return maxres;
+    return maxres;
 }
 
 #undef lambda

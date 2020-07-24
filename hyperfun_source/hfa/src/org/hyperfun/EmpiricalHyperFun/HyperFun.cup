@@ -1,0 +1,1812 @@
+/*
+ * Copyright (c) 1999 Richard Cartwright
+ * All rights reserved.
+ *
+ * This program can be redistributed and/or modified under the terms
+ * of the CGPL, The Common Good Public License as published by and at CGPL.org
+ * (http://CGPL.org).  It is released under version 1.0 Beta of the License
+ * until the 1.0 version is released after which either version 1.0 of the
+ * License, or (at your option) any later version can be applied.
+ *
+ * THIS WORK, OR SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED (See the
+ * CGPL, The Common Good Public License for more information.)
+ *
+ * You should have received a copy of the CGPL along with this program;
+ * if not, see -  http://CGPL.org to get a copy of the License.
+ *
+ * $Id: HyperFun.cup,v 1.5 2006/10/07 10:13:53 y7goto Exp $
+ */
+
+package org.hyperfun.EmpiricalHyperFun;
+
+import java.util.*;
+import java_cup.runtime.*;
+import org.apache.bcel.*;
+import org.apache.bcel.generic.*;
+
+action code {:
+    Vector decD = new Vector();
+    String modelName = null;
+    Yylex scnr;
+    Hashtable symbols = null;
+    ClassGen cg = null;
+    ConstantPoolGen cp = null;
+    MethodGen mg = null;
+    int maxStack = 15;
+    Vector errors = null;
+    int listLength = 0;
+    boolean exprIsArray = false;
+
+    InstructionList store(int type, String id, int index) {
+	InstructionList lil = new InstructionList();
+	HFParameter hfp = null;
+	int line = scnr.getCurrentLine();
+
+	if (!symbols.containsKey(id)) {
+	    errors.add("Variable " + id + " not known at line " +
+		       line + ".");
+	    lil.append(InstructionConstants.POP2);
+	}
+	hfp = (HFParameter)symbols.get(id);
+
+	if (hfp.local == true) {
+	    switch(type) {
+	    case HFParameter.NUMBER:
+		if (hfp.type != HFParameter.NUMBER) {
+		    errors.add("Unexpected reference to array variable " +
+			       id + " at line " + line + ".");
+		    lil.append(InstructionConstants.POP2);
+		} else {
+		    lil.append(new DSTORE(hfp.getIndex()));
+		}
+		break;
+
+	    case HFParameter.ARRAY:
+		if (hfp.type != HFParameter.ARRAY) {
+		    errors.add("Unexpected reference to number variable " +
+			       id + " at line " + line + ".");
+		} else {
+		    lil.append(new ALOAD(hfp.getIndex()));
+		    lil.append(new PUSH(cp, index - 1));
+		    lil.append(InstructionConstants.DUP2_X2);
+		    lil.append(InstructionConstants.POP2);
+		    lil.append(InstructionConstants.DASTORE);
+		}
+		break;
+
+	    default:
+		errors.add("Unknown local variable type for " + id +
+			   " at line " + line + ".");
+		lil.append(InstructionConstants.POP2);
+		break;
+	    }
+	} else { // Must be a field!
+	    switch (type) {
+	    case HFParameter.NUMBER:
+		if (hfp.type != HFParameter.NUMBER) {
+		    errors.add("Unexpected reference to an array field " +
+			       id + " at line " + line + ".");
+		    lil.append(InstructionConstants.POP2);
+		} else {
+		    lil.append(new ALOAD(0));
+		    lil.append(new PUTFIELD(hfp.getIndex()));
+		}
+		break;
+
+	    case HFParameter.ARRAY:
+		if (hfp.type != HFParameter.ARRAY) {
+		    errors.add("Unexpected reference to a number field " +
+			       id + " at line " + line + ".");
+		    lil.append(InstructionConstants.POP2);
+		} else {
+		    lil.append(new ALOAD(0));
+		    lil.append(new GETFIELD(hfp.getIndex()));
+		    lil.append(new PUSH(cp, index - 1));
+		    lil.append(InstructionConstants.DUP2_X2);
+		    lil.append(InstructionConstants.POP2);
+		    lil.append(InstructionConstants.DASTORE);
+		}
+		break;
+
+	    default:
+		errors.add("Unkown type to assign a value to " + id +
+			   " at line " + line + ".");
+		lil.append(InstructionConstants.POP2);
+		break;
+	    }
+	}
+	return lil;
+    }
+
+    InstructionList load(int type, String id, int index) {
+	InstructionList lil = new InstructionList();
+	HFParameter hfp;
+	int line = scnr.getCurrentLine();
+
+	if (!symbols.containsKey(id)) {
+	    errors.add("Array " + id + " has not been declared at " +
+		       "line " + line + ".");
+	    lil.append(InstructionConstants.DCONST_0);
+	    return lil;
+	}
+	hfp = (HFParameter)symbols.get(id);
+
+	if (hfp.local == true) {
+	    switch (type) {
+	    case HFParameter.NUMBER:
+		if ((hfp.type != HFParameter.NUMBER) && (index != -1)) {
+		    errors.add("Unexpected reference to array variable " +
+			       id + " at line " + line + ".");
+		    lil.append(InstructionConstants.DCONST_0);
+		} else {
+		    if (hfp.type == HFParameter.NUMBER) {
+			lil.append(new DLOAD(hfp.getIndex()));
+		    } else {
+			lil.append(new ALOAD(hfp.getIndex()));
+			exprIsArray = true;
+		    }
+		}
+		break;
+
+	    case HFParameter.ARRAY:
+		if (hfp.type != HFParameter.ARRAY) {
+		    errors.add("Unexpected reference to a number " +
+			       "variable " + id + " at line " + line +
+			       ".");
+		    lil.append(InstructionConstants.DCONST_0);
+		} else {
+		    lil.append(new ALOAD(hfp.getIndex()));
+		    lil.append(new PUSH(cp, index - 1));
+		    lil.append(InstructionConstants.DALOAD);
+		}
+		break;
+
+	    default:
+		errors.add("Unknown data type for variable " + id +
+			   " at line " + line + ".");
+		lil.append(InstructionConstants.DCONST_0);
+		break;
+	    }
+	} else {
+	    switch (type) {
+	    case HFParameter.NUMBER:
+		if ((hfp.type != HFParameter.NUMBER) && (index != -1)) {
+		    errors.add("Unexpected reference to array field " +
+			       id + " at line " + line + ".");
+		    lil.append(InstructionConstants.DCONST_0);
+		} else {
+		    lil.append(new ALOAD(0));
+		    lil.append(new GETFIELD(hfp.getIndex()));
+		}
+		break;
+
+	    case HFParameter.ARRAY:
+		if (hfp.type != HFParameter.ARRAY) {
+		    errors.add("Unexpected reference to array field " +
+			       id + " at line " + line + ".");
+		    lil.append(InstructionConstants.DCONST_0);
+		} else {
+		    lil.append(new ALOAD(0));
+		    lil.append(new GETFIELD(hfp.getIndex()));
+		    lil.append(new PUSH(cp, index - 1));
+		    lil.append(InstructionConstants.DALOAD);
+		}
+		break;
+
+	    default:
+		errors.add("Unknown field " + id + " at line " + line +
+			   ".");
+		lil.append(InstructionConstants.DCONST_0);
+		break;
+	    }
+	}
+	return lil;
+    }
+:};
+
+parser code {:
+    ClassGen cg = null;
+    ConstantPoolGen cp = null;
+    MethodGen mg = null;
+    Vector errors = null;
+    Hashtable symbols;
+
+    public void setVarTable(Hashtable cgvars) {
+	symbols = cgvars;
+	// action_obj.symbols = cgvars;
+    }
+
+    public void setClassGen(ClassGen cg, String methodName) {
+	this.cg = cg;
+	cp = cg.getConstantPool();
+	mg = new MethodGen(Constants.ACC_PUBLIC,
+			   Type.DOUBLE,
+			   new Type[] {
+			     new ArrayType(Type.DOUBLE, 1),
+			     new ArrayType(Type.DOUBLE, 1),
+			     new ArrayType(Type.DOUBLE, 1)},
+			   new String[] {"x" , "a", "s"},
+			   methodName, cg.getClassName(),
+			   new InstructionList(), cp);
+    }
+:};
+
+init with {:
+    action_obj.cg = cg;
+    action_obj.cp = cp;
+    action_obj.mg = mg;
+
+    action_obj.scnr = (Yylex)getScanner();
+    action_obj.symbols = symbols;
+    action_obj.symbols.put("x",
+	new HFParameter("x", HFParameter.ARRAY, 1));
+    action_obj.symbols.put("a",
+	new HFParameter("a", HFParameter.ARRAY, 2));
+    action_obj.errors = new Vector();
+:};
+
+scan with {:
+    try {
+	return getScanner().next_token();
+    } catch (Exception e) {
+	System.err.println("Exception in lexical scanner:\n" +
+			   e.getClass().getName() + ": " + e.getMessage());
+	return new Symbol(Sym.error);
+    } catch (Error e2) {
+	System.err.println("Error in lexical scanner:\n" +
+			   e2.getClass().getName() + ": " + e2.getMessage());
+	return new Symbol(Sym.error);
+    }
+:};
+
+terminal Integer INT;
+terminal String ID, HFID, UNARY1, UNARY2, UNARY3, BIN1, BIN2;
+terminal Double NUM;
+terminal HFSPHERE;
+terminal HFELLIPSOID;
+terminal HFCYLX;
+terminal HFCYLY;
+terminal HFCYLZ;
+terminal HFELLCYLX;
+terminal HFELLCYLY;
+terminal HFELLCYLZ;
+terminal HFTORUSX;
+terminal HFTORUSY;
+terminal HFTORUSZ;
+terminal HFBLOCK;
+terminal HFBLOBBY;
+terminal HFMETABALL;
+terminal HFSOFT;
+terminal HFBLENDUNI;
+terminal HFBLENDINT;
+terminal HFSCALE3D;
+terminal HFSHIFT3D;
+terminal HFROTATE3DX;
+terminal HFROTATE3DY;
+terminal HFROTATE3DZ;
+terminal HFTWISTX;
+terminal HFTWISTY;
+terminal HFTWISTZ;
+terminal HFSTRETCH3D;
+terminal HFTAPERX;
+terminal HFTAPERY;
+terminal HFTAPERZ;
+terminal HFCONVARC;
+terminal HFCONVCURVE;
+terminal HFCONVLINE;
+terminal HFCONVMESH;
+terminal HFCONVTRIANGLE;
+terminal HFCONVPOINT;
+terminal HFCONVLINER;
+terminal HFCONEX;
+terminal HFCONEY;
+terminal HFCONEZ;
+terminal HFELLCONEX;
+terminal HFELLCONEY;
+terminal HFELLCONEZ;
+terminal HFFMAPBLOB;
+terminal HFNOISEG;
+terminal HFSPACEMAPCUBIC;
+terminal HFSPACEMAPEXP;
+terminal HFSUPERELL;
+terminal LPAREN, RPAREN, COMMA, LCURL, RCURL, SEMI;
+terminal EQ, LSQ, RSQ, NEQ, LT, GT, LEQ, GEQ, DOT;
+terminal PLUS, MINUS, STAR, DIV, POW;
+terminal UNION, INTER, SUB, NEG;
+terminal ARRAY, IF, THEN, ELSE, ENDIF;
+terminal WHILE, LOOP, ELOOP;
+terminal AND, OR, NOT;
+terminal ASSEQ, UMINUS, UPLUS;
+non terminal preamble;
+non terminal InstructionList block, block_part;
+non terminal InstructionList arraydec, statement, stat_list, condition;
+non terminal InstructionList expr, function, index_part;
+non terminal Vector object;
+non terminal Integer index;
+non terminal InstructionList index_list;
+precedence right ASSEQ;
+precedence left OR;
+precedence left AND;
+precedence nonassoc EQ, NEQ;
+precedence nonassoc LT, GT, LEQ, GEQ;
+precedence left UNION, INTER;
+precedence left PLUS, MINUS;
+precedence left SUB;
+precedence left STAR, DIV;
+precedence right POW;
+precedence left NEG;
+precedence left UMINUS, UPLUS, LPAREN, LSQ, LCURL, NOT;
+
+start with object;
+
+object ::=
+    preamble LCURL block:bil RCURL
+    {:
+	mg.setInstructionList(bil);
+	// System.out.println(mg.getLocalVariableTable(cp).toString());
+	mg.setMaxStack();
+	cg.addMethod(mg.getMethod());
+	RESULT = errors;
+    :}
+    ;
+
+preamble ::=
+    ID:id LPAREN ID:xid index COMMA ID:aid index RPAREN
+    {:
+	if (!xid.equals("x")) {
+	    errors.add("First argument to the HyperFun object " +
+		       "must be array x, at line " +
+		       scnr.getCurrentLine() + ".");
+	}
+	if (!aid.equals("a")) {
+	    errors.add("Second argument to the HyperFun object " +
+		       "must be array a, at line " +
+		       scnr.getCurrentLine() + ".");
+	}
+	modelName = id;
+    :}
+    |
+    ID:id LPAREN ID:xid index COMMA ID:aid index
+			      COMMA ID:sid index RPAREN
+    {:
+	if (!xid.equals("x")) {
+	    errors.add("First argument to the HyperFun object " +
+		       "must be array x, at line " +
+		       scnr.getCurrentLine() + ".");
+	}
+	if (!aid.equals("a")) {
+	    errors.add("Second argument to the HyperFun object " +
+		       "must be array a, at line " +
+		       scnr.getCurrentLine() + ".");
+	}
+	if (!sid.equals("s")) {
+	    errors.add("Third argument to the HyperFun object " +
+		       "should be the optional attributes array " +
+		       "s, at line " + scnr.getCurrentLine());
+	} else {
+	    symbols.put("s",
+		new HFParameter("s", HFParameter.ARRAY, 3));
+	    modelName = id;
+	}
+    :}
+    ;
+
+index ::=
+    LSQ INT:i RSQ
+    {:
+	RESULT = i;
+    :}
+    ;
+
+block ::=
+    block:blil block_part:bpil
+    {:
+	blil.append(bpil);
+	RESULT = blil;
+    :}
+    |
+    block_part:bpil
+    {:
+	RESULT = bpil;
+    :}
+    ;
+
+block_part ::=
+    ARRAY arraydec:adil SEMI
+    {:
+	RESULT = adil;
+    :}
+    |
+    statement:stil SEMI
+    {:
+	RESULT = stil;
+    :}
+    |
+    SEMI
+    {:
+	RESULT = new InstructionList();
+    :}
+    ;
+
+arraydec ::=
+    arraydec:adil COMMA ID:id index:i
+    {:
+	InstructionList lil = new InstructionList();
+	int u = i.intValue();
+	lil.append(new PUSH(cp, u));
+	lil.append(new NEWARRAY(Constants.T_DOUBLE));
+
+	LocalVariableGen lg =
+	    mg.addLocalVariable(id,
+				new ArrayType(Type.DOUBLE, 1),
+				null, null);
+	int arrayStart = lg.getIndex();
+	symbols.put(id,
+	    new HFParameter(id, HFParameter.ARRAY, arrayStart));
+	lg.setStart(lil.append(new ASTORE(arrayStart)));
+
+	adil.append(lil);
+	RESULT = adil;
+    :}
+    |
+    ID:id index:i
+    {:
+	InstructionList lil = new InstructionList();
+	int u = i.intValue();
+	lil.append(new PUSH(cp, u));
+	lil.append(new NEWARRAY(Constants.T_DOUBLE));
+
+	LocalVariableGen lg =
+	    mg.addLocalVariable(id,
+				new ArrayType(Type.DOUBLE, 1),
+				null, null);
+	int arrayStart = lg.getIndex();
+	symbols.put(id,
+	    new HFParameter(id, HFParameter.ARRAY, arrayStart));
+	lg.setStart(lil.append(new ASTORE(arrayStart)));
+	RESULT = lil;
+    :}
+    ;
+
+statement ::=
+    ID:id EQ expr:eil
+    {:
+	InstructionList lil = new InstructionList();
+	if (id.equals(modelName)) {
+	    lil.append(InstructionConstants.DRETURN);
+	} else {
+	    if (symbols.containsKey(id)) {
+		lil.append(store(HFParameter.NUMBER, id, 0));
+	    } else {
+		LocalVariableGen lg =
+		    mg.addLocalVariable(id, Type.DOUBLE, null, null);
+		// System.out.println("Adding new var: " + id);
+		int dStart = lg.getIndex();
+		symbols.put(id,
+		    new HFParameter(id, HFParameter.NUMBER, dStart));
+		lg.setStart(lil.append(new DSTORE(dStart)));
+		// lil.append(new DSTORE(dStart));
+	    }
+	}
+	eil.append(lil);
+	RESULT = eil;
+    :} %prec ASSEQ
+    |
+    ID:id EQ LSQ index_list:ilil RSQ
+    {:
+	InstructionList lil = new InstructionList();
+	int ll = listLength;
+	if (symbols.containsKey(id)) {
+	    for (int u = 1 ; u <= listLength ; u++) {
+		lil.append(store(HFParameter.ARRAY, id, u));
+	    }
+	} else {
+	    errors.add("Array " + id + " has not been declared " +
+		       "at line " + scnr.getCurrentLine() + ".");
+	    for (int u = 0 ; u < ll ; u++) {
+		lil.append(InstructionConstants.POP2);
+	    }
+	}
+	ilil.append(lil);
+	RESULT = ilil;
+    :} %prec ASSEQ
+    |
+    ID:id index:i EQ expr:eil
+    {:
+	InstructionList lil = new InstructionList();
+	if (symbols.containsKey(id)) {
+	    lil.append(store(HFParameter.ARRAY, id, i.intValue()));
+	} else {
+	    errors.add("Array " + id + " has not been declared " +
+		       "at line " + scnr.getCurrentLine() + ".");
+	    lil.append(InstructionConstants.POP2);
+	}
+	eil.append(lil);
+	RESULT = eil;
+    :} %prec ASSEQ
+    |
+    IF condition:csil THEN stat_list:slil ENDIF
+    {:
+	// This assumes that 0 is false
+	InstructionList nop = new InstructionList();
+	InstructionHandle nopHandle =
+	    nop.append(InstructionConstants.NOP);
+	csil.append(new IFEQ(nopHandle));
+	csil.append(slil);
+	csil.append(nop);
+	RESULT = csil;
+    :}
+    |
+    IF condition:csil THEN stat_list:sl1il ELSE stat_list:sl2il ENDIF
+    {:
+	InstructionList nop = new InstructionList();
+	InstructionHandle nopHandle =
+	    nop.append(InstructionConstants.NOP);
+	csil.append(new IFEQ(sl2il.getStart()));
+	sl1il.append(new GOTO(nopHandle));
+	csil.append(sl1il);
+	csil.append(sl2il);
+	csil.append(nop);
+	RESULT = csil;
+    :}
+    |
+    WHILE condition:csil LOOP stat_list:slil ELOOP
+    {:
+	InstructionHandle cond = csil.getStart();
+	InstructionHandle code = slil.getStart();
+	slil.insert(new GOTO(cond));
+	csil.append(new IFNE(code));
+	slil.append(csil);
+	RESULT = slil;
+    :}
+    ;
+
+index_list ::=
+    index_part:ipil COMMA index_list:ilil
+    {:
+	ilil.append(ipil);
+	listLength++;
+	RESULT = ilil;
+    :}
+    |
+    index_part:ipil
+    {:
+	listLength = 1;
+	RESULT = ipil;
+    :}
+    ;
+
+index_part ::=
+    ID:id
+    {:
+	RESULT = load(HFParameter.NUMBER, id, 0);
+    :}
+    |
+    NUM:n
+    {:
+	InstructionList lil = new InstructionList();
+	lil.append(new PUSH(cp, n.doubleValue()));
+	RESULT = lil;
+    :}
+    |
+    MINUS NUM:n
+    {:
+	InstructionList lil = new InstructionList();
+	lil.append(new PUSH(cp, -n.doubleValue()));
+	RESULT = lil;
+    :} %prec UMINUS
+    |
+    PLUS NUM:n
+    {:
+	InstructionList lil = new InstructionList();
+	lil.append(new PUSH(cp, n.doubleValue()));
+	RESULT = lil;
+    :} %prec UPLUS
+    |
+    INT:i
+    {:
+	InstructionList lil = new InstructionList();
+	lil.append(new PUSH(cp, i.doubleValue()));
+	RESULT = lil;
+    :}
+    |
+    MINUS INT:i
+    {:
+	InstructionList lil = new InstructionList();
+	lil.append(new PUSH(cp, -i.doubleValue()));
+	RESULT = lil;
+    :} %prec UMINUS
+    |
+    PLUS INT:i
+    {:
+	InstructionList lil = new InstructionList();
+	lil.append(new PUSH(cp, i.doubleValue()));
+	RESULT = lil;
+    :} %prec UPLUS
+    |
+    ID:id index:i
+    {:
+	RESULT = load(HFParameter.ARRAY, id, i.intValue());
+    :}
+    ;
+
+stat_list ::=
+    statement:st SEMI stat_list:sl
+    {:
+	st.append(sl);
+	RESULT = st;
+    :}
+    |
+    statement:st SEMI
+    {:
+	RESULT = st;
+    :}
+    ;
+
+condition ::=
+    expr:e1il EQ expr:e2il
+    {:
+	e1il.append(e2il); // 3 = 3 | 3 = 5 | 5 = 3
+	e1il.append(InstructionConstants.DCMPL); // 0 | -1 | 1
+	e1il.append(InstructionConstants.ICONST_1);
+	e1il.append(InstructionConstants.IAND); // 0 | 1 | 1
+	e1il.append(InstructionConstants.ICONST_1);
+	e1il.append(InstructionConstants.IXOR); // 1 | 0 | 0
+	RESULT = e1il;
+    :}
+    |
+    expr:e1il NEQ expr:e2il
+    {:
+	e1il.append(e2il);
+	e1il.append(InstructionConstants.DCMPL);
+	e1il.append(InstructionConstants.ICONST_1);
+	e1il.append(InstructionConstants.IAND);
+	RESULT = e1il;
+    :}
+    |
+    expr:e1il LT expr:e2il
+    {:
+	e2il.append(e1il); // 3 < 3 | 3 < 5 | 5 < 3
+	e2il.append(InstructionConstants.DCMPL); // 0 | 1 | -1
+	e2il.append(InstructionConstants.ICONST_1);
+	e2il.append(InstructionConstants.IADD); // 1 | 2 | 0
+	e2il.append(InstructionConstants.ICONST_1);
+	e2il.append(InstructionConstants.ISHR); // 0 | 1 | 0
+	RESULT = e2il;
+    :}
+    |
+    expr:e1il GT expr:e2il
+    {:
+	e1il.append(e2il); // 3 > 3 | 3 > 5 | 5 > 3
+	e1il.append(InstructionConstants.DCMPG); // 0 | -1 | 1
+	e1il.append(InstructionConstants.ICONST_1);
+	e1il.append(InstructionConstants.IADD); // 1 | 0 | 2
+	e1il.append(InstructionConstants.ICONST_1);
+	e1il.append(InstructionConstants.ISHR); // 0 | 0 | 1
+	RESULT = e1il;
+    :}
+    |
+    expr:e1il LEQ expr:e2il
+    {:
+	e2il.append(e1il); // 3 <= 3 | 3 <= 5 | 5 <= 3
+	e2il.append(InstructionConstants.DCMPL); // 0 | 1 | -1
+	e2il.append(InstructionConstants.ICONST_2);
+	e2il.append(InstructionConstants.IADD); // 2 | 3 | 1
+	e2il.append(InstructionConstants.ICONST_1);
+	e2il.append(InstructionConstants.ISHR); // 1 | 1 | 0
+	RESULT = e2il;
+    :}
+    |
+    expr:e1il GEQ expr:e2il
+    {:
+	e1il.append(e2il); // 3 >= 3 | 3 >= 5 | 5 >= 3
+	e1il.append(InstructionConstants.DCMPG); // 0 | -1 | 1
+	e1il.append(InstructionConstants.ICONST_2);
+	e1il.append(InstructionConstants.IADD); // 2 | 1 | 3
+	e1il.append(InstructionConstants.ICONST_1);
+	e1il.append(InstructionConstants.ISHR); // 1 | 0 | 1
+	RESULT = e1il;
+    :}
+    |
+    condition:c1il AND condition:c2il
+    {:
+	c1il.append(c2il);
+	c1il.append(InstructionConstants.IAND);
+	RESULT = c1il;
+    :}
+    |
+    condition:c1il OR condition:c2il
+    {:
+	c1il.append(c2il);
+	c1il.append(InstructionConstants.IOR);
+	RESULT = c1il;
+    :}
+    |
+    NOT condition:cil
+    {:
+	cil.append(InstructionConstants.ICONST_1);
+	cil.append(InstructionConstants.IXOR);
+	RESULT = cil;
+    :}
+    |
+    LPAREN condition:cil RPAREN
+    {:
+	RESULT = cil;
+    :}
+    ;
+
+expr ::=
+    expr:e1il PLUS expr:e2il
+    {:
+	e1il.append(e2il);
+	e1il.append(InstructionConstants.DADD);
+	exprIsArray = false;
+	RESULT = e1il;
+    :}
+    |
+    expr:e1il MINUS expr:e2il
+    {:
+	e1il.append(e2il);
+	e1il.append(InstructionConstants.DSUB);
+	exprIsArray = false;
+	RESULT = e1il;
+    :}
+    |
+    expr:e1il STAR expr:e2il
+    {:
+	e1il.append(e2il);
+	e1il.append(InstructionConstants.DMUL);
+	exprIsArray = false;
+	RESULT = e1il;
+    :}
+    |
+    expr:e1il DIV expr:e2il
+    {:
+	e1il.append(e2il);
+	e1il.append(InstructionConstants.DDIV);
+	exprIsArray = false;
+	RESULT = e1il;
+    :}
+    |
+    expr:e1il POW expr:e2il
+    {:
+	e1il.append(e2il);
+	e1il.append(
+	    new INVOKESTATIC(cp.addMethodref("java.lang.Math",
+					     "pow", "(DD)D")));
+	exprIsArray = false;
+	RESULT = e1il;
+    :}
+    |
+    expr:e1il UNION expr:e2il
+    {:
+	// f2 | f1
+	e2il.append(e1il);
+	// f1 | f2 | f1
+	e2il.append(InstructionConstants.DUP2_X2);
+	// f1 | f2 | f1 | f1
+	e2il.append(InstructionConstants.DUP2);
+	// f1 | f2 | f1*f1
+	e2il.append(InstructionConstants.DMUL);
+	// f1 | f1*f1 | f2 | f1*f1
+	e2il.append(InstructionConstants.DUP2_X2);
+	// f1 | f1*f1 | f2
+	e2il.append(InstructionConstants.POP2);
+	// f1 | f2 | f1*f1 | f2
+	e2il.append(InstructionConstants.DUP2_X2);
+	// f1 | f2 | f1*f1 | f2 | f2
+	e2il.append(InstructionConstants.DUP2);
+	// f1 | f2 | f1*f2 | f2*f2
+	e2il.append(InstructionConstants.DMUL);
+	// f1 | f2 | f1*f1+f2*f2
+	e2il.append(InstructionConstants.DADD);
+	// f1 | f2 | sqrt(f1*f1+f2*f2)
+	e2il.append(
+	    new INVOKESTATIC(cp.addMethodref("java.lang.Math",
+					     "sqrt", "(D)D")));
+	// f1 | f2 + sqrt(f1*f2+f2*f2)
+	e2il.append(InstructionConstants.DADD);
+	// f1 + f2 + sqrt(f1*f1+f2*f2)
+	e2il.append(InstructionConstants.DADD);
+	exprIsArray = false;
+	RESULT = e2il;
+    :}
+    |
+    expr:e1il INTER expr:e2il
+    {:
+	e2il.append(e1il);
+	e2il.append(InstructionConstants.DUP2_X2);
+	e2il.append(InstructionConstants.DUP2);
+	e2il.append(InstructionConstants.DMUL);
+	e2il.append(InstructionConstants.DUP2_X2);
+	e2il.append(InstructionConstants.POP2);
+	e2il.append(InstructionConstants.DUP2_X2);
+	e2il.append(InstructionConstants.DUP2);
+	e2il.append(InstructionConstants.DMUL);
+	e2il.append(InstructionConstants.DADD);
+	e2il.append(
+	    new INVOKESTATIC(cp.addMethodref("java.lang.Math",
+					     "sqrt", "(D)D")));
+	e2il.append(InstructionConstants.DNEG);
+	e2il.append(InstructionConstants.DADD);
+	e2il.append(InstructionConstants.DADD);
+	exprIsArray = false;
+	RESULT = e2il;
+    :}
+    |
+    expr:e1il SUB expr:e2il
+    {:
+	e2il.append(e1il);
+	e2il.append(InstructionConstants.DUP2_X2);
+	e2il.append(InstructionConstants.DUP2);
+	e2il.append(InstructionConstants.DMUL);
+	e2il.append(InstructionConstants.DUP2_X2);
+	e2il.append(InstructionConstants.POP2);
+	e2il.append(InstructionConstants.DNEG);
+	e2il.append(InstructionConstants.DUP2_X2);
+	e2il.append(InstructionConstants.DUP2);
+	e2il.append(InstructionConstants.DMUL);
+	e2il.append(InstructionConstants.DADD);
+	e2il.append(
+	    new INVOKESTATIC(cp.addMethodref("java.lang.Math",
+					     "sqrt", "(D)D")));
+	e2il.append(InstructionConstants.DNEG);
+	e2il.append(InstructionConstants.DADD);
+	e2il.append(InstructionConstants.DADD);
+	exprIsArray = false;
+	RESULT = e2il;
+    :}
+    |
+    PLUS expr:eil
+    {:
+	exprIsArray = false;
+	RESULT = eil;
+    :} %prec UPLUS
+    |
+    MINUS expr:eil
+    {:
+	eil.append(InstructionConstants.DNEG);
+	exprIsArray = false;
+	RESULT = eil;
+    :} %prec UMINUS
+    |
+    NEG expr:eil
+    {:
+	eil.append(InstructionConstants.DNEG);
+	exprIsArray = false;
+	RESULT = eil;
+    :}
+    |
+    LPAREN expr:eil RPAREN
+    {:
+	RESULT = eil;
+    :}
+    |
+    function:fsil
+    {:
+	RESULT = fsil;
+    :}
+    |
+    ID:id
+    {:
+	RESULT = load(HFParameter.NUMBER, id, -1);
+    :}
+    |
+    NUM:n
+    {:
+	InstructionList lil = new InstructionList();
+	lil.append(new PUSH(cp, n.doubleValue()));
+	exprIsArray = false;
+	RESULT = lil;
+    :}
+    |
+    INT:i
+    {:
+	InstructionList lil = new InstructionList();
+	lil.append(new PUSH(cp, i.doubleValue()));
+	exprIsArray = false;
+	RESULT = lil;
+    :}
+    |
+    ID:id index:i
+    {:
+	RESULT = load(HFParameter.ARRAY, id, i.intValue());
+	exprIsArray = false;
+    :}
+    ;
+
+function ::=
+    UNARY1:us LPAREN expr:eil RPAREN
+    {:
+	eil.append(
+	    new INVOKESTATIC(cp.addMethodref("java.lang.Math",
+					     us, "(D)D")));
+	exprIsArray = false;
+	RESULT = eil;
+    :}
+    |
+    UNARY2:us LPAREN expr:eil RPAREN
+    {:
+	eil.append(
+	    new INVOKESTATIC(cp.addMethodref("java.lang.Math",
+					     "log", "(D)D")));
+	eil.append(new PUSH(cp, 2.30258509299404568401799145468));
+	eil.append(InstructionConstants.DDIV);
+	exprIsArray = false;
+	RESULT = eil;
+    :}
+    |
+    UNARY3:us LPAREN expr:eil RPAREN
+    {:
+	eil.append(
+	    new INVOKESTATIC(
+		cp.addMethodref("org.hyperfun.EmpiricalHyperFun.HyperClass",
+				us, "(D)D")));
+	exprIsArray = false;
+	RESULT = eil;
+    :}
+    |
+    BIN1:bs LPAREN expr:e1il COMMA expr:e2il RPAREN
+    {:
+	e1il.append(e2il);
+	e1il.append(
+	    new INVOKESTATIC(cp.addMethodref("java.lang.Math",
+					     bs, "(DD)D")));
+	exprIsArray = false;
+	RESULT = e1il;
+    :}
+    |
+    BIN2:bs LPAREN expr:e1il COMMA expr:e2il RPAREN
+    {:
+	e1il.append(e2il);
+	e1il.append(InstructionConstants.DREM);
+	exprIsArray = false;
+	// This may give the wrong result
+	RESULT = e1il;
+    :}
+    |
+    HFSPHERE LPAREN expr:xil COMMA expr:cil COMMA expr:ril RPAREN
+    {:
+	xil.append(cil);
+	xil.append(ril);
+	xil.append(
+	    new INVOKESTATIC(
+		cp.addMethodref("org.hyperfun.EmpiricalHyperFun.HyperClass",
+				"hfSphere", "([D[DD)D")));
+	exprIsArray = false;
+	RESULT = xil;
+    :}
+    |
+    HFELLIPSOID LPAREN expr:xil COMMA expr:cil COMMA expr:ail COMMA expr:bil COMMA expr:cvil RPAREN
+    {:
+	xil.append(cil);
+	xil.append(ail);
+	xil.append(bil);
+	xil.append(cvil);
+	xil.append(
+	    new INVOKESTATIC(
+		cp.addMethodref("org.hyperfun.EmpiricalHyperFun.HyperClass",
+				"hfEllipsoid", "([D[DDDD)D")));
+	exprIsArray = false;
+	RESULT = xil;
+    :}
+    |
+    HFCYLX LPAREN expr:xil COMMA expr:cil COMMA expr:ril RPAREN
+    {:
+	xil.append(cil);
+	xil.append(ril);
+	xil.append(
+	    new INVOKESTATIC(
+		cp.addMethodref("org.hyperfun.EmpiricalHyperFun.HyperClass",
+				"hfCylX", "([D[DD)D")));
+	exprIsArray = false;
+	RESULT = xil;
+    :}
+    |
+    HFCYLZ LPAREN expr:xil COMMA expr:cil COMMA expr:ril RPAREN
+    {:
+	xil.append(cil);
+	xil.append(ril);
+	xil.append(
+	    new INVOKESTATIC(
+		cp.addMethodref("org.hyperfun.EmpiricalHyperFun.HyperClass",
+				"hfCylZ", "([D[DD)D")));
+	exprIsArray = false;
+	RESULT = xil;
+    :}
+    |
+    HFCYLY LPAREN expr:xil COMMA expr:cil COMMA expr:ril RPAREN
+    {:
+	xil.append(cil);
+	xil.append(ril);
+	xil.append(
+	    new INVOKESTATIC(
+		cp.addMethodref("org.hyperfun.EmpiricalHyperFun.HyperClass",
+				"hfCylY", "([D[DD)D")));
+	exprIsArray = false;
+	RESULT = xil;
+    :}
+    |
+    HFELLCYLX LPAREN expr:xil COMMA expr:cil COMMA expr:ail COMMA expr:bil RPAREN
+    {:
+	xil.append(cil);
+	xil.append(ail);
+	xil.append(bil);
+	xil.append(
+	    new INVOKESTATIC(
+		cp.addMethodref("org.hyperfun.EmpiricalHyperFun.HyperClass",
+				"hfEllCylX", "([D[DDD)D")));
+	exprIsArray = false;
+	RESULT = xil;
+    :}
+    |
+    HFELLCYLY LPAREN expr:xil COMMA expr:cil COMMA expr:ail COMMA expr:bil RPAREN
+    {:
+	xil.append(cil);
+	xil.append(ail);
+	xil.append(bil);
+	xil.append(
+	    new INVOKESTATIC(
+		cp.addMethodref("org.hyperfun.EmpiricalHyperFun.HyperClass",
+				"hfEllCylY", "([D[DDD)D")));
+	exprIsArray = false;
+	RESULT = xil;
+    :}
+    |
+    HFELLCYLZ LPAREN expr:xil COMMA expr:cil COMMA expr:ail COMMA expr:bil RPAREN
+    {:
+	xil.append(cil);
+	xil.append(ail);
+	xil.append(bil);
+	xil.append(
+	    new INVOKESTATIC(
+		cp.addMethodref("org.hyperfun.EmpiricalHyperFun.HyperClass",
+				"hfEllCylZ", "([D[DDD)D")));
+	exprIsArray = false;
+	RESULT = xil;
+    :}
+    |
+    HFTORUSX LPAREN expr:xil COMMA expr:cil COMMA expr:ril COMMA expr:r0il RPAREN
+    {:
+	xil.append(cil);
+	xil.append(ril);
+	xil.append(r0il);
+	xil.append(
+	    new INVOKESTATIC(
+		cp.addMethodref("org.hyperfun.EmpiricalHyperFun.HyperClass",
+				"hfTorusX", "([D[DDD)D")));
+	exprIsArray = false;
+	RESULT = xil;
+    :}
+    |
+    HFTORUSY LPAREN expr:xil COMMA expr:cil COMMA expr:ril COMMA expr:r0il RPAREN
+    {:
+	xil.append(cil);
+	xil.append(ril);
+	xil.append(r0il);
+	xil.append(
+	    new INVOKESTATIC(
+		cp.addMethodref("org.hyperfun.EmpiricalHyperFun.HyperClass",
+				"hfTorusY", "([D[DDD)D")));
+	exprIsArray = false;
+	RESULT = xil;
+    :}
+    |
+    HFTORUSZ LPAREN expr:xil COMMA expr:cil COMMA expr:ril COMMA expr:r0il RPAREN
+    {:
+	xil.append(cil);
+	xil.append(ril);
+	xil.append(r0il);
+	xil.append(
+	    new INVOKESTATIC(
+		cp.addMethodref("org.hyperfun.EmpiricalHyperFun.HyperClass",
+				"hfTorusZ", "([D[DDD)D")));
+	exprIsArray = false;
+	RESULT = xil;
+    :}
+    |
+    HFBLOCK LPAREN expr:xil COMMA expr:vil COMMA expr:dxil COMMA expr:dyil COMMA expr:dzil RPAREN
+    {:
+	xil.append(vil);
+	xil.append(dxil);
+	xil.append(dyil);
+	xil.append(dzil);
+	xil.append(
+	    new INVOKESTATIC(
+		cp.addMethodref("org.hyperfun.EmpiricalHyperFun.HyperClass",
+				"hfBlock", "([D[DDDD)D")));
+	exprIsArray = false;
+	RESULT = xil;
+    :}
+    |
+    HFBLOBBY LPAREN expr:xil COMMA expr:x0il COMMA expr:y0il COMMA expr:z0il COMMA expr:ail COMMA expr:bil COMMA expr:til RPAREN
+    {:
+	xil.append(x0il);
+	xil.append(y0il);
+	xil.append(z0il);
+	xil.append(ail);
+	xil.append(bil);
+	xil.append(til);
+	xil.append(
+	    new INVOKESTATIC(
+		cp.addMethodref("org.hyperfun.EmpiricalHyperFun.HyperClass",
+				"hfBlobby", "([D[D[D[D[D[DD)D")));
+	exprIsArray = false;
+	RESULT = xil;
+    :}
+    |
+    HFMETABALL LPAREN expr:xil COMMA expr:x0il COMMA expr:y0il COMMA expr:z0il COMMA expr:bil COMMA expr:dil COMMA expr:til RPAREN
+    {:
+	xil.append(x0il);
+	xil.append(y0il);
+	xil.append(z0il);
+	xil.append(bil);
+	xil.append(dil);
+	xil.append(til);
+	xil.append(
+	    new INVOKESTATIC(
+		cp.addMethodref("org.hyperfun.EmpiricalHyperFun.HyperClass",
+				"hfMetaBall", "([D[D[D[D[D[DD)D")));
+	exprIsArray = false;
+	RESULT = xil;
+    :}
+    |
+    HFSOFT LPAREN expr:xil COMMA expr:x0il COMMA expr:y0il COMMA expr:z0il COMMA expr:dil COMMA expr:til RPAREN
+    {:
+	xil.append(x0il);
+	xil.append(y0il);
+	xil.append(z0il);
+	xil.append(dil);
+	xil.append(til);
+	xil.append(
+	    new INVOKESTATIC(
+		cp.addMethodref("org.hyperfun.EmpiricalHyperFun.HyperClass",
+				"hfSoft", "([D[D[D[D[DD)D")));
+	exprIsArray = false;
+	RESULT = xil;
+    :}
+    |
+    HFBLENDUNI LPAREN expr:f1il COMMA expr:f2il COMMA expr:a0il COMMA expr:a1il COMMA expr:a2il RPAREN
+    {:
+	f1il.append(f2il);
+	f1il.append(a0il);
+	f1il.append(a1il);
+	f1il.append(a2il);
+	f1il.append(
+	    new INVOKESTATIC(
+		cp.addMethodref("org.hyperfun.EmpiricalHyperFun.HyperClass",
+				"hfBlendUni", "(DDDDD)D")));
+	exprIsArray = false;
+	RESULT = f1il;
+    :}
+    |
+    HFBLENDINT LPAREN expr:f1il COMMA expr:f2il COMMA expr:a0il COMMA expr:a1il COMMA expr:a2il RPAREN
+    {:
+	f1il.append(f2il);
+	f1il.append(a0il);
+	f1il.append(a1il);
+	f1il.append(a2il);
+	f1il.append(
+	    new INVOKESTATIC(
+		cp.addMethodref("org.hyperfun.EmpiricalHyperFun.HyperClass",
+				"hfBlendInt", "(DDDDD)D")));
+	exprIsArray = false;
+	RESULT = f1il;
+    :}
+    |
+    HFSCALE3D LPAREN expr:xil COMMA expr:sxil COMMA expr:syil COMMA expr:szil RPAREN
+    {:
+	xil.append(sxil);
+	xil.append(syil);
+	xil.append(szil);
+	xil.append(
+	    new INVOKESTATIC(
+		cp.addMethodref("org.hyperfun.EmpiricalHyperFun.HyperClass",
+				"hfScale3D", "([DDDD)D")));
+	exprIsArray = false;
+	RESULT = xil;
+    :}
+    |
+    HFSHIFT3D LPAREN expr:xil COMMA expr:dxil COMMA expr:dyil COMMA expr:dzil RPAREN
+    {:
+	xil.append(dxil);
+	xil.append(dyil);
+	xil.append(dzil);
+	xil.append(
+	    new INVOKESTATIC(
+		cp.addMethodref("org.hyperfun.EmpiricalHyperFun.HyperClass",
+				"hfShift3D", "([DDDD)D")));
+	exprIsArray = false;
+	RESULT = xil;
+    :}
+    |
+    HFROTATE3DX LPAREN expr:xil COMMA expr:til RPAREN
+    {:
+	xil.append(til);
+	xil.append(
+	    new INVOKESTATIC(
+		cp.addMethodref("org.hyperfun.EmpiricalHyperFun.HyperClass",
+				"hfRotate3DX", "([DD)D")));
+	exprIsArray = false;
+	RESULT = xil;
+    :}
+    |
+    HFROTATE3DY LPAREN expr:xil COMMA expr:til RPAREN
+    {:
+	xil.append(til);
+	xil.append(
+	    new INVOKESTATIC(
+		cp.addMethodref("org.hyperfun.EmpiricalHyperFun.HyperClass",
+				"hfRotate3DY", "([DD)D")));
+	exprIsArray = false;
+	RESULT = xil;
+    :}
+    |
+    HFROTATE3DZ LPAREN expr:xil COMMA expr:til RPAREN
+    {:
+	xil.append(til);
+	xil.append(
+	    new INVOKESTATIC(
+		cp.addMethodref("org.hyperfun.EmpiricalHyperFun.HyperClass",
+				"hfRotate3DZ", "([DD)D")));
+	exprIsArray = false;
+	RESULT = xil;
+    :}
+    |
+    HFTWISTX LPAREN expr:xil COMMA expr:x1il COMMA expr:x2il COMMA expr:t1il COMMA expr:t2il RPAREN
+    {:
+	xil.append(x1il);
+	xil.append(x2il);
+	xil.append(t1il);
+	xil.append(t2il);
+	xil.append(
+	    new INVOKESTATIC(
+		cp.addMethodref("org.hyperfun.EmpiricalHyperFun.HyperClass",
+				"hfTwistX", "([DDDDD)D")));
+	exprIsArray = false;
+	RESULT = xil;
+    :}
+    |
+    HFTWISTY LPAREN expr:xil COMMA expr:x1il COMMA expr:x2il COMMA expr:t1il COMMA expr:t2il RPAREN
+    {:
+	xil.append(x1il);
+	xil.append(x2il);
+	xil.append(t1il);
+	xil.append(t2il);
+	xil.append(
+	    new INVOKESTATIC(
+		cp.addMethodref("org.hyperfun.EmpiricalHyperFun.HyperClass",
+				"hfTwistY", "([DDDDD)D")));
+	exprIsArray = false;
+	RESULT = xil;
+    :}
+    |
+    HFTWISTZ LPAREN expr:xil COMMA expr:x1il COMMA expr:x2il COMMA expr:t1il COMMA expr:t2il RPAREN
+    {:
+	xil.append(x1il);
+	xil.append(x2il);
+	xil.append(t1il);
+	xil.append(t2il);
+	xil.append(
+	    new INVOKESTATIC(
+		cp.addMethodref("org.hyperfun.EmpiricalHyperFun.HyperClass",
+				"hfTwistZ", "([DDDDD)D")));
+	exprIsArray = false;
+	RESULT = xil;
+    :}
+    |
+    HFSTRETCH3D LPAREN expr:xil COMMA expr:x0il COMMA expr:sxil COMMA expr:syil COMMA expr:szil RPAREN
+    {:
+	xil.append(x0il);
+	xil.append(sxil);
+	xil.append(syil);
+	xil.append(szil);
+	xil.append(
+	    new INVOKESTATIC(
+		cp.addMethodref("org.hyperfun.EmpiricalHyperFun.HyperClass",
+				"hfStretch3D", "([D[DDDD)D")));
+	exprIsArray = false;
+	RESULT = xil;
+    :}
+    |
+    HFTAPERX LPAREN expr:xil COMMA expr:x1il COMMA expr:x2il COMMA expr:s1il COMMA expr:s2il RPAREN
+    {:
+	xil.append(x1il);
+	xil.append(x2il);
+	xil.append(s1il);
+	xil.append(s2il);
+	xil.append(
+	    new INVOKESTATIC(
+		cp.addMethodref("org.hyperfun.EmpiricalHyperFun.HyperClass",
+				"hfTaperX", "([DDDDD)D")));
+	exprIsArray = false;
+	RESULT = xil;
+    :}
+    |
+    HFTAPERY LPAREN expr:xil COMMA expr:x1il COMMA expr:x2il COMMA expr:s1il COMMA expr:s2il RPAREN
+    {:
+	xil.append(x1il);
+	xil.append(x2il);
+	xil.append(s1il);
+	xil.append(s2il);
+	xil.append(
+	    new INVOKESTATIC(
+		cp.addMethodref("org.hyperfun.EmpiricalHyperFun.HyperClass",
+				"hfTaperY", "([DDDDD)D")));
+	exprIsArray = false;
+	RESULT = xil;
+    :}
+    |
+    HFTAPERZ LPAREN expr:xil COMMA expr:x1il COMMA expr:x2il COMMA expr:s1il COMMA expr:s2il RPAREN
+    {:
+	xil.append(x1il);
+	xil.append(x2il);
+	xil.append(s1il);
+	xil.append(s2il);
+	xil.append(
+	    new INVOKESTATIC(
+		cp.addMethodref("org.hyperfun.EmpiricalHyperFun.HyperClass",
+				"hfTaperZ", "([DDDDD)D")));
+	exprIsArray = false;
+	RESULT = xil;
+    :}
+    |
+    HFCONVARC LPAREN expr:xil COMMA expr:centeril COMMA expr:radiusil COMMA expr:thetail COMMA expr:axisil COMMA expr:angleil COMMA expr:Sil COMMA expr:Til RPAREN
+    {:
+	xil.append(centeril);
+	xil.append(radiusil);
+	xil.append(thetail);
+	xil.append(axisil);
+	xil.append(angleil);
+	xil.append(Sil);
+	xil.append(Til);
+	xil.append(
+	    new INVOKESTATIC(
+		cp.addMethodref("org.hyperfun.EmpiricalHyperFun.HyperClass",
+				"hfConvArc", "([D[D[D[D[D[D[DD)D")));
+	exprIsArray = false;
+	RESULT = xil;
+    :}
+    |
+    HFCONVCURVE LPAREN expr:xil COMMA expr:vectil COMMA expr:Sil COMMA expr:Til RPAREN
+    {:
+	xil.append(vectil);
+	xil.append(Sil);
+	xil.append(Til);
+	xil.append(
+	    new INVOKESTATIC(
+		cp.addMethodref("org.hyperfun.EmpiricalHyperFun.HyperClass",
+				"hfConvCurve", "([D[D[DD)D")));
+	exprIsArray = false;
+	RESULT = xil;
+    :}
+    |
+    HFCONVLINE LPAREN expr:xil COMMA expr:beginil COMMA expr:endil COMMA expr:Sil COMMA expr:Til RPAREN
+    {:
+	xil.append(beginil);
+	xil.append(endil);
+	xil.append(Sil);
+	xil.append(Til);
+	xil.append(
+	    new INVOKESTATIC(
+		cp.addMethodref("org.hyperfun.EmpiricalHyperFun.HyperClass",
+				"hfConvLine", "([D[D[D[DD)D")));
+	exprIsArray = false;
+	RESULT = xil;
+    :}
+    |
+    HFCONVMESH LPAREN expr:xil COMMA expr:vectil COMMA expr:triil COMMA expr:Sil COMMA expr:Til RPAREN
+    {:
+	xil.append(vectil);
+	xil.append(triil);
+	xil.append(Sil);
+	xil.append(Til);
+	xil.append(
+	    new INVOKESTATIC(
+		cp.addMethodref("org.hyperfun.EmpiricalHyperFun.HyperClass",
+				"hfConvMesh", "([D[D[D[DD)D")));
+	exprIsArray=false;
+	RESULT = xil;
+    :}
+    |
+    HFCONVPOINT LPAREN expr:xil COMMA expr:vectil COMMA expr:Sil COMMA expr:Til RPAREN
+    {:
+	xil.append(vectil);
+	xil.append(Sil);
+	xil.append(Til);
+	xil.append(
+	    new INVOKESTATIC(
+		cp.addMethodref("org.hyperfun.EmpiricalHyperFun.HyperClass",
+				"hfConvPoint", "([D[D[DD)D")));
+	exprIsArray=false;
+	RESULT = xil;
+    :}
+    |
+    HFCONVTRIANGLE LPAREN expr:xil COMMA expr:vectil COMMA expr:Sil COMMA expr:Til RPAREN
+    {:
+	xil.append(vectil);
+	xil.append(Sil);
+	xil.append(Til);
+	xil.append(
+	    new INVOKESTATIC(
+		cp.addMethodref("org.hyperfun.EmpiricalHyperFun.HyperClass",
+				"hfConvTriangle", "([D[D[DD)D")));
+	exprIsArray = false;
+	RESULT = xil;
+    :}
+    |
+    HFCONVLINER LPAREN expr:xil COMMA expr:beginil COMMA expr:endil COMMA expr:Ril RPAREN
+    {:
+	xil.append(beginil);
+	xil.append(endil);
+	xil.append(Ril);
+	xil.append(
+	    new INVOKESTATIC(
+		cp.addMethodref("org.hyperfun.EmpiricalHyperFun.HyperClass",
+				"hfConvLineR", "([D[D[DD)D")));
+	exprIsArray = false;
+	RESULT = xil;
+    :}
+    |
+    HFCONEX LPAREN expr:xil COMMA expr:centeril COMMA expr:Ril RPAREN
+    {:
+	xil.append(centeril);
+	xil.append(Ril);
+	xil.append(
+	    new INVOKESTATIC(
+		cp.addMethodref("org.hyperfun.EmpiricalHyperFun.HyperClass",
+				"hfConeX", "([D[DD)D")));
+	exprIsArray = false;
+	RESULT = xil;
+    :}
+    |
+    HFCONEY LPAREN expr:xil COMMA expr:centeril COMMA expr:Ril RPAREN
+    {:
+	xil.append(centeril);
+	xil.append(Ril);
+	xil.append(
+	    new INVOKESTATIC(
+		cp.addMethodref("org.hyperfun.EmpiricalHyperFun.HyperClass",
+				"hfConeY", "([D[DD)D")));
+	exprIsArray = false;
+	RESULT = xil;
+    :}
+    |
+    HFCONEZ LPAREN expr:xil COMMA expr:centeril COMMA expr:Ril RPAREN
+    {:
+	xil.append(centeril);
+	xil.append(Ril);
+	xil.append(
+	    new INVOKESTATIC(
+		cp.addMethodref("org.hyperfun.EmpiricalHyperFun.HyperClass",
+				"hfConeZ", "([D[DD)D")));
+	exprIsArray = false;
+	RESULT = xil;
+    :}
+    |
+    HFELLCONEX LPAREN expr:xil COMMA expr:centeril COMMA expr:ail COMMA expr:bil RPAREN
+    {:
+	xil.append(centeril);
+	xil.append(ail);
+	xil.append(bil);
+	xil.append(
+	    new INVOKESTATIC(
+		cp.addMethodref("org.hyperfun.EmpiricalHyperFun.HyperClass",
+				"hfEllConeX", "([D[DDD)D")));
+	exprIsArray = false;
+	RESULT = xil;
+    :}
+    |
+    HFELLCONEY LPAREN expr:xil COMMA expr:centeril COMMA expr:ail COMMA expr:bil RPAREN
+    {:
+	xil.append(centeril);
+	xil.append(ail);
+	xil.append(bil);
+	xil.append(
+	    new INVOKESTATIC(
+		cp.addMethodref("org.hyperfun.EmpiricalHyperFun.HyperClass",
+				"hfEllConeY", "([D[DDD)D")));
+	exprIsArray = false;
+	RESULT = xil;
+    :}
+    |
+    HFELLCONEZ LPAREN expr:xil COMMA expr:centeril COMMA expr:ail COMMA expr:bil RPAREN
+    {:
+	xil.append(centeril);
+	xil.append(ail);
+	xil.append(bil);
+	xil.append(
+	    new INVOKESTATIC(
+		cp.addMethodref("org.hyperfun.EmpiricalHyperFun.HyperClass",
+				"hfEllConeZ", "([D[DDD)D")));
+	exprIsArray = false;
+	RESULT = xil;
+    :}
+    |
+    HFFMAPBLOB LPAREN expr:xil COMMA expr:fil COMMA expr:x0il COMMA expr:y0il COMMA expr:z0il COMMA expr:fobj0il COMMA expr:sigmail RPAREN
+    {:
+	xil.append(fil);
+	xil.append(x0il);
+	xil.append(y0il);
+	xil.append(z0il);
+	xil.append(fobj0il);
+	xil.append(sigmail);
+	xil.append(
+	    new INVOKESTATIC(
+		cp.addMethodref("org.hyperfun.EmpiricalHyperFun.HyperClass",
+				"hfFMapBlob", "([DDDDD[D[D)D")));
+	exprIsArray = false;
+	RESULT = xil;
+    :}
+    |
+    HFNOISEG LPAREN expr:xil COMMA expr:ampil COMMA expr:freqil COMMA expr:phaseil RPAREN
+    {:
+	xil.append(ampil);
+	xil.append(freqil);
+	xil.append(phaseil);
+	xil.append(
+	    new INVOKESTATIC(
+		cp.addMethodref("org.hyperfun.EmpiricalHyperFun.HyperClass",
+				"hfNoiseG", "([DDDD)D")));
+	exprIsArray = false;
+	RESULT = xil;
+    :}
+    |
+    HFSPACEMAPCUBIC LPAREN expr:xil COMMA expr:sourceil COMMA expr:targetil COMMA expr:bil RPAREN
+    {:
+	xil.append(sourceil);
+	xil.append(targetil);
+	xil.append(bil);
+	xil.append(
+	    new INVOKESTATIC(
+		cp.addMethodref("org.hyperfun.EmpiricalHyperFun.HyperClass",
+				"hfSpaceMapCubic", "([D[D[D[D)D")));
+	exprIsArray = false;
+	RESULT = xil;
+    :}
+    |
+    HFSPACEMAPEXP LPAREN expr:xil COMMA expr:sourceil COMMA expr:targetil COMMA expr:bil RPAREN
+    {:
+	xil.append(sourceil);
+	xil.append(targetil);
+	xil.append(bil);
+	xil.append(
+	    new INVOKESTATIC(
+		cp.addMethodref("org.hyperfun.EmpiricalHyperFun.HyperClass",
+				"hfSpaceMapExp", "([D[D[D[D)D")));
+	exprIsArray = false;
+	RESULT = xil;
+    :}
+    |
+    HFSUPERELL LPAREN expr:xil COMMA expr:centeril COMMA expr:ail COMMA expr:bil COMMA expr:cil COMMA expr:s1il COMMA expr:s2il RPAREN
+    {:
+	xil.append(centeril);
+	xil.append(ail);
+	xil.append(bil);
+	xil.append(cil);
+	xil.append(s1il);
+	xil.append(s2il);
+	xil.append(
+	    new INVOKESTATIC(
+		cp.addMethodref("org.hyperfun.EmpiricalHyperFun.HyperClass",
+				"hfSuperEll", "([D[DDDDDD)D")));
+	exprIsArray = false;
+	RESULT = xil;
+    :}
+    |
+    ID:id LPAREN expr:xil COMMA expr:ail RPAREN
+    {:
+	InstructionList lil = new InstructionList();
+
+	if (symbols.containsKey(id)) {
+	    HFParameter hfp = (HFParameter)symbols.get(id);
+
+	    if ((hfp.local == true) || (hfp.type != HFParameter.FUNCTION)) {
+		errors.add("Reference to variable or array " + id +
+			   " as if another HyperFun object " +
+			   "at line " + scnr.getCurrentLine());
+	    } else {
+		lil.append(new ALOAD(0));
+		lil.append(new GETFIELD(hfp.getIndex()));
+		lil.append(xil);
+		lil.append(ail);
+		lil.append(new ICONST(0));
+		lil.append(new NEWARRAY(Constants.T_DOUBLE)); 
+		lil.append(
+		    new INVOKEVIRTUAL(
+			cp.addMethodref("EmpiricalHyperFun.FrepType",
+					"f", "([D[D[D)D")));
+	    }
+	} else {
+	    errors.add("Could not find local HyperFun object " +
+		       "with name " + id + " at line " +
+		       scnr.getCurrentLine());
+	}
+	RESULT = lil;
+    :}
+    |
+    ID:id LPAREN expr:xil COMMA expr:ail COMMA expr:sil RPAREN
+    {:
+	InstructionList lil = new InstructionList();
+
+	if (symbols.containsKey(id)) {
+	    HFParameter hfp = (HFParameter)symbols.get(id);
+
+	    if ((hfp.local == true) || (hfp.type != HFParameter.FUNCTION)) {
+		errors.add("Reference to variable or array " + id +
+			   " as if another HyperFun object " +
+			   "at line " + scnr.getCurrentLine());
+	    } else {
+		lil.append(new ALOAD(0));
+		lil.append(new GETFIELD(hfp.getIndex()));
+		lil.append(xil);
+		lil.append(ail);
+		lil.append(sil);
+		lil.append(
+		    new INVOKEVIRTUAL(
+			cp.addMethodref("EmpiricalHyperFun.FrepType",
+					"f", "([D[D[D)D")));
+	    }
+	} else {
+	    errors.add("Could not find local HyperFun object " +
+		       "with name " + id + " at line " +
+		       scnr.getCurrentLine());
+	}
+	RESULT = lil;
+    :}
+    |
+    ID:i1 LSQ ID:i2 RSQ
+    {:
+	InstructionList eil = new InstructionList();
+	int ref1, ref2;
+
+	if (symbols.containsKey(i1)) {
+	    ref1 = ((Integer)symbols.get(i1)).intValue();
+	    eil.append(new ALOAD(ref1));
+	    if (symbols.containsKey(i2)) {
+		ref2 = ((Integer)symbols.get(i2)).intValue();
+		eil.append(new DLOAD(ref2));
+		eil.append(InstructionConstants.D2I);
+		eil.append(InstructionConstants.DALOAD);
+	    } else {
+		errors.add("Cannot find local variable " + i2 + ".");
+		eil.append(InstructionConstants.DCONST_0);
+	    }
+	} else {
+	    errors.add("Cannot find array variable " + i1 + ".");
+	    eil.append(InstructionConstants.DCONST_0);
+	}
+	RESULT = eil;
+    :}
+    |
+    ID:id1 DOT ID:id2
+    {:
+	InstructionList lil = new InstructionList();
+
+	if (symbols.containsKey(id1)) {
+	    HFParameter hfp = (HFParameter)symbols.get(id1);
+
+	    if ((hfp.local == true) || (hfp.type != HFParameter.FUNCTION)) {
+		errors.add("Reference to variable or array " + id1 +
+			   " as if another HyperFun object " +
+			   "at line " + scnr.getCurrentLine());
+	    } else {
+		if (id2.equals("minx") || id2.equals("miny") ||
+		    id2.equals("minz") || id2.equals("maxx") ||
+		    id2.equals("maxy") || id2.equals("maxz")) {
+		    lil.append(new ALOAD(0));
+		    lil.append(new GETFIELD(hfp.getIndex()));
+		    lil.append(new ICONST(0));
+		    lil.append(new NEWARRAY(Constants.T_DOUBLE));
+		    lil.append(new ALOAD(0));
+		    lil.append(new GETFIELD(hfp.getIndex()));
+		    lil.append(new GETFIELD(
+			cp.addFieldref("EmpiricalHyperFun.FrepType",
+				       "a", "[D")));
+		    lil.append(new ICONST(0));
+		    lil.append(new NEWARRAY(Constants.T_DOUBLE));
+		    lil.append(
+			new INVOKEVIRTUAL(
+			    cp.addMethodref("EmpiricalHyperFun.FrepType",
+					    id2, "([D[D[D)D")));
+		} else {
+		    if (id2.equals("a")) {
+			lil.append(new ALOAD(0));
+			lil.append(new GETFIELD(hfp.getIndex()));
+			lil.append(new GETFIELD(
+			    cp.addFieldref("EmpiricalHyperFun.FrepType",
+					   "a", "[D")));
+		    } else {
+			errors.add("Parameter " + id2 + " cannot be " +
+				   "accessed in HyperFun object " + id1 + " in " +
+				   "this implementation.");
+		    }
+		}
+	    }
+	} else {
+	    errors.add("Could not find local HyperFun object " +
+		       "with name " + id1 + " at line " +
+		       scnr.getCurrentLine());
+	}
+	RESULT = lil;
+    :}
+    |
+    ID:id1 DOT ID:id2 LPAREN expr:ail RPAREN
+    {:
+	InstructionList lil = new InstructionList();
+
+	if (symbols.containsKey(id1)) {
+	    HFParameter hfp = (HFParameter)symbols.get(id1);
+
+	    if ((hfp.local == true) || (hfp.type != HFParameter.FUNCTION)) {
+		errors.add("Reference to variable or array " + id1 +
+			   " as if another HyperFun object " +
+			   "at line " + scnr.getCurrentLine());
+	    } else {
+		if (id2.equals("minx") || id2.equals("miny") ||
+		    id2.equals("minz") || id2.equals("maxx") ||
+		    id2.equals("maxy") || id2.equals("maxz")) {
+		    lil.append(new ALOAD(0));
+		    lil.append(new GETFIELD(hfp.getIndex()));
+		    lil.append(new ICONST(0));
+		    lil.append(new NEWARRAY(Constants.T_DOUBLE));
+		    lil.append(ail);
+		    lil.append(new ICONST(0));
+		    lil.append(new NEWARRAY(Constants.T_DOUBLE));
+		    lil.append(
+			new INVOKEVIRTUAL(
+			    cp.addMethodref("EmpiricalHyperFun.FrepType",
+					    id2, "([D[D[D)D")));
+		} else {
+		    errors.add("Function " + id2 + " is not available " +
+			       "in HyperFun object " + id1 + ".");
+		}
+	    }
+	} else {
+	    errors.add("Could not find local HyperFun object " +
+		       "with name " + id1 + " at line " +
+		       scnr.getCurrentLine());
+	}
+	RESULT = lil;
+    :}
+    |
+    ID:id1 DOT ID:id2 LPAREN expr:ail COMMA expr:sil RPAREN
+    {:
+	InstructionList lil = new InstructionList();
+
+	if (symbols.containsKey(id1)) {
+	    HFParameter hfp = (HFParameter)symbols.get(id1);
+
+	    if ((hfp.local == true) || (hfp.type != HFParameter.FUNCTION)) {
+		errors.add("Reference to variable or array " + id1 +
+			   " as if another HyperFun object " +
+			   "at line " + scnr.getCurrentLine());
+	    } else {
+		if (id2.equals("minx") || id2.equals("miny") ||
+		    id2.equals("minz") || id2.equals("maxx") ||
+		    id2.equals("maxy") || id2.equals("maxz")) {
+		    lil.append(new ALOAD(0));
+		    lil.append(new GETFIELD(hfp.getIndex()));
+		    lil.append(new ICONST(0));
+		    lil.append(new NEWARRAY(Constants.T_DOUBLE));
+		    lil.append(ail);
+		    lil.append(sil);
+		    lil.append(
+			new INVOKEVIRTUAL(
+			    cp.addMethodref("EmpiricalHyperFun.FrepType",
+					    id2, "([D[D[D)D")));
+		} else {
+		    errors.add("Function " + id2 + " is not available " +
+			       "in HyperFun object " + id1 + ".");
+		}
+	    }
+	} else {
+	    errors.add("Could not find local HyperFun object " +
+		       "with name " + id1 + " at line " +
+		       scnr.getCurrentLine());
+	}
+	RESULT = lil;
+    :}
+    ;

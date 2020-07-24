@@ -1,0 +1,54 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2047
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cppinterpreter_lib", "cppinterpreter_lib\cppinterpreter_lib.vcxproj", "{0C81D158-9282-42E2-9103-B844323902A6}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "hflibrary_lib", "hflibrary_lib\hflibrary_lib.vcxproj", "{1817CB88-744D-4990-88A7-19DB596805BC}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "hfp_gl", "hfp_gl\hfp_gl.vcxproj", "{BCFAC49F-6DD8-4691-947F-43C6AC039153}"
+	ProjectSection(ProjectDependencies) = postProject
+		{556F1C4B-21D8-442D-BBBB-866FC1315405} = {556F1C4B-21D8-442D-BBBB-866FC1315405}
+		{0C81D158-9282-42E2-9103-B844323902A6} = {0C81D158-9282-42E2-9103-B844323902A6}
+		{1817CB88-744D-4990-88A7-19DB596805BC} = {1817CB88-744D-4990-88A7-19DB596805BC}
+		{51AF499E-424D-45EA-9E16-379E6704420D} = {51AF499E-424D-45EA-9E16-379E6704420D}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "interpreter_lib", "interpreter_lib\interpreter_lib.vcxproj", "{556F1C4B-21D8-442D-BBBB-866FC1315405}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "polygon_engine_lib", "polygon_engine_lib\polygon_engine_lib.vcxproj", "{51AF499E-424D-45EA-9E16-379E6704420D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0C81D158-9282-42E2-9103-B844323902A6}.Debug|Win32.ActiveCfg = Debug|Win32
+		{0C81D158-9282-42E2-9103-B844323902A6}.Debug|Win32.Build.0 = Debug|Win32
+		{0C81D158-9282-42E2-9103-B844323902A6}.Release|Win32.ActiveCfg = Release|Win32
+		{0C81D158-9282-42E2-9103-B844323902A6}.Release|Win32.Build.0 = Release|Win32
+		{1817CB88-744D-4990-88A7-19DB596805BC}.Debug|Win32.ActiveCfg = Debug|Win32
+		{1817CB88-744D-4990-88A7-19DB596805BC}.Debug|Win32.Build.0 = Debug|Win32
+		{1817CB88-744D-4990-88A7-19DB596805BC}.Release|Win32.ActiveCfg = Release|Win32
+		{1817CB88-744D-4990-88A7-19DB596805BC}.Release|Win32.Build.0 = Release|Win32
+		{BCFAC49F-6DD8-4691-947F-43C6AC039153}.Debug|Win32.ActiveCfg = Debug|Win32
+		{BCFAC49F-6DD8-4691-947F-43C6AC039153}.Debug|Win32.Build.0 = Debug|Win32
+		{BCFAC49F-6DD8-4691-947F-43C6AC039153}.Release|Win32.ActiveCfg = Release|Win32
+		{BCFAC49F-6DD8-4691-947F-43C6AC039153}.Release|Win32.Build.0 = Release|Win32
+		{556F1C4B-21D8-442D-BBBB-866FC1315405}.Debug|Win32.ActiveCfg = Debug|Win32
+		{556F1C4B-21D8-442D-BBBB-866FC1315405}.Debug|Win32.Build.0 = Debug|Win32
+		{556F1C4B-21D8-442D-BBBB-866FC1315405}.Release|Win32.ActiveCfg = Release|Win32
+		{556F1C4B-21D8-442D-BBBB-866FC1315405}.Release|Win32.Build.0 = Release|Win32
+		{51AF499E-424D-45EA-9E16-379E6704420D}.Debug|Win32.ActiveCfg = Debug|Win32
+		{51AF499E-424D-45EA-9E16-379E6704420D}.Debug|Win32.Build.0 = Debug|Win32
+		{51AF499E-424D-45EA-9E16-379E6704420D}.Release|Win32.ActiveCfg = Release|Win32
+		{51AF499E-424D-45EA-9E16-379E6704420D}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7A22DABA-EF7A-47FE-9103-6E0E8B7B845F}
+	EndGlobalSection
+EndGlobal

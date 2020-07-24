@@ -47,11 +47,13 @@ stats statsf_weugene (scalar f, scalar fs)
         dvr = dv()*(1. - fs[]);
         val = f[]*(1. - fs[]);
         volume += dvr;
-        sum    += val;
+        sum    += f[]*dvr;
         sum2   += dvr*sq(f[]);
         if (val > max) max = val;
         if (val < min) min = val;
+//        fprintf(ferr, "val=%g\n", val);
     }
+    fprintf(ferr, "sum=%g\n", sum);
     stats s;
     s.min = min, s.max = max, s.sum = sum, s.volume = volume;
     if (volume > 0.)
@@ -74,6 +76,7 @@ stats statsf_weugene2 (scalar f, scalar fs)
         if (f[] > max) max = f[];
         if (f[] < min) min = f[];
     }
+    fprintf(ferr, "sum=%g\n", sum);
     stats s;
     s.min = min, s.max = max, s.sum = sum, s.volume = volume;
     if (volume > 0.)

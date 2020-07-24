@@ -242,4 +242,5 @@ event adapt (i++){
 //    MinMaxValues(ADAPT_SCALARS, eps_arr);
     adapt_wavelet ((scalar *) {u.x, u.y, f, fs}, (double[]){eps, eps, eps, eps}, maxlevel = maxlevel, minlevel = minlevel);
 }
+
 event stop(t = 17);

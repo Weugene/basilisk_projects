@@ -28,9 +28,12 @@ Here we implement the multigrid cycle proper. Given an initial guess
 *a*, a residual *res*, a correction field *da* and a relaxation
 function *relax*, we will provide an improved guess at the end of the
 cycle. */
+#undef SEPS
+#define SEPS 1e-12
 
+bool relative_residual_poisson = false;
 void mg_cycle (scalar * a, scalar * res, scalar * da,
-	       void (* relax) (scalar * da, scalar * res, 
+	       void (* relax) (scalar * da, scalar * res,
 			       int depth, void * data),
 	       void * data,
 	       int nrelax, int minlevel, int maxlevel)
@@ -53,8 +56,8 @@ void mg_cycle (scalar * a, scalar * res, scalar * da,
 
     if (l == minlevel)
       foreach_level_or_leaf (l)
-	for (scalar s in da)
-	  s[] = 0.;
+        for (scalar s in da)
+          s[] = 0.;
 
     /**
     On all other grids, we take as initial guess the approximate solution
@@ -62,8 +65,8 @@ void mg_cycle (scalar * a, scalar * res, scalar * da,
 
     else
       foreach_level (l)
-	for (scalar s in da)
-	  s[] = bilinear (point, s);
+        for (scalar s in da)
+          s[] = bilinear (point, s);
 
     /**
     We then apply homogeneous boundary conditions and do several
@@ -92,7 +95,7 @@ void mg_cycle (scalar * a, scalar * res, scalar * da,
 
 The multigrid solver itself uses successive calls to the multigrid
 cycle to refine an initial guess until a specified tolerance is
-reached. 
+reached.
 
 The maximum number of iterations is controlled by *NITERMAX* and the
 tolerance by *TOLERANCE* with the default values below. */
@@ -124,10 +127,10 @@ struct MGSolve {
   scalar * a, * b;
   double (* residual) (scalar * a, scalar * b, scalar * res,
 		       void * data);
-  void (* relax) (scalar * da, scalar * res, int depth, 
+  void (* relax) (scalar * da, scalar * res, int depth,
 		  void * data);
   void * data;
-  
+
   int nrelax;
   scalar * res;
   int minlevel;
@@ -156,7 +159,7 @@ mgstats mg_solve (struct MGSolve p)
   for (int b = 0; b < nboundary; b++)
     for (scalar s in da)
       s.boundary[b] = s.boundary_homogeneous[b];
-  
+
   /**
   We initialise the structure storing convergence statistics. */
 
@@ -167,7 +170,7 @@ mgstats mg_solve (struct MGSolve p)
       sum += s[];
   s.sum = sum;
   s.nrelax = p.nrelax > 0 ? p.nrelax : 4;
-  
+
   /**
   Here we compute the initial residual field and its maximum. */
 
@@ -201,9 +204,9 @@ mgstats mg_solve (struct MGSolve p)
 #if 1
     if (s.resa > TOLERANCE) {
       if (resb/s.resa < 1.2 && s.nrelax < 100)
-	s.nrelax++;
+	    s.nrelax++;
       else if (resb/s.resa > 10 && s.nrelax > 2)
-	s.nrelax--;
+	    s.nrelax--;
     }
 #else
     if (s.resa == resb) /* convergence has stopped!! */
@@ -214,17 +217,16 @@ mgstats mg_solve (struct MGSolve p)
 
     resb = s.resa;
 //break if resudual does not change. Weugene correction
-#ifdef RELATIVE_RESIDUAL
+#ifdef relative_residual_poisson
       double res1 = 0.5*(res_previous1+res_previous2);
       double res2 = 0.5*(res_previous1+s.resa);
       if (s.i == 2 && fabs(s.resa) < 1e-30) break;
-      if( fabs(res1 - res2)/(res1 + 1e-30) < RELATIVE_RES_TOLERANCE && patient > 3){
-//          scalar v = p.a[0];
-//          fprintf (ferr,
-//             "WARNING: Relative residual did not reach convergence for %s after %d iterations\n"
-//             "  res: %g prev_res: %g %g sum: %g nrelax: %d\n",
-//             v.name, s.i, s.resa, res_previous1, res_previous2, s.sum, s.nrelax);
-//          fflush (ferr);
+      if( fabs(res1 - res2)/(res2 + 1e-30) < RELATIVE_RES_TOLERANCE && patient > 3){
+          scalar v = p.a[0];
+          fprintf (ferr,
+             "WARNING: Relative residual did not reach convergence for %s after %d iterations\n"
+             "  res: %g prev_res: %g %g sum: %g nrelax: %d\n",
+             v.name, s.i, s.resa, res_previous1, res_previous2, s.sum, s.nrelax), fflush (ferr);;
           break;
       }
       else{
@@ -236,18 +238,18 @@ mgstats mg_solve (struct MGSolve p)
 #endif
   }
   s.minlevel = p.minlevel;
-  
+
   /**
   If we have not satisfied the tolerance, we warn the user. */
 
   if (s.resa > p.tolerance) {
     scalar v = p.a[0];
-    fprintf (ferr, 
+    fprintf (ferr,
 	     "WARNING: convergence for %s not reached after %d iterations\n"
 	     "  res: %g sum: %g nrelax: %d\n", v.name,
 	     s.i, s.resa, s.sum, s.nrelax), fflush (ferr);
   }
-    
+
   /**
   We deallocate the residual and correction fields and free the lists. */
 
@@ -268,7 +270,7 @@ $$
 We first setup the data structure required to pass the extra
 parameters $\alpha$ and $\lambda$. We define $\alpha$ as a face
 vector field because we need values at the face locations
-corresponding to the face gradients of field $a$. 
+corresponding to the face gradients of field $a$.
 
 *alpha* and *lambda* are declared as *(const)* to indicate that the
 function works also when *alpha* and *lambda* are constant vector
@@ -293,7 +295,55 @@ struct Poisson {
 #if EMBED
   double (* embed_flux) (Point, scalar, vector, double *);
 #endif
+  double maxb;
 };
+//#if dimension == 1
+////    #define refcoord (x==X0 + 0.5*Delta)
+//    #define refcoord 1
+//#elif dimension == 2
+////    #define refcoord (x==X0 + 0.5*Delta && y==Y0 + 0.5*Delta)
+//    #define refcoord y==Y0 + 0.5*Delta
+//#else
+////    #define refcoord (x==X0 + 0.5*Delta && y==Y0 + 0.5*Delta && z==Z0 + 0.5*Delta)
+//    #define refcoord (y==(Y0 + 0.5*Delta) && (z==Z0 + 0.5*Delta))
+//#endif
+//bool reference_pressure = false;
+//double xref, yref, zref, sref = 0;
+//double first_value (scalar s, int l){
+//    double scor = 0;
+//    int masternode = 0;
+//    foreach_boundary(left){
+//        if (refcoord) {
+//            scor = s[];
+//#ifdef DEBUG_MODE
+//            if (scor>0.1) fprintf(ferr, "first value = %g; data=%g x = %g; y = %g; z = %g ", scor, data(0,0,0)[s.i], x, y, z);
+//#endif
+//            masternode = pid();
+//            break;
+//        }
+//    }
+//#if _MPI
+//        MPI_Bcast (&scor, 1, MPI_DOUBLE, masternode, MPI_COMM_WORLD);
+//#endif
+////    foreach(){
+////        if (refcoord) {
+////            scor = s[];
+////            fprintf(ferr, "first value = %g; x = %g; y = %g; z = %g ", scor, x, y, z);
+////            break;
+////        }
+////    }
+////    fprintf(ferr, " success \n");
+//    return scor;
+//}
+//    xref = X0 + L0, yref = Y0 + 0.75*L0, zref = Z0;
+//    double scor = interpolate (s, xref, yref) - sref;
+//    fprintf(ferr, "first value = %g; x = %g; y = %g; z = %g\n", scor, xref, yref, zref);
+//    return scor;
+//    foreach_level(l) {
+//        fprintf(ferr, "first value = %g; x = %g; y = %g\n", s[], x, y);
+//        return s[];
+//    }
+//}
 
 /**
 We can now write the relaxation function. We first recover the extra
@@ -317,13 +367,13 @@ static void relax (scalar * al, scalar * bl, int l, void * data)
   order). The same comment applies to OpenMP or MPI parallelism. In
   practice however Jacobi convergence tends to be slower than simple
   reuse. */
-  
+
 #if JACOBI
   scalar c[];
 #else
   scalar c = a;
 #endif
-  
+
   /**
   We use the face values of $\alpha$ to weight the gradients of the
   5-points Laplacian operator. We get the relaxation function. */
@@ -346,19 +396,22 @@ static void relax (scalar * al, scalar * bl, int l, void * data)
 #endif // EMBED
       c[] = n/d;
   }
-//    u_clip=a[0];
-//  foreach_level_or_leaf (l){
-//    c[] -= u_clip;
+//  if (reference_pressure) {
+//      double u_clip = first_value(a, l);
+//      foreach_level_or_leaf(l)
+//      {
+//          c[] -= u_clip;
+//      }
 //  }
 
   /**
   For weighted Jacobi we under-relax with a weight of 2/3. */
-  
+
 #if JACOBI
   foreach_level_or_leaf (l)
     a[] = (a[] + 2.*c[])/3.;
 #endif
-  
+
 #if TRASH
   scalar a1[];
   foreach_level_or_leaf (l)
@@ -380,7 +433,7 @@ static double residual (scalar * al, scalar * bl, scalar * resl, void * data)
   struct Poisson * p = (struct Poisson *) data;
   (const) face vector alpha = p->alpha;
   (const) scalar lambda = p->lambda;
-  double maxres = 0.;
+  double maxres = 0., maxb = p->maxb;
 #if TREE
   /* conservative coarse/fine discretisation (2nd order) */
   face vector g[];
@@ -388,7 +441,7 @@ static double residual (scalar * al, scalar * bl, scalar * resl, void * data)
     g.x[] = alpha.x[]*face_gradient_x (a, 0);
   boundary_flux ({g});
   foreach (reduction(max:maxres)) {
-    res[] = b[] - lambda[]*a[];
+    res[] = b[] - lambda[]*a[]; // lambda = 0 in usual case.
     foreach_dimension()
       res[] -= (g.x[1] - g.x[])/Delta;
 #else // !TREE
@@ -397,20 +450,21 @@ static double residual (scalar * al, scalar * bl, scalar * resl, void * data)
     res[] = b[] - lambda[]*a[];
     foreach_dimension()
       res[] += (alpha.x[0]*face_gradient_x (a, 0) -
-		alpha.x[1]*face_gradient_x (a, 1))/Delta;  
-#endif // !TREE    
+		alpha.x[1]*face_gradient_x (a, 1))/Delta;
+#endif // !TREE
 #if EMBED
     if (p->embed_flux) {
       double c, e = p->embed_flux (point, a, alpha, &c);
       res[] += c - e*a[];
     }
-#endif // EMBED    
+#endif // EMBED
     if (fabs (res[]) > maxres)
       maxres = fabs (res[]);
   }
   boundary (resl);
-  fprintf(stderr, "prank=%d maxres= %g maxres*dt = %g\n", pid(), maxres, maxres*dt);
-  return maxres;
+  fprintf(stderr, "maxres= %g maxb = %g maxres/maxb = %g\n", maxres, maxb, maxres/maxb);
+
+  return maxres/maxb;
 }
 
 /**
@@ -451,6 +505,16 @@ mgstats poisson (struct Poisson p)
     TOLERANCE = p.tolerance;
 
   scalar a = p.a, b = p.b;
+  if (relative_residual_poisson) {
+    double maxb = 0;
+    foreach(reduction(max:maxb)){
+      if (fabs(b[]) > maxb) maxb = fabs(b[]);
+    }
+    if (maxb < SEPS) maxb = 1;
+    p.maxb = maxb;
+  }else{
+    p.maxb = 1;
+  }
 #if EMBED
   if (!p.embed_flux && a.boundary[embed] != symmetry)
     p.embed_flux = embed_flux;
@@ -493,7 +557,6 @@ struct Project {
   scalar fs;
   vector target_U;   // optional: default 0
   vector u;
-  double eta_s; // optional: default 1e-10
 };
 #ifdef DEBUG_MODE
     extern scalar divutmpAfter;
@@ -512,32 +575,18 @@ mgstats project (struct Project q)
     $\mathbf{u}_f$. The divergence is scaled by *dt* so that the
     pressure has the correct dimension. */
 
-#if DIVRHS == 1
-        fprintf(ferr, "(1.0 - fs) d/dt/Delta Conventional Chorin..\n");
-#elif DIVRHS == 2
-        fprintf(ferr, "(fs[] < 1) d/dt/Delta Conventional Chorin..\n");
-#else
-        fprintf(ferr, "d/dt/Delta Conventional Chorin..\n");
-#endif
-
     scalar div[];
     foreach() {
         d = 0.;
         foreach_dimension(){
             d += uf.x[1] - uf.x[];
         }
-//#if DIVRHS == 1
-//        div[] = d*(1.0 - fs[])/(dt*Delta); // big errors at boundary solid??
-//#elif DIVRHS == 2
-//        div[] = d*(fs[] < 1)/(dt*Delta);
-//#else
         div[] = d/(dt*Delta);
-//#endif
 #ifdef DEBUG_MODE
         divutmp[] = div[]*dt;
 #endif
     }
-    boundary((scalar*){div, divutmp});
+    boundary((scalar*){div});
     /**
     We solve the Poisson problem. The tolerance (set with *TOLERANCE*) is
     the maximum relative change in volume of a cell (due to the divergence
@@ -548,7 +597,11 @@ mgstats project (struct Project q)
     Given the scaling of the divergence above, this gives */
 // res=div(u + u*)/dt - laplace p
 // res=div(u*)/dt - laplace delta p ~ dt
-    mgstats mgp = poisson (p, div , alpha, tolerance = TOLERANCE, nrelax = nrelax);
+    mgstats mgp;
+    if (relative_residual_poisson)
+      mgp = poisson (p, div , alpha, tolerance = TOLERANCE, nrelax = nrelax);
+    else
+      mgp = poisson (p, div , alpha, tolerance = TOLERANCE/sq(dt), nrelax = nrelax);
 
 //    double xref = X0 + L0 - L0/pow(2,maxlevel), yref = Y0 + 0.75*L0, zref = Z0; //reference location
 ////    double xref = -0.5, yref = Y0 + 0.5*L0, zref = Z0 + 0.5*L0; //reference location
@@ -578,91 +631,3 @@ mgstats project (struct Project q)
 #endif
     return mgp;
 }
-
-//trace
-//mgstats project_bp (struct Project q)
-//{
-//  face vector uf = q.uf;
-//  face vector u_rhs[];
-//  vector u = q.u;
-//  scalar p = q.p;
-//  (const) face vector alpha = q.alpha.x.i ? q.alpha : unityf;
-//  double dt = q.dt ? q.dt : 1., tmp, d;
-//  int nrelax = q.nrelax ? q.nrelax : 4;
-//  face vector alpha_mod[];
-//
-//  /**
-//  We allocate a local scalar field and compute the divergence of
-//  $\mathbf{u}_f$. The divergence is scaled by *dt* so that the
-//  pressure has the correct dimension. */
-//
-//#if DIVRHS == 1
-//        fprintf(ferr, "(1.0 - fs) d/dt/Delta Modified Chorin..\n");
-//#elif DIVRHS == 2
-//        fprintf(ferr, "(fs[] < 1) d/dt/Delta Modified Chorin..\n");
-//#else
-//        fprintf(ferr, "d/dt/Delta Modified Chorin..\n");
-//#endif
-//  double adv=0;
-//  foreach_face(){
-//      tmp = dt*fs_face.x[]/eta_s;
-////      adv = 1*(u.x[] - u.x[-1])/Delta; //see down!
-//      u_rhs.x[] = (uf.x[] + tmp*(target_Uf.x[] - eta_s*adv))/(1.0 + tmp);
-//      alpha_mod.x[] = alpha.x[]/(1.0 + tmp);
-//  }
-//  boundary ((scalar *){u_rhs});
-//  scalar div[];
-//  foreach() {
-//    d = 0.;
-//    foreach_dimension()
-//        d += u_rhs.x[1] - u_rhs.x[];
-//#if DIVRHS == 1
-//    div[] = d*(1.0 - fs[])/(dt*Delta); // big errors at boundary solid??
-//#elif DIVRHS == 2
-//    div[] = d*(fs[] < 1)/(dt*Delta);
-//#else
-//    div[] = d/(dt*Delta);
-//#endif
-//  }
-//  boundary((scalar*){div});
-//  /**
-//  We solve the Poisson problem. The tolerance (set with *TOLERANCE*) is
-//  the maximum relative change in volume of a cell (due to the divergence
-//  of the flow) during one timestep i.e. the non-dimensional quantity
-//  $$
-//  |\nabla\cdot\mathbf{u}_f|\Delta t
-//  $$
-//  Given the scaling of the divergence above, this gives */
-//  mgstats mgp = poisson (p, div, alpha_mod, tolerance = TOLERANCE/dt, nrelax = nrelax); //corrected: WEUGENE
-////  double xref = X0 + 0.5*L0, yref = Y0 + 0.5*L0, zref = Z0 + 0.5*L0; //reference location
-//  double xref = -0.5, yref = Y0 + 0.5*L0, zref = Z0 + 0.5*L0; //reference location
-//  double pref = 0;                                                   //reference pressure
-//  double pcor = interpolate (p, xref, yref, zref) - pref;
-//#if _MPI
-//  MPI_Allreduce (MPI_IN_PLACE, &pcor, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
-//#endif
-//  foreach()
-//    p[] -= pcor;
-//  boundary ({p});
-//  /**
-//  And compute $\mathbf{u}_f^{n+1}$ using $\mathbf{u}_f$ and $p$. */
-//  foreach_face(){
-//      adv=0;
-//      tmp = dt*fs_face.x[]/eta_s;
-////        adv = 1*(u.x[] - u.x[-1])/Delta; //see up!
-//      uf.x[] = (uf.x[] - dt * alpha.x[] * face_gradient_x(p, 0) + tmp*(target_Uf.x[] - eta_s*adv)) / (1.0 + tmp);
-//  }
-//  boundary ((scalar *){uf});
-//#ifdef DEBUG_MODE
-//  foreach() {
-//     d = 0.;
-//    foreach_dimension(){
-//        d += uf.x[1] - uf.x[];
-//     }
-//     divutmpAfter[] = d/(dt*Delta);
-//  }
-//  boundary((scalar*){divutmpAfter});
-//#endif
-//  return mgp;
-//}
-

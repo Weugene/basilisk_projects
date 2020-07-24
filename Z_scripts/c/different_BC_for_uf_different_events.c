@@ -31,132 +31,175 @@
 //event event2 (i++) {
 //    s[top] = 1;
 //}
-
+#include "grid/octree.h"
 #include "run.h"
 
 // The "Solver" code
 face vector uf[];
 vector u[], uold[];
 scalar s[];
-event event1 (i++) {
-    boundary({uf,s});
-    //face vectors
-    foreach_boundary(left){
-        assert(uf.x[] == 22);
-        fprintf(ferr,"ufx: %g %g %g ufy: %g %g %g \n",uf.x[-1], uf.x[], uf.x[1], uf.y[-1], uf.y[], uf.y[1] );
-        assert(uf.y[ghost] == 222);
-        assert(uf.y[-1,0] == 222);
-    }
 
-    foreach_boundary(right){
-        assert(uf.x[ghost] == 44); // they are the same
-        assert(uf.x[1,0] == 44);
-        assert(uf.y[ghost] == 444);
-        assert(uf.y[1,0] == 444);
-    }
+//event event2 (i++) {
+//    boundary({s,uf});
+//    //face vectors
+//    foreach_boundary(left){
+//        assert(uf.x[] == x);
+//    }
+//
+//    foreach_boundary(right){
+//        assert(uf.x[ghost] == x);
+//    }
+//
+//    foreach_boundary(bottom){
+//        assert(uf.y[] == y);
+//    }
+//
+//    foreach_boundary(top){
+//        assert(uf.y[ghost] == y);
+//    }
+////scalars
+//    foreach_boundary(bottom){
+//        assert(s[ghost] == 1);
+//        assert(s[0,-1] == 1);
+//    }
+//
+//    foreach_boundary(top){
+//        assert(s[ghost] == 2);
+//        assert(s[0,1] == 2);
+//    }
+//
+//}
 
-    foreach_boundary(bottom){
-        assert(uf.y[] == 2);
-        assert(uf.x[ghost] == 22);
-    }
-
-    foreach_boundary(top){
-        assert(uf.y[ghost] == 4); // they are the same
-        assert(uf.y[0,1] == 4);
-        assert(uf.x[0,1] == 44);
-    }
-    //scalars
-    foreach_boundary(bottom){
-        assert(s[ghost] == 3); // they are the same
-        assert(s[0,-1] == 3);
-    }
-
-    foreach_boundary(top){
-        assert(s[ghost] == 4); // they are the same
-        assert(s[0,1] == 4);
-    }
-
-}
-
-event event2 (i++) {
-    boundary({s,uf});
-    //face vectors
-    foreach_boundary(left){
-        assert(uf.x[] == x);
-    }
-
-    foreach_boundary(right){
-        assert(uf.x[ghost] == x);
-    }
-
-    foreach_boundary(bottom){
-        assert(uf.y[] == y);
-    }
-
-    foreach_boundary(top){
-        assert(uf.y[ghost] == y);
-    }
-//scalars
-    foreach_boundary(bottom){
-        assert(s[ghost] == 1);
-        assert(s[0,-1] == 1);
-    }
-
-    foreach_boundary(top){
-        assert(s[ghost] == 2);
-        assert(s[0,1] == 2);
-    }
-
-}
-event event3 (i++) {
-    foreach_boundary(left){
-        fprintf(ferr, "uold:%g %g %g\n", uold.x[-1], uold.x[], uold.x[1] );
-        assert(uold.x[ghost] == 1.1);
-        assert(uold.y[ghost] == 1.2);
-        assert(uold.x[-1,0] == 1.1);
-    }
-
-    if (i==2) return 1;
-}
 // The setup code:
 int main() {
     run();
 }
 // Hooks for the solver events..
+//event event1 (i++) {
+//    uf.n[left] = 22;
+//    uf.t[left] = s[];
+//    uf.r[left] = 2222;
+//    uf.n[right] = 44;
+//    uf.t[right] = 444;
+//    uf.r[right] = 4444;
+//    uf.n[bottom] = 2;
+//    uf.t[bottom] = 22;
+//    uf.r[bottom] = 2226;
+//    uf.n[top] = 4;
+//    uf.t[top] = 44;
+//    uf.r[top] = 444;
+//    uf.n[back] = 7;
+//    uf.t[back] = 77;
+//    uf.r[back] = 777;
+//    uf.n[front] = 9;
+//    uf.t[front] = 99;
+//    uf.r[front] = 999;
+//    s[left] = 33;
+//    s[bottom] = 3;
+//    s[top] = 4;
+//
+//    u.n[left] = u.x[]+1;
+//    u.t[left] = 1.2;
+//    foreach() {
+//        s[] = 12;
+//        u.x[] = 1.01;
+//    }
+//    uold.n[left] = s[];
+//
+//    boundary({uf,s,u});
+//    //face vectors
+//    foreach_boundary(left){
+//    //        fprintf(ferr,"ufx: %g %g %g ufy: %g %g %g \n",uf.x[-1], uf.x[], uf.x[1], uf.y[-1], uf.y[], uf.y[1] );
+//            //uf.t[left] = s[];
+//            assert(uf.x[] == 22);
+//            assert(uf.y[-1,0] == 12);
+//    //        assert(uf.y[ghost] == 222);
+//    //        assert(uf.y[-1,0] == 222);
+//            assert(uf.z[-1,0] == 2222); //uf.r[left] = 2222;
+////            fprintf(ferr,"ux: %g %g %g  %g %g %g  %g %g %g uy: %g %g %g  %g %g %g  %g %g %g \n", u.x[-1,-1], u.x[0,-1], u.x[1,-1], u.x[-1], u.x[], u.x[1], u.x[-1,1], u.x[0,1], u.x[1,1],  u.y[-1,-1], u.y[0,-1], u.y[1,-1], u.y[-1], u.y[], u.y[1], u.y[-1,1], u.y[0,1], u.y[1,1]);
+//            assert(s[-1,0] == 33);
+//            assert(u.x[-1,0] == 2.01);
+//            assert(u.y[-1,0] == 1.2);
+//
+//    }
+//
+//    foreach_boundary(right){
+//            assert(uf.x[ghost] == 44); // they are the same
+//            assert(uf.x[1,0] == 44);
+//            assert(uf.y[ghost] == 444);
+//            assert(uf.y[1,0] == 444);
+//            assert(uf.z[ghost] == 4444);
+//            assert(uf.z[1,0] == 4444);
+//    }
+//
+//    foreach_boundary(bottom){
+//            assert(uf.y[] == 2);
+//    //        fprintf(ferr,"++bototm:uf.x %g %g %g %g %g %g\n", uf.x[0,-1], uf.x[0,0], uf.x[0,1], uf.x[0,-1,1], uf.x[0,0,1], uf.x[0,1,1]);
+//            assert(uf.z[0,-1] == 22);
+//            assert(uf.x[0,-1] == 2226);
+//    }
+//
+//    foreach_boundary(top){
+//            assert(uf.y[ghost] == 4); // they are the same
+//            assert(uf.y[0,1] == 4);
+//            assert(uf.z[0,1] == 44);
+//            assert(uf.z[ghost] == 44);
+//    }
+//
+//    foreach_boundary(back){
+//            assert(uf.z[] == 7);
+//            assert(uf.x[0,0,-1] == 77);
+//            assert(uf.y[0,0,-1] == 777);
+//    }
+//    foreach_boundary(front){
+//            assert(uf.z[0,0,1] == 9);
+//            assert(uf.x[0,0,1] == 99);
+//            assert(uf.y[0,0,1] == 999);
+//    }
+//    //scalars
+//    foreach_boundary(bottom){
+//            assert(s[ghost] == 3); // they are the same
+//            assert(s[0,-1] == 3);
+//    }
+//
+//    foreach_boundary(top){
+//            assert(s[ghost] == 4); // they are the same
+//            assert(s[0,1] == 4);
+//    }
+//}
 event event1 (i++) {
-    uf.n[left] = 22;
-    uf.t[left] = 222;
-    uf.n[right] = 44;
-    uf.t[right] = 444;
-    uf.n[bottom] = 2;
-    uf.t[bottom] = 22;
-    uf.n[top] = 4;
-    uf.t[top] = 44;
-    s[bottom] = 3;
-    s[top] = 4;
-
-    u.n[left] = 1.1;
+    u.n[left] = 8;
     u.t[left] = 1.2;
-    foreach()  s[] = 12;
-    uold.n[left] = s[];
-}
-
-event event2 (i++) {
-    uf.n[left] = x;
-    uf.n[right] = x;
-    uf.n[bottom] = y;
-    uf.n[top] = y;
-    s[bottom] = 1;
-    s[top] = 2;
-}
-
-event event3(i++){
-    foreach(){
-        foreach_dimension() uold.x[] = u.x[];
+    foreach() {
+        u.x[] = 2;
     }
-    boundary({uold});
+    boundary({u});
+    foreach_face()
+        uf.x[] = fm.x[]*face_value (u.x, 0);
+    boundary ((scalar *){uf});
+    foreach_boundary(left){
+            assert(uf.x[] == 5);
+    }
 }
+//event event2 (i++) {
+//    uf.n[left] = x;
+//    uf.n[right] = x;
+//    uf.n[bottom] = y;
+//    uf.n[top] = y;
+//    s[bottom] = 1;
+//    s[top] = 2;
+//}
+//
+//event event3(i++){
+//    foreach(){
+//        foreach_dimension() uold.x[] = u.x[];
+//    }
+//    boundary({uold});
+//}
 
+event stop (i++) {
+    if (i==2) return 1;
+}
 //#include "run.h"
 //
 //// The "Solver" code

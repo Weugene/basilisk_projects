@@ -17,6 +17,7 @@ double RE=0.1, CA=0.01, FR, B;
 double Rrho = 1, Rmu = 100;
 double Hch = 1, Ldomain = 8, Radius_b = 0.3;
 #define uy (deltap/(2*mu1*Ldomain))*(sq(0.5*Hch) - sq(y))*(1-fs[])
+
 u.n[left]  = dirichlet(uy);
 u.t[left]  = dirichlet(0.);
 uf.n[left] = dirichlet(uy);
@@ -69,7 +70,7 @@ int main(int argc, char * argv[])
 	mu1 = mul; mu2 = mu1/Rmu;
 	deltap = 12.0*sq(mu1)*Ldomain*RE/(rho1*pow(Hch,3));
 	U0 = RE*mu1/(rho1*Hch);
-	sig = mu1*U0/CA;
+	sig = mu1*U0/CA;!!!here the error! 1/Re/Ca
 	f.sigma = sig;
 
 	fprintf(ferr, "RE=%g CA=%g \n"
@@ -127,35 +128,6 @@ event logfile (i +=100)
 	fprintf (ferr, "%d %d %g %g %g %g %g %g %g %g \n", maxlevel, i, t, dt, avggas, velgx, velgy, velamean, (velgx/U0 - 1), xcg);
 }
 
-void correct_press(scalar p, int i){
-    double press = 0;
-    int ip = 0;
-//    FILE *fp1;
-//    char subname[80]; sprintf(subname, "nameYouWant-%d", pid());
-//    fp1 = fopen(subname, "a");
-#if 1 // Left bottom Corner
-    foreach(){
-        if (ip == 0){
-            press = p[];
-            ip++;
-            @if _MPI
-                MPI_Bcast(&press, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-            @endif
-        }
-    }
-#else //average value
-    press = normf(p).avg;
-#endif
-    foreach(){
-        p[] -= press;
-    }
-//    fprintf(ferr, "p %g \n", press);
-//    fclose(fp1);
-}
-
-//event end_timestep(i++){
-//    correct_press(p, i);
-//}
 //Output
 //event vtk_file (i++; t<10){
 event vtk_file (t += 0.05; t<300){
@@ -168,7 +140,7 @@ event vtk_file (t += 0.05; t<300){
         divu[]=0;
         foreach_dimension() divu[] += (uf.x[1]-uf.x[])/Delta;
     }
-	output_vtu_MPI( (scalar *) {fs, f, omega, p, l, divu}, (vector *) {u, a}, subname, 0 );
+	output_vtu_MPI( (scalar *) {fs, f, omega, p, l, divu}, (vector *) {u, a}, (vector *) {uf}, subname, t+dt);
 }
 
 #define ADAPT_SCALARS {f, fs, u.x, u.y}
