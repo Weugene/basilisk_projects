@@ -1,38 +1,51 @@
 #define BRINKMAN_PENALIZATION 1
-#define DEBUG_BRINKMAN_PENALIZATION 1
+#define DEBUG_MINMAXVALUES
+//#define DEBUG_BRINKMAN_PENALIZATION 0
+#define DEBUG_MODE_POISSON
 #define DEBUG_OUTPUT_VTU_MPI
 #define FILTERED
-#include "../src_local/centered-weugene.h"
+#define JACOBI 1
 #define mu(f)  (1./(clamp(f,0,1)*(1./mu1 - 1./mu2) + 1./mu2))
+
+scalar fs[];
+scalar omega[];
+scalar l2[];
+#include "../src_local/centered-weugene.h"
+
 #include "two-phase.h"
 #include "tension.h"
-#include "view.h"
+
+#include "../src_local/adapt_wavelet_limited.h"
+#include "../src_local/adapt2.h"
+#include "../src_local/utils-weugene.h"
+#include "utils.h"
+#include "lambda2.h"
 #include "../src_local/output_vtu_foreach.h"
+#include "maxruntime.h"
 
 int maxlevel = 10;
 int minlevel = 2;
-scalar fs[], omega[];
+
 double U0, Umax, rhol = 1, sig, mul = 1, deltap;
 double RE=0.1, CA=0.01, FR, B;
 double Rrho = 1, Rmu = 100;
 double Hch = 1, Ldomain = 8, Radius_b = 0.3;
 #define uy (deltap/(2*mu1*Ldomain))*(sq(0.5*Hch) - sq(y))*(1-fs[])
 
+//Inflow
 u.n[left]  = dirichlet(uy);
 u.t[left]  = dirichlet(0.);
-uf.n[left] = dirichlet(uy);
-uf.t[left] = dirichlet(0.);
 p[left]    = neumann(0.);
 pf[left]   = neumann(0.);
 f[left]    = dirichlet(1);
-
+fs[left]   = neumann(0);
+//Outflow
 u.n[right] = neumann(0.);
 u.t[right] = neumann(0.);
-uf.n[right] = neumann(0.);
-uf.t[right] = neumann(0.);
 p[right]   = dirichlet(0.);
 pf[right]  = dirichlet(0.);
-f[right]   = dirichlet(1);
+f[right] = neumann(0);
+fs[right] = neumann(0);
 
 void obstacles (scalar fs)
 {
@@ -66,12 +79,15 @@ int main(int argc, char * argv[])
 	TOLERANCE = 1e-8;
 	N = 1 << maxlevel;
 
-	rho1 = rhol; rho2 = rho1/Rrho;
-	mu1 = mul; mu2 = mu1/Rmu;
+	rho1 = 1.;// water
+	rho2 = 1./RhoR; // air
+	mu1 = 1./Re;
+	mu2 = 1./(MuR*Re);
+	f.sigma = 1./(Re*Ca_mod);
 	deltap = 12.0*sq(mu1)*Ldomain*RE/(rho1*pow(Hch,3));
 	U0 = RE*mu1/(rho1*Hch);
-	sig = mu1*U0/CA;!!!here the error! 1/Re/Ca
-	f.sigma = sig;
+	sig = mu1*U0/CA;//!!!here the error! 1/Re/Ca
+
 
 	fprintf(ferr, "RE=%g CA=%g \n"
 			   "deltap=%g U0=%g\n"

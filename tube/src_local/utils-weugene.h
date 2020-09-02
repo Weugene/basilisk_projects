@@ -1,5 +1,5 @@
-#ifndef BASILISK_HEADER_34
-#define BASILISK_HEADER_34
+#ifndef BASILISK_HEADER_8
+#define BASILISK_HEADER_8
 #line 1 "./../src_local/utils-weugene.h"
 void MinMaxValues(scalar * list, double * arr_eps) {// for each scalar min and max
     double arr[10][2];
@@ -35,10 +35,22 @@ void MinMaxValues(scalar * list, double * arr_eps) {// for each scalar min and m
     }
 }
 
-int count_cells(){
-    int tnc = 0;
+int count_cells(double t, int i){
+    int tnc = 0, nc = 0;
     foreach( reduction(+:tnc) )
         tnc++;
+#if _MPI
+    foreach()
+        nc++;
+    int rank, h_len;
+    char hostname[MPI_MAX_PROCESSOR_NAME];
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Get_processor_name(hostname, &h_len);
+    printf("i %d t %g hostname %s rank %d num cells %d total num cells %d\n", i, t, hostname, rank, nc, tnc);
+#else
+    printf("i %d t %g total num cells %d\n", i, t, tnc);
+#endif
+    fflush(stdout);
     return tnc;
 }
 // statistical values inside cells with liquid

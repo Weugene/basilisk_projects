@@ -1,0 +1,11 @@
+<VTKFile type="PPolyData" version="1.0" byte_order="LittleEndian" header_type="UInt64">
+  <PPolyData GhostLevel="1">
+    <PPointData Normals="Normals">
+      <PDataArray type="Float32" Name="Normals" NumberOfComponents="3"/>
+    </PPointData>
+    <PPoints>
+      <PDataArray type="Float32" Name="Points" NumberOfComponents="3"/>
+    </PPoints>
+    <Piece Source="sphere/sphere_0.vtp"/>
+  </PPolyData>
+</VTKFile>

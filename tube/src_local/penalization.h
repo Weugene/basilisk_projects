@@ -1,5 +1,5 @@
-#ifndef BASILISK_HEADER_37
-#define BASILISK_HEADER_37
+#ifndef BASILISK_HEADER_11
+#define BASILISK_HEADER_11
 #line 1 "./../src_local/../src_local/penalization.h"
 const vector zerocf[] = {0.,0.,0.};
 #ifdef BRINKMAN_PENALIZATION
@@ -49,8 +49,9 @@ const vector zerocf[] = {0.,0.,0.};
     #undef SEPS
     #define SEPS 1e-15
     #ifdef DEBUG_BRINKMAN_PENALIZATION
-        vector dbp[], total_rhs[], utau[], grad_utau_n[];
-        #define gradun grad_utau_n.x[]
+        vector dbp[], total_rhs[], residual_of_u[], conv_term[];
+//        vector utau[], grad_utau_n[];
+//        #define gradun grad_utau_n.x[]
     #else
         double gradun;
     #endif
@@ -75,7 +76,7 @@ struct Brinkman {
     double dt;
 };
 
-
+#if BRINKMAN_PENALIZATION == 4
 void calc_target_U(const vector u, vector target_U, const vector normal){
     if (!is_constant(U_solid.x)) foreach() foreach_dimension() target_U.x[] = U_solid.x[];
     if (fabs(lambda_slip) > 0.) {
@@ -111,7 +112,7 @@ void calc_target_U(const vector u, vector target_U, const vector normal){
         }
     }
 }
-
+#endif
 void brinkman_correction_u (vector u, double dt){
 #if BRINKMAN_PENALIZATION == 4
     if (!is_constant(target_U.x)) calc_target_U(u, target_U, n_sol);

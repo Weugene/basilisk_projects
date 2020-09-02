@@ -1,5 +1,5 @@
-#ifndef BASILISK_HEADER_36
-#define BASILISK_HEADER_36
+#ifndef BASILISK_HEADER_10
+#define BASILISK_HEADER_10
 #line 1 "./../src_local/../src_local/poisson-weugene.h"
     /**
 # Multigrid Poisson--Helmholtz solvers
@@ -34,6 +34,9 @@ cycle. */
 #undef SEPS
 #define SEPS 1e-12
 
+#ifdef DEBUG_MODE_POISSON
+  scalar residual_of_p[], divutmp[], divutmpAfter[];
+#endif
 bool relative_residual_poisson = false;
 void mg_cycle (scalar * a, scalar * res, scalar * da,
 	       void (* relax) (scalar * da, scalar * res,
@@ -318,7 +321,7 @@ struct Poisson {
 //    foreach_boundary(left){
 //        if (refcoord) {
 //            scor = s[];
-//#ifdef DEBUG_MODE
+//#ifdef DEBUG_MODE_POISSON
 //            if (scor>0.1) fprintf(ferr, "first value = %g; data=%g x = %g; y = %g; z = %g ", scor, data(0,0,0)[s.i], x, y, z);
 //#endif
 //            masternode = pid();
@@ -461,6 +464,9 @@ static double residual (scalar * al, scalar * bl, scalar * resl, void * data)
       res[] += c - e*a[];
     }
 #endif // EMBED
+#ifdef DEBUG_MODE_POISSON
+    residual_of_p[] = res[];
+#endif
     if (fabs (res[]) > maxres)
       maxres = fabs (res[]);
   }
@@ -561,9 +567,7 @@ struct Project {
   vector target_U;   // optional: default 0
   vector u;
 };
-#ifdef DEBUG_MODE
-    extern scalar divutmpAfter;
-#endif
+
 trace
 mgstats project (struct Project q)
 {
@@ -585,7 +589,7 @@ mgstats project (struct Project q)
             d += uf.x[1] - uf.x[];
         }
         div[] = d/(dt*Delta);
-#ifdef DEBUG_MODE
+#ifdef DEBUG_MODE_POISSON
         divutmp[] = div[]*dt;
 #endif
     }
@@ -622,7 +626,8 @@ mgstats project (struct Project q)
 
     foreach_face() uf.x[] -= dt*alpha.x[]*face_gradient_x (p, 0);
     boundary ((scalar *){uf});
-#ifdef DEBUG_MODE
+
+#ifdef DEBUG_MODE_POISSON
     foreach() {
         d = 0.;
         foreach_dimension(){

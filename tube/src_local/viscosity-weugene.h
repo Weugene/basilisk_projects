@@ -1,5 +1,5 @@
-#ifndef BASILISK_HEADER_35
-#define BASILISK_HEADER_35
+#ifndef BASILISK_HEADER_9
+#define BASILISK_HEADER_9
 #line 1 "./../src_local/viscosity-weugene.h"
 #include "../src_local/penalization.h"
 //#include "poisson.h"
@@ -8,6 +8,7 @@
 #undef SEPS
 #define SEPS 1e-12
 bool relative_residual_viscous = false;
+
 #if AXI
 #define lambda ((coord){1., 1. + dt/rho[]*(mu.x[] + mu.x[1] + \
                                 mu.y[] + mu.y[0,1])/2./sq(y)})
@@ -195,14 +196,12 @@ static double residual_viscosity (scalar * a, scalar * b, scalar * resl, void * 
 #ifdef DEBUG_BRINKMAN_PENALIZATION
             conv_term.x[] = conv.x;
             dbp.x[] = PLUS_BRINKMAN_RHS;
-            total_rhs.x[] = res.x[];//divtauu.x[] - (r.x[]- lambda.x*u.x[])/dt;  //du/dt=RHS
+            total_rhs.x[] = LU.x;//divtauu.x[] - (r.x[]- lambda.x*u.x[])/dt;  //du/dt=RHS
+            residual_of_u.x[] = res.x[];
 #endif
         }
     }
     boundary (resl);
-#ifdef DEBUG_MODE
-    foreach() foreach_dimension() tmp_err_u.x[] = res.x[];
-#endif
     fprintf(ferr, "visc: maxres=%g maxb=%g maxres/maxb=%g\n", maxres, maxb, maxres/maxb);
 //    event("vtk_file");
     return maxres/maxb; // Corrected by Weugene: return residual = rhs - du/dt

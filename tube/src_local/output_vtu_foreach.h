@@ -1,5 +1,5 @@
-#ifndef BASILISK_HEADER_16
-#define BASILISK_HEADER_16
+#ifndef BASILISK_HEADER_4
+#define BASILISK_HEADER_4
 #line 1 "./../src_local/output_vtu_foreach.h"
 /*
 This function writes one XML file which allows to read the *.vtu files generated

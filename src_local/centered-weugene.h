@@ -458,6 +458,18 @@ event projection (i++,last)
     foreach_dimension()
       u.x[] += dt*g.x[]*(1 - fs[]); //original version
   boundary ((scalar *){u});
+#ifdef DEBUG_MODE_POISSON
+  if ( i % 1==0 ){
+    double divuf, maxdivuf = -1e30;
+    foreach(reduction(max:maxdivuf)) {
+      divuf = 0;
+      foreach_dimension() divuf += (uf.x[1]-uf.x[])/Delta;
+      divuf = fabs(divuf);
+      if (maxdivuf < divuf) maxdivuf = divuf;
+    }
+    fprintf(ferr, "Projection MAX{div uf} = %g", maxdivuf);
+  }
+#endif
 }
 
 //#if BRINKMAN_PENALIZATION

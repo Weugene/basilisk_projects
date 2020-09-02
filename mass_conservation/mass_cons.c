@@ -1,7 +1,7 @@
 #define BRINKMAN_PENALIZATION 1
 #define DEBUG_BRINKMAN_PENALIZATION 1
 #define DEBUG_OUTPUT_VTU_MPI
-#define REDUCED 0
+#define REDUCED 1
 #define FILTERED
 #include "../src_local/centered-weugene.h"
 #define mu(f)  (1./(clamp(f,0,1)*(1./mu1 - 1./mu2) + 1./mu2))
@@ -249,7 +249,7 @@ event vtk_file (t += 0.01; t<10){
         foreach_dimension() divu[] += (uf.x[1]-uf.x[])/Delta;
     }
 //#ifndef DEBUG_BRINKMAN_PENALIZATION && BRINKMAN_PENALIZATION == 4
-	output_vtu_MPI( (scalar *) {fs, f, omega, p, l, npid, divu}, (vector *) {u, a}, subname, 1 );
+	output_vtu_MPI( subname, (iter_fp) ? t + dt : 0, (scalar *) {fs, f, omega, p, l, npid, divu}, (vector *) {u, a});
 //#else
 //   output_vtu_MPI( (scalar *) {fs, f, omega, p, l, npid}, (vector *) {u, a, n_sol, target_U, dbp, total_rhs, utau, grad_utau_n}, subname, 1 );
 //#endif
