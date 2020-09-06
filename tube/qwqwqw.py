@@ -72,36 +72,37 @@ timeList = args.timeList
 if len(frameWindow) != 2 or frameWindow[0]<0 or frameWindow[1] < 0:
     eprint('Error in frameWindow' + frameWindow)
     sys.exit()
+# Create a new 'Render View'
+renderView1 = CreateView('RenderView')
+renderView1.ViewSize = [3108, 1168]
+renderView1.InteractionMode = '2D'
+renderView1.AxesGrid = 'GridAxes3DActor'
+renderView1.OrientationAxesVisibility = 0
+renderView1.StereoType = 'Crystal Eyes'
+renderView1.BackEnd = 'OSPRay raycaster'
+# get the material library
+materialLibrary1 = GetMaterialLibrary()
+renderView1.OSPRayMaterialLibrary = materialLibrary1
+renderView1.CameraViewUp = [0.2, 1, 0]
+renderView1.CameraFocalDisk = 1.0
+renderView1.CameraParallelScale = 1.13
 
+# create new layout object 'Layout #1'
+layout1 = CreateLayout(name='Layout #1')
+layout1.AssignView(0, renderView1)
+
+# ----------------------------------------------------------------
+# restore active view
+SetActiveView(renderView1)
 #Current PATH reading
-path = os.path.abspath(os.getcwd())
+path = "/Users/weugene/basilisk/work/tube/res22_adaptffsu/"
+# path = os.path.abspath(os.getcwd())
 eprint("Current PATH=" + path)
-
-if filenames[-5::] == '.pvtu':
-# Find files with *.pvtu extension
-    numbers = []
-    file = ""
-    for file in glob.glob(filenames):
-        numbers.append(int(filter(lambda x: x.isdigit(), file)))
-    file=file[0:-9]
-    numbers.sort()
-    N = len(numbers)
-    filenames = []
-    for i in numbers:
-        filenames.append('{}/{}{:04d}.pvtu'.format(path, file, i))
-    print(filenames)
-    fn = path +  '/' + filenames
-    my_source = XMLPartitionedUnstructuredGridReader(FileName = fn)
-elif filenames[-4::] == '.pvd':
 # create a new 'PVD Reader'
-    fn = glob.glob(filenames)
-    print('Found files:',fn)
-    fn = fn[0]
-    print('Read the first one:',fn)
-    my_source = PVDReader(FileName = path +  '/' + fn)
-else:
-    eprint('No pvd or pvtu files are provided')
-    sys.exit()
+# my_source = PVDReader(FileName=path+'dump2pvd_compressed.pvd')
+my_source = GetActiveSource()
+my_source.CellArrays = ['p', 'fs', 'f', 'l', 'residual_of_p', 'l2', 'omega', 'u.x']
+
 #### disable automatic camera reset on 'Show'
 paraview.simple._DisableFirstRenderCameraReset()
 
@@ -125,20 +126,7 @@ if frameWindow[0] == 0 and frameWindow[1] == 0:
     frameWindow[1] = NT-1
     print('frameWindow is updated:',frameWindow)
 
-# Create a new 'Render View'
-renderView1 = CreateView('RenderView')
-renderView1.ViewSize = [3108, 1168]
-renderView1.InteractionMode = '2D'
-renderView1.AxesGrid = 'GridAxes3DActor'
-renderView1.OrientationAxesVisibility = 0
-renderView1.StereoType = 'Crystal Eyes'
-renderView1.BackEnd = 'OSPRay raycaster'
-# get the material library
-materialLibrary1 = GetMaterialLibrary()
-renderView1.OSPRayMaterialLibrary = materialLibrary1
-renderView1.CameraViewUp = [0.2, 1, 0]
-renderView1.CameraFocalDisk = 1.0
-renderView1.CameraParallelScale = 1.13
+
 
 
 ###-----------------GENERATION of Cylinder-----------------------------------

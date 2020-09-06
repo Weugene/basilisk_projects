@@ -8,6 +8,7 @@ from paraview.simple import *
 import glob, os, sys
 import logging
 from sys import argv
+import argparse
 logging.basicConfig(format='%(message)s')
 log = logging.getLogger(__name__)
 
@@ -19,7 +20,7 @@ def eprint(var):
 #2 pvd file name (by defaults in the first file in a current directory)
 #3 pvtu is swithed off by default
 
-import argparse
+
 parser = argparse.ArgumentParser()
 parser.add_argument("-vidName", type=str, help="Provide the name for the outputed video, please",
                     nargs='?', default='vid_')
@@ -135,6 +136,7 @@ elif notDefContourList:
 
 renderView1 = GetActiveViewOrCreate('RenderView')
 print('contour1...')
+
 # create a new 'Contour'
 contour1 = Contour(Input=my_source)
 contour1.ContourBy = ['POINTS', 'f']

@@ -35,9 +35,10 @@ double Unean = 1;
 double fseps = 1e-3, ueps = 1e-2;
 double length_min = 1e+30, length_max = -1e+30, length = 1;
 
-scalar p[], pf[];
-vector u[], g[];
-face vector uf[];
+//scalar p[], pf[];
+vector u[];
+//vector g[];
+//face vector uf[];
 
 (const) face vector mu = zerof, a = zerof, alpha = unityf, kappa = zerof;
 (const) scalar rho = unity;
@@ -46,8 +47,8 @@ double dtmax;
 
 scalar f[], * interfaces = {f};
 double rho1 = 1., mu1 = 0., rho2 = 1., mu2 = 0.;
-face vector alphav[];
-scalar rhov[];
+//face vector alphav[];
+//scalar rhov[];
 
 
 int maxlevel = 10;
@@ -152,24 +153,24 @@ event vtk_file (i++)
     unrefine ( (sq(y) + sq(z) > sq(0.55)) && level >= 1);
 //    unrefine ( (sq(y) + sq(z) > sq(0.51)) && level >= 1);
 //    unrefine ( (x < length_min || x > length_max) && (sq(y) + sq(z) > sq(0.51)) && level >= 1);
-    output_vtu_MPI( subname, myt, (scalar *) {p, fs, f, l, l2, omega}, (vector *) {u});
+    output_vtu_MPI( subname, myt, (scalar *) {fs, f, l, l2, omega}, (vector *) {u});
 }
 
-#define ADAPT_SCALARS {f, u.x, u.y, u.z}
-#define ADAPT_SCALARS_SMOOTHED {f, u.x, u.y, u.z}
-#define ADAPT_EPS_SCALARS {fseps, ueps, ueps, ueps}
-#define ADAPT_MAXLEVEL {maxlevel, max(maxlevel-2,10), max(maxlevel-2,10), max(maxlevel-2,10)}
-event adapt(i++){
-    if (adapt_method == 0)
-        adapt_wavelet ((scalar *) ADAPT_SCALARS, (double []) ADAPT_EPS_SCALARS, maxlevel = maxlevel, minlevel = minlevel);
-    else if (adapt_method == 1)
-    //        adapt_wavelet_limited  ((scalar *) {f, u_mag}, (double []) {fseps, ueps}, maXlevel, minlevel);
-        adapt_wavelet_limited  ((scalar *) ADAPT_SCALARS, (double []) ADAPT_EPS_SCALARS, maXlevel, minlevel);
-    else if (adapt_method == 2)
-        adapt_wavelet2((scalar *)ADAPT_SCALARS, (double []) ADAPT_EPS_SCALARS,(int []){maxlevel, maxlevel-1, maxlevel-2, maxlevel-2, maxlevel-2}, minlevel);
-
-    return 0;
-}
+//#define ADAPT_SCALARS {f, u.x, u.y, u.z}
+//#define ADAPT_SCALARS_SMOOTHED {f, u.x, u.y, u.z}
+//#define ADAPT_EPS_SCALARS {fseps, ueps, ueps, ueps}
+//#define ADAPT_MAXLEVEL {maxlevel, max(maxlevel-2,10), max(maxlevel-2,10), max(maxlevel-2,10)}
+//event adapt(i++){
+//    if (adapt_method == 0)
+//        adapt_wavelet ((scalar *) ADAPT_SCALARS, (double []) ADAPT_EPS_SCALARS, maxlevel = maxlevel, minlevel = minlevel);
+//    else if (adapt_method == 1)
+//    //        adapt_wavelet_limited  ((scalar *) {f, u_mag}, (double []) {fseps, ueps}, maXlevel, minlevel);
+//        adapt_wavelet_limited  ((scalar *) ADAPT_SCALARS, (double []) ADAPT_EPS_SCALARS, maXlevel, minlevel);
+//    else if (adapt_method == 2)
+//        adapt_wavelet2((scalar *)ADAPT_SCALARS, (double []) ADAPT_EPS_SCALARS,(int []){maxlevel, maxlevel-1, maxlevel-2, maxlevel-2, maxlevel-2}, minlevel);
+//
+//    return 0;
+//}
 event stop(t = 100);
 
 
