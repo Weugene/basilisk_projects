@@ -1,5 +1,5 @@
-#ifndef BASILISK_HEADER_11
-#define BASILISK_HEADER_11
+#ifndef BASILISK_HEADER_9
+#define BASILISK_HEADER_9
 #line 1 "./../src_local/../src_local/penalization.h"
 const vector zerocf[] = {0.,0.,0.};
 #ifdef BRINKMAN_PENALIZATION

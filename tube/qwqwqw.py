@@ -99,8 +99,8 @@ path = "/Users/weugene/basilisk/work/tube/res22_adaptffsu/"
 # path = os.path.abspath(os.getcwd())
 eprint("Current PATH=" + path)
 # create a new 'PVD Reader'
-# my_source = PVDReader(FileName=path+'dump2pvd_compressed.pvd')
-my_source = GetActiveSource()
+my_source = PVDReader(FileName=path+'dump2pvd_compressed.pvd')
+# my_source = GetActiveSource()
 my_source.CellArrays = ['p', 'fs', 'f', 'l', 'residual_of_p', 'l2', 'omega', 'u.x']
 
 #### disable automatic camera reset on 'Show'
