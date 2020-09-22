@@ -2,22 +2,26 @@
 # Show usage information if no argument is present
 if (strlen(ARG1) == 0) print "Usage: " . ARG0 . " level"; exit
 # Output W3C Scalable Vector Graphics
-set terminal postscript eps enhanced color font 'Helvetica,10'
+set terminal postscript eps enhanced color font 'Times-Roman,10'
 level=ARG1
+set output "comparison8.eps"
 array(n) = word("Pt8 1e-15 EBL8", n)
-titles(n) = word("'Popinet Trick' 'BP, eta=1e-15' 'Embedded Boundaries' 'Sangani and Acrivos, 1982'",n)
+titles(n) = word("'Simple Splitting method (SSM)' 'Brinkman Penalization method (BPM), eta=1e-15' 'Embedded Boundary method (EBM)' 'Theory: Sangani and Acrivos, 1982'",n)
 N=3
 grepf(l, num) = sprintf("< grep \"^%s\" log_%s", l, num)
-set xlabel 'Volume fraction'  font ",10"
-set ylabel 'k_0'  font ",10"
+set bmargin 5
+set lmargin 13
+set xlabel 'Volume fraction'  font ',18'  offset 0,-1,0
+set ylabel 'k'  font ',18' offset -4,0,0
+set key font ",15"
 set logscale y
 set grid
 set key spacing 2
 set key top left
-set tics font "Helvetica,10"
+set tics font ",16"
 set format y "10^{%L}"
-set ytics 100
-set xtics 1
+set ytics 10
+set xtics 0.1
 array files[N+1]
 array lstyles[N+1]
 array col[N+1]

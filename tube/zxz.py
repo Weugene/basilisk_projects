@@ -243,3 +243,26 @@ fPWF.ScalarRangeInitialized = 1
 # finally, restore active source
 SetActiveSource(delaunay3D1)
 # ----------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+hon 2.7.10 (default, Oct  6 2017, 22:29:07)
+[GCC 4.2.1 Compatible Apple LLVM 9.0.0 (clang-900.0.31)] on darwin
+from paraview.simple import *
+paraview.simple._DisableFirstRenderCameraReset()
+renderView1 = CreateView('RenderView')
+renderView1.ViewSize = [3108, 1168]
+layout1 = CreateLayout(name='Layout #1')
+layout1.AssignView(0, renderView1)
+# SetActiveView(renderView1)
+cylinder1 = Cylinder()
+cylinder1Display = Show(cylinder1, renderView1, 'UnstructuredGridRepresentation')
+SaveScreenshot("test_py_shell.png",renderView1)

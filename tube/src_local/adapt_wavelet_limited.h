@@ -1,5 +1,5 @@
-#ifndef BASILISK_HEADER_3
-#define BASILISK_HEADER_3
+#ifndef BASILISK_HEADER_8
+#define BASILISK_HEADER_8
 #line 1 "./../src_local/adapt_wavelet_limited.h"
 /**
  

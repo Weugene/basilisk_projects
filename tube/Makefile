@@ -22,3 +22,9 @@ convertD2P_tar:
 	mpirun -np 4 ./convertD2P 10 30 1 0
 #	qcc  $(CFLAG) convertD2P.c -lm -o convertD2P
 #	./convertD2P 10 30 1 0
+convert_single_tar:
+	rm -rf convert_single
+#    CC99='mpicc -std=c99' qcc $(CFLAG) -D_MPI=1 convertD2P_single.c -lm -o convert_single_p
+#    mpirun -np 4 ./convert_single_p 10 30 1 0
+	qcc  $(CFLAG) convertD2P_single.c -lm -o convert_single
+#    ./convert_single 10 30 1 0

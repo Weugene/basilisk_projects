@@ -1,5 +1,5 @@
-#ifndef BASILISK_HEADER_2
-#define BASILISK_HEADER_2
+#ifndef BASILISK_HEADER_7
+#define BASILISK_HEADER_7
 #line 1 "./../src_local/adapt2.h"
 struct Adapt2 {
   scalar * slist; // list of scalars

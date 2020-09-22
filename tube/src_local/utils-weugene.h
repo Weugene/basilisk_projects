@@ -1,5 +1,5 @@
-#ifndef BASILISK_HEADER_6
-#define BASILISK_HEADER_6
+#ifndef BASILISK_HEADER_21
+#define BASILISK_HEADER_21
 #line 1 "./../src_local/utils-weugene.h"
 void MinMaxValues(scalar * list, double * arr_eps) {// for each scalar min and max
     double arr[10][2];

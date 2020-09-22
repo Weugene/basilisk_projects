@@ -211,3 +211,15 @@ mins, secs = divmod(total_time, 60)
 hours, mins = divmod(mins, 60)
 
 sys.stdout.write("Total running time: %d:%d:%d.\n" % (hours, mins, secs))
+
+
+
+
+
+
+
+
+
+
+
+

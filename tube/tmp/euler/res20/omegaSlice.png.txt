@@ -1,0 +1,2560 @@
+lambda2_t=0.0248457_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0522004_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0795554_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.10691_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.134265_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.16162_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.93815_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.96277_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=2.99012_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.01748_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.04483_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.07219_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.09954_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.1269_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.15425_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.18161_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.20896_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.23632_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.26367_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.29103_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.31838_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.34574_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.37309_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.40045_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.4278_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.45516_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.48251_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.50987_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.53722_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.56458_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.59193_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=0_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=10_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=11_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=12_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=13_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=14_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=15_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=16_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=17_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=18_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=19_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=1_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=2_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=3_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=4_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=5_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=6_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=7_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=8_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=3.61929_n=9_omegaSlice.png sed s/:lambda2_t=//
+lambda2_t=0.0248457_n=0_omegaSlice.png
+lambda2_t=0.0248457_n=10_omegaSlice.png
+lambda2_t=0.0248457_n=11_omegaSlice.png
+lambda2_t=0.0248457_n=12_omegaSlice.png
+lambda2_t=0.0248457_n=13_omegaSlice.png
+lambda2_t=0.0248457_n=14_omegaSlice.png
+lambda2_t=0.0248457_n=15_omegaSlice.png
+lambda2_t=0.0248457_n=16_omegaSlice.png
+lambda2_t=0.0248457_n=17_omegaSlice.png
+lambda2_t=0.0248457_n=18_omegaSlice.png
+lambda2_t=0.0248457_n=19_omegaSlice.png
+lambda2_t=0.0248457_n=1_omegaSlice.png
+lambda2_t=0.0248457_n=2_omegaSlice.png
+lambda2_t=0.0248457_n=3_omegaSlice.png
+lambda2_t=0.0248457_n=4_omegaSlice.png
+lambda2_t=0.0248457_n=5_omegaSlice.png
+lambda2_t=0.0248457_n=6_omegaSlice.png
+lambda2_t=0.0248457_n=7_omegaSlice.png
+lambda2_t=0.0248457_n=8_omegaSlice.png
+lambda2_t=0.0248457_n=9_omegaSlice.png
+lambda2_t=0.0522004_n=0_omegaSlice.png
+lambda2_t=0.0522004_n=10_omegaSlice.png
+lambda2_t=0.0522004_n=11_omegaSlice.png
+lambda2_t=0.0522004_n=12_omegaSlice.png
+lambda2_t=0.0522004_n=13_omegaSlice.png
+lambda2_t=0.0522004_n=14_omegaSlice.png
+lambda2_t=0.0522004_n=15_omegaSlice.png
+lambda2_t=0.0522004_n=16_omegaSlice.png
+lambda2_t=0.0522004_n=17_omegaSlice.png
+lambda2_t=0.0522004_n=18_omegaSlice.png
+lambda2_t=0.0522004_n=19_omegaSlice.png
+lambda2_t=0.0522004_n=1_omegaSlice.png
+lambda2_t=0.0522004_n=2_omegaSlice.png
+lambda2_t=0.0522004_n=3_omegaSlice.png
+lambda2_t=0.0522004_n=4_omegaSlice.png
+lambda2_t=0.0522004_n=5_omegaSlice.png
+lambda2_t=0.0522004_n=6_omegaSlice.png
+lambda2_t=0.0522004_n=7_omegaSlice.png
+lambda2_t=0.0522004_n=8_omegaSlice.png
+lambda2_t=0.0522004_n=9_omegaSlice.png
+lambda2_t=0.0795554_n=0_omegaSlice.png
+lambda2_t=0.0795554_n=10_omegaSlice.png
+lambda2_t=0.0795554_n=11_omegaSlice.png
+lambda2_t=0.0795554_n=12_omegaSlice.png
+lambda2_t=0.0795554_n=13_omegaSlice.png
+lambda2_t=0.0795554_n=14_omegaSlice.png
+lambda2_t=0.0795554_n=15_omegaSlice.png
+lambda2_t=0.0795554_n=16_omegaSlice.png
+lambda2_t=0.0795554_n=17_omegaSlice.png
+lambda2_t=0.0795554_n=18_omegaSlice.png
+lambda2_t=0.0795554_n=19_omegaSlice.png
+lambda2_t=0.0795554_n=1_omegaSlice.png
+lambda2_t=0.0795554_n=2_omegaSlice.png
+lambda2_t=0.0795554_n=3_omegaSlice.png
+lambda2_t=0.0795554_n=4_omegaSlice.png
+lambda2_t=0.0795554_n=5_omegaSlice.png
+lambda2_t=0.0795554_n=6_omegaSlice.png
+lambda2_t=0.0795554_n=7_omegaSlice.png
+lambda2_t=0.0795554_n=8_omegaSlice.png
+lambda2_t=0.0795554_n=9_omegaSlice.png
+lambda2_t=0.10691_n=0_omegaSlice.png
+lambda2_t=0.10691_n=10_omegaSlice.png
+lambda2_t=0.10691_n=11_omegaSlice.png
+lambda2_t=0.10691_n=12_omegaSlice.png
+lambda2_t=0.10691_n=13_omegaSlice.png
+lambda2_t=0.10691_n=14_omegaSlice.png
+lambda2_t=0.10691_n=15_omegaSlice.png
+lambda2_t=0.10691_n=16_omegaSlice.png
+lambda2_t=0.10691_n=17_omegaSlice.png
+lambda2_t=0.10691_n=18_omegaSlice.png
+lambda2_t=0.10691_n=19_omegaSlice.png
+lambda2_t=0.10691_n=1_omegaSlice.png
+lambda2_t=0.10691_n=2_omegaSlice.png
+lambda2_t=0.10691_n=3_omegaSlice.png
+lambda2_t=0.10691_n=4_omegaSlice.png
+lambda2_t=0.10691_n=5_omegaSlice.png
+lambda2_t=0.10691_n=6_omegaSlice.png
+lambda2_t=0.10691_n=7_omegaSlice.png
+lambda2_t=0.10691_n=8_omegaSlice.png
+lambda2_t=0.10691_n=9_omegaSlice.png
+lambda2_t=0.134265_n=0_omegaSlice.png
+lambda2_t=0.134265_n=10_omegaSlice.png
+lambda2_t=0.134265_n=11_omegaSlice.png
+lambda2_t=0.134265_n=12_omegaSlice.png
+lambda2_t=0.134265_n=13_omegaSlice.png
+lambda2_t=0.134265_n=14_omegaSlice.png
+lambda2_t=0.134265_n=15_omegaSlice.png
+lambda2_t=0.134265_n=16_omegaSlice.png
+lambda2_t=0.134265_n=17_omegaSlice.png
+lambda2_t=0.134265_n=18_omegaSlice.png
+lambda2_t=0.134265_n=19_omegaSlice.png
+lambda2_t=0.134265_n=1_omegaSlice.png
+lambda2_t=0.134265_n=2_omegaSlice.png
+lambda2_t=0.134265_n=3_omegaSlice.png
+lambda2_t=0.134265_n=4_omegaSlice.png
+lambda2_t=0.134265_n=5_omegaSlice.png
+lambda2_t=0.134265_n=6_omegaSlice.png
+lambda2_t=0.134265_n=7_omegaSlice.png
+lambda2_t=0.134265_n=8_omegaSlice.png
+lambda2_t=0.134265_n=9_omegaSlice.png
+lambda2_t=0.16162_n=0_omegaSlice.png
+lambda2_t=0.16162_n=10_omegaSlice.png
+lambda2_t=0.16162_n=11_omegaSlice.png
+lambda2_t=0.16162_n=12_omegaSlice.png
+lambda2_t=0.16162_n=13_omegaSlice.png
+lambda2_t=0.16162_n=14_omegaSlice.png
+lambda2_t=0.16162_n=15_omegaSlice.png
+lambda2_t=0.16162_n=16_omegaSlice.png
+lambda2_t=0.16162_n=17_omegaSlice.png
+lambda2_t=0.16162_n=18_omegaSlice.png
+lambda2_t=0.16162_n=19_omegaSlice.png
+lambda2_t=0.16162_n=1_omegaSlice.png
+lambda2_t=0.16162_n=2_omegaSlice.png
+lambda2_t=0.16162_n=3_omegaSlice.png
+lambda2_t=0.16162_n=4_omegaSlice.png
+lambda2_t=0.16162_n=5_omegaSlice.png
+lambda2_t=0.16162_n=6_omegaSlice.png
+lambda2_t=0.16162_n=7_omegaSlice.png
+lambda2_t=0.16162_n=8_omegaSlice.png
+lambda2_t=0.16162_n=9_omegaSlice.png
+lambda2_t=2.93815_n=0_omegaSlice.png
+lambda2_t=2.93815_n=10_omegaSlice.png
+lambda2_t=2.93815_n=11_omegaSlice.png
+lambda2_t=2.93815_n=12_omegaSlice.png
+lambda2_t=2.93815_n=13_omegaSlice.png
+lambda2_t=2.93815_n=14_omegaSlice.png
+lambda2_t=2.93815_n=15_omegaSlice.png
+lambda2_t=2.93815_n=16_omegaSlice.png
+lambda2_t=2.93815_n=17_omegaSlice.png
+lambda2_t=2.93815_n=18_omegaSlice.png
+lambda2_t=2.93815_n=19_omegaSlice.png
+lambda2_t=2.93815_n=1_omegaSlice.png
+lambda2_t=2.93815_n=2_omegaSlice.png
+lambda2_t=2.93815_n=3_omegaSlice.png
+lambda2_t=2.93815_n=4_omegaSlice.png
+lambda2_t=2.93815_n=5_omegaSlice.png
+lambda2_t=2.93815_n=6_omegaSlice.png
+lambda2_t=2.93815_n=7_omegaSlice.png
+lambda2_t=2.93815_n=8_omegaSlice.png
+lambda2_t=2.93815_n=9_omegaSlice.png
+lambda2_t=2.96277_n=0_omegaSlice.png
+lambda2_t=2.96277_n=10_omegaSlice.png
+lambda2_t=2.96277_n=11_omegaSlice.png
+lambda2_t=2.96277_n=12_omegaSlice.png
+lambda2_t=2.96277_n=13_omegaSlice.png
+lambda2_t=2.96277_n=14_omegaSlice.png
+lambda2_t=2.96277_n=15_omegaSlice.png
+lambda2_t=2.96277_n=16_omegaSlice.png
+lambda2_t=2.96277_n=17_omegaSlice.png
+lambda2_t=2.96277_n=18_omegaSlice.png
+lambda2_t=2.96277_n=19_omegaSlice.png
+lambda2_t=2.96277_n=1_omegaSlice.png
+lambda2_t=2.96277_n=2_omegaSlice.png
+lambda2_t=2.96277_n=3_omegaSlice.png
+lambda2_t=2.96277_n=4_omegaSlice.png
+lambda2_t=2.96277_n=5_omegaSlice.png
+lambda2_t=2.96277_n=6_omegaSlice.png
+lambda2_t=2.96277_n=7_omegaSlice.png
+lambda2_t=2.96277_n=8_omegaSlice.png
+lambda2_t=2.96277_n=9_omegaSlice.png
+lambda2_t=2.99012_n=0_omegaSlice.png
+lambda2_t=2.99012_n=10_omegaSlice.png
+lambda2_t=2.99012_n=11_omegaSlice.png
+lambda2_t=2.99012_n=12_omegaSlice.png
+lambda2_t=2.99012_n=13_omegaSlice.png
+lambda2_t=2.99012_n=14_omegaSlice.png
+lambda2_t=2.99012_n=15_omegaSlice.png
+lambda2_t=2.99012_n=16_omegaSlice.png
+lambda2_t=2.99012_n=17_omegaSlice.png
+lambda2_t=2.99012_n=18_omegaSlice.png
+lambda2_t=2.99012_n=19_omegaSlice.png
+lambda2_t=2.99012_n=1_omegaSlice.png
+lambda2_t=2.99012_n=2_omegaSlice.png
+lambda2_t=2.99012_n=3_omegaSlice.png
+lambda2_t=2.99012_n=4_omegaSlice.png
+lambda2_t=2.99012_n=5_omegaSlice.png
+lambda2_t=2.99012_n=6_omegaSlice.png
+lambda2_t=2.99012_n=7_omegaSlice.png
+lambda2_t=2.99012_n=8_omegaSlice.png
+lambda2_t=2.99012_n=9_omegaSlice.png
+lambda2_t=3.01748_n=0_omegaSlice.png
+lambda2_t=3.01748_n=10_omegaSlice.png
+lambda2_t=3.01748_n=11_omegaSlice.png
+lambda2_t=3.01748_n=12_omegaSlice.png
+lambda2_t=3.01748_n=13_omegaSlice.png
+lambda2_t=3.01748_n=14_omegaSlice.png
+lambda2_t=3.01748_n=15_omegaSlice.png
+lambda2_t=3.01748_n=16_omegaSlice.png
+lambda2_t=3.01748_n=17_omegaSlice.png
+lambda2_t=3.01748_n=18_omegaSlice.png
+lambda2_t=3.01748_n=19_omegaSlice.png
+lambda2_t=3.01748_n=1_omegaSlice.png
+lambda2_t=3.01748_n=2_omegaSlice.png
+lambda2_t=3.01748_n=3_omegaSlice.png
+lambda2_t=3.01748_n=4_omegaSlice.png
+lambda2_t=3.01748_n=5_omegaSlice.png
+lambda2_t=3.01748_n=6_omegaSlice.png
+lambda2_t=3.01748_n=7_omegaSlice.png
+lambda2_t=3.01748_n=8_omegaSlice.png
+lambda2_t=3.01748_n=9_omegaSlice.png
+lambda2_t=3.04483_n=0_omegaSlice.png
+lambda2_t=3.04483_n=10_omegaSlice.png
+lambda2_t=3.04483_n=11_omegaSlice.png
+lambda2_t=3.04483_n=12_omegaSlice.png
+lambda2_t=3.04483_n=13_omegaSlice.png
+lambda2_t=3.04483_n=14_omegaSlice.png
+lambda2_t=3.04483_n=15_omegaSlice.png
+lambda2_t=3.04483_n=16_omegaSlice.png
+lambda2_t=3.04483_n=17_omegaSlice.png
+lambda2_t=3.04483_n=18_omegaSlice.png
+lambda2_t=3.04483_n=19_omegaSlice.png
+lambda2_t=3.04483_n=1_omegaSlice.png
+lambda2_t=3.04483_n=2_omegaSlice.png
+lambda2_t=3.04483_n=3_omegaSlice.png
+lambda2_t=3.04483_n=4_omegaSlice.png
+lambda2_t=3.04483_n=5_omegaSlice.png
+lambda2_t=3.04483_n=6_omegaSlice.png
+lambda2_t=3.04483_n=7_omegaSlice.png
+lambda2_t=3.04483_n=8_omegaSlice.png
+lambda2_t=3.04483_n=9_omegaSlice.png
+lambda2_t=3.07219_n=0_omegaSlice.png
+lambda2_t=3.07219_n=10_omegaSlice.png
+lambda2_t=3.07219_n=11_omegaSlice.png
+lambda2_t=3.07219_n=12_omegaSlice.png
+lambda2_t=3.07219_n=13_omegaSlice.png
+lambda2_t=3.07219_n=14_omegaSlice.png
+lambda2_t=3.07219_n=15_omegaSlice.png
+lambda2_t=3.07219_n=16_omegaSlice.png
+lambda2_t=3.07219_n=17_omegaSlice.png
+lambda2_t=3.07219_n=18_omegaSlice.png
+lambda2_t=3.07219_n=19_omegaSlice.png
+lambda2_t=3.07219_n=1_omegaSlice.png
+lambda2_t=3.07219_n=2_omegaSlice.png
+lambda2_t=3.07219_n=3_omegaSlice.png
+lambda2_t=3.07219_n=4_omegaSlice.png
+lambda2_t=3.07219_n=5_omegaSlice.png
+lambda2_t=3.07219_n=6_omegaSlice.png
+lambda2_t=3.07219_n=7_omegaSlice.png
+lambda2_t=3.07219_n=8_omegaSlice.png
+lambda2_t=3.07219_n=9_omegaSlice.png
+lambda2_t=3.09954_n=0_omegaSlice.png
+lambda2_t=3.09954_n=10_omegaSlice.png
+lambda2_t=3.09954_n=11_omegaSlice.png
+lambda2_t=3.09954_n=12_omegaSlice.png
+lambda2_t=3.09954_n=13_omegaSlice.png
+lambda2_t=3.09954_n=14_omegaSlice.png
+lambda2_t=3.09954_n=15_omegaSlice.png
+lambda2_t=3.09954_n=16_omegaSlice.png
+lambda2_t=3.09954_n=17_omegaSlice.png
+lambda2_t=3.09954_n=18_omegaSlice.png
+lambda2_t=3.09954_n=19_omegaSlice.png
+lambda2_t=3.09954_n=1_omegaSlice.png
+lambda2_t=3.09954_n=2_omegaSlice.png
+lambda2_t=3.09954_n=3_omegaSlice.png
+lambda2_t=3.09954_n=4_omegaSlice.png
+lambda2_t=3.09954_n=5_omegaSlice.png
+lambda2_t=3.09954_n=6_omegaSlice.png
+lambda2_t=3.09954_n=7_omegaSlice.png
+lambda2_t=3.09954_n=8_omegaSlice.png
+lambda2_t=3.09954_n=9_omegaSlice.png
+lambda2_t=3.1269_n=0_omegaSlice.png
+lambda2_t=3.1269_n=10_omegaSlice.png
+lambda2_t=3.1269_n=11_omegaSlice.png
+lambda2_t=3.1269_n=12_omegaSlice.png
+lambda2_t=3.1269_n=13_omegaSlice.png
+lambda2_t=3.1269_n=14_omegaSlice.png
+lambda2_t=3.1269_n=15_omegaSlice.png
+lambda2_t=3.1269_n=16_omegaSlice.png
+lambda2_t=3.1269_n=17_omegaSlice.png
+lambda2_t=3.1269_n=18_omegaSlice.png
+lambda2_t=3.1269_n=19_omegaSlice.png
+lambda2_t=3.1269_n=1_omegaSlice.png
+lambda2_t=3.1269_n=2_omegaSlice.png
+lambda2_t=3.1269_n=3_omegaSlice.png
+lambda2_t=3.1269_n=4_omegaSlice.png
+lambda2_t=3.1269_n=5_omegaSlice.png
+lambda2_t=3.1269_n=6_omegaSlice.png
+lambda2_t=3.1269_n=7_omegaSlice.png
+lambda2_t=3.1269_n=8_omegaSlice.png
+lambda2_t=3.1269_n=9_omegaSlice.png
+lambda2_t=3.15425_n=0_omegaSlice.png
+lambda2_t=3.15425_n=10_omegaSlice.png
+lambda2_t=3.15425_n=11_omegaSlice.png
+lambda2_t=3.15425_n=12_omegaSlice.png
+lambda2_t=3.15425_n=13_omegaSlice.png
+lambda2_t=3.15425_n=14_omegaSlice.png
+lambda2_t=3.15425_n=15_omegaSlice.png
+lambda2_t=3.15425_n=16_omegaSlice.png
+lambda2_t=3.15425_n=17_omegaSlice.png
+lambda2_t=3.15425_n=18_omegaSlice.png
+lambda2_t=3.15425_n=19_omegaSlice.png
+lambda2_t=3.15425_n=1_omegaSlice.png
+lambda2_t=3.15425_n=2_omegaSlice.png
+lambda2_t=3.15425_n=3_omegaSlice.png
+lambda2_t=3.15425_n=4_omegaSlice.png
+lambda2_t=3.15425_n=5_omegaSlice.png
+lambda2_t=3.15425_n=6_omegaSlice.png
+lambda2_t=3.15425_n=7_omegaSlice.png
+lambda2_t=3.15425_n=8_omegaSlice.png
+lambda2_t=3.15425_n=9_omegaSlice.png
+lambda2_t=3.18161_n=0_omegaSlice.png
+lambda2_t=3.18161_n=10_omegaSlice.png
+lambda2_t=3.18161_n=11_omegaSlice.png
+lambda2_t=3.18161_n=12_omegaSlice.png
+lambda2_t=3.18161_n=13_omegaSlice.png
+lambda2_t=3.18161_n=14_omegaSlice.png
+lambda2_t=3.18161_n=15_omegaSlice.png
+lambda2_t=3.18161_n=16_omegaSlice.png
+lambda2_t=3.18161_n=17_omegaSlice.png
+lambda2_t=3.18161_n=18_omegaSlice.png
+lambda2_t=3.18161_n=19_omegaSlice.png
+lambda2_t=3.18161_n=1_omegaSlice.png
+lambda2_t=3.18161_n=2_omegaSlice.png
+lambda2_t=3.18161_n=3_omegaSlice.png
+lambda2_t=3.18161_n=4_omegaSlice.png
+lambda2_t=3.18161_n=5_omegaSlice.png
+lambda2_t=3.18161_n=6_omegaSlice.png
+lambda2_t=3.18161_n=7_omegaSlice.png
+lambda2_t=3.18161_n=8_omegaSlice.png
+lambda2_t=3.18161_n=9_omegaSlice.png
+lambda2_t=3.20896_n=0_omegaSlice.png
+lambda2_t=3.20896_n=10_omegaSlice.png
+lambda2_t=3.20896_n=11_omegaSlice.png
+lambda2_t=3.20896_n=12_omegaSlice.png
+lambda2_t=3.20896_n=13_omegaSlice.png
+lambda2_t=3.20896_n=14_omegaSlice.png
+lambda2_t=3.20896_n=15_omegaSlice.png
+lambda2_t=3.20896_n=16_omegaSlice.png
+lambda2_t=3.20896_n=17_omegaSlice.png
+lambda2_t=3.20896_n=18_omegaSlice.png
+lambda2_t=3.20896_n=19_omegaSlice.png
+lambda2_t=3.20896_n=1_omegaSlice.png
+lambda2_t=3.20896_n=2_omegaSlice.png
+lambda2_t=3.20896_n=3_omegaSlice.png
+lambda2_t=3.20896_n=4_omegaSlice.png
+lambda2_t=3.20896_n=5_omegaSlice.png
+lambda2_t=3.20896_n=6_omegaSlice.png
+lambda2_t=3.20896_n=7_omegaSlice.png
+lambda2_t=3.20896_n=8_omegaSlice.png
+lambda2_t=3.20896_n=9_omegaSlice.png
+lambda2_t=3.23632_n=0_omegaSlice.png
+lambda2_t=3.23632_n=10_omegaSlice.png
+lambda2_t=3.23632_n=11_omegaSlice.png
+lambda2_t=3.23632_n=12_omegaSlice.png
+lambda2_t=3.23632_n=13_omegaSlice.png
+lambda2_t=3.23632_n=14_omegaSlice.png
+lambda2_t=3.23632_n=15_omegaSlice.png
+lambda2_t=3.23632_n=16_omegaSlice.png
+lambda2_t=3.23632_n=17_omegaSlice.png
+lambda2_t=3.23632_n=18_omegaSlice.png
+lambda2_t=3.23632_n=19_omegaSlice.png
+lambda2_t=3.23632_n=1_omegaSlice.png
+lambda2_t=3.23632_n=2_omegaSlice.png
+lambda2_t=3.23632_n=3_omegaSlice.png
+lambda2_t=3.23632_n=4_omegaSlice.png
+lambda2_t=3.23632_n=5_omegaSlice.png
+lambda2_t=3.23632_n=6_omegaSlice.png
+lambda2_t=3.23632_n=7_omegaSlice.png
+lambda2_t=3.23632_n=8_omegaSlice.png
+lambda2_t=3.23632_n=9_omegaSlice.png
+lambda2_t=3.26367_n=0_omegaSlice.png
+lambda2_t=3.26367_n=10_omegaSlice.png
+lambda2_t=3.26367_n=11_omegaSlice.png
+lambda2_t=3.26367_n=12_omegaSlice.png
+lambda2_t=3.26367_n=13_omegaSlice.png
+lambda2_t=3.26367_n=14_omegaSlice.png
+lambda2_t=3.26367_n=15_omegaSlice.png
+lambda2_t=3.26367_n=16_omegaSlice.png
+lambda2_t=3.26367_n=17_omegaSlice.png
+lambda2_t=3.26367_n=18_omegaSlice.png
+lambda2_t=3.26367_n=19_omegaSlice.png
+lambda2_t=3.26367_n=1_omegaSlice.png
+lambda2_t=3.26367_n=2_omegaSlice.png
+lambda2_t=3.26367_n=3_omegaSlice.png
+lambda2_t=3.26367_n=4_omegaSlice.png
+lambda2_t=3.26367_n=5_omegaSlice.png
+lambda2_t=3.26367_n=6_omegaSlice.png
+lambda2_t=3.26367_n=7_omegaSlice.png
+lambda2_t=3.26367_n=8_omegaSlice.png
+lambda2_t=3.26367_n=9_omegaSlice.png
+lambda2_t=3.29103_n=0_omegaSlice.png
+lambda2_t=3.29103_n=10_omegaSlice.png
+lambda2_t=3.29103_n=11_omegaSlice.png
+lambda2_t=3.29103_n=12_omegaSlice.png
+lambda2_t=3.29103_n=13_omegaSlice.png
+lambda2_t=3.29103_n=14_omegaSlice.png
+lambda2_t=3.29103_n=15_omegaSlice.png
+lambda2_t=3.29103_n=16_omegaSlice.png
+lambda2_t=3.29103_n=17_omegaSlice.png
+lambda2_t=3.29103_n=18_omegaSlice.png
+lambda2_t=3.29103_n=19_omegaSlice.png
+lambda2_t=3.29103_n=1_omegaSlice.png
+lambda2_t=3.29103_n=2_omegaSlice.png
+lambda2_t=3.29103_n=3_omegaSlice.png
+lambda2_t=3.29103_n=4_omegaSlice.png
+lambda2_t=3.29103_n=5_omegaSlice.png
+lambda2_t=3.29103_n=6_omegaSlice.png
+lambda2_t=3.29103_n=7_omegaSlice.png
+lambda2_t=3.29103_n=8_omegaSlice.png
+lambda2_t=3.29103_n=9_omegaSlice.png
+lambda2_t=3.31838_n=0_omegaSlice.png
+lambda2_t=3.31838_n=10_omegaSlice.png
+lambda2_t=3.31838_n=11_omegaSlice.png
+lambda2_t=3.31838_n=12_omegaSlice.png
+lambda2_t=3.31838_n=13_omegaSlice.png
+lambda2_t=3.31838_n=14_omegaSlice.png
+lambda2_t=3.31838_n=15_omegaSlice.png
+lambda2_t=3.31838_n=16_omegaSlice.png
+lambda2_t=3.31838_n=17_omegaSlice.png
+lambda2_t=3.31838_n=18_omegaSlice.png
+lambda2_t=3.31838_n=19_omegaSlice.png
+lambda2_t=3.31838_n=1_omegaSlice.png
+lambda2_t=3.31838_n=2_omegaSlice.png
+lambda2_t=3.31838_n=3_omegaSlice.png
+lambda2_t=3.31838_n=4_omegaSlice.png
+lambda2_t=3.31838_n=5_omegaSlice.png
+lambda2_t=3.31838_n=6_omegaSlice.png
+lambda2_t=3.31838_n=7_omegaSlice.png
+lambda2_t=3.31838_n=8_omegaSlice.png
+lambda2_t=3.31838_n=9_omegaSlice.png
+lambda2_t=3.34574_n=0_omegaSlice.png
+lambda2_t=3.34574_n=10_omegaSlice.png
+lambda2_t=3.34574_n=11_omegaSlice.png
+lambda2_t=3.34574_n=12_omegaSlice.png
+lambda2_t=3.34574_n=13_omegaSlice.png
+lambda2_t=3.34574_n=14_omegaSlice.png
+lambda2_t=3.34574_n=15_omegaSlice.png
+lambda2_t=3.34574_n=16_omegaSlice.png
+lambda2_t=3.34574_n=17_omegaSlice.png
+lambda2_t=3.34574_n=18_omegaSlice.png
+lambda2_t=3.34574_n=19_omegaSlice.png
+lambda2_t=3.34574_n=1_omegaSlice.png
+lambda2_t=3.34574_n=2_omegaSlice.png
+lambda2_t=3.34574_n=3_omegaSlice.png
+lambda2_t=3.34574_n=4_omegaSlice.png
+lambda2_t=3.34574_n=5_omegaSlice.png
+lambda2_t=3.34574_n=6_omegaSlice.png
+lambda2_t=3.34574_n=7_omegaSlice.png
+lambda2_t=3.34574_n=8_omegaSlice.png
+lambda2_t=3.34574_n=9_omegaSlice.png
+lambda2_t=3.37309_n=0_omegaSlice.png
+lambda2_t=3.37309_n=10_omegaSlice.png
+lambda2_t=3.37309_n=11_omegaSlice.png
+lambda2_t=3.37309_n=12_omegaSlice.png
+lambda2_t=3.37309_n=13_omegaSlice.png
+lambda2_t=3.37309_n=14_omegaSlice.png
+lambda2_t=3.37309_n=15_omegaSlice.png
+lambda2_t=3.37309_n=16_omegaSlice.png
+lambda2_t=3.37309_n=17_omegaSlice.png
+lambda2_t=3.37309_n=18_omegaSlice.png
+lambda2_t=3.37309_n=19_omegaSlice.png
+lambda2_t=3.37309_n=1_omegaSlice.png
+lambda2_t=3.37309_n=2_omegaSlice.png
+lambda2_t=3.37309_n=3_omegaSlice.png
+lambda2_t=3.37309_n=4_omegaSlice.png
+lambda2_t=3.37309_n=5_omegaSlice.png
+lambda2_t=3.37309_n=6_omegaSlice.png
+lambda2_t=3.37309_n=7_omegaSlice.png
+lambda2_t=3.37309_n=8_omegaSlice.png
+lambda2_t=3.37309_n=9_omegaSlice.png
+lambda2_t=3.40045_n=0_omegaSlice.png
+lambda2_t=3.40045_n=10_omegaSlice.png
+lambda2_t=3.40045_n=11_omegaSlice.png
+lambda2_t=3.40045_n=12_omegaSlice.png
+lambda2_t=3.40045_n=13_omegaSlice.png
+lambda2_t=3.40045_n=14_omegaSlice.png
+lambda2_t=3.40045_n=15_omegaSlice.png
+lambda2_t=3.40045_n=16_omegaSlice.png
+lambda2_t=3.40045_n=17_omegaSlice.png
+lambda2_t=3.40045_n=18_omegaSlice.png
+lambda2_t=3.40045_n=19_omegaSlice.png
+lambda2_t=3.40045_n=1_omegaSlice.png
+lambda2_t=3.40045_n=2_omegaSlice.png
+lambda2_t=3.40045_n=3_omegaSlice.png
+lambda2_t=3.40045_n=4_omegaSlice.png
+lambda2_t=3.40045_n=5_omegaSlice.png
+lambda2_t=3.40045_n=6_omegaSlice.png
+lambda2_t=3.40045_n=7_omegaSlice.png
+lambda2_t=3.40045_n=8_omegaSlice.png
+lambda2_t=3.40045_n=9_omegaSlice.png
+lambda2_t=3.4278_n=0_omegaSlice.png
+lambda2_t=3.4278_n=10_omegaSlice.png
+lambda2_t=3.4278_n=11_omegaSlice.png
+lambda2_t=3.4278_n=12_omegaSlice.png
+lambda2_t=3.4278_n=13_omegaSlice.png
+lambda2_t=3.4278_n=14_omegaSlice.png
+lambda2_t=3.4278_n=15_omegaSlice.png
+lambda2_t=3.4278_n=16_omegaSlice.png
+lambda2_t=3.4278_n=17_omegaSlice.png
+lambda2_t=3.4278_n=18_omegaSlice.png
+lambda2_t=3.4278_n=19_omegaSlice.png
+lambda2_t=3.4278_n=1_omegaSlice.png
+lambda2_t=3.4278_n=2_omegaSlice.png
+lambda2_t=3.4278_n=3_omegaSlice.png
+lambda2_t=3.4278_n=4_omegaSlice.png
+lambda2_t=3.4278_n=5_omegaSlice.png
+lambda2_t=3.4278_n=6_omegaSlice.png
+lambda2_t=3.4278_n=7_omegaSlice.png
+lambda2_t=3.4278_n=8_omegaSlice.png
+lambda2_t=3.4278_n=9_omegaSlice.png
+lambda2_t=3.45516_n=0_omegaSlice.png
+lambda2_t=3.45516_n=10_omegaSlice.png
+lambda2_t=3.45516_n=11_omegaSlice.png
+lambda2_t=3.45516_n=12_omegaSlice.png
+lambda2_t=3.45516_n=13_omegaSlice.png
+lambda2_t=3.45516_n=14_omegaSlice.png
+lambda2_t=3.45516_n=15_omegaSlice.png
+lambda2_t=3.45516_n=16_omegaSlice.png
+lambda2_t=3.45516_n=17_omegaSlice.png
+lambda2_t=3.45516_n=18_omegaSlice.png
+lambda2_t=3.45516_n=19_omegaSlice.png
+lambda2_t=3.45516_n=1_omegaSlice.png
+lambda2_t=3.45516_n=2_omegaSlice.png
+lambda2_t=3.45516_n=3_omegaSlice.png
+lambda2_t=3.45516_n=4_omegaSlice.png
+lambda2_t=3.45516_n=5_omegaSlice.png
+lambda2_t=3.45516_n=6_omegaSlice.png
+lambda2_t=3.45516_n=7_omegaSlice.png
+lambda2_t=3.45516_n=8_omegaSlice.png
+lambda2_t=3.45516_n=9_omegaSlice.png
+lambda2_t=3.48251_n=0_omegaSlice.png
+lambda2_t=3.48251_n=10_omegaSlice.png
+lambda2_t=3.48251_n=11_omegaSlice.png
+lambda2_t=3.48251_n=12_omegaSlice.png
+lambda2_t=3.48251_n=13_omegaSlice.png
+lambda2_t=3.48251_n=14_omegaSlice.png
+lambda2_t=3.48251_n=15_omegaSlice.png
+lambda2_t=3.48251_n=16_omegaSlice.png
+lambda2_t=3.48251_n=17_omegaSlice.png
+lambda2_t=3.48251_n=18_omegaSlice.png
+lambda2_t=3.48251_n=19_omegaSlice.png
+lambda2_t=3.48251_n=1_omegaSlice.png
+lambda2_t=3.48251_n=2_omegaSlice.png
+lambda2_t=3.48251_n=3_omegaSlice.png
+lambda2_t=3.48251_n=4_omegaSlice.png
+lambda2_t=3.48251_n=5_omegaSlice.png
+lambda2_t=3.48251_n=6_omegaSlice.png
+lambda2_t=3.48251_n=7_omegaSlice.png
+lambda2_t=3.48251_n=8_omegaSlice.png
+lambda2_t=3.48251_n=9_omegaSlice.png
+lambda2_t=3.50987_n=0_omegaSlice.png
+lambda2_t=3.50987_n=10_omegaSlice.png
+lambda2_t=3.50987_n=11_omegaSlice.png
+lambda2_t=3.50987_n=12_omegaSlice.png
+lambda2_t=3.50987_n=13_omegaSlice.png
+lambda2_t=3.50987_n=14_omegaSlice.png
+lambda2_t=3.50987_n=15_omegaSlice.png
+lambda2_t=3.50987_n=16_omegaSlice.png
+lambda2_t=3.50987_n=17_omegaSlice.png
+lambda2_t=3.50987_n=18_omegaSlice.png
+lambda2_t=3.50987_n=19_omegaSlice.png
+lambda2_t=3.50987_n=1_omegaSlice.png
+lambda2_t=3.50987_n=2_omegaSlice.png
+lambda2_t=3.50987_n=3_omegaSlice.png
+lambda2_t=3.50987_n=4_omegaSlice.png
+lambda2_t=3.50987_n=5_omegaSlice.png
+lambda2_t=3.50987_n=6_omegaSlice.png
+lambda2_t=3.50987_n=7_omegaSlice.png
+lambda2_t=3.50987_n=8_omegaSlice.png
+lambda2_t=3.50987_n=9_omegaSlice.png
+lambda2_t=3.53722_n=0_omegaSlice.png
+lambda2_t=3.53722_n=10_omegaSlice.png
+lambda2_t=3.53722_n=11_omegaSlice.png
+lambda2_t=3.53722_n=12_omegaSlice.png
+lambda2_t=3.53722_n=13_omegaSlice.png
+lambda2_t=3.53722_n=14_omegaSlice.png
+lambda2_t=3.53722_n=15_omegaSlice.png
+lambda2_t=3.53722_n=16_omegaSlice.png
+lambda2_t=3.53722_n=17_omegaSlice.png
+lambda2_t=3.53722_n=18_omegaSlice.png
+lambda2_t=3.53722_n=19_omegaSlice.png
+lambda2_t=3.53722_n=1_omegaSlice.png
+lambda2_t=3.53722_n=2_omegaSlice.png
+lambda2_t=3.53722_n=3_omegaSlice.png
+lambda2_t=3.53722_n=4_omegaSlice.png
+lambda2_t=3.53722_n=5_omegaSlice.png
+lambda2_t=3.53722_n=6_omegaSlice.png
+lambda2_t=3.53722_n=7_omegaSlice.png
+lambda2_t=3.53722_n=8_omegaSlice.png
+lambda2_t=3.53722_n=9_omegaSlice.png
+lambda2_t=3.56458_n=0_omegaSlice.png
+lambda2_t=3.56458_n=10_omegaSlice.png
+lambda2_t=3.56458_n=11_omegaSlice.png
+lambda2_t=3.56458_n=12_omegaSlice.png
+lambda2_t=3.56458_n=13_omegaSlice.png
+lambda2_t=3.56458_n=14_omegaSlice.png
+lambda2_t=3.56458_n=15_omegaSlice.png
+lambda2_t=3.56458_n=16_omegaSlice.png
+lambda2_t=3.56458_n=17_omegaSlice.png
+lambda2_t=3.56458_n=18_omegaSlice.png
+lambda2_t=3.56458_n=19_omegaSlice.png
+lambda2_t=3.56458_n=1_omegaSlice.png
+lambda2_t=3.56458_n=2_omegaSlice.png
+lambda2_t=3.56458_n=3_omegaSlice.png
+lambda2_t=3.56458_n=4_omegaSlice.png
+lambda2_t=3.56458_n=5_omegaSlice.png
+lambda2_t=3.56458_n=6_omegaSlice.png
+lambda2_t=3.56458_n=7_omegaSlice.png
+lambda2_t=3.56458_n=8_omegaSlice.png
+lambda2_t=3.56458_n=9_omegaSlice.png
+lambda2_t=3.59193_n=0_omegaSlice.png
+lambda2_t=3.59193_n=10_omegaSlice.png
+lambda2_t=3.59193_n=11_omegaSlice.png
+lambda2_t=3.59193_n=12_omegaSlice.png
+lambda2_t=3.59193_n=13_omegaSlice.png
+lambda2_t=3.59193_n=14_omegaSlice.png
+lambda2_t=3.59193_n=15_omegaSlice.png
+lambda2_t=3.59193_n=16_omegaSlice.png
+lambda2_t=3.59193_n=17_omegaSlice.png
+lambda2_t=3.59193_n=18_omegaSlice.png
+lambda2_t=3.59193_n=19_omegaSlice.png
+lambda2_t=3.59193_n=1_omegaSlice.png
+lambda2_t=3.59193_n=2_omegaSlice.png
+lambda2_t=3.59193_n=3_omegaSlice.png
+lambda2_t=3.59193_n=4_omegaSlice.png
+lambda2_t=3.59193_n=5_omegaSlice.png
+lambda2_t=3.59193_n=6_omegaSlice.png
+lambda2_t=3.59193_n=7_omegaSlice.png
+lambda2_t=3.59193_n=8_omegaSlice.png
+lambda2_t=3.59193_n=9_omegaSlice.png
+lambda2_t=3.61929_n=0_omegaSlice.png
+lambda2_t=3.61929_n=10_omegaSlice.png
+lambda2_t=3.61929_n=11_omegaSlice.png
+lambda2_t=3.61929_n=12_omegaSlice.png
+lambda2_t=3.61929_n=13_omegaSlice.png
+lambda2_t=3.61929_n=14_omegaSlice.png
+lambda2_t=3.61929_n=15_omegaSlice.png
+lambda2_t=3.61929_n=16_omegaSlice.png
+lambda2_t=3.61929_n=17_omegaSlice.png
+lambda2_t=3.61929_n=18_omegaSlice.png
+lambda2_t=3.61929_n=19_omegaSlice.png
+lambda2_t=3.61929_n=1_omegaSlice.png
+lambda2_t=3.61929_n=2_omegaSlice.png
+lambda2_t=3.61929_n=3_omegaSlice.png
+lambda2_t=3.61929_n=4_omegaSlice.png
+lambda2_t=3.61929_n=5_omegaSlice.png
+lambda2_t=3.61929_n=6_omegaSlice.png
+lambda2_t=3.61929_n=7_omegaSlice.png
+lambda2_t=3.61929_n=8_omegaSlice.png
+lambda2_t=3.61929_n=9_omegaSlice.png

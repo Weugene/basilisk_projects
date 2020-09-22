@@ -365,6 +365,7 @@ event snapshot (i += snapshot_i)
     vorticity (u, omega);
     lambda2 (u, l2);
     foreach() ppart[] = pid();
+    p.nodump = false;
     dump (file = name);
 }
 
