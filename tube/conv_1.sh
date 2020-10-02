@@ -13,6 +13,8 @@ list=( $(ls dump-* | sort -n -t - -k 2) );
 length=${#list[@]}
 
 d=$(ls -lha /tmp/.X11-unix/ |grep ${USER} | awk '{print $9}' | sed 's/X//' | sed 's/=//'| tail -n 1)
+[ -z "$d" || $USER -eq 'weugene' ] && echo "DISPLAY not set!" && exit
+
 pvd="dump2pvd.pvd"
 #subn="${pvd%.*}"
 subn="dump2pvd_compressed"
@@ -22,9 +24,9 @@ if $time_of_debug; then
     rm $pvd
     for (( i = 0; i < length; i+=$parallel )); do
       echo "i=$i";
-      for (( j = 0; j < $parallel; j++ )); do
-        echo '<VTKFile type="Collection" version="1.0" byte_order="LittleEndian" header_type="UInt64">
+      echo '<VTKFile type="Collection" version="1.0" byte_order="LittleEndian" header_type="UInt64">
     <Collection>' >> $pvd
+      for (( j = 0; j < $parallel; j++ )); do
         k=$((i + j))
         echo "length=$length parallel=${parallel} k=$k"
         if (( k < length)); then

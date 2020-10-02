@@ -1693,14 +1693,19 @@ if not noPic:
       del calculator1
       Delete(extractSelection1)
       del extractSelection1
-      Delete(contour5)
-      del contour5
-      Delete(isoVolume1)
-      del isoVolume1
-      Delete(slice1)
-      del slice1
+      Delete(programmableFilter1)
+      del programmableFilter1
+      Delete(threshold1)
+      del threshold1
+      Delete(connectivity2)
+      del connectivity2
+      Delete(isoVolume2)
+      del isoVolume2
       Delete(contour2)
       del contour2
+      Delete(slice1)
+      del slice1
+
       Delete(contour1)
       del contour1
       Delete(resampleToImage1)
