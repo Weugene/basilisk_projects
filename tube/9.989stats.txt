@@ -1,0 +1,2 @@
+time: 9.989 i: 0 coarse_x_mean: 16.0030498505  refined_x_mean: 16.002790451  u_mean: 2.04853404251 
+RAD_mean: 0.419024 delta: 0.080976

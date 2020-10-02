@@ -1,0 +1,19 @@
+file 'lambda2_t=0.989ux.png'
+duration 0.96393
+file 'lambda2_t=1.02507ux.png'
+duration 1.000
+file 'lambda2_t=1.989ux.png'
+duration 1.000
+file 'lambda2_t=2.989ux.png'
+duration 1.000
+file 'lambda2_t=3.989ux.png'
+duration 2.000
+file 'lambda2_t=4.989ux.png'
+duration 1.000
+file 'lambda2_t=6.989ux.png'
+duration 1.000
+file 'lambda2_t=7.989ux.png'
+duration 1.000
+file 'lambda2_t=8.989ux.png'
+
+file 'lambda2_t=9.989ux.png'

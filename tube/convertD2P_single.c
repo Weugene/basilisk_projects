@@ -26,7 +26,7 @@ scalar l2[];
 #include "utils.h"
 #include "lambda2.h"
 #include "../src_local/output_vtu_foreach.h"
-scalar fs[], f[];
+scalar fs[], f[], p[];
 vector u[];
 scalar l[], omega[], l2[];
 double rho1=1, rho2=1, mu1=1, mu2=1;
@@ -299,7 +299,7 @@ event vtk_file (i++)
     }
     */
     char subname[80]; sprintf(subname, "dump2pvd_compressed");
-    output_vtu_MPI( subname, myt, (scalar *) {fs, f, l, l2, omega}, (vector *) {u});
+    output_vtu_MPI( subname, myt, (scalar *) {fs, f, l, l2, omega, p}, (vector *) {u});
     return 0;
 }
 
