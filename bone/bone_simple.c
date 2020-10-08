@@ -30,7 +30,7 @@ We also need to compute distance functions (to describe the solid geometry
 We will vary the maximum level of refinement, starting from 5. */
 
 int minlevel = 4;
-int maxlevel = 7;
+int maxlevel = 10;
 double cseps = 1e-3, ueps = 1e-3;
 double RE = 42, FROUDE = 0.7;
 const face vector muv_[] = {0.1,0.1,0.1};
@@ -132,9 +132,16 @@ void bone (scalar cs, face vector fs)
     fprintf (ferr, "STL file is saved in fs... \n");
     fclose (fp);
 }
+
+/**
+The boundary condition is zero velocity on the embedded boundary. */
+
+u.n[embed] = dirichlet(0);
+u.t[embed] = dirichlet(0);
+u.r[embed] = dirichlet(0);
+
 /**
 The domain is the periodic unit cube centered on the origin. */
-
 int main()
 {
     size(1);
@@ -179,12 +186,7 @@ event init (t = 0) {
 //    mu = muv;
 //    mu = fm;
 
-    /**
-    The boundary condition is zero velocity on the embedded boundary. */
 
-    u.n[embed] = dirichlet(0);
-    u.t[embed] = dirichlet(0);
-    u.r[embed] = dirichlet(0);
 
     /**
     We initialize the reference velocity. */
@@ -247,10 +249,10 @@ event dumps (i += 10) {
 }
 #endif
 
-//event properties (i++) {
-//    foreach_face()
-//        muv.x[] = fm.x[]/RE;
-//}
+event properties (i++) {
+    foreach_face()
+        muv.x[] = fm.x[]/RE;
+}
 /**
 We check for a stationary solution. */
 

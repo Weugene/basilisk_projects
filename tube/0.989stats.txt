@@ -1,4 +1,1 @@
-time: 0.989 i: 0 coarse_x_mean: 4.49236965179  refined_x_mean: 4.49246120453 refined_u_mean: 1.96501598226 len_min: 1.06773877144 len_max: 8.1698307991 len: 7.10209202766 len_bub: 3.10209202766 RAD_mean: 0.323953 delta: 0.176047
-time: 1.02507 i: 1 coarse_x_mean: 2.10063767433  refined_x_mean: 2.10065126419 refined_u_mean: 0.362331902307 len_min: 0.5 len_max: 4.49709105492 len: 3.99709105492 len_bub: 0.790130019188 RAD_mean: 0.285421 delta: 0.214579
-time: 1.989 i: 2 coarse_x_mean: 5.74088191986  refined_x_mean: 5.74039030075 refined_u_mean: 1.99227627604 len_min: 2.3485250473 len_max: 9.46795415878 len: 7.11942911148 len_bub: 3.11942911148 RAD_mean: 0.317335 delta: 0.182665
-time: 2.989 i: 3 coarse_x_mean: 7.00586938858  refined_x_mean: 7.00548458099 refined_u_mean: 2.01044914118 len_min: 3.59303998947 len_max: 10.7613124847 len: 7.16827249527 len_bub: 3.16827249527 RAD_mean: 0.311656 delta: 0.188344
+time: 0.989 i: 0 coarse_x_mean: 4.49236965179  refined_x_mean: 4.49246120453 refined_u_mean: 1.96501598226 len_min: 1.06773877144 len_max: 8.1698307991 len: 7.10209202766 len_bub: 3.10209202766 RAD_mean: 0.450334 delta: 0.049666

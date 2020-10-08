@@ -535,7 +535,7 @@ if not noPic:
         print('center_rude=', center)
         len_bub = bounds[1] - bounds[0]
         len_min = max([bounds[0] - 2, 0.5])
-        len_max = min([bounds[1] + 2, 29.5])
+        len_max = min([bounds[1] + 2, lDomain - 0.5])
 
         length = len_max - len_min
         print('COARSE ESTIMATION: len_min=',len_min,' len_max=',len_max,' len=',length, ' len_bub=', len_bub)
@@ -610,7 +610,7 @@ if not noPic:
 
         len_bub = bounds[1] - bounds[0]
         len_min = np.max([bounds[0] - 2, 0.5])
-        len_max = np.min([bounds[1] + 2, 29.5])
+        len_max = np.min([bounds[1] + 2, lDomain - 0.5])
         length = len_max - len_min
 
         # create a new 'Integrate Variables'
@@ -784,7 +784,7 @@ if not noPic:
         # setup color maps and opacity mapes used in the visualization
         # note: the Get..() functions create a new object, if needed
         # ----------------------------------------------------------------
-        passArrays0 = PassArrays(Input=connectivity1)
+        passArrays0 = PassArrays(Input=extractSurface1)
         passArrays0.PointDataArrays = [ 'Points']
 
         ss_data = Fetch(passArrays0)
@@ -1046,7 +1046,7 @@ if not noPic:
         l2PWF.ScalarRangeInitialized = 1
 
         renderView1.CameraViewUp = [0.2, 1, 0]
-        renderView1.CameraParallelScale = 0.8
+        renderView1.CameraParallelScale = 1
         renderView1.CenterOfRotation = [center[0], 0.0, 0.0]
         renderView1.CameraFocalPoint = [center[0], 0, 0]
 #         renderView1.CameraFocalPoint = [0.5*(len_min + len_max) , -0.25, -1.3]
@@ -1075,26 +1075,6 @@ if not noPic:
 
         extractSelection1 = ExtractSelection(Input=connectivity1, Selection=selection)
         extractSelection1.UpdatePipeline()
-
-
-
-        # create a query selection
-#         sel = QuerySelect(InsideOut=0, QueryString='(pointIsNear([(' + str(lDomain) + ',0,0),], ' + str(lDomain) + ', inputs))', FieldType='POINT')
-#         # create a new 'Extract Selection'
-#         extractSelection1 = ExtractSelection(Input=connectivity1, Selection=sel)
-#         extractSelection1Display = Show(extractSelection1, renderView1, 'UnstructuredGridRepresentation')
-#         Show(extractSelection1, spreadSheetView1, 'SpreadSheetRepresentation')
-
-
-#         Show(extractSelection1, spreadSheetView1, 'SpreadSheetRepresentation')
-#         Hide(extractSelection1, spreadSheetView1)
-#         u_tip = 1.29#delete me
-#         info = resampleToImage1.GetDataInformation().DataInformation
-#         arrayInfo = info.GetArrayInformation("u.x", vtk.vtkDataObject.FIELD_ASSOCIATION_POINTS)
-#         print('end')
-#         range0 = arrayInfo.GetComponentRange(0)
-#         range1 = arrayInfo.GetComponentRange(1)
-#         range2 = arrayInfo.GetComponentRange(2)
 
         info = extractSelection1.GetDataInformation().DataInformation
         print('info Number of Points=',info.GetNumberOfPoints ())
