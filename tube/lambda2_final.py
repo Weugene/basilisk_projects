@@ -247,6 +247,7 @@ if frameWindow[0] == 0 and frameWindow[1] == 0:
 print ("renderViews, axesGrid, SpreadSheetViews, layouts.. "),
 # Create a new 'Render View'
 renderView1 = CreateView('RenderView')
+renderView1.ViewSize = viewSize
 renderView1.InteractionMode = '2D'
 renderView1.AxesGrid = 'GridAxes3DActor'
 renderView1.OrientationAxesVisibility = 0
@@ -307,15 +308,11 @@ SetActiveView(None)
 spreadSheetView1 = CreateView('SpreadSheetView')
 spreadSheetView1.ColumnToSort = ''
 spreadSheetView1.BlockSize = 1024L
-# uncomment following to set a specific view size
-# spreadSheetView1.ViewSize = [400, 400]
 
 # Create a new 'SpreadSheet View'
 spreadSheetView2 = CreateView('SpreadSheetView')
 spreadSheetView2.ColumnToSort = ''
 spreadSheetView2.BlockSize = 1024L
-# uncomment following to set a specific view size
-# spreadSheetView2.ViewSize = [400, 400]
 
 # ----------------------------------------------------------------
 # setup view layouts
@@ -465,7 +462,6 @@ global my_stats # output
 if not noPic:
     for i in timeList:
         print("in loop iteration:" + str(i))
-        renderView1.ViewSize = [3108, 1168]
         SetActiveView(renderView1)
         # Properties modified on animationScene1
         animationScene1.AnimationTime = timesteps[i]
@@ -622,15 +618,16 @@ if not noPic:
         # create a new 'Pass Arrays'
         passArrays1 = PassArrays(Input=integrateVariables1)
         passArrays1.PointDataArrays = [ 'Points', 'u.x']
-        passArrays1.CellDataArrays = []
+        passArrays1.CellDataArrays = ['Volume']
 
         # update the view to ensure updated data information
         spreadSheetView1.Update()
 
         ss_data = Fetch(passArrays1)
         print('N=', ss_data.GetNumberOfPoints())
-        x_mean = ss_data.GetPoint(0)[0]
-        u_mean = ss_data.GetPointData().GetArray('u.x').GetValue(0)
+		volume = ss_data.GetCellData(0).GetArray('Volume').GetValue(0)
+        x_mean = ss_data.GetPoint(0)[0]/volume
+        u_mean = ss_data.GetPointData().GetArray('u.x').GetValue(0)/volume
         s = "refined_x_mean: {} refined_u_mean: {} len_min: {} len_max: {} len: {} len_bub: {} ".format(x_mean, u_mean, len_min, len_max, length, len_bub)
         print (s)
         if vtk_from_pvpython:
@@ -845,13 +842,11 @@ if not noPic:
         # ----------------------------------------------------------------
         # ----------------------------------------------------------------
 
-#         renderView1.CameraPosition = [center[0], center[1], 6]
-#         renderView1.CameraFocalPoint = center
         renderView1.CameraViewUp = [0.2, 1, 0]
-        renderView1.CameraParallelScale = 1
-        renderView1.CenterOfRotation = [0.5*(len_min + len_max), 0.0, 0.0]
-        renderView1.CameraFocalPoint = [0.5*(bounds[0]+center[0]), 0, 0]
-        renderView1.CameraPosition = [0.5*(len_min + len_max) - 4, 0.6, 4.5]
+        renderView1.CameraParallelScale = 1.
+        renderView1.CenterOfRotation = center
+        renderView1.CameraFocalPoint = center
+        renderView1.CameraPosition = [center[0] - 4, 0.6, 4.5]
 
         # update the view to ensure updated data information
         renderView1.Update()
@@ -860,7 +855,7 @@ if not noPic:
         # show data from connectivity1
         fn = path + "/" + picName +  '_t=' + str(timesteps[i]) +'ux.png'
         SaveScreenshot( fn, renderView1,
-        #      ImageResolution=[2316, 2204],
+            ImageResolution=viewSize,
             TransparentBackground=0,
             CompressionLevel='2' )
         print('File=' + fn + ' generated succesfully')
@@ -941,11 +936,16 @@ if not noPic:
         contour2Display.OpacityTransferFunction.Points = [-1.0, 0.0, 0.5, 0.0, -0.9998779296875, 1.0, 0.5, 0.0]
         print ("end")
         print("RenderView update..")
+        renderView1.CameraViewUp = [0.2, 1, 0]
+        renderView1.CameraParallelScale = 1.4
+        renderView1.CenterOfRotation = center
+        renderView1.CameraFocalPoint = [center[0]-0.5, 0, 0]
+        renderView1.CameraPosition = [center[0] - 4, 0.6, 4.5]
         renderView1.Update()
         print ("end")
         fn = path + "/" + picName+  '_t=' + str(timesteps[i]) +'_noLambda2.png'
         SaveScreenshot( fn, renderView1,
-                    #      ImageResolution=[2316, 2204],
+                        ImageResolution=viewSize,
                         TransparentBackground=0,
                         CompressionLevel='2' )
         print('File=' + fn + ' generated succesfully')
@@ -1047,16 +1047,15 @@ if not noPic:
 
         renderView1.CameraViewUp = [0.2, 1, 0]
         renderView1.CameraParallelScale = 1
-        renderView1.CenterOfRotation = [center[0], 0.0, 0.0]
-        renderView1.CameraFocalPoint = [center[0], 0, 0]
-#         renderView1.CameraFocalPoint = [0.5*(len_min + len_max) , -0.25, -1.3]
-        renderView1.CameraPosition = [center[0] - 2, 0.6, 4.5]
+        renderView1.CenterOfRotation = center
+        renderView1.CameraFocalPoint = center
+        renderView1.CameraPosition = [center[0] - 4, 0.6, 4.5]
         print("RenderView update..")
         renderView1.Update()
-        print ("end")
+        
         fn = path + "/" + picName+  '_t=' + str(timesteps[i]) +'_Lambda2_in_bubble.png'
         SaveScreenshot( fn, renderView1,
-                    #      ImageResolution=[2316, 2204],
+                        ImageResolution=viewSize,
                         TransparentBackground=0,
                         CompressionLevel='2' )
         print('File=' + fn + ' generated succesfully')
@@ -1278,7 +1277,7 @@ if not noPic:
         print ("end")
         fn = path + "/" + picName +  '_t=' + str(timesteps[i]) +'_tracer.png'
         SaveScreenshot( fn, renderView1,
-        #      ImageResolution=[2316, 2204],
+            ImageResolution=viewSize,
             TransparentBackground=0,
             CompressionLevel='2' )
         Hide(streamTracer1, renderView1)
@@ -1365,7 +1364,7 @@ if not noPic:
         print ("end")
         fn = path + "/" + picName +  '_t=' + str(timesteps[i]) +'_uxSide.png'
         SaveScreenshot( fn, renderView1,
-        #      ImageResolution=[2316, 2204],
+            ImageResolution=viewSize,
             TransparentBackground=0,
             CompressionLevel='2' )
 #         Hide(streamTracer1, renderView1)

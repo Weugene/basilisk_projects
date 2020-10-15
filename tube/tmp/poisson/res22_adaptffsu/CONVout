@@ -1,0 +1,360 @@
+NOTE: reads only dump2pvd_compressed file!!!
+Usage ./conv.sh Nparallel Ncase shiftm shiftp maxlevel nslices
+in: Nparallel=1 Ncase=22 shiftm=30 shiftp=30 maxlevel=12 nslices=5
+convert_single exists
+lambda2_final.py exists
+png2avi.sh exists
+i=0
+length=358 parallel=1 k=0
+dump-4.39479 at time=4.39479
+[1]+  Running                 ./convert_single $dump $j $2 $3 $4 &
+
+# Octree, 11901 steps, 137.752 CPU, 155.2 real, 1.18e+05 points.step/s, 9 var
+Namespace(filenames='dump2pvd_compressed.pvd', frameRate=10, frameWindow=[0, 0], maxlevel=12, noData=False, noLambda2=False, noPic=False, noVideo=False, nslices=5, nt=0, picName='lambda2', timeList=[0], vidName='lambda2', viewSize=[3108, 1168])
+('Found files:', ['dump2pvd_compressed.pvd'])
+('Read the first one:', 'dump2pvd_compressed.pvd')
+Started 'PVDReader'('FileName') ' line=208'  Finished in 0.0142 seconds.
+('timesteps=', 4.39479)
+('NT=', 1, ' timeList=', [0])
+('frameWindow is updated:', [0, 0])
+renderViews, axesGrid, SpreadSheetViews, layouts..  end
+Started 'Show'('') ' line=342'  Finished in 34.6244 seconds.
+('boundsDomain of my source=', (0.0, 30.0, -15.0, 15.0, -15.0, 15.0), ' lDomain=', 30.0)
+creating a cylinder..  Started 'Clip'('Input') ' line=359'  Finished in 0.0197 seconds.
+Started 'Show'('') ' line=378'  Finished in 0.0651 seconds.
+Started 'Show'('') ' line=413'  Finished in 0.0001 seconds.
+Started 'Show'('') ' line=378'  Finished in 0.0569 seconds.
+Started 'Show'('') ' line=413'  Finished in 0.0001 seconds.
+Started 'Slice'('Input') ' line=416'  Finished in 0.0088 seconds.
+Started 'Show'('') ' line=429'  Finished in 0.0594 seconds.
+Started 'Show'('') ' line=430'  Finished in 0.0001 seconds.
+end
+in loop iteration:0
+Started 'Clip'('Input') ' line=479'  Finished in 0.0080 seconds.
+Started 'IsoVolume'('Input') ' line=490'  Finished in 0.0017 seconds.
+Started 'CellDatatoPointData'('Input') ' line=495'  Finished in 0.0019 seconds.
+Started 'Show'('') ' line=501'  Finished in 25.7291 seconds.
+Started 'PassArrays'('Input') ' line=504'  Finished in 0.0022 seconds.
+Started 'Fetch'('') ' line=511'  Finished in 0.0037 seconds.
+('N=', 1L)
+time: 4.39479 i: 0 coarse_x_mean: 8.74353599548  
+('bounds_rude=', [7.043535995483398, 10.443535995483398, -0.5, 0.5, -0.5, 0.5])
+('center_rude=', [8.743535995483398, 0.0, 0.0])
+('COARSE ESTIMATION: len_min=', 5.043535995483398, ' len_max=', 12.443535995483398, ' len=', 7.3999999999999995, ' len_bub=', 3.3999999999999995)
+Started 'Clip'('Input') ' line=549'  Finished in 0.0076 seconds.
+Started 'CellDatatoPointData'('Input') ' line=560'  Finished in 0.0019 seconds.
+Started 'Calculator'('Input') ' line=564'  Finished in 0.0036 seconds.
+Started 'ResampleToImage'('Input') ' line=572'  Finished in 0.0019 seconds.
+('resampleDimension:', [1010, 136, 136])
+Started 'IsoVolume'('Input') ' line=583'  Finished in 0.0018 seconds.
+Started 'Show'('') ' line=593'  Finished in 37.8326 seconds.
+Started 'Slice'('Input') ' line=596'  Finished in 0.0063 seconds.
+('bounds_refined=', (7.210721969604492, 10.518013000488281, -0.456292986869812, 0.45763474702835083, -0.4559371769428253, 0.4574725329875946))
+('center_refined=', [8.864367485046387, 0.0006708800792694092, 0.0007676780223846436])
+Started 'Show'('') ' line=620'  Finished in 12.5701 seconds.
+Started 'PassArrays'('Input') ' line=623'  Finished in 0.0023 seconds.
+Started 'Fetch'('') ' line=630'  Finished in 0.0030 seconds.
+('N=', 1L)
+refined_x_mean: 8.74365520477 refined_u_mean: 2.01811285384 len_min: 5.2107219696 len_max: 12.5180130005 len: 7.30729103088 len_bub: 3.30729103088 
+Started 'Contour'('Input') ' line=644'  Finished in 0.0036 seconds.
+Started 'IsoVolume'('Input') ' line=653'  Finished in 0.0020 seconds.
+showing connectivity1Display..  Started 'Show'('') ' line=746'  Finished in 0.0579 seconds.
+end
+showing connectivity1Display..  Started 'Show'('') ' line=746'  Finished in 0.0573 seconds.
+end
+Started 'PassArrays'('Input') ' line=787'  Finished in 0.0028 seconds.
+Started 'Fetch'('') ' line=790'  Finished in 0.0158 seconds.
+('Number of points on contour:', 263252L)
+x_maxy < x_mean
+('     x_maxy:', 7.500423908233643, ' x_mean:', 8.74365520477295)
+RAD_mean: 0.432059 delta: 0.067941
+
+resampleToImage1.GetDataInformation.. end
+('velocity range_max= ', 2.45460863685427)
+('velocity range_xyz= ', (-0.573627097611027, 2.0771885107520593), (-0.9218093943941309, 0.9178183547977554), (-0.9277170319261931, 0.9276579250621746))
+('CustomLabels=', [0.0, 0.8, 1.6, 2.5])
+('CustomLabels=', [0.0, 0.8, 1.6, 2.5])
+i=1
+length=358 parallel=1 k=1
+dump-4.43187 at time=4.43187
+[1]+  Running                 ./convert_single $dump $j $2 $3 $4 &
+
+# Octree, 12001 steps, 122.802 CPU, 140.1 real, 1.31e+05 points.step/s, 9 var
+Namespace(filenames='dump2pvd_compressed.pvd', frameRate=10, frameWindow=[0, 0], maxlevel=12, noData=False, noLambda2=False, noPic=False, noVideo=False, nslices=5, nt=0, picName='lambda2', timeList=[0], vidName='lambda2', viewSize=[3108, 1168])
+('Found files:', ['dump2pvd_compressed.pvd'])
+('Read the first one:', 'dump2pvd_compressed.pvd')
+Started 'PVDReader'('FileName') ' line=208'  Finished in 0.0038 seconds.
+('timesteps=', 4.43187)
+('NT=', 1, ' timeList=', [0])
+('frameWindow is updated:', [0, 0])
+renderViews, axesGrid, SpreadSheetViews, layouts..  end
+Started 'Show'('') ' line=342'  Finished in 34.3028 seconds.
+('boundsDomain of my source=', (0.0, 30.0, -15.0, 15.0, -15.0, 15.0), ' lDomain=', 30.0)
+creating a cylinder..  Started 'Clip'('Input') ' line=359'  Finished in 0.0072 seconds.
+Started 'Show'('') ' line=378'  Finished in 0.0580 seconds.
+Started 'Show'('') ' line=413'  Finished in 0.0001 seconds.
+Started 'Show'('') ' line=378'  Finished in 0.0565 seconds.
+Started 'Show'('') ' line=413'  Finished in 0.0001 seconds.
+Started 'Slice'('Input') ' line=416'  Finished in 0.0057 seconds.
+Started 'Show'('') ' line=429'  Finished in 0.0577 seconds.
+Started 'Show'('') ' line=430'  Finished in 0.0001 seconds.
+end
+in loop iteration:0
+Started 'Clip'('Input') ' line=479'  Finished in 0.0080 seconds.
+Started 'IsoVolume'('Input') ' line=490'  Finished in 0.0017 seconds.
+Started 'CellDatatoPointData'('Input') ' line=495'  Finished in 0.0018 seconds.
+Started 'Show'('') ' line=501'  Finished in 25.8403 seconds.
+Started 'PassArrays'('Input') ' line=504'  Finished in 0.0022 seconds.
+Started 'Fetch'('') ' line=511'  Finished in 0.0038 seconds.
+('N=', 1L)
+time: 4.43187 i: 0 coarse_x_mean: 8.79016304016  
+('bounds_rude=', [7.090163040161133, 10.490163040161132, -0.5, 0.5, -0.5, 0.5])
+('center_rude=', [8.790163040161133, 0.0, 0.0])
+('COARSE ESTIMATION: len_min=', 5.090163040161133, ' len_max=', 12.490163040161132, ' len=', 7.3999999999999995, ' len_bub=', 3.3999999999999995)
+Started 'Clip'('Input') ' line=549'  Finished in 0.0077 seconds.
+Started 'CellDatatoPointData'('Input') ' line=560'  Finished in 0.0020 seconds.
+Started 'Calculator'('Input') ' line=564'  Finished in 0.0024 seconds.
+Started 'ResampleToImage'('Input') ' line=572'  Finished in 0.0019 seconds.
+('resampleDimension:', [1010, 136, 136])
+Started 'IsoVolume'('Input') ' line=583'  Finished in 0.0017 seconds.
+Started 'Show'('') ' line=593'  Finished in 37.4438 seconds.
+Started 'Slice'('Input') ' line=596'  Finished in 0.0063 seconds.
+('bounds_refined=', (7.24042272567749, 10.564568519592285, -0.45954573154449463, 0.459415465593338, -0.459378719329834, 0.45935294032096863))
+('center_refined=', [8.902495622634888, -6.51329755783081e-05, -1.2889504432678223e-05])
+Started 'Show'('') ' line=620'  Finished in 12.3476 seconds.
+Started 'PassArrays'('Input') ' line=623'  Finished in 0.0024 seconds.
+Started 'Fetch'('') ' line=630'  Finished in 0.0030 seconds.
+('N=', 1L)
+refined_x_mean: 8.79046916962 refined_u_mean: 2.01685816515 len_min: 5.24042272568 len_max: 12.5645685196 len: 7.32414579391 len_bub: 3.32414579391 
+Started 'Contour'('Input') ' line=644'  Finished in 0.0035 seconds.
+Started 'IsoVolume'('Input') ' line=653'  Finished in 0.0020 seconds.
+showing connectivity1Display..  Started 'Show'('') ' line=746'  Finished in 0.0559 seconds.
+end
+showing connectivity1Display..  Started 'Show'('') ' line=746'  Finished in 0.0594 seconds.
+end
+Started 'PassArrays'('Input') ' line=787'  Finished in 0.0027 seconds.
+Started 'Fetch'('') ' line=790'  Finished in 0.0152 seconds.
+('Number of points on contour:', 264831L)
+x_maxy < x_mean
+('     x_maxy:', 7.547050952911377, ' x_mean:', 8.7904691696167)
+RAD_mean: 0.431712 delta: 0.068288
+
+resampleToImage1.GetDataInformation.. end
+('velocity range_max= ', 2.4128630237662803)
+('velocity range_xyz= ', (-0.6367463472044935, 2.077494855530783), (-0.8652669141952555, 0.8619978023020459), (-0.8701932336560138, 0.8640064251387551))
+('CustomLabels=', [0.0, 0.8, 1.6, 2.4])
+('CustomLabels=', [0.0, 0.8, 1.6, 2.4])
+i=2
+length=358 parallel=1 k=2
+dump-4.46896 at time=4.46896
+[1]+  Running                 ./convert_single $dump $j $2 $3 $4 &
+
+# Octree, 12101 steps, 127.913 CPU, 144.7 real, 1.27e+05 points.step/s, 9 var
+Namespace(filenames='dump2pvd_compressed.pvd', frameRate=10, frameWindow=[0, 0], maxlevel=12, noData=False, noLambda2=False, noPic=False, noVideo=False, nslices=5, nt=0, picName='lambda2', timeList=[0], vidName='lambda2', viewSize=[3108, 1168])
+('Found files:', ['dump2pvd_compressed.pvd'])
+('Read the first one:', 'dump2pvd_compressed.pvd')
+Started 'PVDReader'('FileName') ' line=208'  Finished in 0.0041 seconds.
+('timesteps=', 4.46896)
+('NT=', 1, ' timeList=', [0])
+('frameWindow is updated:', [0, 0])
+renderViews, axesGrid, SpreadSheetViews, layouts..  end
+Started 'Show'('') ' line=342'  Finished in 34.1296 seconds.
+('boundsDomain of my source=', (0.0, 30.0, -15.0, 15.0, -15.0, 15.0), ' lDomain=', 30.0)
+creating a cylinder..  Started 'Clip'('Input') ' line=359'  Finished in 0.0071 seconds.
+Started 'Show'('') ' line=378'  Finished in 0.0571 seconds.
+Started 'Show'('') ' line=413'  Finished in 0.0001 seconds.
+Started 'Show'('') ' line=378'  Finished in 0.0555 seconds.
+Started 'Show'('') ' line=413'  Finished in 0.0001 seconds.
+Started 'Slice'('Input') ' line=416'  Finished in 0.0057 seconds.
+Started 'Show'('') ' line=429'  Finished in 0.0579 seconds.
+Started 'Show'('') ' line=430'  Finished in 0.0001 seconds.
+end
+in loop iteration:0
+Started 'Clip'('Input') ' line=479'  Finished in 0.0087 seconds.
+Started 'IsoVolume'('Input') ' line=490'  Finished in 0.0018 seconds.
+Started 'CellDatatoPointData'('Input') ' line=495'  Finished in 0.0018 seconds.
+Started 'Show'('') ' line=501'  Finished in 25.8149 seconds.
+Started 'PassArrays'('Input') ' line=504'  Finished in 0.0022 seconds.
+Started 'Fetch'('') ' line=511'  Finished in 0.0037 seconds.
+('N=', 1L)
+time: 4.46896 i: 0 coarse_x_mean: 8.83679103851  
+('bounds_rude=', [7.136791038513183, 10.536791038513183, -0.5, 0.5, -0.5, 0.5])
+('center_rude=', [8.836791038513184, 0.0, 0.0])
+('COARSE ESTIMATION: len_min=', 5.136791038513183, ' len_max=', 12.536791038513183, ' len=', 7.3999999999999995, ' len_bub=', 3.3999999999999995)
+Started 'Clip'('Input') ' line=549'  Finished in 0.0074 seconds.
+Started 'CellDatatoPointData'('Input') ' line=560'  Finished in 0.0018 seconds.
+Started 'Calculator'('Input') ' line=564'  Finished in 0.0023 seconds.
+Started 'ResampleToImage'('Input') ' line=572'  Finished in 0.0018 seconds.
+('resampleDimension:', [1010, 136, 136])
+Started 'IsoVolume'('Input') ' line=583'  Finished in 0.0017 seconds.
+Started 'Show'('') ' line=593'  Finished in 37.4863 seconds.
+Started 'Slice'('Input') ' line=596'  Finished in 0.0063 seconds.
+('bounds_refined=', (7.262385368347168, 10.612101554870605, -0.4612128436565399, 0.4611375033855438, -0.4614000916481018, 0.461269348859787))
+('center_refined=', [8.937243461608887, -3.7670135498046875e-05, -6.537139415740967e-05])
+Started 'Show'('') ' line=620'  Finished in 12.4598 seconds.
+Started 'PassArrays'('Input') ' line=623'  Finished in 0.0025 seconds.
+Started 'Fetch'('') ' line=630'  Finished in 0.0033 seconds.
+('N=', 1L)
+refined_x_mean: 8.83715629578 refined_u_mean: 2.01676988758 len_min: 5.26238536835 len_max: 12.6121015549 len: 7.34971618652 len_bub: 3.34971618652 
+Started 'Contour'('Input') ' line=644'  Finished in 0.0038 seconds.
+Started 'IsoVolume'('Input') ' line=653'  Finished in 0.0022 seconds.
+showing connectivity1Display..  Started 'Show'('') ' line=746'  Finished in 0.0565 seconds.
+end
+showing connectivity1Display..  Started 'Show'('') ' line=746'  Finished in 0.0556 seconds.
+end
+Started 'PassArrays'('Input') ' line=787'  Finished in 0.0026 seconds.
+Started 'Fetch'('') ' line=790'  Finished in 0.0148 seconds.
+('Number of points on contour:', 263791L)
+x_maxy < x_mean
+('     x_maxy:', 7.593678951263428, ' x_mean:', 8.837156295776367)
+RAD_mean: 0.431277 delta: 0.068723
+
+resampleToImage1.GetDataInformation.. end
+('velocity range_max= ', 2.350975750629172)
+('velocity range_xyz= ', (-0.7065245227038636, 2.0767258791422143), (-0.7827801873524989, 0.7756501877283214), (-0.7733077360258003, 0.7755976929025659))
+('CustomLabels=', [0.0, 0.8, 1.6, 2.4])
+('CustomLabels=', [0.0, 0.8, 1.6, 2.4])
+i=3
+length=358 parallel=1 k=3
+dump-4.50604 at time=4.50604
+[1]+  Running                 ./convert_single $dump $j $2 $3 $4 &
+
+# Octree, 12201 steps, 126.042 CPU, 143.6 real, 1.28e+05 points.step/s, 9 var
+Namespace(filenames='dump2pvd_compressed.pvd', frameRate=10, frameWindow=[0, 0], maxlevel=12, noData=False, noLambda2=False, noPic=False, noVideo=False, nslices=5, nt=0, picName='lambda2', timeList=[0], vidName='lambda2', viewSize=[3108, 1168])
+('Found files:', ['dump2pvd_compressed.pvd'])
+('Read the first one:', 'dump2pvd_compressed.pvd')
+Started 'PVDReader'('FileName') ' line=208'  Finished in 0.0037 seconds.
+('timesteps=', 4.50604)
+('NT=', 1, ' timeList=', [0])
+('frameWindow is updated:', [0, 0])
+renderViews, axesGrid, SpreadSheetViews, layouts..  end
+Started 'Show'('') ' line=342'  Finished in 34.2524 seconds.
+('boundsDomain of my source=', (0.0, 30.0, -15.0, 15.0, -15.0, 15.0), ' lDomain=', 30.0)
+creating a cylinder..  Started 'Clip'('Input') ' line=359'  Finished in 0.0071 seconds.
+Started 'Show'('') ' line=378'  Finished in 0.0586 seconds.
+Started 'Show'('') ' line=413'  Finished in 0.0001 seconds.
+Started 'Show'('') ' line=378'  Finished in 0.0572 seconds.
+Started 'Show'('') ' line=413'  Finished in 0.0001 seconds.
+Started 'Slice'('Input') ' line=416'  Finished in 0.0057 seconds.
+Started 'Show'('') ' line=429'  Finished in 0.0578 seconds.
+Started 'Show'('') ' line=430'  Finished in 0.0001 seconds.
+end
+in loop iteration:0
+Started 'Clip'('Input') ' line=479'  Finished in 0.0079 seconds.
+Started 'IsoVolume'('Input') ' line=490'  Finished in 0.0017 seconds.
+Started 'CellDatatoPointData'('Input') ' line=495'  Finished in 0.0018 seconds.
+Started 'Show'('') ' line=501'  Finished in 26.0125 seconds.
+Started 'PassArrays'('Input') ' line=504'  Finished in 0.0022 seconds.
+Started 'Fetch'('') ' line=511'  Finished in 0.0037 seconds.
+('N=', 1L)
+time: 4.50604 i: 0 coarse_x_mean: 8.883436203  
+('bounds_rude=', [7.1834362030029295, 10.583436203002929, -0.5, 0.5, -0.5, 0.5])
+('center_rude=', [8.88343620300293, 0.0, 0.0])
+('COARSE ESTIMATION: len_min=', 5.1834362030029295, ' len_max=', 12.583436203002929, ' len=', 7.3999999999999995, ' len_bub=', 3.3999999999999995)
+Started 'Clip'('Input') ' line=549'  Finished in 0.0074 seconds.
+Started 'CellDatatoPointData'('Input') ' line=560'  Finished in 0.0018 seconds.
+Started 'Calculator'('Input') ' line=564'  Finished in 0.0023 seconds.
+Started 'ResampleToImage'('Input') ' line=572'  Finished in 0.0018 seconds.
+('resampleDimension:', [1010, 136, 136])
+Started 'IsoVolume'('Input') ' line=583'  Finished in 0.0019 seconds.
+Started 'Show'('') ' line=593'  Finished in 37.9831 seconds.
+Started 'Slice'('Input') ' line=596'  Finished in 0.0063 seconds.
+('bounds_refined=', (7.2916259765625, 10.65971565246582, -0.46208521723747253, 0.4617471396923065, -0.46195071935653687, 0.4616967737674713))
+('center_refined=', [8.97567081451416, -0.0001690387725830078, -0.00012697279453277588])
+Started 'Show'('') ' line=620'  Finished in 12.5278 seconds.
+Started 'PassArrays'('Input') ' line=623'  Finished in 0.0023 seconds.
+Started 'Fetch'('') ' line=630'  Finished in 0.0030 seconds.
+('N=', 1L)
+refined_x_mean: 8.88374519348 refined_u_mean: 2.01797504746 len_min: 5.29162597656 len_max: 12.6597156525 len: 7.3680896759 len_bub: 3.3680896759 
+Started 'Contour'('Input') ' line=644'  Finished in 0.0037 seconds.
+Started 'IsoVolume'('Input') ' line=653'  Finished in 0.0020 seconds.
+showing connectivity1Display..  Started 'Show'('') ' line=746'  Finished in 0.0570 seconds.
+end
+showing connectivity1Display..  Started 'Show'('') ' line=746'  Finished in 0.0565 seconds.
+end
+Started 'PassArrays'('Input') ' line=787'  Finished in 0.0025 seconds.
+Started 'Fetch'('') ' line=790'  Finished in 0.0145 seconds.
+('Number of points on contour:', 265162L)
+x_maxy < x_mean
+('     x_maxy:', 7.640324115753174, ' x_mean:', 8.883745193481445)
+RAD_mean: 0.430987 delta: 0.069013
+
+resampleToImage1.GetDataInformation.. end
+('velocity range_max= ', 2.283519267499381)
+('velocity range_xyz= ', (-0.7286381695508333, 2.0748844325197324), (-0.6739263388845966, 0.6686687107886169), (-0.6746392565555172, 0.6744685235126497))
+('CustomLabels=', [0.0, 0.8, 1.5, 2.3])
+('CustomLabels=', [0.0, 0.8, 1.5, 2.3])
+i=4
+length=358 parallel=1 k=4
+dump-4.54313 at time=4.54313
+[1]+  Running                 ./convert_single $dump $j $2 $3 $4 &
+
+# Octree, 12301 steps, 123.247 CPU, 139.8 real, 1.31e+05 points.step/s, 9 var
+Namespace(filenames='dump2pvd_compressed.pvd', frameRate=10, frameWindow=[0, 0], maxlevel=12, noData=False, noLambda2=False, noPic=False, noVideo=False, nslices=5, nt=0, picName='lambda2', timeList=[0], vidName='lambda2', viewSize=[3108, 1168])
+('Found files:', ['dump2pvd_compressed.pvd'])
+('Read the first one:', 'dump2pvd_compressed.pvd')
+Started 'PVDReader'('FileName') ' line=208'  Finished in 0.0054 seconds.
+('timesteps=', 4.54313)
+('NT=', 1, ' timeList=', [0])
+('frameWindow is updated:', [0, 0])
+renderViews, axesGrid, SpreadSheetViews, layouts..  end
+Started 'Show'('') ' line=342'  Finished in 34.2521 seconds.
+('boundsDomain of my source=', (0.0, 30.0, -15.0, 15.0, -15.0, 15.0), ' lDomain=', 30.0)
+creating a cylinder..  Started 'Clip'('Input') ' line=359'  Finished in 0.0071 seconds.
+Started 'Show'('') ' line=378'  Finished in 0.0580 seconds.
+Started 'Show'('') ' line=413'  Finished in 0.0001 seconds.
+Started 'Show'('') ' line=378'  Finished in 0.0567 seconds.
+Started 'Show'('') ' line=413'  Finished in 0.0001 seconds.
+Started 'Slice'('Input') ' line=416'  Finished in 0.0057 seconds.
+Started 'Show'('') ' line=429'  Finished in 0.0570 seconds.
+Started 'Show'('') ' line=430'  Finished in 0.0001 seconds.
+end
+in loop iteration:0
+Started 'Clip'('Input') ' line=479'  Finished in 0.0087 seconds.
+Started 'IsoVolume'('Input') ' line=490'  Finished in 0.0018 seconds.
+Started 'CellDatatoPointData'('Input') ' line=495'  Finished in 0.0019 seconds.
+Started 'Show'('') ' line=501'  Finished in 26.0327 seconds.
+Started 'PassArrays'('Input') ' line=504'  Finished in 0.0023 seconds.
+Started 'Fetch'('') ' line=511'  Finished in 0.0037 seconds.
+('N=', 1L)
+time: 4.54313 i: 0 coarse_x_mean: 8.93010234833  
+('bounds_rude=', [7.2301023483276365, 10.630102348327636, -0.5, 0.5, -0.5, 0.5])
+('center_rude=', [8.930102348327637, 0.0, 0.0])
+('COARSE ESTIMATION: len_min=', 5.2301023483276365, ' len_max=', 12.630102348327636, ' len=', 7.3999999999999995, ' len_bub=', 3.3999999999999995)
+Started 'Clip'('Input') ' line=549'  Finished in 0.0075 seconds.
+Started 'CellDatatoPointData'('Input') ' line=560'  Finished in 0.0019 seconds.
+Started 'Calculator'('Input') ' line=564'  Finished in 0.0024 seconds.
+Started 'ResampleToImage'('Input') ' line=572'  Finished in 0.0018 seconds.
+('resampleDimension:', [1010, 136, 136])
+Started 'IsoVolume'('Input') ' line=583'  Finished in 0.0018 seconds.
+Started 'Show'('') ' line=593'  Finished in 37.4812 seconds.
+Started 'Slice'('Input') ' line=596'  Finished in 0.0070 seconds.
+('bounds_refined=', (7.322999000549316, 10.70610523223877, -0.4627368152141571, 0.46399161219596863, -0.4647405743598938, 0.4621627628803253))
+('center_refined=', [9.014552116394043, 0.0006273984909057617, -0.0012889057397842407])
+Started 'Show'('') ' line=620'  Finished in 12.3332 seconds.
+Started 'PassArrays'('Input') ' line=623'  Finished in 0.0023 seconds.
+Started 'Fetch'('') ' line=630'  Finished in 0.0030 seconds.
+('N=', 1L)
+refined_x_mean: 8.93029975891 refined_u_mean: 2.01964228463 len_min: 5.32299900055 len_max: 12.7061052322 len: 7.38310623169 len_bub: 3.38310623169 
+Started 'Contour'('Input') ' line=644'  Finished in 0.0035 seconds.
+Started 'IsoVolume'('Input') ' line=653'  Finished in 0.0020 seconds.
+showing connectivity1Display..  Started 'Show'('') ' line=746'  Finished in 0.0572 seconds.
+end
+showing connectivity1Display..  Started 'Show'('') ' line=746'  Finished in 0.0557 seconds.
+end
+Started 'PassArrays'('Input') ' line=787'  Finished in 0.0026 seconds.
+Started 'Fetch'('') ' line=790'  Finished in 0.0145 seconds.
+('Number of points on contour:', 265932L)
+x_maxy < x_mean
+('     x_maxy:', 7.686990261077881, ' x_mean:', 8.930299758911133)
+RAD_mean: 0.430633 delta: 0.069367
+
+resampleToImage1.GetDataInformation.. end
+('velocity range_max= ', 2.264847537862462)
+('velocity range_xyz= ', (-0.8164396234086803, 2.072570013155476), (-0.6414686541459602, 0.6423913194023645), (-0.6450747040757177, 0.6490926768088329))
+('CustomLabels=', [0.0, 0.8, 1.5, 2.3])
+('CustomLabels=', [0.0, 0.8, 1.5, 2.3])
+i=5
+length=358 parallel=1 k=5
+dump-4.58021 at time=4.58021
+[1]+  Running                 ./convert_single $dump $j $2 $3 $4 &

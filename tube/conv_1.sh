@@ -12,8 +12,10 @@ parallel=${parallel:=1}
 list=( $(ls dump-* | sort -n -t - -k 2) );
 length=${#list[@]}
 
+DISPLAY_DEF=17
 d=$(ls -lha /tmp/.X11-unix/ |grep ${USER} | awk '{print $9}' | sed 's/X//' | sed 's/=//'| tail -n 1)
-[ -z "$d" || $USER -eq 'weugene' ] && echo "DISPLAY not set!" && exit
+[[ -z "$d" || "$USER" == 'weugene' ]] && echo "DISPLAY not set!" && vncserver :${DISPLAY_DEF} &&  d=${DISPLAY_DEF}
+echo "DISPLAY=:${d}"
 
 pvd="dump2pvd.pvd"
 #subn="${pvd%.*}"
