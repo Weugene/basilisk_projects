@@ -24,16 +24,29 @@ The scheme implemented here is close to that used in Gerris ([Popinet,
 
 We will use the generic time loop, a CFL-limited timestep, the
 Bell-Collela-Glaz advection scheme and the implicit viscosity
-solver. If embedded boundaries are used, a different scheme is used
-for viscosity. */
+solver.
+There are 2 ways of solid treatment: (i) embedded boundaries method (EBM), (ii) Brinkman Penalization method (BPM).
+If embedded boundaries are used, a different scheme is used for viscosity.
+The advantages of EBM are high accuracy and MPI parallelization, however, it works only for \textbf{one phase flow}.
+If Brinkman Penalization method for solid treatment is used,
+then a penalization term is added implicitly with the viscous term.
+In this case $\mathbf{a} = -\frac{\chi}{\eta_s}\left(\mathbf{u} - \mathbf{U_t} \right)$
+BPM can work for multiphase flow with MPI parallelization with sufficient accuracy.
+Detailed information about comparison you can find here.
+ */
 
 #include "run.h"
 #include "timestep.h"
 #include "bcg.h"
 #if EMBED
-# include "viscosity-embed.h"
+#include "viscosity-embed.h"
 #else
-# include "viscosity.h"
+#ifndef BRINKMAN_PENALIZATION
+#include "viscosity.h"
+#else
+#include "viscosity-weugene.h"
+#include "utils-weugene.h"
+#endif
 #endif
 
 /**
@@ -213,6 +226,8 @@ event set_dtmax (i++,last) dtmax = DT;
 
 event stability (i++,last) {
   dt = dtnext (stokes ? dtmax : timestep (uf, dtmax));
+
+  fprintf(ferr, "stability: dt=%g DT=%g dtmax=%g", dt, DT, dtmax );
 }
 
 /**
@@ -258,20 +273,25 @@ void prediction()
       foreach_dimension() {
 #if EMBED
         if (!fs.x[] || !fs.x[1])
-	  du.x[] = 0.;
-	else
+            du.x[] = 0.;
+	    else
 #endif
-	  du.x[] = u.x.gradient (u.x[-1], u.x[], u.x[1])/Delta;
+          du.x[] = u.x.gradient (u.x[-1], u.x[], u.x[1])/Delta;
       }
   else
     foreach()
-      foreach_dimension() {
+        foreach_dimension() {
 #if EMBED
-        if (!fs.x[] || !fs.x[1])
-	  du.x[] = 0.;
-	else
+            if (!fs.x[] || !fs.x[1])
+	            du.x[] = 0.;
+	        else
 #endif
-	  du.x[] = (u.x[1] - u.x[-1])/(2.*Delta);
+//#ifdef BRINKMAN_PENALIZATION
+//            if (fabs(fs_face.x[] - 1) < SEPS || fabs(fs_face.x[1] - 1) < SEPS)
+//	            du.x[] = 0.; // inside solids
+//	        else
+//#endif
+	            du.x[] = (u.x[1] - u.x[-1])/(2.*Delta);
     }
   boundary ((scalar *){du});
 
@@ -312,8 +332,13 @@ event advection_term (i++,last)
 {
   if (!stokes) {
     prediction();
+#if BRINKMAN_PENALIZATION && MODIFIED_CHORIN
+        mgpf = project_bp (uf, pf, alpha, 0.5*dt, mgpf.nrelax, fs, target_U, u, eta_chorin);
+#else
     mgpf = project (uf, pf, alpha, dt/2., mgpf.nrelax);
-    advection ((scalar *){u}, uf, dt, (scalar *){g});
+#endif
+    advection ((scalar *){u}, uf, dt, (scalar *){g});// original version
+//    event("vtk_file");
   }
 }
 
@@ -327,8 +352,8 @@ static void correction (double dt)
 {
   foreach()
     foreach_dimension()
-      u.x[] += dt*g.x[];
-  boundary ((scalar *){u});  
+      u.x[] += dt*g.x[]; //original version
+  boundary ((scalar *){u});
 }
 
 /**
@@ -343,14 +368,6 @@ event viscous_term (i++,last)
   if (constant(mu.x) != 0.) {
     correction (dt);
     mgu = viscosity (u, mu, rho, dt, mgu.nrelax);
-
-//    foreach(){
-//        tmp[] = Arrhenius_const * pow(1 - alpha_doc[], n_degree) * exp(-Ea_by_R / T[]);
-//        r[] = Htr * rho1 * f[] * tmp[]*(1.0 - Eeta_by_Rg/T[]) - thetav[] * u_grad_scalar[];
-//        beta[] = Htr * rho1 * f[] * tmp[]*Eeta_by_Rg/(T[]*T[]);
-//    }
-//
-//    mgu = diffusion(T, dt, D = kappa, r = r, beta = beta, theta = thetav);
     correction (-dt);
   }
 
@@ -364,6 +381,8 @@ event viscous_term (i++,last)
       af.x[] = 0.;
   }
 }
+
+
 
 /**
 ### Acceleration term
@@ -385,8 +404,10 @@ acceleration term is added. */
 event acceleration (i++,last)
 {
   trash ({uf});
-  foreach_face()
+  face vector ia =a;
+  foreach_face(){
     uf.x[] = fm.x[]*(face_value (u.x, 0) + dt*a.x[]);
+  }
   boundary ((scalar *){uf, a});
 }
 
@@ -416,7 +437,7 @@ void centered_gradient (scalar p, vector g)
   trash ({g});
   foreach()
     foreach_dimension()
-      g.x[] = (gf.x[] + gf.x[1])/(fm.x[] + fm.x[1] + SEPS);
+      g.x[] = (gf.x[] + gf.x[1])/(fm.x[] + fm.x[1] + SEPS); //!!! ???: Weugene, numerator = gf.x[]*fm.x[] + gf.x[1]*fm.x[1]
   boundary ((scalar *){g});
 }
 
@@ -427,16 +448,38 @@ next timestep). Then compute the centered gradient field *g*. */
 
 event projection (i++,last)
 {
+#if BRINKMAN_PENALIZATION && MODIFIED_CHORIN
+  mgp = project_bp (uf, p, alpha, dt, mgp.nrelax, fs, target_U, u, eta_chorin);
+#else
   mgp = project (uf, p, alpha, dt, mgp.nrelax);
-  centered_gradient (p, g);
-
+#endif
+  centered_gradient (p, g); //calc gf^{n+1}, g^{n+1} using p^{n+1}, a^{n+1/2}
   /**
   We add the gradient field *g* to the centered velocity field. */
-
-  correction (dt);
+//  correction (dt);
+  foreach()
+    foreach_dimension()
+      u.x[] += dt*g.x[]*(1 - fs[]); //original version
+  boundary ((scalar *){u});
+#ifdef DEBUG_MODE_POISSON
+  if ( i % 1==0 ){
+    double divuf, maxdivuf = -1e30;
+    foreach(reduction(max:maxdivuf)) {
+      divuf = 0;
+      foreach_dimension() divuf += (uf.x[1]-uf.x[])/Delta;
+      divuf = fabs(divuf);
+      if (maxdivuf < divuf) maxdivuf = divuf;
+    }
+    fprintf(ferr, "Projection MAX{div uf} = %g", maxdivuf);
+  }
+#endif
 }
 
-event velocity_correction(i++, last);
+//#if BRINKMAN_PENALIZATION
+//event brinkman_penalization(i++, last){
+//    brinkman_correction(u, uf, rho, dt);
+//}
+//#endif
 /**
 Some derived solvers need to hook themselves at the end of the
 timestep. */
@@ -446,7 +489,7 @@ event end_timestep (i++, last);
 
 /**
 Output vtk files*/
-event vtk_file (i += 1, last);// correct. Added by Weugene
+event vtk_file (i++, last);// correct. Added by Weugene
 /**
 ## Adaptivity
 
@@ -459,10 +502,18 @@ event adapt (i++,last) {
 #if EMBED
   fractions_cleanup (cs, fs);
   foreach_face()
+    // fs = 0 solid
     if (uf.x[] && !fs.x[])
       uf.x[] = 0.;
   boundary ((scalar *){uf});
 #endif
+//#if BRINKMAN_PENALIZATION
+//  foreach_face()
+//    // fs_face = 1 solid
+//    if ((uf.x[] - target_Uf.x[]) && fs_face.x[])
+//        uf.x[] = target_Uf.x[];
+//  boundary ((scalar *){uf});
+//#endif
   event ("properties");
 }
 #endif
@@ -473,5 +524,9 @@ event adapt (i++,last) {
 * [Double projection](double-projection.h)
 * [Performance monitoring](perfs.h)
 */
+
+
+
+
 
 #endif

@@ -19,7 +19,7 @@ $$
 \partial_tt_{i,j} + \nabla\cdot(\mathbf{u}_ft_{i,j}) = 0
 $$
 with $t_{i,j} = c_if_j$ (or $t_{i,j} = (1 - c_i)f_j$) and $f_j$ is a
-volumetric tracer concentration.
+volumetric tracer concentration (see [Lopez-Herrera et al, 2015](#lopez2015)).
 
 The list of tracers associated with the volume fraction is stored in
 the *tracers* attribute. For each tracer, the "side" of the interface
@@ -314,5 +314,22 @@ void vof_advection (scalar * interfaces, int i)
 
 event vof (i++)
   vof_advection (interfaces, i);
+
+/**
+## References
+
+~~~bib
+@Article{lopez2015,
+  title = {A VOF numerical study on the electrokinetic effects in the breakup of electrified jets},
+  author = {J. M. Lopez-Herrera and A. M. Ganan-Calvo and S. Popinet and M. A. Herrada},
+  journal = {International Journal of Multiphase Flows},
+  pages = {14-22},
+  volume = {71},
+  year = {2015},
+  doi = {doi.org/10.1016/j.ijmultiphaseflow.2014.12.005},
+  url = {http://gfs.sf.net/papers/lopez2015.pdf}
+}
+~~~
+*/
 
 #endif

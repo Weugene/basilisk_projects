@@ -19,7 +19,7 @@ the default arithmetic mean. We "overload" the default by defining the
 #define mu(f)  (1./(clamp(f,0,1)*(1./mu1 - 1./mu2) + 1./mu2))
 #include "two-phase.h" //advection of tracer f. defined rhov, alphav. if FILTERED is defined, then sf - filtered values of f.
 #include "navier-stokes/conserving.h" //???should add?
-
+#include "../src_local/output_vtu_foreach.h"
 
 #include "tension.h"
 #if dimension == 3
@@ -31,8 +31,6 @@ the default arithmetic mean. We "overload" the default by defining the
 
 //#include "distance.h"
 #include "reduced.h"
-//#include "vtk.h"
-//#include "output_vtk.h"
 
 //#include "embed.h" (! remove)
 
@@ -510,35 +508,14 @@ levels of refinement. */
 //}
 
 //Output
-#include "output_fields/output_vtu_foreach.h"
-event vtk_file (t += 0.05; t<100)
+double dt_vtk = 1e-20;
+//event vtk_file (i += 1)
+event vtk_file (t += dt_vtk)
 {
-    int nf = iteration;
-    scalar l[];
-    foreach()
-    l[] = level;
-
-    char name[80], subname[80];
-    FILE *fp;
-    sprintf(name, "hs_%4.4d_n%3.3d.vtu", nf, pid());
-    fp = fopen(name, "w");
-
-    output_vtu_bin_foreach((scalar *) {l, f, fiber, p}, (vector *) {u}, 64, fp, false);
-    fclose(fp);
-    @if _MPI
-    if (pid() == 0) {
-        sprintf(name, "hs_%4.4d.pvtu", nf);
-        sprintf(subname, "hs_%4.4d", nf);
-        fp = fopen(name, "w");
-        output_pvtu_bin((scalar *) {l, f, fiber, p}, (vector *) {u}, 64, fp, subname);
-        fclose(fp);
-    }
-    MPI_Barrier(MPI_COMM_WORLD);
-    @endif
-    fprintf (ferr, "iteration: %d\n", iteration); fflush (ferr);
-    iteration++;
+    char subname[80]; sprintf(subname, "two_phase");
+    scalar l[]; foreach() l[] = level;
+    output_vtu_MPI( subname, (iter_fp) ? t + dt : 0, (scalar *) {p, fiber, f, l}, (vector *) {u, a});
 }
-
 
 
 

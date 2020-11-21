@@ -1,2 +1,0 @@
-Fetched_data:x_mean: 9.55650806427 u_mean: 2.03841280973
-RAD_mean: 0.425828 delta: 0.074172

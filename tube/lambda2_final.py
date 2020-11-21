@@ -154,6 +154,7 @@ parser.add_argument("-noData", type=bool, help="Provide the no Data Exporting Mo
                     nargs='?', default=False)
 parser.add_argument("-noLambda2", type=bool, help="Provide the no Lambda2 Mode",
                     nargs='?', default=False)
+
 # parser.add_argument('--foo', action='store_const', const=2, default=42)
 args = parser.parse_args()
 print(args)
@@ -625,7 +626,7 @@ if not noPic:
 
         ss_data = Fetch(passArrays1)
         print('N=', ss_data.GetNumberOfPoints())
-		volume = ss_data.GetCellData(0).GetArray('Volume').GetValue(0)
+        volume = ss_data.GetCellData().GetArray('Volume').GetValue(0)
         x_mean = ss_data.GetPoint(0)[0]/volume
         u_mean = ss_data.GetPointData().GetArray('u.x').GetValue(0)/volume
         s = "refined_x_mean: {} refined_u_mean: {} len_min: {} len_max: {} len: {} len_bub: {} ".format(x_mean, u_mean, len_min, len_max, length, len_bub)
@@ -697,7 +698,8 @@ if not noPic:
         uxLUTColorBar.Orientation = 'Horizontal'
         uxLUTColorBar.WindowLocation = 'AnyLocation'
         uxLUTColorBar.ScalarBarLength = len_bar
-        uxLUTColorBar.Position = [0.7 - 0.5*len_bar, 0.02]
+        #uxLUTColorBar.Position = [0.7 - 0.5*len_bar, 0.02]
+        uxLUTColorBar.WindowLocation = 'LowerCenter'
         uxLUTColorBar.Title = '|u|'
         uxLUTColorBar.ComponentTitle = ''
         uxLUTColorBar.TitleColor = [1, 1, 1]
@@ -843,23 +845,31 @@ if not noPic:
         # ----------------------------------------------------------------
 
         renderView1.CameraViewUp = [0.2, 1, 0]
-        renderView1.CameraParallelScale = 1.
+        renderView1.CameraParallelScale = 1.4
         renderView1.CenterOfRotation = center
         renderView1.CameraFocalPoint = center
         renderView1.CameraPosition = [center[0] - 4, 0.6, 4.5]
 
+        
+
+        renderView1.CameraPosition = [center[0]-3, 0.0, 0.0]
+        renderView1.CameraFocalPoint = [center[0], 0.0, 0.0]
+        renderView1.CameraViewUp = [0.0, 0.0, 1.0]
+        renderView1.CameraParallelScale = 2.017845768876187
+        renderView1.ViewSize = [2048, 2048]
+        renderView1.ResetCamera(center[0], center[0], -0.5, 0.5, -0.5, 0.5)
         # update the view to ensure updated data information
         renderView1.Update()
 
 #****************** CONNECTIVITY(f) AND U MAGNITUDE ********************
         # show data from connectivity1
-        fn = path + "/" + picName +  '_t=' + str(timesteps[i]) +'ux.png'
+        fn = path + "/" + picName +  '_t=' + str(timesteps[i]) +'ux_tail.png'
         SaveScreenshot( fn, renderView1,
-            ImageResolution=viewSize,
+            #ImageResolution=viewSize,
             TransparentBackground=0,
             CompressionLevel='2' )
         print('File=' + fn + ' generated succesfully')
-
+        break
 
 #****************** CONNECTIVITY(f) AND CONTOUR2 (lambda2) ********************
         # set color bar visibility
@@ -1409,9 +1419,7 @@ if not noPic:
             renderView1.CameraFocalPoint = [sl, 0.0, 0.0]
             renderView1.CameraViewUp = [0.0, 0.0, 1.0]
             renderView1.CameraParallelScale = 14.017845768876187
-
             renderView1.ViewSize = [2048, 2048]
-            renderView1.CameraViewUp = [0.0, 0.0, 1.0]
             renderView1.ResetCamera(sl, sl, -0.5, 0.5, -0.5, 0.5)
 
             renderView2.CameraViewUp = [0, 1, 0]

@@ -1,9 +1,9 @@
-CFLAGS=-DDUMP=1 -Wall -O2 -events
-CLIBS=-lm $(OPENGLIBS)
+CFLAGS=-DDUMP=1 -Wall -O2 -events -g
+CLIBS=-lm
 
-karman:
-	rm -rf .qcc* hr* a.out dump* out log
-	qcc $(CFLAGS) karman.c $(CINCL) $(CLIBS)
+heat_polymerization:
+	rm -rf .qcc* a.out dump* out log
+	qcc $(CFLAGS) poly_heat.c $(CINCL) $(CLIBS)
 	./a.out
 #	 > out 2> log &
 #	mvlc movie.mp4

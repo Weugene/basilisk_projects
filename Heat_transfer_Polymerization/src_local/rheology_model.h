@@ -4,15 +4,15 @@
 //The module is intended to solve the heat transfer equation, the polymerization effect and rheology changing
 //it is coupled with navier-stokes/centered.h module
 //
+#define HEAT_TRANSFER
 #include "../src_local/three-phase-rheology.h"
-#include "diffusion.h"
+#include "../src_local/diffusion-weugene.h"
 scalar u_grad_scalar[];
 double Htr = 1;
 double Arrhenius_const = 10;//1/s
 double Ea_by_R = 5;// Kelvin
 double n_degree = 1.667;
 double m_degree = 0.333;
-double Cp1 = 1, Cp2 = 1, Cp3 = 1;//J/(kg*K)
 
 #undef SEPS
 #define SEPS 1e-10
@@ -36,15 +36,15 @@ void advection_centered (scalar f, vector u, scalar df)
     boundary ((scalar*) {df});
 }
 
-//void advection_upwind (scalar f, vector u, scalar df)
-//{
-//    foreach()
-//    df[] = ((u.x[] < 0. ? f[] : f[-1,0])*u.x[] -
-//            (u.x[1,0] > 0. ? f[] : f[1,0])*u.x[1,0] +
-//            (u.y[] < 0. ? f[] : f[0,-1])*u.y[] -
-//            (u.y[0,1] > 0. ? f[] : f[0,1])*u.y[0,1])/Delta;
-//    boundary ((scalar*) {df});
-//}
+void advection_upwind (scalar f, vector u, scalar df)
+{
+    foreach()
+ 	   df[] = ((u.x[] < 0. ? f[] : f[-1,0])*u.x[] -
+        	  (u.x[1,0] > 0. ? f[] : f[1,0])*u.x[1,0] +
+           	  (u.y[] < 0. ? f[] : f[0,-1])*u.y[] -
+          	  (u.y[0,1] > 0. ? f[] : f[0,1])*u.y[0,1])/Delta;
+    boundary ((scalar*) {df});
+}
 
 event stability (i++) {
 //    dtmax = min(dtmax, 0.5*(h/L0)/(Arrhenius_const*exp(-Ea_by_R/TMAX)));
@@ -59,12 +59,11 @@ event end_timestep (i++){
 
 
     scalar r[], thetav[], tmp[], beta[];
-    foreach() thetav[] = f[]*(rho1*Cp1 - rho2*Cp2) + rho2*Cp2 + fs[]*(rho3*Cp3 - rho2*Cp2);
-//        foreach_face() kappav.x[] = kappav(f[], fs[]);
-//        boundary ({kappav, thetav});
+    foreach() thetav[] =  var_hom(f[], fs[], rho1*Cp1, rho2*Cp2, rho3*Cp3);
+    foreach_face() kappav.x[] = kappav(f[], fs[]);
+    boundary ({kappav, thetav});
     advection_centered(T, u, u_grad_scalar);
     //    advection_upwind (T, u, u_grad_scalar);
-//        fprintf(stderr, " tmp r ");
     foreach()
     {
         tmp[] = Arrhenius_const * pow(1 - alpha_doc[], n_degree) * exp(-Ea_by_R / T[]);
@@ -91,4 +90,5 @@ event end_timestep (i++){
 
     boundary ((scalar*) {alpha_doc});
 }
+
 #endif

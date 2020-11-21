@@ -6,6 +6,7 @@ out
 *.vtu
 *.vtu.*
 *.pvd
+tracer_t=*.csv
 log
 log_*
 out_*
