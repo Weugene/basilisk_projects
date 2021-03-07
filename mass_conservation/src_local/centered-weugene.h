@@ -338,7 +338,7 @@ event advection_term (i++,last)
     mgpf = project (uf, pf, alpha, dt/2., mgpf.nrelax);
 #endif
     advection ((scalar *){u}, uf, dt, (scalar *){g});// original version
-//    event("vtk_file");
+    //event("vtk_file");
   }
 }
 
@@ -350,10 +350,11 @@ acceleration terms. */
 
 static void correction (double dt)
 {
-  foreach()
-    foreach_dimension()
-      u.x[] += dt*g.x[]; //original version
-  boundary ((scalar *){u});
+	foreach()
+    	foreach_dimension()
+      		u.x[] += dt*g.x[]; //original version
+	boundary ((scalar *){u});
+	//event("vtk_file");	
 }
 
 /**
@@ -366,9 +367,11 @@ time $t+\Delta t$. */
 event viscous_term (i++,last)
 {
   if (constant(mu.x) != 0.) {
+	//event("vtk_file");
     correction (dt);
     mgu = viscosity (u, mu, rho, dt, mgu.nrelax);
     correction (-dt);
+	//event("vtk_file");
   }
 
   /**
@@ -489,7 +492,7 @@ event end_timestep (i++, last);
 
 /**
 Output vtk files*/
-event vtk_file (i++, last);// correct. Added by Weugene
+event vtk_file (i++,last);// correct. Added by Weugene
 /**
 ## Adaptivity
 

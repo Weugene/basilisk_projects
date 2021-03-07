@@ -19,28 +19,6 @@ materialLibrary1 = GetMaterialLibrary()
 
 # Create a new 'Render View'
 renderView1 = CreateView('RenderView')
-renderView1.ViewSize = [1962, 1124]
-renderView1.AxesGrid = 'GridAxes3DActor'
-renderView1.OrientationAxesVisibility = 0
-renderView1.CenterOfRotation = [16.03535223007202, -0.00023914873600006104, -0.00012640655040740967]
-renderView1.StereoType = 'Crystal Eyes'
-renderView1.CameraPosition = [18.069893433736098, -3.469307746198893, 1.4819036839778221]
-renderView1.CameraFocalPoint = [16.03535223007202, -0.00023914873600000048, -0.00012640655040735969]
-renderView1.CameraViewUp = [-0.1440535481930509, -0.45901091253890736, -0.8766741455199828]
-renderView1.CameraFocalDisk = 1.0
-renderView1.CameraParallelScale = 1.9652118705569723
-renderView1.BackEnd = 'OSPRay raycaster'
-renderView1.OSPRayMaterialLibrary = materialLibrary1
-
-# Create a new 'SpreadSheet View'
-spreadSheetView1 = CreateView('SpreadSheetView')
-spreadSheetView1.ColumnToSort = ''
-spreadSheetView1.BlockSize = 1024L
-# uncomment following to set a specific view size
-# spreadSheetView1.ViewSize = [400, 400]
-
-SetActiveView(None)
-
 # ----------------------------------------------------------------
 # setup view layouts
 # ----------------------------------------------------------------
@@ -48,10 +26,6 @@ SetActiveView(None)
 # create new layout object 'Layout #1'
 layout1 = CreateLayout(name='Layout #1')
 layout1.AssignView(0, renderView1)
-
-# create new layout object 'Layout #2'
-layout2 = CreateLayout(name='Layout #2')
-layout2.AssignView(0, spreadSheetView1)
 
 # ----------------------------------------------------------------
 # restore active view
@@ -64,7 +38,7 @@ SetActiveView(renderView1)
 
 # create a new 'PVD Reader'
 dump2pvd_compressedpvd = PVDReader(FileName='/Users/weugene/basilisk/work/tube/dump2pvd_compressed.pvd')
-dump2pvd_compressedpvd.CellArrays = ['fs', 'f', 'l', 'l2', 'omega', 'u.x']
+#dump2pvd_compressedpvd.CellArrays = ['fs', 'f', 'l', 'l2', 'omega', 'u.x']
 
 # create a new 'Contour'
 contour1 = Contour(Input=dump2pvd_compressedpvd)

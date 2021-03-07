@@ -1,0 +1,1 @@
+for r in 0.05 0.1 0.2; do for l in 7 8 9 10; do echo $l; for tol in 1e-6 1e-8; do echo $tol; grep ' | ' res_r_${r}_l_${l}_t_${tol}/log_r_${r}_l_${l}_t_${tol}  | awk '{print $1" " $4" " $7" " $8" " $9" " $11" " $12" " $13" " $14}' > logs/log_r_${r}_l_${l}_t_${tol}; done done; done

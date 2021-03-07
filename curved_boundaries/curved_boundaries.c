@@ -109,7 +109,7 @@ event movie ( t += 0.1 ; t <= 10){
 scalar omega[], l;
 vorticity (u, omega);
 foreach() {
-    omega[] = (x > xo)?level:abs(omega[]);
+    omega[] = (x > xo)?level:fabs(omega[]);
 }
 output_ppm (omega, n = 1024, file = "movie_cyl.mp4", min = 0, max = MAXLEVEL); // n=512 number of pixels
 }

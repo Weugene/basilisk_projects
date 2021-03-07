@@ -347,10 +347,11 @@ acceleration terms. */
 
 static void correction (double dt)
 {
-  foreach()
-    foreach_dimension()
-      u.x[] += dt*g.x[]; //original version
-  boundary ((scalar *){u});
+	foreach()
+    	foreach_dimension()
+      		u.x[] += dt*g.x[]; //original version
+	boundary ((scalar *){u});
+	//event("vtk_file");
 }
 
 /**
@@ -363,9 +364,11 @@ time $t+\Delta t$. */
 event viscous_term (i++,last)
 {
   if (constant(mu.x) != 0.) {
+	//event("vtk_file");
     correction (dt);
     mgu = viscosity (u, mu, rho, dt, mgu.nrelax);
     correction (-dt);
+//	event("vtk_file");
   }
 
   /**
@@ -406,6 +409,7 @@ event acceleration (i++,last)
     uf.x[] = fm.x[]*(face_value (u.x, 0) + dt*a.x[]);
   }
   boundary ((scalar *){uf, a});
+//  event("vtk_file");
 }
 
 /**
@@ -458,18 +462,7 @@ event projection (i++,last)
     foreach_dimension()
       u.x[] += dt*g.x[]*(1 - fs[]); //original version
   boundary ((scalar *){u});
-#ifdef DEBUG_MODE_POISSON
-  if ( i % 1==0 ){
-    double divuf, maxdivuf = -1e30;
-    foreach(reduction(max:maxdivuf)) {
-      divuf = 0;
-      foreach_dimension() divuf += (uf.x[1]-uf.x[])/Delta;
-      divuf = fabs(divuf);
-      if (maxdivuf < divuf) maxdivuf = divuf;
-    }
-    fprintf(ferr, "Projection MAX{div uf} = %g", maxdivuf);
-  }
-#endif
+//    event("vtk_file");
 }
 
 //#if BRINKMAN_PENALIZATION
@@ -486,7 +479,7 @@ event end_timestep (i++, last);
 
 /**
 Output vtk files*/
-event vtk_file (i++, last);// correct. Added by Weugene
+event vtk_file (i++,last);// correct. Added by Weugene
 /**
 ## Adaptivity
 

@@ -1,6 +1,6 @@
 #ifndef BASILISK_HEADER_39
 #define BASILISK_HEADER_39
-#line 1 "./../src_local/../src_local/poisson-weugene.h"
+#line 1 "./../src_local/poisson-weugene.h"
     /**
 # Multigrid Poisson--Helmholtz solvers
 

@@ -1,6 +1,6 @@
 #ifndef BASILISK_HEADER_26
 #define BASILISK_HEADER_26
-#line 1 "./../src_local/../src_local/poisson-weugene.h"
+#line 1 "./../src_local/poisson-weugene.h"
     /**
 # Multigrid Poisson--Helmholtz solvers
 
@@ -487,7 +487,7 @@ $$ */
 
 mgstats poisson (struct Poisson p)
 {
-
+	fprintf(ferr, "**********************\n");
   /**
   If $\alpha$ or $\lambda$ are not set, we replace them with constant
   unity vector (resp. zero scalar) fields. Note that the user is free to
@@ -639,4 +639,5 @@ mgstats project (struct Project q)
 #endif
     return mgp;
 }
+
 #endif

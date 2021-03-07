@@ -1,1 +1,0 @@
-/home/e.sharaborin/wbasilisk/tube/lambda2_final.py

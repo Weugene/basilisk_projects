@@ -13,21 +13,22 @@
 scalar fs[];
 scalar omega[];
 scalar l2[];
-scalar ppart[];
 #include "grid/octree.h"
-#include "../src_local/centered-weugene.h"
+#include "centered-weugene.h"
 #include "two-phase.h"
 #ifdef STOKES
     #include "navier-stokes/conserving.h"
 #endif
 #include "tension.h"
-#include "../src_local/adapt_wavelet_limited.h"
-#include "../src_local/adapt2.h"
-#include "../src_local/utils-weugene.h"
+#include "adapt_wavelet_limited.h"
+#include "adapt2.h"
+#include "utils-weugene.h"
 #include "utils.h"
 #include "lambda2.h"
-#include "../src_local/output_vtu_foreach.h"
+#include "output_vtu_foreach.h"
 #include "maxruntime.h"
+#include "tag.h"
+//#include "fracface.h"
 
 #define uexact(x,y,z) 2.*(1. - 4*sq(y) - 4*sq(z))
 //#define uexact(x,y,z) 0.25*(G/mu1)*(sq(0.5) - sq(y) - sq(z))
@@ -51,7 +52,7 @@ typedef struct {
 } Cases;
 #define zv {0,0,0,0,0}
 //         CA       V_d[l]    Uc[m/s]  Ud[m/s] delta*[-]
-Cases cases[23]={
+Cases cases[25]={
         zv, // 0 is empty
         zv,zv,zv,zv,zv,zv,zv, // 1-7 Air-glycerol
         {6.44e-4,  0.0349e-9, 0.0454, 0.0533, 0.1055},// 8  Air-Water delta?
@@ -64,26 +65,28 @@ Cases cases[23]={
         {0.008, 0.1715e-9, 0.666, 0.704, 0.023},  // 19 Air-Water
         {0.0098, 0.2208e-9, 0.757, 0.815, 0.025}, // 20 Air-Water
         {0.015, 0.1882e-9, 1.118 ,1.293, 0.039},  // 21 Air-Water
-        {0.0230, 0.2179e-9, 1.580, 1.944, 0.054}  // 22 Air-Water
+        {0.0230, 0.2179e-9, 1.580, 1.944, 0.054},  // 22 Air-Water
+        {0.0306, 0.2179e-9, 2.060, 2.511, 1e-9},  // 23 Air-Water
+        {0.0386, 0.2179e-9, 2.575, 3.165, 1e-9}  // 24 Air-Water
 };
 
 double Ca; // Ca = Mu*Ud/sigma
 double Ca_mod; // Ca_mod = Mu*Umean/sigma
 double Re; //Reynolds
 double G;
-double Umean;
+double Umean, UMEAN;
 double x_init = 2;
 int maxlevel = 8;
 int minlevel = 5;
-int LEVEL = 6;
+int LEVEL = 7;
 int adapt_method = 1; // 0 - traditional, 1 - using limitation, 2 - using array for maxlevel
 int snapshot_i = 100;
 double fseps = 1e-3, ueps = 1e-2;
 double TOLERANCE_P = 1e-5, TOLERANCE_V = 1e-5;
 bool ellipse_shape = false, cylinder_shape = true;
-scalar un[];
 
 int main (int argc, char * argv[]) {
+    fprintf(ferr, "./a.out maxlevel bubcase adapt_method iter_fp lDomain dt_vtk snapshot_i\n");
 //    maxruntime (&argc, argv);
     eta_s = 1e-5;
     TOLERANCE = 1e-6;
@@ -119,7 +122,7 @@ int main (int argc, char * argv[]) {
     }
     Ca = cases[bubcase].Ca; //Ca = Ud*Mu1/sigma
     Vd = cases[bubcase].Vd; // m^3
-    Umean = cases[bubcase].Uc; // m/s
+    UMEAN = cases[bubcase].Uc; // m/s
 
     if (argc > 3)
         adapt_method = atoi (argv[3]);
@@ -132,18 +135,18 @@ int main (int argc, char * argv[]) {
     if (argc > 7)
         snapshot_i = atoi (argv[7]);
 
-    size(lDomain);
-    origin(0., -L0/2., -L0/2.);
-    init_grid(1 << LEVEL);
+    size (lDomain);
+    origin (0., -L0/2., -L0/2.);
+    init_grid (1 << LEVEL);
 
     deq = pow(6.0*Vd/pi, 1./3.);// 0.0005301091821 m
     dst = deq/diam_tube;// 1.0730955104
     rst = 0.5*dst;
     Vdst = (4./3.)*pi*cube(rst);
-//    Umean = G*sq(0.5)/(8*Mu1);
-    Ca_mod = Mu1*Umean/Sigma;
-    Re = Umean*diam_tube*Rho1/Mu1;
-    G = 32.0*Mu1*Umean/sq(diam_tube);
+//    UMEAN = G*sq(0.5)/(8*Mu1);
+    Ca_mod = Mu1*UMEAN/Sigma;
+    Re = UMEAN*diam_tube*Rho1/Mu1;
+    G = 32.0*Mu1*UMEAN/sq(diam_tube);
 
     if (ellipse_shape || dst < 0.9) {
         r_bub = min(rst, 0.4);
@@ -163,21 +166,21 @@ int main (int argc, char * argv[]) {
                  "OUTPUT:         dt_vtk=%g number of procs=%d\n"
                  "ADAPT:          minlevel=%d,  maxlevel=%d      adapt_meth=%d fseps=%g ueps=%g\n"
                  "Bubble case: %d\n"
-                 "Properties(SI): Mu1=%g Mu2=%g Rho1=%g Rho2=%g  Sigma=%g G=%g Umean=%g\n"
+                 "Properties(SI): Mu1=%g Mu2=%g Rho1=%g Rho2=%g  Sigma=%g G=%g UMEAN=%g\n"
                  "Apparatus:      diam_tube=%g  tube_length=%g\n"
-                 "Bubble:         Vd=%g deq=%g  ellipse_shape=%d cylinder_shape=%d resolve_capillary_effects=%d\n",
+                 "Bubble:         Vd=%g deq=%g  ellipse_shape=%d cylinder_shape=%d\n",
                  eta_s, DT,
                  NITERMIN, NITERMAX, TOLERANCE, relative_residual_poisson, relative_residual_viscous,
                  dt_vtk, npe(),
                  minlevel, maxlevel, adapt_method, fseps, ueps,
                  bubcase,
-                 Mu1, Mu2, Rho1, Rho2, Sigma, G, Umean,
+                 Mu1, Mu2, Rho1, Rho2, Sigma, G, UMEAN,
                  diam_tube, L0,
-                 Vd, deq, ellipse_shape, cylinder_shape, resolve_capillary_effects);
+                 Vd, deq, ellipse_shape, cylinder_shape);
     // Dimensionless parameters:
-    // Averaging on diam_tube=1 and Umean=1, Mu1=1 and Rho1=1 p' = p/(Rho1*Umean^2)
-    G /= Rho1*sq(Umean)/diam_tube;
-    Umean /= Umean;
+    // Averaging on diam_tube=1 and Umean=1, Mu1=1 and Rho1=1 p' = p/(Rho1*UMEAN^2)
+    G /= Rho1*sq(UMEAN)/diam_tube;
+    Umean = 1;
     diam_tube /= diam_tube;
     RhoR = Rho1/Rho2;
     MuR = Mu1/Mu2;
@@ -189,10 +192,10 @@ int main (int argc, char * argv[]) {
     f.sigma = 1./(Re*Ca_mod);
     fprintf(ferr,"Dimensionless Parameters: mu1=%g mu2=%g rho1=%g rho2=%g sigma=%g G=%g  Umean=%g\n"
                  "Dimensionless nums:       Re=%g  Ca=%g  Ca_mod=%g\n"
-                 "Bubble:                   Vdst=%g dst=%g  rst=%g  r_bub=%g l_bub=%g x_init=%g\n",
+                 "Bubble:                   Vdst=%g dst=%g  rst=%g  r_bub=%g l_bub_cyl=%g l_bub=%g x_init=%g\n",
             mu1, mu2, rho1, rho2, f.sigma, G, Umean,
             Re, Ca, Ca_mod,
-            Vdst, dst, rst, r_bub, l_bub, x_init);
+            Vdst, dst, rst, r_bub, l_bub, (ellipse_shape || dst < 0.9) ? l_bub : l_bub + 2*r_bub, x_init);
     int rank, psize, h_len;
     char hostname[MPI_MAX_PROCESSOR_NAME];
     // get rank of this proces
@@ -266,15 +269,11 @@ event init (t = 0) {
             geometry(fs);
             bubble(f);
             foreach() {
-//            u.x[] = 1 - fs[]; //Init velocity
                 u.x[] = (1 - fs[])*uexact(x,y,z); //Init velocity
                 u.y[] = 0;
                 u.z[] = 0;
-                un[] = u.x[];
-//            p[] = (1 - f[])*2.0*f.sigma/rst;
-//            g.x[] = 0.5*((p[0] - p[-1])/Delta + (p[1] - p[0])/Delta);
             }
-            boundary((scalar *){u, un});
+            boundary((scalar *){u});
             if (adapt_method == 0)
                 s = adapt_wavelet((scalar *) ADAPT_INIT, (double[]) ADAPT_INIT_EPS, maxlevel, minlevel);
             else if (adapt_method == 1)
@@ -282,7 +281,7 @@ event init (t = 0) {
             else if (adapt_method == 2)
                 s = adapt_wavelet2((scalar *) ADAPT_INIT, (double[]) ADAPT_INIT_EPS, (int[]) ADAPT_INIT_MAXLEVEL, minlevel);
             fprintf(ferr, "Adaptation: nf=%d nc=%d\n", s.nf, s.nc);
-            if (s.nf == 0  || it > 8) break;
+            if (s.nf == 0  || it > 5) break;
             it++;
         } while(1);
         event("vtk_file");
@@ -302,65 +301,141 @@ event projection(i++){
     TOLERANCE = TOLERANCE_P;
 }
 
-//
-event logfile (i += 10) {
-  double du = change (u.x, un);
-  fprintf (ferr, "i= %d t= %g du= %g\n", i, t, du);
-  if (i > 0 && du < 1e-6) //Convergence criteria
-    return 1; //Stop the simulation
-}
+/**
+## Counting bubbles
 
-event logfile (i +=100)
+The number and sizes of bubbles is a useful statistics for atomisation problems.
+This is not a quantity which is trivial to compute. The *tag()* function is
+designed to solve this problem. Any connected region for which *f[] < 0.999*
+(i.e. a bubble) will be identified by a unique "tag" value between 0 and *n-1*.
+ */
+event logfile (i +=1)
 {
-    double avggas = L0*1 - normf(f).avg;
-    scalar umag[];
-    double xcg = 0, volume = 0, volumeg = 0, velamean = 0, velgx = 0, velgy = 0, dvtmp, min_r=0, mean_r=0, max_r=0, r=0;
-    double length_min = 0, length_max = 0, length = 0;
-    foreach(reduction(+:xcg) reduction(+:volume) reduction(+:volumeg)
-            reduction(+:velgx) reduction(+:velgy) reduction(+:velamean)
-            reduction(min:min_r) reduction(max:max_r) ) {
-        if (fs[]<1){
+    double x_mean = 0, velamean = 0, dvtmp, delta_min=1e+9, delta_mean=0, delta_max=-1e+9, r, r_min=1e+9;
+    double x_min = 1e+9, x_max = -1e+9, length = 0, volume_clip = 0, volumeg = 0, f_p_min;
+    double vel_bubx=0, vel_buby=0, vel_bubz=0;
+    coord p_min, coord_tail;
+//    face vector f_face[];
+//    face_fraction (f, f_face);
+
+    scalar m[];
+    foreach() m[] = f[] < 0.999; // m is 0 and 1 array
+    int n = tag (m); // m is modified filled be indices
+    /**
+    Once each cell is tagged with a unique droplet index, we can easily
+    compute the volume *v* and position *b* of each droplet. Note that
+    we use *foreach_leaf()* rather than *foreach()* to avoid doing a
+    parallel traversal when using OpenMP. This is because we don't have
+    reduction operations for the *v* and *b* arrays (yet).
+     */
+    double v[n];
+    coord b[n];
+    for (int j = 0; j < n; j++)
+        v[j] = b[j].x = b[j].y = b[j].z = 0.;
+    double vol_sum = 0;
+    foreach_leaf()
+        if (m[] > 0) {
+            int j = m[] - 1;
+            v[j] += dv()*f[];
+            vol_sum += v[j];
+            coord p = {x,y,z};
+            foreach_dimension()
+                b[j].x += dv()*f[]*p.x;
+        }
+    /**
+    When using MPI we need to perform a global reduction to get the
+    volumes and positions of bubbles which span multiple processes. */
+
+    #if _MPI
+    MPI_Allreduce (MPI_IN_PLACE, v, n, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+    MPI_Allreduce (MPI_IN_PLACE, b, 3*n, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+    #endif
+
+    /**
+    Finally we output the volume and position of each bubble to
+    standard output. */
+    int i_vol_max;
+    double vol_max=-1e+9;
+    for (int j = 0; j < n; j++){
+        if (v[j] > vol_max) {
+            vol_max = v[j];
+            i_vol_max = j;
+        }
+        fprintf (stdout, "statistics: %d %g %d %g %g %g\n",
+        i, t, j, v[j], b[j].x/v[j], b[j].y/v[j]);
+    }
+    fprintf(ferr, "i_vol_max= %d vol_max= %g\n", i_vol_max, vol_max);
+    foreach(reduction(+:x_mean) reduction(+:volumeg)
+            reduction(+:vel_bubx) reduction(+:vel_buby) reduction(+:vel_bubz) reduction(+:velamean)
+            reduction(min:delta_min) reduction(min:x_min) reduction(max:x_max)) {
+        if (fs[]<1 && m[] == 1 + i_vol_max){
             dvtmp = (1.0 - f[])*(1.0 - fs[])*dv(); // gas volume
-            volumeg += dvtmp;//gas liquid
-            volume += (1.0 - fs[])*dv();//channel volume
-            umag[] = norm(u); // the length of u
-            xcg   += x*dvtmp;// Along x
-            velamean += umag[]*dvtmp;//mean velocity of gas
-            velgx += u.x[]*dvtmp;//mean velocity of gas Ox
-            velgy += u.y[]*dvtmp;//mean velocity of gas Oy
-            if (f[] > 0 ) {
+            volumeg += dvtmp;
+            x_mean   += x*dvtmp;// Along x
+            velamean += norm(u)*dvtmp;//mean velocity of gas
+            vel_bubx += u.x[]*dvtmp; vel_buby += u.y[]*dvtmp; vel_bubz += u.z[]*dvtmp;//mean velocity of gas Ox,Oy,Oz
+            if (f[] > 0 && f[] < 1) {
                 r = sqrt(sq(y) + sq(z)) + Delta*(0.5 - f[]);
-                if (r < min_r) min_r = r;
-                if (r > max_r) max_r = r;
-                length = x + Delta*(0.5 - f[]);
-                if (length < length_min) length_min = length;
-                if (length > length_max) length_max = length;
+                if (0.5 - r < delta_min) {
+                    p_min.x = x;
+                    p_min.y = y;
+                    p_min.z = z;
+                    f_p_min = f[];
+                    delta_min = 0.5 - r;
+                }
+                if (x < x_min) x_min = x;
+                if (x > x_max) x_max = x;
             }
         }
     }
-    mean_r = 0.5*(min_r + max_r);
-    xcg /= volumeg; velgx /= volumeg; velgy /= volumeg; velamean /= volumeg;
-    //norm statu = normf_weugene(umag, fs); // outputs avg, rms, max, volume
-    fprintf (ferr, "maxlevel= %d i= %d t= %g dt= %g avggas= %g velgx= %g valgy= %g velamean= %g velgx/U0-1= %g \n"
-                   "xcg= %g thickness_min= %g thickness_mean= %g thickness_max= %g length= %g it_fp= %d\n",
-            maxlevel, i, t, dt, avggas, velgx, velgy, velamean, (velgx/Umean - 1),
-            xcg, 0.5 - max_r, 0.5 - mean_r, 0.5 - min_r, length_max - length_min, iter_fp);
+    vel_bubx /= volumeg; vel_buby /= volumeg; vel_buby /= volumeg;
+    x_mean /= volumeg; velamean /= volumeg; length = x_max - x_min;
+
+    foreach(reduction(+:volume_clip) reduction(max:delta_max) reduction(min:r_min)) {
+        if ( f[] < 1 && m[] == 1 + i_vol_max){
+            if (x > p_min.x && x < x_mean && m[] == 1 + i_vol_max){ // look inside a clipped bubble
+                volume_clip += (1.0 - f[])*dv(); // gas volume in the slice
+                if (f[] > 0 && 0.5 - r > delta_max) { // look at an interface of the clipped volume
+                    r = sqrt(sq(y) + sq(z)) + Delta * (0.5 - f[]);
+                    delta_max = 0.5 - r;
+                }
+            }
+            if (f[] > 0 && x < x_mean) { // look at an left hemi-interface
+                r = sqrt(sq(y) + sq(z));
+                if (r < r_min) {
+                    r_min = r;
+                    coord_tail.x = x;
+                    coord_tail.y = y;
+                    coord_tail.z = z;
+                }
+            }
+        }
+    }
+    delta_mean = 0.5 - sqrt(volume_clip/(pi*(x_mean - p_min.x)));
+        fprintf (ferr, "maxlevel= %d i= %d t= %g dt= %g volumeg= %g volume_clip= %g vel_bub= %g %g %g velamean= %g vel_bubx/U0-1= %g\n"
+                   "x_min= %g x_peak_max= %g %g %g coord_tail= %g %g %g x_mean= %g x_max= %g\n"
+                   "delta_min= %g delta_mean(NOTE:x_mean_x_of_max_y)= %g delta_max= %g length= %g f_p_min(full_cell?)= %g it_fp= %d\n",
+            maxlevel, i, t, dt, volumeg, volume_clip, vel_bubx, vel_buby, vel_bubz, velamean, (vel_bubx/Umean - 1),
+            x_min, p_min.x, p_min.y, p_min.z, coord_tail.x, coord_tail.y, coord_tail.z, x_mean, x_max,
+            delta_min, delta_mean, delta_max, x_max - x_min, f_p_min, iter_fp);
+    fprintf(ferr, "Ca\tUflow_m_s\tU_meanVT\tU_meanVT_m_s\tdelta_minVT\tdelta_meanVT\tdelta_maxVT\tmaxlevel\tlDomain\tdx\tN_per_delta\n");
+    double dx_min = lDomain/pow(2., maxlevel);
+   fprintf(ferr, "%8.5g\t%8.5g\t%8.5g\t%8.5g\t%8.5g\t%8.5g\t%8.5g\t%8d\t%8.5g\t%8.5g\t%8.5g\n",
+            mu1*vel_bubx/f.sigma, UMEAN, vel_bubx, vel_bubx*UMEAN, delta_min, delta_mean, delta_max,
+            maxlevel, lDomain, dx_min, delta_min/dx_min);
+    if (i==0) fprintf(stdout, "t\tx_tail\tx_peak\tr_peak\tx_mean\tx_nose\tx_nose_ISC\tvolume\tUmeanV\tdelta_min\tdelta_mean\tdelta_max\tdelta_min_smooth\tdelta_max_smooth\n");
+    fprintf (stdout, "%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\n",
+    t, coord_tail.x,  p_min.x, 0.5 - delta_min, x_mean, x_max, 0.0, volumeg, vel_bubx,
+    delta_min, delta_mean, delta_max);
+    fflush(stdout);
 }
 
-
-//event movie (t += 0.1) {
-//  view (fov = 22.4578, quat = {-0.707107,-0,-0,0.707107}, tx = -0.5, ty = 0.,
-//  	bg = {0.3,0.4,0.6}, width = 600, height = 600, samples = 1);
-//
-//  clear();
-//  squares("u.x", min=0, max=1.5, alpha = 0, n = {0,1,0});
-//  save("movie_ux.mp4");
-//}
 
 event snapshot (i += snapshot_i)
 //event snapshot (t += 1e-1)
 {
     char name[80];
+    scalar ppart[];
     sprintf(name, "dump-%04g",t);
     vorticity (u, omega);
     lambda2 (u, l2);
@@ -385,25 +460,19 @@ void exact(vector ue)
     }
     boundary((scalar *){ue});
 }
-//event vtk_file (i += 1)
+event vtk_file (i += 1)
 //event vtk_file (t += dt_vtk)
-//{
-//    char subname[80]; sprintf(subname, "tube_bp");
-//    fprintf(ferr, "l, ");
-//    scalar l[]; foreach() l[] = level;
-//    fprintf(ferr, "np, ");
-//    scalar np[]; foreach() np[] = pid();
-////    fprintf(ferr, "omega, ");
-////    vorticity (u, omega);
-////    fprintf(ferr, "lambda2, ");
-////    lambda2 (u, l2);
-////    fprintf(ferr, "output_vtu_MPI, ");
-//
+{
+    char subname[80]; sprintf(subname, "tube_bp");
+    scalar l[]; foreach() l[] = level;
+    scalar np[]; foreach() np[] = pid();
+    vorticity (u, omega);
+    lambda2 (u, l2);
 //    output_vtu_MPI( subname, (iter_fp) ? t + dt : 0, (scalar *) {p, fs, f, np, l}, (vector *) {u, a});
-////    output_vtu_MPI( subname, (iter_fp) ? t + dt : 0, (scalar *) {p, fs, f, np, l, omega, l2}, (vector *) {u});
-//    fprintf(ferr, "end:snapshot_vtk, ");
+    output_vtu_MPI( subname, (iter_fp) ? t + dt : 0, (scalar *) {p, fs, f, np, l, omega, l2}, (vector *) {u});
+//    fprintf(ferr, "end:snapshot_vtk");
 //    event("snapshot_vtk");
-//}
+}
 
 
 

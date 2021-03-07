@@ -120,9 +120,7 @@ int main (int argc, char * argv[]) {
     if (argc > 3)
         bubcase = atoi (argv[3]);
     if (argc > 4)
-        shiftm = fabs(atof(argv[4]));
-    if (argc > 5)
-        shiftp = fabs(atof(argv[5]));
+        maxlevel = atoi (argv[4]);
     DT=1e-3;
     eta_s = 1e-5;
     TOLERANCE = 1e-6;

@@ -184,8 +184,10 @@ mgstats mg_solve (struct MGSolve p)
   We then iterate until convergence or until *NITERMAX* is reached. Note
   also that we force the solver to apply at least one cycle, even if the
   initial residual is lower than *TOLERANCE*. */
-  double res_previous1 = 0;
-  double res_previous2 = 0;
+  #ifdef RELATIVE_RES
+  	double res_previous1 = 0;
+  	double res_previous2 = 0;
+  #endif
   int patient = 0;
   if (p.tolerance == 0.)
     p.tolerance = TOLERANCE;
@@ -220,16 +222,17 @@ mgstats mg_solve (struct MGSolve p)
 
     resb = s.resa;
 //break if resudual does not change. Weugene correction
-#ifdef relative_residual_poisson
+#ifdef RELATIVE_RES
       double res1 = 0.5*(res_previous1+res_previous2);
       double res2 = 0.5*(res_previous1+s.resa);
+	  double res_rel = fabs(res1 - res2)/(res2 + 1e-30);
       if (s.i == 2 && fabs(s.resa) < 1e-30) break;
-      if( fabs(res1 - res2)/(res2 + 1e-30) < RELATIVE_RES_TOLERANCE && patient > 3){
+      if( res_rel < RELATIVE_RES_TOLERANCE && patient > 3){
           scalar v = p.a[0];
           fprintf (ferr,
              "WARNING: Relative residual did not reach convergence for %s after %d iterations\n"
-             "  res: %g prev_res: %g %g sum: %g nrelax: %d\n",
-             v.name, s.i, s.resa, res_previous1, res_previous2, s.sum, s.nrelax), fflush (ferr);;
+             "  rel_res: %g res: %g prev_res: %g %g sum: %g nrelax: %d\n",
+             v.name, s.i, res_rel, s.resa, res_previous1, res_previous2, s.sum, s.nrelax), fflush (ferr);;
           break;
       }
       else{
@@ -237,7 +240,6 @@ mgstats mg_solve (struct MGSolve p)
           res_previous1 = s.resa;
           patient++;
       }
-
 #endif
   }
   s.minlevel = p.minlevel;
@@ -468,8 +470,7 @@ static double residual (scalar * al, scalar * bl, scalar * resl, void * data)
       maxres = fabs (res[]);
   }
   boundary (resl);
-  fprintf(stderr, "maxres= %g maxb = %g maxres/maxb = %g\n", maxres, maxb, maxres/maxb);
-
+  fprintf(ferr, "maxres*dt^2= %g maxres= %g maxb= %g maxres/maxb= %g\n", maxres*sq(dt), maxres, maxb, maxres/maxb);
   return maxres/maxb;
 }
 
@@ -484,7 +485,7 @@ $$ */
 
 mgstats poisson (struct Poisson p)
 {
-
+	fprintf(ferr, "**********************\n");
   /**
   If $\alpha$ or $\lambda$ are not set, we replace them with constant
   unity vector (resp. zero scalar) fields. Note that the user is free to
@@ -591,6 +592,9 @@ mgstats project (struct Project q)
 #endif
     }
     boundary((scalar*){div});
+#ifdef DEBUG_MODE_POISSON
+    boundary((scalar*){divutmp});
+#endif
     /**
     We solve the Poisson problem. The tolerance (set with *TOLERANCE*) is
     the maximum relative change in volume of a cell (due to the divergence
@@ -625,14 +629,16 @@ mgstats project (struct Project q)
     boundary ((scalar *){uf});
 
 #ifdef DEBUG_MODE_POISSON
-    foreach() {
-        d = 0.;
-        foreach_dimension(){
-            d += uf.x[1] - uf.x[];
-        }
-        divutmpAfter[] = d/(dt*Delta);
+    double divuf, maxdivuf = -1e30;
+    foreach(reduction(max:maxdivuf)) {
+      divuf = 0;
+      foreach_dimension() divuf += (uf.x[1]-uf.x[])/Delta;
+      divutmpAfter[] = divuf/dt;
+      divuf = fabs(divuf);
+      if (maxdivuf < divuf) maxdivuf = divuf;
     }
     boundary((scalar*){divutmpAfter});
+    fprintf(ferr, "Projection MAX{div uf} = %g\n", maxdivuf);
 #endif
     return mgp;
 }

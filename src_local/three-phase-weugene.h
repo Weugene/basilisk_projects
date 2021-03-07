@@ -53,13 +53,15 @@ The reason we choose this equation because the sum of coefficients of $A_i$ is z
 */
 
 #ifndef rho
-#define rho(f, fs) ((1-fs)*(f*rho1 + (1 - f)*rho2) + fs*rho3)
-//#define rho(f, fs) ((1 - clamp(fs,0,1))*(clamp(f,0.,1.)*rho1 + (1 - clamp(f,0,1))*rho2) + clamp(fs,0.,1.)*rho3)
+//#define rho(f, fs) ((1-fs)*(f*rho1 + (1 - f)*rho2) + fs*rho3)
+#define rho(f, fs) ((1 - clamp(fs,0,1))*(clamp(f,0.,1.)*rho1 + (1 - clamp(f,0,1))*rho2) + clamp(fs,0.,1.)*rho3)
+//#define rho(f, fs) (clamp(f,0.,1.)*rho1 + (1 - clamp(f,0,1))*rho2)
 //#define rho(f, fs) (1.0/((1 - clamp(fs,0,1))*(clamp(f,0.,1.)/rho1 + (1 - clamp(f,0,1))/rho2) + clamp(fs,0.,1.)/rho3))
 #endif
 #ifndef mu
-#define mu(f, fs) ((1-fs)*(f*mu1 + (1 - f)*mu2) + fs*mu3)
-//#define mu(f, fs) ((1 - clamp(fs,0,1))*(clamp(f,0.,1.)*mu1 + (1 - clamp(f,0,1))*mu2) + clamp(fs,0.,1.)*mu3)
+//#define mu(f, fs) ((1-fs)*(f*mu1 + (1 - f)*mu2) + fs*mu3)
+#define mu(f, fs) ((1 - clamp(fs,0,1))*(clamp(f,0.,1.)*mu1 + (1 - clamp(f,0,1))*mu2) + clamp(fs,0.,1.)*mu3)
+//#define mu(f, fs) (clamp(f,0.,1.)*mu1 + (1 - clamp(f,0,1))*mu2)
 //#define mu(f, fs)  (1.0/((1 - clamp(fs,0,1))*(clamp(f,0.,1.)/mu1 + (1 - clamp(f,0,1))/mu2) + clamp(fs,0.,1.)/mu3))
 #endif
 

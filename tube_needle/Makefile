@@ -1,8 +1,10 @@
 CFLAG= -O2 -events
+all:
+	echo 'tube_bp'
 tube_bp:
 	rm -rf .qcc* log_bp out_bp snapshot-*
 	CC99='mpicc -std=c99' qcc -O2 -D_MPI=1 -events tube_bp.c -lm
-	./a.out
+#	mpirun -np 2 ./a.out
 convertD2P_tar:
 	rm -rf convertD2P
 	CC99='mpicc -std=c99' qcc $(CFLAG) -D_MPI=1 convertD2P.c -lm -o convertD2P

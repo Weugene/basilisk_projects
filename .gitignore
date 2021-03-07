@@ -1,12 +1,20 @@
 # data files
+*.xlsx
+!delta_u_mean_stats*xlsx
+!tube/Contours_OpenFOAM_ANSYS_Experiment/*
 out
+*.json
 *.vtk
 *.vtk.*
+*.vtp
 *.pvtu
 *.vtu
+*.csv
 *.vtu.*
 *.pvd
+*.pvsm
 tracer_t=*.csv
+*.ipynb_checkpoints*
 log
 log_*
 out_*

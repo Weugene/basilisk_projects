@@ -73,12 +73,12 @@ double Ca_mod; // Ca_mod = Mu*Umean/sigma
 double Re; //Reynolds
 double Gp;
 double Umean;
-double x_init = 2;
-int maxlevel = 8;
+double x_init = 1;
+int maxlevel = 10;
 int minlevel = 5;
 int LEVEL = 6;
-int adapt_method = 1; // 0 - traditional, 1 - using limitation, 2 - using array for maxlevel
-int snapshot_i = 100;
+int adapt_method = 0; // 0 - traditional, 1 - using limitation, 2 - using array for maxlevel
+int snapshot_i = 500;
 double fseps = 1e-3, ueps = 1e-2;
 double TOLERANCE_P = 1e-5, TOLERANCE_V = 1e-5;
 bool ellipse_shape = false, cylinder_shape = true;
@@ -90,9 +90,8 @@ int main (int argc, char * argv[]) {
     TOLERANCE = 1e-6;
     NITERMIN = 1;
     NITERMAX = 100;
-    DT = 1e-8;
+    DT = 1e-4;
     cylinder_shape = true;
-//    relative_residual_poisson = true;
 //    relative_residual_viscous = true;
     fs.refine = fs.prolongation = fraction_refine;
     f.refine = f.prolongation = fraction_refine;
@@ -103,7 +102,7 @@ int main (int argc, char * argv[]) {
         bubcase = atoi (argv[2]);
 
     if ((bubcase >= 8 && bubcase <= 12) || bubcase >= 18) { // Water
-        Rho1 = 997, Rho2 = 1.204;
+        Rho1 = 997, Rho2 = 100.204;
         Mu1 = 0.88e-3, Mu2 = 0.019e-3;
         Sigma = 72.8e-3;
         diam_tube = 514e-6;
@@ -119,6 +118,8 @@ int main (int argc, char * argv[]) {
     }
     Ca = cases[bubcase].Ca; //Ca = Ud*Mu1/sigma
     Vd = cases[bubcase].Vd; // m^3
+	Vd = 0.0349e-9;
+	fprintf(ferr, "VOLUME IS REWRITTEN %g", Vd);
     Umean = cases[bubcase].Uc; // m/s
    // G.y = 100*9.8*diam_tube/sq(Umean);
     if (argc > 3)
@@ -156,10 +157,10 @@ int main (int argc, char * argv[]) {
     } else{
         assert(false && "set shape");
     }
-    x_init = 1.7*l_bub;
+    x_init = 2*l_bub;
 
     fprintf(ferr,"BP:             eta_s=%g,     DT=%g\n"
-                 "Solver:         NITERMIN=%d   NITERMAX=%d      TOLERANCE=%g  relative_residual_poisson=%d relative_residual_viscous=%d\n"
+                 "Solver:         NITERMIN=%d   NITERMAX=%d      TOLERANCE=%g relative_residual_viscous=%d\n"
                  "OUTPUT:         dt_vtk=%g number of procs=%d\n"
                  "ADAPT:          minlevel=%d,  maxlevel=%d      adapt_meth=%d fseps=%g ueps=%g\n"
                  "Bubble case: %d\n"
@@ -167,7 +168,7 @@ int main (int argc, char * argv[]) {
                  "Apparatus:      diam_tube=%g  tube_length=%g\n"
                  "Bubble:         Vd=%g deq=%g  ellipse_shape=%d cylinder_shape=%d \n",
                  eta_s, DT,
-                 NITERMIN, NITERMAX, TOLERANCE, relative_residual_poisson, relative_residual_viscous,
+                 NITERMIN, NITERMAX, TOLERANCE, relative_residual_viscous,
                  dt_vtk, npe(),
                  minlevel, maxlevel, adapt_method, fseps, ueps,
                  bubcase,
@@ -208,14 +209,16 @@ int main (int argc, char * argv[]) {
 
 //Inflow
 //u.n[left] = dirichlet((1 - fs[]));
-//u.n[left] = dirichlet(uexact(x,y,z)*(1 - fs[]));
+u.n[left] = dirichlet(uexact(x,y,z)*(1 - fs[]));
 //u.n[left] = neumann(0); 
 p[left] = neumann(0);
 pf[left] = neumann(0);
 f[left] = dirichlet(1);
 fs[left] = neumann(0);
 //Outflow
-//u.n[right] = neumann(0);
+u.n[right] = neumann(0);
+u.t[right] = neumann(0);
+u.r[right] = neumann(0);
 p[right] = dirichlet(0);
 pf[right] = dirichlet(0);
 f[right] = neumann(0);
@@ -227,7 +230,8 @@ void geometry(scalar fs)
     //Channel
     vertex scalar phi[];
     double r2;
-    double a=lDomain-2*l_bub - x_init, b=0.3, c=0.3;
+    double a=lDomain - 2*l_bub - x_init, b=0.1, c=0.1;// channel diameter is 1
+	fprintf(ferr, "a=%g, b=%g, c=%g\n", a, b, c);
     foreach_vertex() {
 	r2 = sq(y) + sq(z);
         phi[] = union(r2 - sq(0.5), sq(1) - sqq((x-lDomain)/a) - sqq(y/b) - sqq(z/c));  
@@ -248,7 +252,7 @@ void bubble(scalar f)
             phi[] = union(phi[], sq(r_bub) - sq(fabs(x - x_init) - 0.5*l_bub) - sq(y) - sq(z));
             phi[] *= -1;
         }
-	phi[] = 1;
+	//phi[] = 1; //all is fluid
     }
     boundary ({phi});
     fractions (phi, f);
@@ -274,17 +278,14 @@ event init (t = 0) {
             bubble(f);
             foreach() {
 //            u.x[] = 1 - fs[]; //Init velocity
-                //u.x[] = (1 - fs[])*uexact(x,y,z); //Init velocity
-		u.x[] = 0;
-                u.y[] = 0;
-                u.z[] = 0;
+                u.x[] = (1 - fs[])*uexact(x,y,z); //Init velocity
                 un[] = u.x[];
-//            p[] = (1 - f[])*2.0*f.sigma/rst;
-//            g.x[] = 0.5*((p[0] - p[-1])/Delta + (p[1] - p[0])/Delta);
             }
             boundary((scalar *){u, un});
-            if (adapt_method == 0)
-                s = adapt_wavelet((scalar *) ADAPT_INIT, (double[]) ADAPT_INIT_EPS, maxlevel, minlevel);
+            if (adapt_method == 0){
+                s = adapt_wavelet((scalar *) {f, fs, u.x}, (double[]) {fseps, fseps, ueps}, maxlevel, minlevel);
+                //s = adapt_wavelet((scalar *) ADAPT_INIT, (double[]) ADAPT_INIT_EPS, maxlevel, minlevel);
+			}
             else if (adapt_method == 1)
                 s = adapt_wavelet_limited((scalar *) ADAPT_INIT, (double []) ADAPT_INIT_EPS, maXlevel, minlevel);
             else if (adapt_method == 2)
@@ -308,6 +309,14 @@ event viscous_term(i++){
 
 event projection(i++){
     TOLERANCE = TOLERANCE_P;
+}
+
+event viscous_term (i++){
+	int m_bp = max(20 - i/4., 1);
+	double mindelta = L0/pow(2, maxlevel);
+	double nu_bp = mu1/rho1;
+	eta_s = max(sq(m_bp*mindelta)/nu_bp/1.1, 1e-8);
+	fprintf(ferr, "m=%d, mindelta=%g, nu=%g, eta_s=%15.12g\n", m_bp, mindelta, nu_bp, eta_s);
 }
 
 //
@@ -394,8 +403,8 @@ void exact(vector ue)
     }
     boundary((scalar *){ue});
 }
-event vtk_file (i += 1)
-//event vtk_file (t += dt_vtk)
+//event vtk_file (i += 1)
+event vtk_file (t += 0.01)
 {
     char subname[80]; sprintf(subname, "tube_bp");
     fprintf(ferr, "l, ");
@@ -410,15 +419,15 @@ event vtk_file (i += 1)
 
     output_vtu_MPI( subname, (iter_fp) ? t + dt : 0, (scalar *) {p, fs, f, np, l}, (vector *) {u});
 //    output_vtu_MPI( subname, (iter_fp) ? t + dt : 0, (scalar *) {p, fs, f, np, l, omega, l2}, (vector *) {u});
-    fprintf(ferr, "end:snapshot_vtk, ");
+//    fprintf(ferr, "end:snapshot_vtk, ");
 //    event("snapshot_vtk");
 }
 
 
 
-#define ADAPT_SCALARS {f, u.x, u.y, u.z}
-#define ADAPT_SCALARS_SMOOTHED {f, u.x, u.y, u.z}
-#define ADAPT_EPS_SCALARS {fseps, ueps, ueps, ueps}
+#define ADAPT_SCALARS {f, fs, u.x, u.y, u.z}
+#define ADAPT_SCALARS_SMOOTHED {f, fs, u.x, u.y, u.z}
+#define ADAPT_EPS_SCALARS {fseps, fseps, ueps, ueps, ueps}
 #define ADAPT_MAXLEVEL {maxlevel, max(maxlevel-2,10), max(maxlevel-2,10), max(maxlevel-2,10)}
 //#define ADAPT_SCALARS {fs, f, u}
 //#define ADAPT_EPS_SCALARS {fseps, fseps, ueps, ueps, ueps}

@@ -31,7 +31,7 @@ The advantages of EBM are high accuracy and MPI parallelization, however, it wor
 If Brinkman Penalization method for solid treatment is used,
 then a penalization term is added implicitly with the viscous term.
 In this case $\mathbf{a} = -\frac{\chi}{\eta_s}\left(\mathbf{u} - \mathbf{U_t} \right)$
-BPM can work for multiphase flow with MPI paarallelization with sufficient accuracy.
+BPM can work for multiphase flow with MPI parallelization with sufficient accuracy.
 Detailed information about comparison you can find here.
  */
 
@@ -226,6 +226,8 @@ event set_dtmax (i++,last) dtmax = DT;
 
 event stability (i++,last) {
   dt = dtnext (stokes ? dtmax : timestep (uf, dtmax));
+
+  fprintf(ferr, "stability: dt=%g DT=%g dtmax=%g", dt, DT, dtmax );
 }
 
 /**
@@ -274,12 +276,7 @@ void prediction()
             du.x[] = 0.;
 	    else
 #endif
-#ifdef BRINKMAN_PENALIZATION
-        if (fabs(fs_face.x[] - 1) < SEPS || fabs(fs_face.x[1] - 1) < SEPS)
-	        du.x[] = 0.; // inside solids
-	    else
-#endif
-	        du.x[] = u.x.gradient (u.x[-1], u.x[], u.x[1])/Delta;
+          du.x[] = u.x.gradient (u.x[-1], u.x[], u.x[1])/Delta;
       }
   else
     foreach()
@@ -289,11 +286,11 @@ void prediction()
 	            du.x[] = 0.;
 	        else
 #endif
-#ifdef BRINKMAN_PENALIZATION
-            if (fabs(fs_face.x[] - 1) < SEPS || fabs(fs_face.x[1] - 1) < SEPS)
-	            du.x[] = 0.; // inside solids
-	        else
-#endif
+//#ifdef BRINKMAN_PENALIZATION
+//            if (fabs(fs_face.x[] - 1) < SEPS || fabs(fs_face.x[1] - 1) < SEPS)
+//	            du.x[] = 0.; // inside solids
+//	        else
+//#endif
 	            du.x[] = (u.x[1] - u.x[-1])/(2.*Delta);
     }
   boundary ((scalar *){du});
@@ -334,19 +331,14 @@ field. */
 event advection_term (i++,last)
 {
   if (!stokes) {
-    //event("vtk_file");//1
     prediction();
-    //event("vtk_file");//2
 #if BRINKMAN_PENALIZATION && MODIFIED_CHORIN
-        mgpf = project_bp (uf, pf, alpha, 0.5*dt, mgpf.nrelax, fs, target_U, u, eta_s);//Weugene: chi^{n+1/2}
+        mgpf = project_bp (uf, pf, alpha, 0.5*dt, mgpf.nrelax, fs, target_U, u, eta_chorin);
 #else
     mgpf = project (uf, pf, alpha, dt/2., mgpf.nrelax);
-//      mgpf = project_bp (uf, pf, alpha, 0.5*dt, mgpf.nrelax, fs, target_U, u, eta_s);//Weugene: chi^{n+1/2}
 #endif
-//    advection ((scalar *){u}, uf, dt);//corrected: Weugene
-    //event("vtk_file");//3
     advection ((scalar *){u}, uf, dt, (scalar *){g});// original version
-    //event("vtk_file");//4
+    //event("vtk_file");
   }
 }
 
@@ -358,16 +350,11 @@ acceleration terms. */
 
 static void correction (double dt)
 {
-  foreach()
-    foreach_dimension()
-#if BRINKMAN_PENALIZATION
-//      u.x[] = (u.x[] + (1.0 - fs[])*dt*g.x[] + (dt/eta_s)*fs[]*target_U.x[])/(1 + (dt/eta_s)*fs[]); //corrected: Weugene
-//    if (fabs(1 - fs_face.x[]) > SEPS || fabs(1 - fs_face.x[1]) > SEPS)// in fluid, if right or left fs_face != 1
-        u.x[] += dt*g.x[]; //original version
-#else
-    u.x[] += dt*g.x[]; //original version
-#endif
-  boundary ((scalar *){u});
+	foreach()
+    	foreach_dimension()
+      		u.x[] += dt*g.x[]; //original version
+	boundary ((scalar *){u});
+	//event("vtk_file");	
 }
 
 /**
@@ -380,12 +367,11 @@ time $t+\Delta t$. */
 event viscous_term (i++,last)
 {
   if (constant(mu.x) != 0.) {
-    correction (dt);//Weugene correction: chi^{n+1}
-    //event("vtk_file");//5
-    mgu = viscosity (u, mu, rho, dt, mgu.nrelax);//Weugene: chi^{n+1}
-    //event("vtk_file");//6
-    correction (-dt);//Weugene: chi^n
-    //event("vtk_file");//7
+	//event("vtk_file");
+    correction (dt);
+    mgu = viscosity (u, mu, rho, dt, mgu.nrelax);
+    correction (-dt);
+	//event("vtk_file");
   }
 
   /**
@@ -423,20 +409,8 @@ event acceleration (i++,last)
   trash ({uf});
   face vector ia =a;
   foreach_face(){
-#if BRINKMAN_PENALIZATION
-//      uf.x[] = fm.x[]*(face_value (u.x, 0));
-//      uf.x[] += fm.x[]*dt*a.x[]*(1 - fs_face.x[]);//add
-//      if (fabs(1 - fs_face.x[]) > SEPS)// in fluid not in solid && if fs_face=0.99 => add full acceleration->mistale?
-//          uf.x[] += fm.x[]*dt*a.x[];
-//      if (fabs(fs_face.x[]) < SEPS)// in fluid only pure water & can give sticking->mistale?
-//          uf.x[] += fm.x[]*dt*a.x[];
-
-        uf.x[] = fm.x[]*(face_value (u.x, 0) + dt*a.x[]);//original version
-#else
-        uf.x[] = fm.x[]*(face_value (u.x, 0) + dt*a.x[]);//original version
-#endif
-    }
-    //event("vtk_file");//8
+    uf.x[] = fm.x[]*(face_value (u.x, 0) + dt*a.x[]);
+  }
   boundary ((scalar *){uf, a});
 }
 
@@ -478,23 +452,35 @@ next timestep). Then compute the centered gradient field *g*. */
 event projection (i++,last)
 {
 #if BRINKMAN_PENALIZATION && MODIFIED_CHORIN
-  mgp = project_bp (uf, p, alpha, dt, mgp.nrelax, fs, target_U, u, eta_s);// Weugene: chi^{n+1}
+  mgp = project_bp (uf, p, alpha, dt, mgp.nrelax, fs, target_U, u, eta_chorin);
 #else
   mgp = project (uf, p, alpha, dt, mgp.nrelax);
-//  mgp = project_bp (uf, p, alpha, dt, mgp.nrelax, fs, target_U, u, eta_s);// Weugene: chi^{n+1}
 #endif
-  centered_gradient (p, g); //calc gf, g using p^{n+1}, a^{n+1/2}
-  //event("vtk_file");//9
+  centered_gradient (p, g); //calc gf^{n+1}, g^{n+1} using p^{n+1}, a^{n+1/2}
   /**
   We add the gradient field *g* to the centered velocity field. */
-  correction (dt);//Weugene: why here?
-  //event("vtk_file");//10
+//  correction (dt);
+  foreach()
+    foreach_dimension()
+      u.x[] += dt*g.x[]*(1 - fs[]); //original version
+  boundary ((scalar *){u});
+#ifdef DEBUG_MODE_POISSON
+  if ( i % 1==0 ){
+    double divuf, maxdivuf = -1e30;
+    foreach(reduction(max:maxdivuf)) {
+      divuf = 0;
+      foreach_dimension() divuf += (uf.x[1]-uf.x[])/Delta;
+      divuf = fabs(divuf);
+      if (maxdivuf < divuf) maxdivuf = divuf;
+    }
+    fprintf(ferr, "Projection MAX{div uf} = %g\n", maxdivuf);
+  }
+#endif
 }
 
 //#if BRINKMAN_PENALIZATION
 //event brinkman_penalization(i++, last){
 //    brinkman_correction(u, uf, rho, dt);
-////    event("vtk_file");
 //}
 //#endif
 /**
@@ -506,7 +492,7 @@ event end_timestep (i++, last);
 
 /**
 Output vtk files*/
-event vtk_file (i++, last);// correct. Added by Weugene
+event vtk_file (i++,last);// correct. Added by Weugene
 /**
 ## Adaptivity
 
@@ -519,13 +505,18 @@ event adapt (i++,last) {
 #if EMBED
   fractions_cleanup (cs, fs);
   foreach_face()
+    // fs = 0 solid
     if (uf.x[] && !fs.x[])
       uf.x[] = 0.;
   boundary ((scalar *){uf});
 #endif
-#if BRINKMAN_PENALIZATION == 1
-
-#endif
+//#if BRINKMAN_PENALIZATION
+//  foreach_face()
+//    // fs_face = 1 solid
+//    if ((uf.x[] - target_Uf.x[]) && fs_face.x[])
+//        uf.x[] = target_Uf.x[];
+//  boundary ((scalar *){uf});
+//#endif
   event ("properties");
 }
 #endif

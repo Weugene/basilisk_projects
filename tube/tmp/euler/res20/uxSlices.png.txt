@@ -1,1 +1,0 @@
-*uxSlices.png sed s/:lambda2_t=//

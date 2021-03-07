@@ -22,9 +22,9 @@ $$
 This is a Poisson--Helmholtz problem which can be solved with a
 multigrid solver. */
 //Added by Weugene:
-#ifndef BRINKMAN_PENALIZATION
-#include "poisson.h"
-#endif
+//#ifndef BRINKMAN_PENALIZATION
+//#include "poisson.h"
+//#endif
 /**
 The parameters of the `diffusion()` function are a scalar field `f`,
 scalar fields `r` and $\beta$ defining the reactive term, the timestep

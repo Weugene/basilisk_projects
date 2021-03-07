@@ -1,0 +1,10 @@
+stability: dt=1.8329e-05 DT=0.001 dtmax=0.000201619  logfile                   mass_cons.c:189
+stability: dt=1.8329e-05 DT=0.001 dtmax=0.000201619  vof                       src/vof.h:312
+stability: dt=5.01396e-05 DT=0.001 dtmax=0.000201619  vof                       src/vof.h:312
+stability: dt=6.39104e-05 DT=0.001 dtmax=0.000201619  vof                       src/vof.h:312
+stability: dt=7.64293e-05 DT=0.001 dtmax=0.000201619  vof                       src/vof.h:312
+stability: dt=8.78102e-05 DT=0.001 dtmax=0.000201619  vof                       src/vof.h:312
+stability: dt=9.81564e-05 DT=0.001 dtmax=0.000201619  vof                       src/vof.h:312
+stability: dt=0.000107562 DT=0.001 dtmax=0.000201619  vof                       src/vof.h:312
+stability: dt=0.000116113 DT=0.001 dtmax=0.000201619  vof                       src/vof.h:312
+stability: dt=0.000123886 DT=0.001 dtmax=0.000201619  vof                       src/vof.h:312

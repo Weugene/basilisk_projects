@@ -1,5 +1,5 @@
 #!/bin/bash
-://trac.ffmpeg.org/wiki/Encode/H.264
+#://trac.ffmpeg.org/wiki/Encode/H.264
 
 [[ $# < 2 ]] && { echo "Usage: ./$(basename $0) <input> <output> [<crf>]"; exit 1; }
 

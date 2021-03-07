@@ -1,1 +1,0 @@
-Fetched data:x_sum 3.141593e-03 bubble volume: 3.141593e+01 x_mean: 3.141593e+00Fetched data:x_sum 3.141593e-03 bubble volume: 3.141593e+01 x_mean: 3.141593e+00Fetched data:x_sum 3.141593e-03 bubble volume: 3.141593e+01 x_mean: 3.141593e+00Fetched data:x_sum 3.141593e-03 bubble volume: 3.141593e+01 x_mean: 3.141593e+00

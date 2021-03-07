@@ -1,9 +1,9 @@
 #ifndef BASILISK_HEADER_40
 #define BASILISK_HEADER_40
-#line 1 "./../src_local/../src_local/penalization.h"
+#line 1 "./../src_local/penalization.h"
 const vector zerocf[] = {0.,0.,0.};
 #ifdef BRINKMAN_PENALIZATION
-    #define frhs (1)
+    #define frhs (1 - fs[])
     #define fbp (fs[])
     extern scalar fs;
     extern face vector fs_face;
@@ -65,7 +65,7 @@ const vector zerocf[] = {0.,0.,0.};
     #define PLUS_DENOMINATOR_BRINKMAN 0
 #endif
 
-#define PLUS_BRINKMAN_RHS  (PLUS_VARIABLE_BRINKMAN_RHS + PLUS_VARIABLE_BRINKMAN_RHS) //- fbp*( (u.x[] - target_U.x[])/eta_s + conv.x )
+#define PLUS_BRINKMAN_RHS  (PLUS_VARIABLE_BRINKMAN_RHS + PLUS_CONSTANT_BRINKMAN_RHS) //- fbp*( (u.x[] - target_U.x[])/eta_s + conv.x )
 
 
 
@@ -142,4 +142,5 @@ void brinkman_correction (struct Brinkman p){
     brinkman_correction_u (u, dt);
 //    brinkman_correction_uf (uf, dt);
 }
+
 #endif

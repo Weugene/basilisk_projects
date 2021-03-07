@@ -239,7 +239,7 @@ event set_dtmax (i++) {
     DT *= 1.05;
 //    DT = min(DT, 0.001);
 //    DT = min(DT, CFL*Ldomain/pow(2, maxlevel+3));
-    fprintf(ferr, "set_dtmax: tnext= %g Dt= %g", tnext, DT);
+    fprintf(ferr, "set_dtmax: tnext= %g Dt= %g\n", tnext, DT);
 }
 
 //event advection_term(i++){

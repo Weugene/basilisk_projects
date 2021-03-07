@@ -1,9 +1,9 @@
 #ifndef BASILISK_HEADER_38
 #define BASILISK_HEADER_38
 #line 1 "./../src_local/viscosity-weugene.h"
-#include "../src_local/penalization.h"
+#include "penalization.h" // added by Weugene 3/12/20 at 11:55
 //#include "poisson.h"
-#include "../src_local/poisson-weugene.h"
+#include "poisson-weugene.h" // added by Weugene 3/12/20 at 11:55
 
 #undef SEPS
 #define SEPS 1e-12
@@ -238,4 +238,5 @@ mgstats viscosity (struct Viscosity p){
     fprintf(ferr, "maxb = %g\n", p.maxb);
     return mg_solve ((scalar *){u}, (scalar *){r}, residual_viscosity, relax_viscosity, &p, p.nrelax, p.res);
 }
+
 #endif

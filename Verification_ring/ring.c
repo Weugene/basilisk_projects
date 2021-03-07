@@ -2,22 +2,22 @@
 #define DEBUG_BRINKMAN_PENALIZATION 1
 #define DEBUG_OUTPUT_VTU_MPI
 #define FILTERED
-#define MODIFIED_CHORIN 1
+//#define MODIFIED_CHORIN 1
 #define JACOBI 1
 #define EPS_MAXA 2
-#define SURFACE_TENSION 0
+//#define SURFACE_TENSION 0
 //#define FIXED
 scalar omega[], my_kappa[];
 scalar fs[];
 face vector fs_face[];
-(const) face vector target_Uf = zerof;
-#include "../src_local/centered-weugene.h"
-#include "view.h"
-#include "../src_local/output_vtu_foreach.h"
+//(const) face vector target_Uf = zerof;
+#include "centered-weugene.h"
+//#include "view.h"
+#include "output_vtu_foreach.h"
 //#include "../src_local/three-phase-weugene.h"//rho3, mu3
 #include "two-phase.h"
 #if SURFACE_TENSION == 1
-#include "tension.h"//f.sigma
+	#include "tension.h"//f.sigma
 #endif
 int maxlevel = 9;
 int minlevel = 4;
@@ -171,11 +171,13 @@ event init (t = 0) {
 
 event set_dtmax (i++) {
     if (i<500) DT *= 1.05;
-    if (DT>0.000047619) DT=0.000047619;
+    if (DT>0.000047619) DT=0.00047619;
 }
 
 event vof(i++){
-    soild_fs(fs, fs_face, t);
+//    soild_fs(fs, fs_face, t);
+
+
 //    soild_fs(fs, fs_face, t + 0.5*dt);
 //    foreach() {
 //        if (fabs(fs[] - 1) < SEPS) {
@@ -213,7 +215,7 @@ event vof(i++){
 //event viscous_term (i++){
 //    soild_fs(fs, fs_face, t + dt);
 //}
-void correct_press(scalar p, int i){
+/*void correct_press(scalar p, int i){
     double press = 0;
     int ip = 0;
 #if 1 // Left bottom Corner
@@ -233,43 +235,26 @@ void correct_press(scalar p, int i){
         p[] -= press;
     }
 }
+*/
 
 event end_timestep(i++){
-    correct_press(p, i);
+//    correct_press(p, i);
     vorticity (u, omega);
 }
-
+double V0;
 event end_timestep (i++) {
-    double avggas = sq(L0) - normf(f).avg, avggas_out_solid = sq(L0) - normf_weugene(f, fs).avg,  u_mag;
+/*    double avggas = sq(L0) - normf(f).avg, avggas_out_solid = sq(L0) - normf_weugene(f, fs).avg,  u_mag;
     foreach() {
         divu[] = 0;
         foreach_dimension()
         divu[] += (uf.x[1]-uf.x[])/Delta;
     }
-    double Linf_u = -10, Linf_omega_min = 1e10, Linf_omega_max = -10;
-    double u_min_mag = 1e+10, u_max_mag = -1e+10, u_min_x = 1e+10, u_max_x = -1e+10, u_min_y = 1e+10, u_max_y = -1e+10;
-    foreach( reduction(max:Linf_u) reduction(min:Linf_omega_min) reduction(max:Linf_omega_max)
-            reduction(min:u_min_mag) reduction(min:u_min_x) reduction(min:u_min_y)
-            reduction(max:u_max_mag) reduction(max:u_max_x) reduction(max:u_max_y)
-            ){
-        if (fabs(divu[]) > Linf_u) Linf_u = fabs(divu[]);
-        if (fabs(omega[]) < Linf_omega_min) Linf_omega_min = fabs(omega[]);
-        if (fabs(omega[]) > Linf_omega_max) Linf_omega_max = fabs(omega[]);
-        u_mag = norm(u);
-        if (u_mag < u_min_mag) u_min_mag = fabs(u_mag);
-        if (u_mag > u_max_mag) u_max_mag = fabs(u_mag);
-
-        if (u.x[] < u_min_x) u_min_x = fabs(u.x[]);
-        if (u.x[] > u_max_x) u_max_x = fabs(u.x[]);
-
-        if (u.y[] < u_min_y) u_min_y = fabs(u.y[]);
-        if (u.y[] > u_max_y) u_max_y = fabs(u.y[]);
-    }
-    fprintf (ferr, "i= %d t= %g dt= %g iter_p= %d iter_u= %d AvgGas= %17.14g AvgGas_out_solid= %17.14g divu= %15.12g "
+    fprintf (ferr, "i= %d t= %g dt= %g iter_p= %d iter_u= %d AvgGas= %17.14g V0= %17.14g divu= %15.12g "
     "Omega_min= %g Omega_max= %g u_min_mag= %g u_max_mag= %g "
     "u_min_x= %g u_max_x= %g u_min_y= %g u_max_y= %g \n",
-    i, t, dt, mgp.i, mgu.i, avggas, avggas_out_solid, Linf_u, Linf_omega_min, Linf_omega_max,
-    u_min_mag, u_max_mag, u_min_x, u_max_x, u_min_y, u_max_y);
+    i, t, dt, avggas, Linf_u, Linf_omega_min, Linf_omega_max,
+    u_min_mag, u_max_mag );
+*/
 }
 
 /**
@@ -287,22 +272,12 @@ event vtk_file (t += 0.01){
     vtk_file_flag = true;
     char subname[80]; sprintf(subname, "rk");
     scalar l[];
-    foreach() {l[] = level;}
+    foreach() {l[] = level;} boundary((scalar *){l});
 
-    vector mapped_data_lower[], mapped_data_upper[], fs_lower[], fs_upper[];
-    foreach() {
-        foreach_dimension()
-        {
-            mapped_data_lower.x[] = uf.x[];
-            mapped_data_upper.x[] = uf.x[1];
-            fs_lower.x[] = fs_face.x[];
-            fs_upper.x[] = fs_face.x[1];
-        }
-    }
 #if SURFACE_TENSION == 1
-    output_vtu_MPI( (scalar *) {fs, f, omega, rho, p, l, divu, my_kappa}, (vector *) {u, g, a, dbp, total_rhs, mapped_data_lower, mapped_data_upper, fs_lower, fs_upper}, subname, 1 );
+	output_vtu_MPI( subname, (iter_fp) ? t + dt : 0, (scalar *) {fs, f, omega, rho, p, l, divu}, (vector *) {u, a});
 #else
-    output_vtu_MPI( (scalar *) {fs, f, omega, rho, p, l, divu}, (vector *) {u, g, dbp, total_rhs, mapped_data_lower, mapped_data_upper, fs_lower, fs_upper}, subname, 1 );
+	output_vtu_MPI( subname, (iter_fp) ? t + dt : 0, (scalar *) {fs, f, omega, rho, p, l, divu}, (vector *){u});
 #endif
 }
 

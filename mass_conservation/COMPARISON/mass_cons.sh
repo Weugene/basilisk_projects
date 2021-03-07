@@ -8,7 +8,7 @@ set terminal postscript eps enhanced color font 'Helvetica,10'
 set grid
 set key spacing 2
 set key top left
-set tics font "Helvetica,10"
+set tics font "Times-Roman,10"
 set for [i=1:7] linetype i dt i
 set style line 1 lt 1 lc rgb "blue" lw 3 pt 1 ps 2
 set style line 2 lt 1 lc rgb "red" lw 3 pt 2 ps 2
@@ -28,7 +28,7 @@ A[2]=0.125
 A[3]=0.2
 tmax=0.4
 dataname(n) = sprintf("m%g",n)
-set xlabel 'time'  font ",10"
+set xlabel 't'  font "Times-Roman,10"
 
 do for [i=1:3] {
     N[i]=sprintf("m%g",A[i]);
@@ -42,7 +42,7 @@ set xr [0:tmax]
 if (mcase==1){
     set yr [-1e-5:1e-5];
     set format y "10^{%L}"
-    set ylabel 'Relative Error, (fi-fi0)/fi0'  font ",10"
+    set ylabel 'E'  font ",10"
     plot for[i=1:3] N[i] u 3:(($5 - MAXFi[i])/MAXFi[i]) t Title[i] w lp ls i;
 }
 

@@ -60,17 +60,18 @@ stats statsf_weugene (scalar f, scalar fs)
         val = f[]*(1. - fs[]);
         volume += dvr;
         sum    += f[]*dvr;
-        sum2   += dvr*sq(f[]);
+        sum2   += sq(f[])*dvr;
         if (val > max) max = val;
         if (val < min) min = val;
-//        fprintf(ferr, "val=%g\n", val);
     }
-    fprintf(ferr, "sum=%g\n", sum);
-    stats s;
-    s.min = min, s.max = max, s.sum = sum, s.volume = volume;
-    if (volume > 0.)
-        sum2 -= sum*sum/volume;
-    s.stddev = sum2 > 0. ? sqrt(sum2/volume) : 0.;
+	if (volume > 0.){
+    	sum /= volume; sum2 /= volume;
+	}
+	sum2 -= sq(sum);
+	fprintf(ferr, "***: %g %g\n", sum, sum2);
+	stats s;
+	s.min = min, s.max = max, s.sum = sum, s.volume = volume; //modified by Weugene
+	s.stddev = sum2 > 0. ? sqrt(sum2) : 0.;
     return s;
 }
 
@@ -88,12 +89,13 @@ stats statsf_weugene2 (scalar f, scalar fs)
         if (f[] > max) max = f[];
         if (f[] < min) min = f[];
     }
+	if (volume > 0.){
+    	sum /= volume; sum2 /= volume;
+	}
+	sum2 -= sq(sum);
     fprintf(ferr, "sum=%g\n", sum);
     stats s;
     s.min = min, s.max = max, s.sum = sum, s.volume = volume;
-    if (volume > 0.)
-        sum2 -= sum*sum/volume;
-    s.stddev = sum2 > 0. ? sqrt(sum2/volume) : 0.;
     return s;
 }
 
