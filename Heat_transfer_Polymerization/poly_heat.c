@@ -93,17 +93,17 @@ int main(int argc, char * argv[]) {
 	Htr = 355000; //J/kg
 	Arrhenius_const = 80600;//1/s
 	Ea_by_R = 64000/8.314;// Kelvin
+    n_degree = 1.2;
 
 	Eeta_by_Rg = 3.76e+4/8.314;// Kelvin Epon 9310,Safonov page 21
 	chi = 20;
-	n_degree = 1.2;
 
-	Rho1 = 1200, Rho2 = 10.092, Rho3 = 2560;//air at 50C
+	Rho1 = 1200, Rho2 = 1.092, Rho3 = 1790;//air at 23 C Graphite
 //	Mu1 = 3.85e-7*exp(Eeta_by_Rg/Tin), Mu2 = 1e-4, Mu3 = Rho3*Mu1/Rho1/2.0;
     Mu0 = 3.85e-7, Mu1 = Mu0*exp(Eeta_by_Rg/Tin), Mu2 = 1.963e-5, Mu3 = Mu1;//air at 50C //Mu2 = 1.963e-5
 
-	CP1 = 1255, CP2 = 1006, CP3 = 670;//J/(kg*K)
-	Kappa1 = 0.2, Kappa2 = 0.02535, Kappa3 = 1.04;//W/(m*K)
+	CP1 = 1255, CP2 = 1006, CP3 = 712;//J/(kg*K)
+	Kappa1 = 0.2, Kappa2 = 0.02535, Kappa3 = 8.70;//W/(m*K)
 	Sigma = 0.040;// N/m  0.040;
 	Ggrav = 0; // m/s^2
 

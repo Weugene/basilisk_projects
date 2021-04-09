@@ -33,9 +33,11 @@ void MinMaxValues(scalar * list, double * arr_eps) {// for each scalar min and m
 }
 
 int count_cells(double t, int i){
-    int tnc = 0, nc = 0;
-    foreach( reduction(+:tnc) )
+    int tnc = 0, nc = 0, maxlev=0;
+    foreach( reduction(+:tnc) reduction(max:maxlev) ){
         tnc++;
+        if (level > maxlev) maxlev = level;
+    }
 #if _MPI
     foreach()
         nc++;
@@ -43,7 +45,7 @@ int count_cells(double t, int i){
     char hostname[MPI_MAX_PROCESSOR_NAME];
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Get_processor_name(hostname, &h_len);
-    printf("i %d t %g hostname %s rank %d num cells %d total num cells %d\n", i, t, hostname, rank, nc, tnc);
+    printf("i %d t %g hostname %s rank %d num cells %d total num cells %d compression rate %g\n", i, t, hostname, rank, nc, tnc, pow(2, dimension*maxlev)/tnc);
 #else
     printf("i %d t %g total num cells %d\n", i, t, tnc);
 #endif
@@ -130,3 +132,4 @@ double change_weugene (scalar s, scalar sn, scalar fs)
     }
     return max;
 }
+

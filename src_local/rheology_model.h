@@ -4,10 +4,11 @@
 #define HEAT_TRANSFER
 #include "three-phase-rheology.h"
 #include "diffusion-weugene.h"
+
 //const scalar const_temp_solid[] = 1.1;
 (const) scalar T_target = unity;
 double eta_T = 0;
-int m_bp_T = 0;
+double m_bp_T = 0;
 bool stokes_heat = false;
 double chi_conductivity = 0;
 double Htr = 1;
@@ -59,7 +60,7 @@ double m_degree = 0.333;
 #define FR(alpha_doc) ( pow(1 - alpha_doc, n_degree)*pow(alpha_doc, m_degree) )
 #define dFR_dalpha(alpha_doc) ( FR(alpha_doc) * ( -n_degree/(1 - alpha_doc) + m_degree/alpha_doc) )
 #define GENERAL_METHOD 1
-#else
+#else // REACTION_MODEL_NON_AUTOCATALYTIC
 #define FR(alpha_doc) ( pow(1 - alpha_doc, n_degree) )
 #define dFR_dalpha(alpha_doc) ( -n_degree * pow(1 - alpha_doc, n_degree - 1) )
 #define GENERAL_METHOD 0
@@ -67,7 +68,8 @@ double m_degree = 0.333;
 
 mgstats mgT;
 event end_timestep (i++){
-    scalar r[], thetav[], tmp[], beta[];
+    scalar r[], thetav[], beta[];
+    double tmp;
     foreach() thetav[] =  var_hom(f[], fs[], rho1*Cp1, rho2*Cp2, rho3*Cp3);
     foreach_face() kappav.x[] = kappav(f[], fs[]);
     boundary ({kappav, thetav});
@@ -77,33 +79,36 @@ event end_timestep (i++){
     }
     //source and conductivity terms. f[] * (1 - fs[]) multiplications means gas and solids can't produce heat
     //solids play role in the conduction process
-
     if (fabs(Htr) > SEPS){
-//        fprintf(ferr, "+++ %d %g %g\n", GENERAL_METHOD, Htr, SEPS);
-
         foreach() {
             #if GENERAL_METHOD == 0
-                tmp[] = f[] * (1 - fs[]) * Arrhenius_const * exp(-Ea_by_R / T[]) * pow(1 - alpha_doc[], n_degree);
-                r[] = Htr * rho1 * tmp[] * (1.0 - Eeta_by_Rg/T[]);
-                beta[] = Htr * rho1 * tmp[] * Eeta_by_Rg/(T[]*T[]);
+                tmp = Htr * rho1 * f[] * (1 - fs[]) * Arrhenius_const * exp(-Ea_by_R / T[]) * pow(1 - alpha_doc[], n_degree);
+                r[] =  tmp * (1.0 - Eeta_by_Rg/T[]);
+                beta[] = tmp * Eeta_by_Rg/sq(T[]);
             #else  //General case
-                tmp[] = Htr * rho1 * f[] * (1 - fs[]) * (1 - fs[]) * FR(alpha_doc[]);
-                r[] = tmp[] * ( KT(T[]) - dKT_dT(T[]) * T[]);
-                beta[] = tmp[] * dKT_dT(T[]);
+                tmp = Htr * rho1 * f[] * (1 - fs[]) * FR(alpha_doc[]);
+                r[] = tmp * ( KT(T[]) - dKT_dT(T[]) * T[]);
+                beta[] = tmp * dKT_dT(T[]);
             #endif
                 //Penalization terms are:
+            #if DIRICHLET_BC == 1
                 r[] += fs[] * thetav[] * T_target[] / eta_T;
                 beta[] += -fs[] * thetav[] / eta_T;
+            #endif
         }
     }else {
-        foreach() {
-            r[] = fs[] * thetav[] * T_target[] / eta_T;
-            beta[] = -fs[] * thetav[] / eta_T;
-            tmp[] = f[] * (1 - fs[]) * KT(T[]) * FR(alpha_doc[]);
-        }
+            foreach() {
+                #if DIRICHLET_BC == 1
+                    r[] = fs[] * thetav[] * T_target[] / eta_T;
+                    beta[] = -fs[] * thetav[] / eta_T;
+                #else
+                    r[] = 0;
+                    beta[] = 0;
+                #endif
+            }
     }
-    boundary((scalar *){r, beta, tmp});
-//        fprintf(stderr, "diffusion");
+    boundary((scalar *){r, beta});
+
     if (constant(kappa.x) != 0.) {
         mgT = diffusion(T, dt, D = kappa, r = r, beta = beta, theta = thetav);
         fprintf (stderr, "mgT: i=%d t=%g dt=%g num of iterations T=%d\n", i, t, dt, mgT.i); //number of iterations
@@ -117,12 +122,12 @@ event end_timestep (i++){
     // due to a linearized source term
     advection ((scalar *){alpha_doc}, uf, dt);
     foreach() {
-        #if GENERAL_METHOD == 777
-			alpha_doc[] = 1.0 - pow(pow(fabs(1 - alpha_doc[]), 1 - n_degree) + (n_degree - 1.0) * dt * f[] * (1 - fs[]) * KT(T[]), 1.0 - n_degree);//direct integration from t to t + dt at fixed T
+        #if GENERAL_METHOD == 0
+			alpha_doc[] = 1.0 - pow(pow(fabs(1 - alpha_doc[]), 1 - n_degree) + (n_degree - 1.0) * dt * (1 - fs[]) * KT(T[]), 1.0 - n_degree);//direct integration from t to t + dt at fixed T
             //alpha_doc[] = (alpha_doc[] + dt * (tmp[] * (1.0 + n_degree*alpha_doc[] / (1 - alpha_doc[] + SEPS))))/(1 + dt * tmp[] * n_degree / (1 - alpha_doc[] + SEPS));//numerical solution
         #else
-            alpha_doc[] = (alpha_doc[] + dt * f[] * KT(T[]) * (FR(alpha_doc[]) - dFR_dalpha(alpha_doc[]) * alpha_doc[])) /
-                          (1 - dt * f[] * KT(T[]) * dFR_dalpha(alpha_doc[]));
+            alpha_doc[] = (alpha_doc[] + dt * KT(T[]) * (FR(alpha_doc[]) - dFR_dalpha(alpha_doc[]) * alpha_doc[])) /
+                          (1 - dt * KT(T[]) * dFR_dalpha(alpha_doc[]));
         #endif
         alpha_doc[] = clamp(alpha_doc[], 0.0, 1.0);
     }
@@ -130,7 +135,7 @@ event end_timestep (i++){
 }
 
 // In first 10 steps, eta_T and m_bp_T will be adjusted
-event properties (i += 1; i < 10){
+event properties (i < 10){
     chi_conductivity = kappa1 / (rho1 * Cp1);
 
     double mindelta=1e+10;
@@ -149,10 +154,10 @@ event properties (i += 1; i < 10){
         } else { // only eta is set
             m_bp_T = sqrt(eta_T * chi_conductivity) / mindelta;
         }
-        fprintf(ferr, "Brinkman penalization params for the heat equation: eta_T=%g, m_bp_T=%d, minDelta=%g\n", eta_T, m_bp_T, mindelta);
+        fprintf(ferr, "Brinkman penalization params for the heat equation: eta_T=%g, m_bp_T=%g, minDelta=%g\n", eta_T, m_bp_T, mindelta);
     }else{
 		eta_T = 1e+15;
-		m_bp_T = (int) 1e+8;
+		m_bp_T = 1e+8;
 	}
 }
 

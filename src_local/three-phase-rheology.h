@@ -50,6 +50,10 @@ event defaults (i = 0) {
     if (kappa1 || kappa2) //?
         kappa = new face vector;
 #endif
+    /**
+    We add the interface to the default display. */
+
+    display ("draw_vof (c = 'f');");
 }
 
 /**
@@ -58,8 +62,13 @@ default. The user can overload these definitions to use other types of
 averages (i.e. harmonic).
 Usually, it is assumed that mu1 is variable, mu2 and mu3 are not. For simplisity mu3=mu2
  */
-#ifndef var_hom 
+#ifndef var_hom
 #define var_hom(f, fs, A1, A2, A3) ((1.0 - clamp(fs,0.,1.))*(A2 + (A1 - A2)*clamp(f,0.,1.)) + clamp(fs,0.,1.)*A3)
+#endif
+
+#ifndef var_harm
+#define var_harm(f, fs, A1, A2, A3) (1.0/(  (1.0 - clamp(fs,0.,1.))*( clamp(f,0.,1.)*(1.0/(A1) - 1.0/(A2)) + 1.0/(A2)) + clamp(fs,0.,1.)/(A3)))
+
 #endif
 
 #ifndef rho
@@ -68,7 +77,7 @@ Usually, it is assumed that mu1 is variable, mu2 and mu3 are not. For simplisity
 #endif
 
 #ifndef kappav
-#define kappav(f, fs) var_hom(f, fs, kappa1, kappa2, kappa3)
+#define kappav(f, fs) var_harm(f, fs, kappa1, kappa2, kappa3)
 //#define kappav(f, fs) ((1.0 - clamp(fs,0.,1.))*(kappa2 + (kappa1 - kappa2)*clamp(f,0.,1.)) + clamp(fs,0.,1.)*kappa3)
 #endif
 scalar alpha_doc[];
@@ -90,26 +99,35 @@ double alpha_gel = 0.8;
 #ifndef muf1
 //#define mupol(alpha_doc, T) (mu0*exp(Eeta_by_Rg/(T))*pow(alpha_gel/(alpha_gel-alpha_doc), fpol(alpha_doc, T)))
 #define muf1(alpha_doc, T) (mu0*exp(Eeta_by_Rg/T + chi*alpha_doc))
+#else
+#define muf1(alpha_doc, T) mu1
 #endif
 
 #ifndef mu
 //#define mu(f, fs, alpha_doc, T) (mu2 + (mu1 - mu2)*clamp(f,0.,1.))
-#define mu(f, fs, alpha_doc, T) ((1.0 - clamp(fs,0.,1.))*(mu2 + (muf1(alpha_doc, T) - mu2)*clamp(f,0.,1.)) + clamp(fs,0.,1.)*mu3)
+//#define mu(f, fs, alpha_doc, T) ((1.0 - clamp(fs,0.,1.))*(mu2 + (muf1(alpha_doc, T) - mu2)*clamp(f,0.,1.)) + clamp(fs,0.,1.)*mu3)
+#define mu(f, fs, alpha_doc, T) (1.0/(  (1.0 - clamp(fs,0.,1.))*( clamp(f,0.,1.)*(1.0/muf1(alpha_doc, T) - 1.0/mu2) + 1.0/mu2) + clamp(fs,0.,1.)/mu3))
 #endif
-
 
 /**
 We have the option of using some "smearing" of the density/viscosity
 jump. */
+
+#ifdef FILTERED
+    scalar sf1[], sf2[];
+#else
+    #define sf1 f
+    #define sf2 fs
+#endif
 void filter_scalar(scalar f, scalar sf){
 #if dimension <= 2
     foreach()
-    sf[] = (4.*f[] +
+        sf[] = (4.*f[] +
              2.*(f[0,1] + f[0,-1] + f[1,0] + f[-1,0]) +
              f[-1,-1] + f[1,-1] + f[1,1] + f[-1,1])/16.;
 #else // dimension == 3
     foreach()
-    sf[] = (8.*f[] +
+        sf[] = (8.*f[] +
             4.*(f[-1] + f[1] + f[0,1] + f[0,-1] + f[0,0,1] + f[0,0,-1]) +
             2.*(f[-1,1] + f[-1,0,1] + f[-1,0,-1] + f[-1,-1] +
                 f[0,1,1] + f[0,1,-1] + f[0,-1,1] + f[0,-1,-1] +
@@ -117,16 +135,11 @@ void filter_scalar(scalar f, scalar sf){
             f[1,-1,1] + f[-1,1,1] + f[-1,1,-1] + f[1,1,1] +
             f[1,1,-1] + f[-1,-1,-1] + f[1,-1,-1] + f[-1,-1,1])/64.;
 #endif
+#if TREE
     sf.prolongation = refine_bilinear;
     boundary ({sf});
-}
-
-#ifdef FILTERED
-scalar sf1[], sf2[];
-#else
-#define sf1 f
-#define sf2 fs
 #endif
+}
 
 event tracer_advection (i++) {
     /**
@@ -175,13 +188,13 @@ event properties (i++) {
 #endif
 }
 
-double give_etas(int m_bp, double mindelta, double nu_bp){
+double give_etas(double m_bp, double mindelta, double nu_bp){
 	return sq(m_bp * mindelta) / nu_bp;
 }
-int give_mbp(double eta_s, double mindelta, double nu_bp){
+double give_mbp(double eta_s, double mindelta, double nu_bp){
 	return sqrt(eta_s * nu_bp) / mindelta;
 }
-event properties (i += 1; i < 10){
+event properties (i < 10){
     double nu_bp = mu1/rho1, mindelta=1e+10;
     foreach( reduction(min:mindelta) ){
         if (Delta < mindelta) mindelta = Delta;
@@ -198,6 +211,6 @@ event properties (i += 1; i < 10){
         } else { // only eta is set
             m_bp = sqrt(eta_s * nu_bp) / mindelta;
         }
-        fprintf(ferr, "Brinkman penalization params: eta_s=%g, m_bp=%d, minDelta=%g\n", eta_s, m_bp, mindelta);
+        fprintf(ferr, "Brinkman penalization params: eta_s=%g, m_bp=%g, minDelta=%g\n", eta_s, m_bp, mindelta);
     }
 }

@@ -47,7 +47,8 @@ for i in "${!list_files[@]}"; do
 	filename="${nm%.*}"
 	echo "***" $nm $filename.png
 	#convert -density 600 $nm fig/$filename.png
-	convert -density 600 $nm -gravity South -font  Times-New-Roman -pointsize 30 -annotate +0+500 "t=$time" fig/$filename.png
+	convert -density 600 $nm  fig/$filename.png
+	#convert -density 600 $nm -gravity North  -pointsize 10 -annotate +0+100 "t=$time" fig/$filename.png   #-font  Times-Roman
 done
 
 
@@ -61,4 +62,4 @@ for i in "${!list_time[@]}"; do
     echo "file '${list_file[$i]}'" >> time_files.txt
 done
 
-ffmpeg  -f concat -safe 0 -i time_files.txt ${options} -vf "scale=3108:1168:force_original_aspect_ratio=decrease:eval=frame,pad=3180:1168:-1:-1:color=white" ${pattern}.mp4;
+ffmpeg  -f concat -safe 0 -i time_files.txt ${options} -vf "scale=1920:1440:force_original_aspect_ratio=decrease:eval=frame,pad=1920:1440:-1:-1:color=white" ${pattern}.mp4;

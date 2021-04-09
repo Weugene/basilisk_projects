@@ -242,7 +242,7 @@ $\alpha_c$) or dynamic viscosity (face field $\mu_f$) -- at time
 $t+\Delta t/2$ -- can be defined by overloading this event. */
 
 event properties (i++,last) {
-  boundary ({alpha, mu, rho, kappa}); // Weugene: kappa added
+  boundary ((scalar *){alpha, mu, rho, kappa}); // Weugene: kappa added
 }
 
 event tracer_diffusion (i++,last);
@@ -367,8 +367,9 @@ event viscous_term (i++,last)
 	//event("vtk_file");
     correction (dt);
     mgu = viscosity (u, mu, rho, dt, mgu.nrelax);
+//    event("vtk_file");
     correction (-dt);
-//	event("vtk_file");
+
   }
 
   /**
@@ -465,11 +466,11 @@ event projection (i++,last)
 //    event("vtk_file");
 }
 
-//#if BRINKMAN_PENALIZATION
-//event brinkman_penalization(i++, last){
-//    brinkman_correction(u, uf, rho, dt);
-//}
-//#endif
+#if BRINKMAN_PENALIZATION
+event brinkman_penalization(i++, last){
+    brinkman_correction(u, uf, rho, dt);
+}
+#endif
 /**
 Some derived solvers need to hook themselves at the end of the
 timestep. */

@@ -59,15 +59,15 @@ double dt_vtk;
 int bubcase = 22;
 
 typedef struct {
-    double Ca;    // number of iterations
-    double Vd;    // maximum residual before and after the iterations
-    double Uc;    // sum of r.h.s.
-    double Ud;    // number of relaxations
-    double delta; // minimum level of the multigrid hierarchy
+    double Ca;    // Ca=mu*Ub/sigma
+    double Vd;    // volume
+    double Uc;    // Umean
+    double Ud;    // Ububble
+    double delta; // thickness
 } Cases;
 #define zv {0,0,0,0,0}
 //         CA       V_d[l]    Uc[m/s]  Ud[m/s] delta*[-]
-Cases cases[23]={
+Cases cases[26]={
         zv, // 0 is empty
         zv,zv,zv,zv,zv,zv,zv, // 1-7 Air-glycerol
         {6.44e-4,  0.0349e-9, 0.0454, 0.0533, 0.1055},// 8  Air-Water delta?
@@ -76,11 +76,14 @@ Cases cases[23]={
         {6.64e-4,  0.0745e-9, 0.0534, 0.0550, 0.001}, // 11 Air-Water delta?
         {6.697e-4, 0.1893e-9, 0.0543, 0.0554, 0.006}, // 12 Air-Water
         zv,zv,zv,zv,zv, // 13-17 Air-glycerol
-        {0.003, 0.1751e-9, 0.242, 0.261, 0.013},  // 18 Air-Water
-        {0.008, 0.1715e-9, 0.666, 0.704, 0.023},  // 19 Air-Water
+        {0.003, 0.1751e-9, 0.242,  0.261, 0.013},  // 18 Air-Water
+        {0.008, 0.1715e-9, 0.666,  0.704, 0.023},  // 19 Air-Water
         {0.0098, 0.2208e-9, 0.757, 0.815, 0.025}, // 20 Air-Water
-        {0.015, 0.1882e-9, 1.118 ,1.293, 0.039},  // 21 Air-Water
-        {0.0230, 0.2179e-9, 1.580, 1.944, 0.054}  // 22 Air-Water
+        {0.015, 0.1882e-9, 1.118 , 1.293, 0.039},  // 21 Air-Water
+        {0.0230, 0.2179e-9, 1.580, 1.944, 0.054},  // 22 Air-Water
+        {0.0306, 0.2179e-9, 2.060, 2.511, 1e-9},  // 23 Air-Water Ud, delta - garbage
+        {0.0386, 0.2179e-9, 2.575, 3.165, 1e-9},  // 24 Air-Water Ud, delta - garbage
+        {0.0463, 0.2179e-9, 3.09,  3.8,   1e-9}  // 25 Air-Water Ud, delta - garbage
 };
 
 double Ca; // Ca = Mu*Ud/sigma

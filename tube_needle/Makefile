@@ -1,14 +1,14 @@
 CFLAG= -O2 -events
 all:
-	echo 'tube_bp'
-tube_bp:
+	echo 'tube_needle'
+tube_needle:
 	rm -rf .qcc* log_bp out_bp snapshot-*
-	CC99='mpicc -std=c99' qcc -O2 -D_MPI=1 -events tube_bp.c -lm
+	CC99='mpicc -std=c99' qcc -O2 -D_MPI=1 -events tube_needle.c -lm
 #	mpirun -np 2 ./a.out
 convertD2P_tar:
 	rm -rf convertD2P
 	CC99='mpicc -std=c99' qcc $(CFLAG) -D_MPI=1 convertD2P.c -lm -o convertD2P
-	mpirun -np 4 ./convertD2P 10 30 1 0
+#	mpirun -np 4 ./convertD2P 10 30 1 0
 #	qcc  $(CFLAG) convertD2P.c -lm -o convertD2P
 #	./convertD2P 10 30 1 0
 convert_single_tar:

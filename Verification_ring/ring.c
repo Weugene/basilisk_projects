@@ -154,9 +154,9 @@ event init (t = 0) {
             bubbles(f);
             foreach() {
 #ifdef FIXED
-                u.x[] = U0*(1.0 - fs[])*(fabs(deltaT)<SEPS);
+                u.x[] = U0*(1.0 - fs[])*(fabs(deltaT) < SEPS);
 #else
-                u.x[] = U0*fs[]*(fabs(deltaT)<SEPS);
+                u.x[] = U0*fs[]*(fabs(deltaT )< SEPS);
 #endif
                 u.y[] = 0;
             }

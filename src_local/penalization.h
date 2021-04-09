@@ -5,7 +5,7 @@ const vector zerocf[] = {0.,0.,0.};
     extern scalar fs;
     extern face vector fs_face;
     double eta_s = 1e-15, nu_s = 1, lambda_slip = 0;
-    int m_bp = 0;
+    double m_bp = 0;
     (const) scalar a_br = unity, b_br = unity; // useful for Robin BC
     (const) vector U_solid = zerocf;
     #if BRINKMAN_PENALIZATION == 1 //Dirichlet BC
