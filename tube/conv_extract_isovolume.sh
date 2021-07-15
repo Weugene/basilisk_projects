@@ -2,10 +2,12 @@
 set -x
 set -o nounset
 echo "NOTE: reads only dump2pvd_compressed file!!!"
-echo "Usage ./conv.sh Ncase maxlevel volumetric_repr"
+echo "Usage ./conv_extract_isovolume.sh Ncase maxlevel volumetric_repr iter_cur"
+module load visualization/vnc-server
 bubcase=$1
 maxlevel=$2
 volumetric_repr=$3
+iter_cur=$4
 echo "in: Ncase=$bubcase maxlevel=$maxlevel volumetric_repr=$volumetric_repr"
 for f in convert_single extract_iso_volume.py; do
     test -e ${f} && echo "${f} exists" || echo "${f} does not exist. exit" || exit;
@@ -41,7 +43,7 @@ if $time_of_debug; then
     text3='    </Collection>
 </VTKFile>'
     
-    for (( i = 0; i < length; i+=1 )); do
+    for (( i = $iter_cur; i < length; i+=1 )); do
       echo "i=$i";
       dump=${list[i]}
       t=$(echo "$dump" | sed 's/dump-//')

@@ -69,7 +69,6 @@ int aid[7][3] = { {-1,0,0}, {0,0,0}, {1,0,0},
 #include <unistd.h>
 void output_pvtu_ascii (scalar * list, vector * vlist, vector * fvlist, int n, FILE * fp, char * subname)
 {
-    int dim=3;
     fputs ("<?xml version=\"1.0\"?>\n"
     "<VTKFile type=\"PUnstructuredGrid\" version=\"1.0\" byte_order=\"LittleEndian\" header_type=\"UInt64\">\n", fp);
     fputs ("\t <PUnstructuredGrid GhostLevel=\"0\">\n", fp);
@@ -91,7 +90,7 @@ void output_pvtu_ascii (scalar * list, vector * vlist, vector * fvlist, int n, F
     }
     for (vector v in vlist) {
         for (int i=0; i<LISTDIM; i++)
-            fprintf (fp,"\t\t\t\t <PDataArray type=\"Float64\" NumberOfComponents=\"%d\" Name=\"%s_%s\" format=\"ascii\">\n", dim, v.x.name, array_subname[i]);
+            fprintf (fp,"\t\t\t\t <PDataArray type=\"Float64\" NumberOfComponents=\"%d\" Name=\"%s_%s\" format=\"ascii\">\n", 3, v.x.name, array_subname[i]);
       fputs ("\t\t\t\t </PDataArray>\n", fp);
     }
 #endif
@@ -122,7 +121,6 @@ using MPI. Also works with solids (when not using MPI).
 */
 void output_vtu_ascii_foreach (scalar * list, vector * vlist, vector * fvlist, int n, FILE * fp, bool linear)
 {
-    int dim = 3;
     coord Pmin = {X0 + SMALL_VAL, Y0 + SMALL_VAL, Z0 + SMALL_VAL};
     coord Pmax = {X0 + L0 - SMALL_VAL, Y0 + L0 - SMALL_VAL, Z0 + L0 - SMALL_VAL};
 #if defined(_OPENMP)
@@ -187,7 +185,7 @@ void output_vtu_ascii_foreach (scalar * list, vector * vlist, vector * fvlist, i
   }
   for (vector v in vlist) {
       for (int i=0; i<LISTDIM; i++){
-          fprintf (fp,"\t\t\t\t <DataArray type=\"Float64\" NumberOfComponents=\"%d\" Name=\"%s_%s\" format=\"ascii\">\n", dim, v.x.name, array_subname[i]);
+          fprintf (fp,"\t\t\t\t <DataArray type=\"Float64\" NumberOfComponents=\"%d\" Name=\"%s_%s\" format=\"ascii\">\n", 3, v.x.name, array_subname[i]);
           foreach(){
               if (MY_BOX_CONDITION){
                   #if dimension == 1
@@ -302,7 +300,6 @@ using MPI.
 */
 void output_pvtu_bin (scalar * list, vector * vlist, vector * fvlist, int n, FILE * fp, char * subname)
 {
-    int dim=3;
     fputs ("<?xml version=\"1.0\"?>\n"
     "<VTKFile type=\"PUnstructuredGrid\" version=\"1.0\" byte_order=\"LittleEndian\" header_type=\"UInt64\">\n", fp);
     fputs ("\t <PUnstructuredGrid GhostLevel=\"0\">\n", fp);
@@ -312,7 +309,7 @@ void output_pvtu_bin (scalar * list, vector * vlist, vector * fvlist, int n, FIL
       fprintf (fp,"\t\t\t\t <PDataArray type=\"Float64\" Name=\"%s\" format=\"appended\"/>\n", s.name);
     }
     for (vector v in vlist) {
-      fprintf (fp,"\t\t\t\t <PDataArray type=\"Float64\" NumberOfComponents=\"%d\" Name=\"%s\" format=\"appended\"/>\n", dim, v.x.name);
+      fprintf (fp,"\t\t\t\t <PDataArray type=\"Float64\" NumberOfComponents=\"%d\" Name=\"%s\" format=\"appended\"/>\n", 3, v.x.name);
     }
 #else
     for (scalar s in list) {
@@ -321,7 +318,7 @@ void output_pvtu_bin (scalar * list, vector * vlist, vector * fvlist, int n, FIL
     }
     for (vector v in vlist) {
         for (int i=0; i<LISTDIM; i++)
-            fprintf (fp,"\t\t\t\t <PDataArray type=\"Float64\" NumberOfComponents=\"%d\" Name=\"%s_%s\" format=\"appended\"/>\n", dim, v.x.name, array_subname[i]);
+            fprintf (fp,"\t\t\t\t <PDataArray type=\"Float64\" NumberOfComponents=\"%d\" Name=\"%s_%s\" format=\"appended\"/>\n", 3, v.x.name, array_subname[i]);
     }
 #endif
     for (vector v in fvlist) {
@@ -329,7 +326,7 @@ void output_pvtu_bin (scalar * list, vector * vlist, vector * fvlist, int n, FIL
     }
     fputs ("\t\t\t </PCellData>\n", fp);
     fputs ("\t\t\t <PPoints>\n", fp);
-    fprintf (fp,"\t\t\t\t <PDataArray type=\"Float64\" NumberOfComponents=\"%d\" format=\"ascii\"/>\n", dim);
+    fprintf (fp,"\t\t\t\t <PDataArray type=\"Float64\" NumberOfComponents=\"%d\" format=\"ascii\"/>\n", 3);
     fputs ("\t\t\t </PPoints>\n", fp);
 
     for (int i = 0; i < npe(); i++)
@@ -350,7 +347,6 @@ using MPI. Also works with solids (when not using MPI).
 
 void output_vtu_bin_foreach (scalar * list, vector * vlist, vector * fvlist, int n, FILE * fp, bool linear)
 {
-  int dim = 3;
   coord Pmin = {X0 + SMALL_VAL, Y0 + SMALL_VAL, Z0 + SMALL_VAL};
   coord Pmax = {X0 + L0 - SMALL_VAL, Y0 + L0 - SMALL_VAL, Z0 + L0 - SMALL_VAL};
 #if defined(_OPENMP)
@@ -382,8 +378,8 @@ void output_vtu_bin_foreach (scalar * list, vector * vlist, vector * fvlist, int
     fputs ("\t\t\t\t </DataArray>\n", fp);
   }
   for (vector v in vlist) {
-    fprintf (fp,"\t\t\t\t <DataArray type=\"Float64\" Name=\"%s\" NumberOfComponents=\"%d\"  format=\"appended\" offset=\"%d\">\n", v.x.name, dim, count);
-    count += (no_cells*dim+1)*8;
+    fprintf (fp,"\t\t\t\t <DataArray type=\"Float64\" Name=\"%s\" NumberOfComponents=\"%d\"  format=\"appended\" offset=\"%d\">\n", v.x.name, 3, count);
+    count += (no_cells*3+1)*8;
     fputs ("\t\t\t\t </DataArray>\n", fp);
   }
 #else
@@ -396,8 +392,8 @@ void output_vtu_bin_foreach (scalar * list, vector * vlist, vector * fvlist, int
   }
   for (vector v in vlist) {
       for (int i=0; i<LISTDIM; i++){
-        fprintf (fp,"\t\t\t\t <DataArray type=\"Float64\" Name=\"%s_%s\" NumberOfComponents=\"%d\"  format=\"appended\" offset=\"%d\">\n", v.x.name, array_subname[i], dim, count);
-        count += (no_cells*dim+1)*8;
+        fprintf (fp,"\t\t\t\t <DataArray type=\"Float64\" Name=\"%s_%s\" NumberOfComponents=\"%d\"  format=\"appended\" offset=\"%d\">\n", v.x.name, array_subname[i], 3, count);
+        count += (no_cells*3+1)*8;
         fputs ("\t\t\t\t </DataArray>\n", fp);
       }
   }
@@ -409,8 +405,8 @@ void output_vtu_bin_foreach (scalar * list, vector * vlist, vector * fvlist, int
   }
   fputs ("\t\t\t </CellData>\n", fp);
   fputs ("\t\t\t <Points>\n", fp);
-  fprintf (fp,"\t\t\t\t <DataArray type=\"Float64\" NumberOfComponents=\"%d\"  format=\"appended\" offset=\"%d\">\n", dim, count);
-  count += (no_points*dim+1)*8;
+  fprintf (fp,"\t\t\t\t <DataArray type=\"Float64\" NumberOfComponents=\"%d\"  format=\"appended\" offset=\"%d\">\n", 3, count);
+  count += (no_points*3+1)*8;
   fputs ("\t\t\t\t </DataArray>\n", fp);
   fputs ("\t\t\t </Points>\n", fp);
   fputs ("\t\t\t <Cells>\n", fp);
@@ -476,7 +472,7 @@ void output_vtu_bin_foreach (scalar * list, vector * vlist, vector * fvlist, int
       if (MY_BOX_CONDITION)
         fwrite (&val(s), sizeof (double), 1, fp);
   }
-  block_len=no_cells*8*dim;
+  block_len=no_cells*8*3;
   for (vector v in vlist) {
     fwrite (&block_len, sizeof (unsigned long long), 1, fp);
     foreach(){
@@ -508,7 +504,7 @@ void output_vtu_bin_foreach (scalar * list, vector * vlist, vector * fvlist, int
                 fwrite (&val(s, aid[i][0], aid[i][1], aid[i][2]), sizeof (double), 1, fp);
     }
   }
-  block_len=no_cells*8*dim;
+  block_len=no_cells*8*3;
   for (vector v in vlist) {
       for (int i=0; i<LISTDIM; i++){
         int ai=aid[i][0], aj=aid[i][1], ak=aid[i][2];
@@ -565,7 +561,7 @@ void output_vtu_bin_foreach (scalar * list, vector * vlist, vector * fvlist, int
       }
     }
   }
-  block_len=no_points*8*dim;
+  block_len=no_points*8*3;
   fwrite (&block_len, sizeof (unsigned long long), 1, fp);
   foreach_vertex(){
     if (MY_BOX_CONDITION){

@@ -91,7 +91,7 @@ double Ca_mod; // Ca_mod = Mu*Umean/sigma
 double Re; //Reynolds
 double G;
 double Umean;
-double x_init = 2;
+double lDomain=30, x_init = 2;
 int maxlevel = 10;
 int minlevel = 5;
 int LEVEL = 6;
@@ -136,6 +136,7 @@ int main (int argc, char * argv[]) {
         Sigma = 72.8e-3;
         diam_tube = 514e-6;
         dt_vtk = 1e-1;
+        lDomain = (bubcase <= 21) ? 20 : 30;
     }else { // Glycerol
         Rho1 = 1250, Rho2 = 1.204;
         Mu1 = 550e-3, Mu2 = 0.019e-3;
@@ -159,6 +160,11 @@ int main (int argc, char * argv[]) {
     r_bub = min(rst, 0.4);
     l_bub = cube(rst) / sq(r_bub);
     x_init = 1.7*l_bub;
+    lDomain = 30;
+
+    size (lDomain);
+    origin (0., -L0/2., -L0/2.);
+    init_grid (1 << LEVEL);
 
     fprintf(ferr,"BP:             eta_s=%g,     DT=%g\n"
                  "Solver:         NITERMIN=%d   NITERMAX=%d      TOLERANCE=%g  relative_residual_poisson=%d relative_residual_viscous=%d\n"

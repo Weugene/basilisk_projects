@@ -3,7 +3,7 @@
 
 This file helps setup simulations for flows of two fluids separated by
 an interface (i.e. immiscible fluids) with solid obstacles. It is typically used in
-combination with a [Navier--Stokes solver](navier-stokes/centered.h). 
+combination with a [Navier--Stokes solver](navier-stokes/centered.h).
 
 The interface between the fluids is tracked with a Volume-Of-Fluid
 method. The volume fraction $f$ and $fs$ leads to next interpretation of averaged value of A =(\rho, \mu, \kappa)
@@ -26,6 +26,7 @@ scalar f[], fs[], * interfaces = {f}, * interfaces_all = {f,fs};
 double mu0 = 0, rho1 = 1., mu1 = 0., rho2 = 1., mu2 = 0., rho3 = 1., mu3 = 0.;
 double kappa1 = 0, kappa2 = 0, kappa3 = 0;//W/(m*K)
 double Cp1 = 0, Cp2 = 0, Cp3 = 0;
+int N_smooth = 3;
 /**
 Auxilliary fields are necessary to define the (variable) specific
 volume $\alpha=1/\rho$ as well as the cell-centered density. */
@@ -42,7 +43,7 @@ event defaults (i = 0) {
     /**
     If the viscosity and conductivity are non-zero, we need to allocate the face-centered
     viscosity and conductivity fields. */
-  
+
     if (mu1 || mu2) //?
         mu = new face vector;
 #ifdef HEAT_TRANSFER
@@ -76,16 +77,11 @@ Usually, it is assumed that mu1 is variable, mu2 and mu3 are not. For simplisity
 #endif
 
 #ifndef kappav
-<<<<<<< HEAD
-#define kappav(f, fs) var_harm(f, fs, kappa1, kappa2, kappa3)
-//#define kappav(f, fs) ((1.0 - clamp(fs,0.,1.))*(kappa2 + (kappa1 - kappa2)*clamp(f,0.,1.)) + clamp(fs,0.,1.)*kappa3)
-=======
-    #define kappav(f, fs) var_harm(f, fs, kappa1, kappa2, kappa3)
-    //#define kappav(f, fs) ((1.0 - clamp(fs,0.,1.))*(kappa2 + (kappa1 - kappa2)*clamp(f,0.,1.)) + clamp(fs,0.,1.)*kappa3)
+//    #define kappav(f, fs) var_harm(f, fs, kappa1, kappa2, kappa3)
+    #define kappav(f, fs) ((1.0 - clamp(fs,0.,1.))*(kappa2 + (kappa1 - kappa2)*clamp(f,0.,1.)) + clamp(fs,0.,1.)*kappa3)
 #endif
 #if REACTION_MODEL != NO_REACTION_MODEL
     scalar alpha_doc[];
->>>>>>> b96bb46 (gitignore)
 #endif
 scalar T[];
 /**
@@ -98,25 +94,19 @@ scalar T[];
 double Eeta_by_Rg = 0.1; //Kelvin
 double chi = 1;
 double alpha_gel = 0.8;
+double mu_eff = 0;
 #ifndef fpol
     #define fpol(alpha_doc, T) A*alpha_doc + B
 #endif
 
 
 #ifndef muf1
-<<<<<<< HEAD
-//#define mupol(alpha_doc, T) (mu0*exp(Eeta_by_Rg/(T))*pow(alpha_gel/(alpha_gel-alpha_doc), fpol(alpha_doc, T)))
-#define muf1(alpha_doc, T) (mu0*exp(Eeta_by_Rg/T + chi*alpha_doc))
-#else
-#define muf1(alpha_doc, T) mu1
-=======
     #if REACTION_MODEL != NO_REACTION_MODEL
         //#define mupol(alpha_doc, T) (mu0*exp(Eeta_by_Rg/(T))*pow(alpha_gel/(alpha_gel-alpha_doc), fpol(alpha_doc, T)))
         #define muf1(alpha_doc, T) (mu0*exp(Eeta_by_Rg/T + chi*alpha_doc))
     #else
         #define muf1(alpha_doc, T) (mu0*exp(Eeta_by_Rg/T))
     #endif
->>>>>>> b96bb46 (gitignore)
 #endif
 
 #ifndef mu
@@ -158,26 +148,43 @@ void filter_scalar(scalar f, scalar sf){
 }
 
 event tracer_advection (i++) {
+	scalar sf_s[];
     /**
     When using smearing of the density jump, we initialise *sf* with the
     vertex-average of *f*. */
+
 #ifndef sf1
-    filter_scalar(f, sf1);
-//    filter_scalar(sf1, sf1);
+		filter_scalar(f, sf1);
+		for (int i_smooth=2; i_smooth<=N_smooth; i_smooth++){
+			filter_scalar(sf1, sf_s);
+			foreach() sf1[] = sf_s[];
+			boundary ({sf1});
+		}
 #endif
 
 #ifndef sf2
     filter_scalar(fs, sf2);
-//    filter_scalar(sf2, sf2);
+		for (int i_smooth=2; i_smooth<=N_smooth; i_smooth++){
+			filter_scalar(sf2, sf_s);
+			foreach() sf2[] = sf_s[];
+			boundary ({sf2});
+		}
 #endif
 
-//    foreach()
-//    {
-//        smoothed_f[] = sf1[];
-//        smoothed_fs[] = sf2[];
-//    }
 }
+
+#define n_mu_eff 4
+#define norm_mu_eff (sq(n_mu_eff) + 3*n_mu_eff + 2)
 event properties (i++) {
+#ifdef DAMP_CAPILLARY_WAVE
+    scalar f_very_smooth[], sf_s[];
+    filter_scalar(f, f_very_smooth);
+		for (int i_smooth=2; i_smooth<=5; i_smooth++){
+			filter_scalar(f_very_smooth, sf_s);
+			foreach() f_very_smooth[] = sf_s[];
+			boundary ({f_very_smooth});
+		}
+#endif
     foreach_face() {
         double ff1 = (sf1[] + sf1[-1])/2.; //liquid
         double ff2 = (sf2[] + sf2[-1])/2.; //solid
@@ -190,6 +197,9 @@ event properties (i++) {
             muv.x[] = fm.x[]*mu(ff1, ff2, alpha_doc_f, Tf);
 #else
             muv.x[] = fm.x[]*mu(ff1, ff2, 0, Tf);
+#endif
+#ifdef DAMP_CAPILLARY_WAVE
+					 muv.x[] += fm.x[]*mu_eff*(ff1) * pow(1 - ff1, n_mu_eff)*norm_mu_eff;
 #endif
         }
 #ifdef HEAT_TRANSFER

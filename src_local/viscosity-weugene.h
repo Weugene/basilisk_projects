@@ -54,7 +54,6 @@ static void relax_viscosity (scalar*a, scalar*b, int l, void*data)
     (const) scalar rho = p->rho;
     double dt = p->dt;
     vector u = vector(a[0]), r = vector(b[0]);
-    coord conv;
     #if JACOBI
         vector w[];
     #else
@@ -62,15 +61,6 @@ static void relax_viscosity (scalar*a, scalar*b, int l, void*data)
     #endif
 //    fprintf(ferr, "relax_viscosity\n");
     foreach_level_or_leaf (l) {
-#if BRINKMAN_PENALIZATION
-        conv.x = m_scalar_a_by_b(target_U, u.x);
-    #if dimension>1
-        conv.y = m_scalar_a_by_b(target_U, u.y);
-    #endif
-    #if dimension>2
-        conv.z = m_scalar_a_by_b(target_U, u.z);
-    #endif
-#endif
         foreach_dimension(){
             w.x[] = (frhs*(dt/rho[])*(2.*mu.x[1]*u.x[1] + 2.*mu.x[]*u.x[-1]
                 #if dimension > 1
@@ -125,10 +115,11 @@ static double residual_viscosity (scalar * a, scalar * b, scalar * resl, void * 
     (const) scalar rho = p->rho;
     double dt = p->dt;
     vector u = vector(a[0]), r = vector(b[0]), res = vector(resl[0]);
-    vector divtauu[];// added: Weugene
-    coord conv;// added: Weugene
     double maxres = 0, d = 0, maxb = p->maxb;
     coord LU;
+    #ifndef DEBUG_BRINKMAN_PENALIZATION
+    vector divtauu[];// added: Weugene
+    #endif
 //    fprintf(ferr, "residual_viscosity\n");
     #ifdef CALC_GRAD_U_TAU
         calc_target_U(u, target_U, n_sol);
@@ -162,17 +153,8 @@ static double residual_viscosity (scalar * a, scalar * b, scalar * resl, void * 
     boundary((scalar *){divtauu});
 
     foreach (reduction(max:maxres)) {
-#if BRINKMAN_PENALIZATION
-        conv.x = m_scalar_a_by_b(target_U, u.x)/(2.0*Delta);
-    #if dimension>1
-        conv.y = m_scalar_a_by_b(target_U, u.y)/(2.0*Delta);
-    #endif
-    #if dimension>2
-        conv.z = m_scalar_a_by_b(target_U, u.z)/(2.0*Delta);
-    #endif
-#endif
         /* Lu = b
-         * Lu = u^{n+1} - (1-chi)(dt/rho)divtauu + (chi*dt/eta)*u^{n+1} + chi*dt*Ut*\nabla u^{n+1}
+         * Lu = u^{n+1} - (1-chi)(dt/rho)divtauu + (chi*dt/eta)*u^{n+1}
          * b = u^n + chi*dt*Ut/eta
          * b is set in viscosity function at the very beginning
          * */
@@ -182,7 +164,6 @@ static double residual_viscosity (scalar * a, scalar * b, scalar * resl, void * 
             res.x[] = r.x[] - LU.x;
             if (fabs (res.x[]) > maxres) maxres = fabs (res.x[]);
 #ifdef DEBUG_BRINKMAN_PENALIZATION
-            conv_term.x[] = divtauu.x[]/rho[]; //changed!
             dbp.x[] = PLUS_BRINKMAN_RHS;
             total_rhs.x[] = LU.x;
             residual_of_u.x[] = res.x[];
@@ -193,7 +174,6 @@ static double residual_viscosity (scalar * a, scalar * b, scalar * resl, void * 
     fprintf(ferr, "visc: maxres=%15.12g maxb=%15.12g maxres/maxb=%15.12g\n", maxres, maxb, maxres/maxb);
 //    event("vtk_file");
     return maxres/maxb; // Corrected by Weugene: return residual = rhs - du/dt
-
 }
 
 #undef lambda
@@ -209,7 +189,7 @@ mgstats viscosity (struct Viscosity p){
         exit(1);
     #endif
     vector u = p.u, r[];
-    foreach() foreach_dimension(){ r.x[] = u.x[] + (PLUS_CONSTANT_BRINKMAN_RHS)*dt;}
+    foreach() foreach_dimension(){ r.x[] = u.x[] + (PLUS_CONSTANT_BRINKMAN_RHS)*dt;} // the RHS of the equation: Lu=b
     face vector mu = p.mu;
     scalar rho = p.rho;
     restriction ({mu,rho});

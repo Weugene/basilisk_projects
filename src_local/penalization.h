@@ -12,8 +12,8 @@ const vector zerocf[] = {0.,0.,0.};
         (const) vector target_U = zerocf, n_sol = zerocf;
 //        (const) face vector target_Uf = zerof;
         #define PLUS_CONSTANT_BRINKMAN_RHS + (fbp*(target_U.x[])/eta_s)
-        #define PLUS_VARIABLE_BRINKMAN_RHS - (fbp*(u.x[]/eta_s + conv.x ))
-        #define PLUS_NUMERATOR_BRINKMAN    + 0.5*fbp*dt*Delta*conv.x
+        #define PLUS_VARIABLE_BRINKMAN_RHS - (fbp*(u.x[]/eta_s))
+        #define PLUS_NUMERATOR_BRINKMAN    + 0
         #define PLUS_DENOMINATOR_BRINKMAN  + fbp*dt*(sq(Delta)/eta_s)
     #elif BRINKMAN_PENALIZATION == 2 //Neumann BC
         vector target_U[], n_sol[];
@@ -33,8 +33,8 @@ const vector zerocf[] = {0.,0.,0.};
         vector target_U[], n_sol[]; //here target_U will be recalcilated each time step
         #define CALC_GRAD_U_TAU
         #define PLUS_CONSTANT_BRINKMAN_RHS + (fbp*(target_U.x[])/eta_s)
-        #define PLUS_VARIABLE_BRINKMAN_RHS - (fbp*(u.x[]/eta_s + conv.x ))
-        #define PLUS_NUMERATOR_BRINKMAN    + 0.5*fbp*dt*Delta*conv.x
+        #define PLUS_VARIABLE_BRINKMAN_RHS - (fbp*(u.x[]/eta_s ))
+        #define PLUS_NUMERATOR_BRINKMAN    + 0
         #define PLUS_DENOMINATOR_BRINKMAN  + fbp*dt*(sq(Delta)/eta_s)
 //    #elif BRINKMAN_PENALIZATION == 5//Ideal slip, no friction
 //        #define CALC_GRAD
@@ -47,7 +47,7 @@ const vector zerocf[] = {0.,0.,0.};
     #undef SEPS
     #define SEPS 1e-15
     #ifdef DEBUG_BRINKMAN_PENALIZATION
-        vector dbp[], total_rhs[], residual_of_u[], conv_term[];
+        vector dbp[], total_rhs[], residual_of_u[], divtauu[];
         vector utau[], grad_utau_n[];
         #define gradun grad_utau_n.x[]
     #else
@@ -63,7 +63,7 @@ const vector zerocf[] = {0.,0.,0.};
     #define PLUS_DENOMINATOR_BRINKMAN 0
 #endif
 
-#define PLUS_BRINKMAN_RHS  (PLUS_VARIABLE_BRINKMAN_RHS + PLUS_CONSTANT_BRINKMAN_RHS) //- fbp*( (u.x[] - target_U.x[])/eta_s + conv.x )
+#define PLUS_BRINKMAN_RHS  (PLUS_VARIABLE_BRINKMAN_RHS + PLUS_CONSTANT_BRINKMAN_RHS) //- fbp*( (u.x[] - target_U.x[])/eta_s )
 
 struct Brinkman {
     vector u;
@@ -140,21 +140,15 @@ void brinkman_correction_u (vector u, double dt){
     boundary ((scalar *){u});
 }
 
-//void brinkman_correction_uf (face vector uf, double dt){
-////    foreach_face(){
-////        uf.x[] = (uf.x[] + (fs_face.x[]*dt/eta_s)*target_Uf.x[])/(1 +fs_face.x[]*dt/eta_s);
-////    }
-////    boundary ((scalar *){uf});
-//
-//    foreach_face()
-//    if ((uf.x[] - target_Uf.x[]) && !fs_face.x[])
-//        uf.x[] = target_Uf.x[];
-//    boundary ((scalar *){uf});
-//}
+void brinkman_correction_uf (face vector uf){
+    foreach_face() {
+        uf.x[] = (1 - fs_face.x[])*uf.x[] + fs_face.x[]*face_value(target_U.x, 0);
+    }
+    boundary((scalar *){uf});
+}
 
 void brinkman_correction (struct Brinkman p){
     vector u = p.u; double dt = p.dt;
     brinkman_correction_u (u, dt);
 //    brinkman_correction_uf (uf, dt);
 }
-

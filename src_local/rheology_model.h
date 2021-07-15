@@ -14,7 +14,6 @@
 (const) scalar T_target = unity;
 double eta_T = 0;
 double m_bp_T = 0;
-bool stokes_heat = false;
 double chi_conductivity = 0;
 double Htr = 1;
 double Arrhenius_const = 10;//1/s
@@ -118,14 +117,14 @@ event end_timestep (i++){
 >>>>>>> b96bb46 (gitignore)
             #endif
                 //Penalization terms are:
-            #if DIRICHLET_BC == 1
+            #if T_DIRICHLET_BC == 1
                 r[] += fs[] * thetav[] * T_target[] / eta_T;
                 beta[] += -fs[] * thetav[] / eta_T;
             #endif
         }
     }else {
             foreach() {
-                #if DIRICHLET_BC == 1
+                #if T_DIRICHLET_BC == 1
                     r[] = fs[] * thetav[] * T_target[] / eta_T;
                     beta[] = -fs[] * thetav[] / eta_T;
                 #else
@@ -151,13 +150,13 @@ event end_timestep (i++){
     advection ((scalar *){alpha_doc}, uf, dt);
     foreach() {
         #if GENERAL_METHOD == 0
-			alpha_doc[] = 1.0 - pow(pow(fabs(1 - alpha_doc[]), 1 - n_degree) + (n_degree - 1.0) * dt * (1 - fs[]) * KT(T[]), 1.0 - n_degree);//direct integration from t to t + dt at fixed T
+			alpha_doc[] = 1.0 - pow(pow(fabs(1 - alpha_doc[]), 1 - n_degree) + (n_degree - 1.0) * dt * f[] * (1 - fs[]) * KT(T[]), 1.0 - n_degree);//direct integration from t to t + dt at fixed T
             //alpha_doc[] = (alpha_doc[] + dt * (tmp[] * (1.0 + n_degree*alpha_doc[] / (1 - alpha_doc[] + SEPS))))/(1 + dt * tmp[] * n_degree / (1 - alpha_doc[] + SEPS));//numerical solution
         #else
             alpha_doc[] = (alpha_doc[] + dt * KT(T[]) * (FR(alpha_doc[]) - dFR_dalpha(alpha_doc[]) * alpha_doc[])) /
                           (1 - dt * KT(T[]) * dFR_dalpha(alpha_doc[]));
         #endif
-        alpha_doc[] = clamp(alpha_doc[], 0.0, 1.0);
+        alpha_doc[] = clamp(alpha_doc[], 0.0, 1.0) * f[] * (1 - fs[]);
     }
     boundary ((scalar*) {alpha_doc});
 #endif
@@ -199,5 +198,5 @@ event stability(i += 100){
     }
 	double dt_Arr = CFL_ARR /(Arrhenius_const * exp(-Ea_by_R / maxT) + SEPS);
 	dt = min(dt, dt_Arr);
-	fprintf(ferr, "dt_Arr=%g dt_cur=%g", dt_Arr, dt);
+	fprintf(ferr, "dt_Arr=%g dt_cur=%g\n", dt_Arr, dt);
 }

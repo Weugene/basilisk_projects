@@ -27,7 +27,7 @@ logging.basicConfig(format='%(message)s')
 log = logging.getLogger(__name__)
 
 import functools
-import __builtin__
+# import __builtin__
 # from inspect import getmodule
 #
 # print(getmodule(Show))
@@ -308,12 +308,12 @@ SetActiveView(None)
 # Create a new 'SpreadSheet View'
 spreadSheetView1 = CreateView('SpreadSheetView')
 spreadSheetView1.ColumnToSort = ''
-spreadSheetView1.BlockSize = 1024L
+#spreadSheetView1.BlockSize = 1024L
 
 # Create a new 'SpreadSheet View'
 spreadSheetView2 = CreateView('SpreadSheetView')
 spreadSheetView2.ColumnToSort = ''
-spreadSheetView2.BlockSize = 1024L
+#spreadSheetView2.BlockSize = 1024L
 
 # ----------------------------------------------------------------
 # setup view layouts

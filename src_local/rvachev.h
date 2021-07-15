@@ -1,0 +1,17 @@
+#define Rsubstraction(f1, f2) (f1 - (f2) - sqrt(sq(f1) + sq(f2)))
+#define Rintersection(f1, f2) (f1 + (f2) - sqrt(sq(f1) + sq(f2)))
+#define Runion(f1, f2) (f1 + f2 + sqrt(sq(f1) + sq(f2)))
+#define Rdisplacement(f1, f2, a0, a1, a2) (a0/(1 + sq((f1)/a1) + sq((f2)/a2)))
+#define r1bb(f1, f2, a1, a2) sqrt(sq((f1)/a1) + sq((f2)/a2))
+#define r2bb(f3, a3) ((f3 > 0) ? fabs((f3)/a3) : 0)
+#define rbb(r1, r2) ((r2 > 0) ? sq(r1)/(sq(r1) + sq(r2)) : 1)
+#define dispbb(r) ((r < 1) ? (cube(1 - sq(r))/(1 + sq(r))) : 0)
+#define RBdisplacement(f1, f2, f3, a0, a1, a2, a3) (a0*dispbb(rbb(r1bb(f1, f2, a1, a2), r2bb(f3, a3))))
+
+#define CRsubstraction(f1, f2, a0, a1, a2) (Rsubstraction(f1, f2) + Rdisplacement(f1, f2, a0, a1, a2))
+#define CRintersection(f1, f2, a0, a1, a2) (Rintersection(f1, f2) + Rdisplacement(f1, f2, a0, a1, a2))
+#define CRunion(f1, f2, a0, a1, a2) (Runion(f1, f2) + Rdisplacement(f1, f2, a0, a1, a2))
+
+#define CBRsubstraction(f1, f2, f3, a0, a1, a2, a3) (Rsubstraction(f1, f2) + RBdisplacement(f1, f2, f3, a0, a1, a2, a3))
+#define CBRintersection(f1, f2, f3, a0, a1, a2, a3) (Rintersection(f1, f2) + RBdisplacement(f1, f2, f3, a0, a1, a2, a3))
+#define CBRunion(f1, f2, f3, a0, a1, a2, a3) (Runion(f1, f2) + RBdisplacement(f1, f2, f3, a0, a1, a2, a3))

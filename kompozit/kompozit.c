@@ -6,17 +6,20 @@
 //#define DEBUG_OUTPUT_VTU_MPI
 #define FILTERED
 #define JACOBI 1
-//#define RELATIVE_RES
+#define RELATIVE_RES
 //#define PRINT_ALL_VALUES
 //#define STOKES
 #define DIRICHLET_BC 0
 scalar omega[];
-scalar l2[], un[];
+scalar l2[];
+scalar mu_cell[];
+//scalar un[];
 face vector fs_face[];
 //face vector av[];
 #include "viscosity_fun.h"
+double Tcrit;
 //#define  muf1(alpha_doc, T) viscosity_fun (T) //(mu0*exp(Eeta_by_Rg/T))
-#define  muf1(alpha_doc, T) (mu0*exp(0.0014114803*exp(Eeta_by_Rg/T)))
+#define  muf1(alpha_doc, T) ((T<Tcrit) ? mu0*exp(0.0014114803*exp(8.5)) : mu0*exp(0.0014114803*exp(Eeta_by_Rg/T)))
 //#define  muf1(alpha_doc, T) ((T < 373.15) ? HUGE : exp(0.0014114803*exp(3795.4931633952/T)))
 
 //#include "grid/octree.h"
@@ -30,7 +33,7 @@ face vector fs_face[];
 #include "adapt2.h"
 
 int snapshot_i = 5000;
-double dt_vtk = 0.1;
+double dt_vtk = 1e-2;
 double Uin, Tam, Tin, Tfil_out;
 double RhoR, RhoRS, MuR, MuRS, CpR, CpRS, KappaR, KappaRS;
 double Rho1, Rho2, Rho3;
@@ -53,8 +56,8 @@ double Dx_min, dx_min;
 int maxlevel = 9;
 int minlevel = 5;
 int LEVEL = 7;
-int adapt_method = 1; // 0 - traditional, 1 - using limitation, 2 - using array for maxlevel
-double feps = 1e-16, fseps = 1e-16, ueps = 1e-2, Teps = 3e-2, aeps = 3e-2;
+int adapt_method = 0; // 0 - traditional, 1 - using limitation, 2 - using array for maxlevel
+double feps = 1e-5, fseps = 1e-5, ueps = 3e-2, Teps = 3e-2, aeps = 3e-2, mueps = 1e-2;
 double TOLERANCE_P = 1e-6, TOLERANCE_V = 1e-7, TOLERANCE_T = 1e-6;
 double *R = NULL;
 coord *centers = NULL;
@@ -63,15 +66,16 @@ int main(int argc, char * argv[]) {
     TOLERANCE = 1e-7;
     NITERMIN = 1;
     NITERMAX = 100;
-    CFL = 0.5;
-    CFL_SIGMA = 0.4;
+    CFL = 0.1;
+    CFL_SIGMA = 1;
     CFL_ARR = 0.5;
-    DT = 1e-5;
-    m_bp = 1; // Brinkman layer resolution
-//	relative_residual_poisson = true;
+    DT = 1e-8;
+    m_bp = 2; // Brinkman layer resolution
+	relative_residual_poisson = true;
+//    relative_residual_viscous = true;
 // Physical parameters
-	Uin = 1; Tam = 300;
-	Tin = 473.15; Tfil_out = 330;// Low temperature
+	Uin = 1; Tam = 300; Tcrit = 435;
+	Tin = 473.15; Tfil_out = 373.15;// Low temperature
 //	Tin = 573.15; // High temperature
 	d1 = 0.25e-3; d2 = 2e-3; d3 = 4e-3; // m
 	L1 = 0.6e-3; L2 = 1.475e-3; L3 = 9.975e-3; L4 = 10.975e-3; //m
@@ -86,9 +90,10 @@ int main(int argc, char * argv[]) {
     Rho1 = 1200, Rho2 = 1.092, Rho3 = 1790;//air at 23 C Graphite
     CP1 = 1255, CP2 = 1006, CP3 = 712;//J/(kg*K)
     Kappa1 = 0.2, Kappa2 = 0.02535, Kappa3 = 8.70;//W/(m*K)
-    Sigma = 0.040*1e-1;// N/m  0.040;
+    Sigma = 0.040*1e+0;// N/m  0.040;
     Ggrav = 9.8; // m/s^2
-
+    stokes = true;
+    stokes_heat = true;
     Nb = 0;
     ratio_Rbmin = 1./6.; ratio_Rbmax = 3./4.; Pinlet = 16e+5; Pout = 1e+5;
 
@@ -100,8 +105,11 @@ int main(int argc, char * argv[]) {
         Tam = atof(argv[2]);
     if (argc > 3)
         Tfil_out = atof(argv[3]);
+//    Eeta_by_Rg /= Tam;
+//    mu0*exp(0.0014114803*exp(Eeta_by_Rg/T)
 //	Mu1 = 3.85e-7*exp(Eeta_by_Rg/Tam), Mu2 = 1e-4, Mu3 = Rho3*Mu1/Rho1/2.0;
-    Mu0 = mu0 = 1, Mu1 = muf1(0, Tin); Mu2 = 1.963e-5, Mu3 = Mu1*Rho3/Rho1;//air at 50C //Mu2 = 1.963e-5
+    Mu0 = mu0 = 1, Mu1 = muf1(0, Tin); Mu2 = 1.963e-5, Mu3 = Mu1;//*Rho3/Rho1;//air at 50C //Mu2 = 1.963e-5
+//    Eeta_by_Rg *= Tam;//again
 	if (argc > 4)
         maxlevel = atoi(argv[4]);
 	if (argc > 5)
@@ -127,14 +135,14 @@ int main(int argc, char * argv[]) {
 	fprintf(ferr,
                  "Props(SI): Mu0=%g, Mu1=%g, Mu2=%g, Mu3=%g, Rho1=%g, Rho2=%g,  Rho3=%g, Nu1=%g, Nu2=%g, Nu3=%g\n"
                  "           Kappa1=%g, Kappa2=%g, Kappa3=%g, CP1=%g, CP2=%g, CP3=%g,\n"
-				 "           Sigma=%g, Uin=%g, time*=%g, Tam=%g, Tin=%g\n"
+				 "           Sigma=%g, Uin=%g, time*=%g, Tam=%g, Tin=%g, Tcrit=%g,\n"
                  "           d1=%g d2=%g d3=%g L1=%g L2=%g L3=%g L3=%g\n"
                  "           Htr=%g, Arrenius=%g, Ea_by_R=%g, n_deg=%g, m_deg=%g\n"
 				 "           Eeta_by_Rg=%g, chi=%g\n"
                  "Apparatus: domainSize=%g, Dx_min=%g, Nb=%d\n",
                  Mu0, Mu1, Mu2, Mu3, Rho1, Rho2, Rho3, Mu1/Rho1, Mu2/Rho2, Mu3/Rho3,
                  Kappa1, Kappa2, Kappa3, CP1, CP2, CP3,
-                 Sigma, Uin, domain_size/Uin, Tam, Tin,
+                 Sigma, Uin, domain_size/Uin, Tam, Tin, Tcrit,
                  d1, d2, d3, L1, L2, L3, L4,
                  Htr, Arrhenius_const, Ea_by_R, n_degree, m_degree,
                  Eeta_by_Rg, chi,
@@ -167,7 +175,7 @@ int main(int argc, char * argv[]) {
 	Htr /= CP1*Tam;
 	Arrhenius_const *= char_size/(Uin + SEPS);
 	Ea_by_R /= Tam;
-	Eeta_by_Rg /= Tam;
+    Eeta_by_Rg /= Tam;
 	sigma_ndim = 1./(Re*Ca + SEPS);
     f.sigma = (fabs(sigma_ndim) < 1e+10) ? sigma_ndim : 0;
 	Ggrav_ndim = 1./sq(Fr);
@@ -175,6 +183,7 @@ int main(int argc, char * argv[]) {
     Pinlet /= Rho1*sq(Uin);
 	Uin = 1;
 	Tin /= Tam;
+    Tcrit /= Tam;
     Tfil_out /= Tam;
 	Tam  /= Tam;
     const scalar temp_cyl[] = Tin;
@@ -185,30 +194,30 @@ int main(int argc, char * argv[]) {
     periodic(right);
 	fprintf(ferr,"Dim-less vars: mu0=%g, mu1=%g, mu2=%g, mu3=%g, rho1=%g, rho2=%g, rho3=%g,\n"
 				 "               kappa1=%g, kappa2=%g, kappa3=%g, Cp1=%g, Cp2=%g, Cp3=%g,\n"
-				 "               sigma=%g,  Uin=%g, Tam=%g, Tin=%g,\n"
+				 "               sigma=%g,  Uin=%g, Tam=%g, Tin=%g, Tcrit=%g,\n"
 				 "               Htr=%g, Arrhenius_const=%g, Ea_by_R=%g, Eeta_by_Rg=%g,\n"
 				 "               L0=%g, char_size=%g, Rbmin=%g, Rbmax=%g,\n"
 				 "               Ggrav_ndim=%g Uin=%g Pinlet=%g Pout=%g\n"
                  "Dim-less nums: Re=%g,  Ca=%g, Fr=%g\n"
-                 "               ldomain=%g\n"
+                 "               ldomain=%g L1=%g L2=%g L3=%g L4=%g d1=%g d2=%g d3=%g\n"
                  "Solver:        DTmax=%g, CFL=%g, CFL_SIGMA=%g, CFL_ARR=%g, NITERMIN=%d,  NITERMAX=%d,\n"
                  "               TOLERANCE_P=%g, TOLERANCE_V=%g, TOLERANCE_T=%g\n"
                  "ADAPT:         minlevel=%d,  maxlevel=%d, feps=%g, fseps=%g, ueps=%g, Teps=%g, aeps=%g\n"
                  "OUTPUT:        dt_vtk=%g,    number of procs=%d\n",
 				mu0, mu1, mu2, mu3, rho1, rho2, rho3,
 				kappa1, kappa2, kappa3, Cp1, Cp2, Cp3,
-				sigma_ndim, Uin, Tam, Tin,
+				sigma_ndim, Uin, Tam, Tin, Tcrit,
 				Htr, Arrhenius_const, Ea_by_R, Eeta_by_Rg,
 				L0, char_size, Rbmin, Rbmax,
 				Ggrav_ndim, Uin, Pinlet, Pout,
                 Re, Ca, Fr,
-                domain_size/L0,
+                L0, L1, L2, L3, L4, d1, d2, d3,
                 DT, CFL, CFL_SIGMA, CFL_ARR, NITERMIN, NITERMAX,
                 TOLERANCE_P, TOLERANCE_V, TOLERANCE_T,
                 minlevel, maxlevel, feps, fseps, ueps, Teps, aeps,
                 dt_vtk, npe());
 //    a = av;
-    fs.refine = fs.prolongation = fraction_refine;
+//    fs.refine = fs.prolongation = fraction_refine;
 
     int rank, psize, h_len;
     char hostname[MPI_MAX_PROCESSOR_NAME];
@@ -264,46 +273,66 @@ double sphere(double x, double y, double z, coord center, double radius) {
              - sq (radius));
 }
 
-
-
-
 double channel_profile(double x, double y, double z){
     double res;
     if (y < 0){
-        res = HUGE;
+        res = L0;
     }else if (y >= 0 && y < L1){
-        res = 0.5*d1;
+        res = 0.5*d1;//*fabs(y);
     }else if (y >= L1 && y < L2){
         res = 0.5*((d2 - d1)*y + L2*d1 - L1*d2)/(L2 - L1);
     }else if (y >= L2 && y < L3){
         res = 0.5*d2;
     }else if (y >= L3 && y <= L4){
-        res = 0.5*((d3 - d2)*y + L4*d2 - L3*d3)/(L4 - L3);
+        res = 0.5*((d3 - d2)*y + L4*d2 - L3*d3)/(L4 - L3);// * fabs(L4 - y);
     }else { // y > L4
-        res = HUGE;
+        res = L0;
     };
-    return res;
-}
-
-double geometry(double x, double y, double z){
-    double res = channel_profile(x, y, z);
-    if (y <= 0){
-        return y;
-    }else if (y >= L4) {
-        return L4 - y;
-    }
     return sqrt(sq(x) + sq(z)) - res;
 }
 
-void solid_func(scalar fs, face vector fs_face){
-    refine (fabs(y) < 1 && level <= maxlevel);
-    refine ((fabs(x) > d3) && (fabs(L4 - y) < 1) && level <= maxlevel);
+//double filler_profile(double x, double y, double z){
+//    double res;
+//    if (fabs(x) < d3) {
+//        res = y*(L4 - y)
+//    }else if (fabs(x) < d1){
+//
+//    }
+//    return res
+//}
+
+double geometry(double x, double y, double z){
+    double res = channel_profile(x, y, z);
+//    double z =
+//    if (y <= L1){
+//        return res*y;
+//    }else if (y >= L3) {
+//        return res*(L4 - y);
+//    }
+//    res = sqrt(sq(x) + sq(z)) - res;
+//    if (fabs(x) > d3 && y > L3){
+//        res = (L4 - y);
+//    }else if (fabs(x) > d1 && y< L1){
+//        res = 1 - pow((fabs(x) - 0.5*L0)/(0.5*L0 - 0.5*d1), 10) - pow((y - L1)/(1.5*L1), 10);
+//    }
+    return res;
+}
+
+void solid_func(scalar fs, face vector fs_face, int i){
+    double dx = 1/pow(2,maxlevel - 2);
+//    if (i>10) {
+//        refine(fabs(y) < dx && level <= maxlevel);
+//        refine((fabs(x) > d3) && (fabs(L4 - y) < dx) && level <= maxlevel);
+//        refine((fabs(x - d2) > dx) && (fabs(L4 - y) < dx) && level <= maxlevel);
+//    }
     vertex scalar phi[];
     foreach_vertex() {
         phi[] = geometry(x, y, z);
     }
     boundary ({phi});
     fractions (phi, fs, fs_face);
+//    fs.refine = fs.prolongation = fraction_refine;
+    restriction ({fs}); // for boundary conditions on levels
 }
 
 double bubbles (double x, double y, double z)
@@ -414,7 +443,8 @@ event init (t = 0) {
         int iter = 0;
         do {
             iter++;
-            solid_func(fs, fs_face);
+//            foreach() fs[] = geometry(x,y,z); boundary({fs});
+            solid_func(fs, fs_face, i);
 //			fraction(fs, geometry(x, y, z));
 			fraction(f, bubbles(x, y, z));
 			fprintf(ferr, "ITER=%d\n", iter);
@@ -422,9 +452,10 @@ event init (t = 0) {
         }while ((iter <=6) || ((adapt_wavelet({f, fs}, (double []){feps, fseps}, maxlevel = maxlevel, minlevel = minlevel).nf != 0) && (iter <= 100)));
         fprintf(stderr, "init refinement iter=%d\n", iter);
         foreach() {
+//            T[] = ((f[] == 0)*Tam + (f[]==1)*Tin)*(fs[] == 0) + (fs[] == 1)*(Tfil_out + (Tin - Tfil_out)*y/L4);
             T[] = ((1 - f[])*Tam + f[]*Tin)*(1 - fs[]) + fs[]*(Tfil_out + (Tin - Tfil_out)*y/L4);
+//            T[] = fs[]*(Tfil_out + (Tin - Tfil_out)*y/L4)
             u.x[] = u.y[] = 0; //u_BC*f[];// 0; //u_BC;//*(1-fs[]); // penalization will work
-            un[] = u.x[];
             if (rho1 || rho2){
                 rhov[] = var_hom(f[], fs[], rho1, rho2, rho3);
             }
@@ -443,7 +474,7 @@ event init (t = 0) {
             }
         }
 		boundary((scalar *){kappav, mu});
-        event("vtk_file");
+//        event("vtk_file");
     }else{
         FILE *cmd;
         char result[5000];
@@ -473,10 +504,19 @@ event init (t = 0) {
 
 event set_dtmax (i++) {
 	RELATIVE_RES_TOLERANCE = 0.01;
-    DT *= 1.05;
-    double maxDT = 1e-3;
-    DT = min(DT, maxDT);
-    fprintf(ferr, "set_dtmax: tnext= %g, t=%g, DT=%g, dt=%g\n", tnext, t, DT, dt);
+    DT *= 1.02;
+    double maxDT = 5e-4, DT_multiplied;
+    DT_multiplied = min(DT, maxDT);
+
+    double dtmax, vel_mag, dt_cur;
+    dtmax = HUGE;
+    foreach_face (reduction (min:dtmax)) {
+        vel_mag = norm(uf) + SEPS;
+        dt_cur = CFL*Delta/vel_mag;
+        if (dt_cur < dtmax ) dtmax = dt_cur;
+    }
+    DT = min(DT_multiplied, dtmax);
+    fprintf(ferr, "set_dtmax: t=%g, tnext= %g, maxDT=%g, DT*1.05=%g, dtmax=%g, DT=%g, dt=%g\n", t, tnext, maxDT, DT_multiplied, dtmax, DT, dt);
 }
 
 /**
@@ -492,7 +532,9 @@ unity. */
 event advection_term(i++){
     TOLERANCE = TOLERANCE_P;
 
-    foreach_face() uf.x[] *= 1 - fs_face.x[];
+    foreach_face() {
+        uf.x[] *= 1 - fs_face.x[];
+    }
     boundary((scalar *){uf});
 }
 event projection(i++){
@@ -879,15 +921,22 @@ double time_prev = 0;
 //        return 9;
 //    }
 //}
+int maXlevel(double x,double y, double z){
+    return (fabs(y) < 1.5*L1 && fabs(x) < 1.5*d1) ? maxlevel + 1 : maxlevel;
+}
 
+int refRegion(double x, double y, double z){
+    return ( ((fabs(x) < d1) && (y > 0) && (y < L1)) ? maxlevel + 2 : ((fabs(x) < d2) && (fabs(y) < L2)) ? maxlevel+1 : maxlevel);
+}
 
- event vtk_file (i += 1)
+event vtk_file (i += 1)
 //event vtk_file (t += dt_vtk)
 {
-    char subname[80]; sprintf(subname, "heat_pol");
+    char subname[80]; sprintf(subname, "kompozit");
     scalar l[]; foreach() l[] = level;
-    scalar mu_cell[], dpdx[];
+    scalar dpdx[];
     foreach() {
+        m[] = refRegion(x, y, z);
         double mus = 0;
         foreach_dimension() {
             mus += mu.x[] + mu.x[1];
@@ -896,7 +945,6 @@ double time_prev = 0;
         dpdx[] = (p[1] - p[-1])/(2*Delta);
     }
     boundary((scalar *){mu_cell});
-//    scalar curvature_by_sigma_cell[]; curvature (f, curvature_by_sigma_cell, f.sigma, add = false);
 #ifdef DEBUG_BRINKMAN_PENALIZATION
     output_vtu_MPI(subname, (iter_fp) ? t + dt : 0, (scalar *) {T, p, fs, f, l,  rhov}, (vector *) {u, dbp, total_rhs, a, residual_of_u, conv_term, mu, kappa});
 #else
@@ -923,30 +971,40 @@ event snapshot (i += snapshot_i)
 }
 //#endif
 
+event check_fail(i += 20){
+    double umax = 0;
+    foreach(){
+        if ((u.x[] != u.x[]) || (umax > 10e+10)) {
+            fprintf(ferr, "NAN values, u.x=%g, umax=%g", u.x[], umax);
+            return 9;
+        }
+    }
+}
+
 /**
 We adapt according to the error on the embedded geometry, velocity and
 tracer fields. */
 
-#define ADAPT_SCALARS {f, fs, u.x, u.y, T}
-#define ADAPT_EPS_SCALARS {feps, fseps, ueps, ueps, Teps, aeps}
+#define ADAPT_SCALARS {f, fs, u.x, u.y, T, mu_cell}
+#define ADAPT_EPS_SCALARS {feps, fseps, ueps, ueps, Teps, aeps, mueps}
 #define ADAPT_MAXLEVEL {maxlevel, max(maxlevel,10), max(maxlevel-2,10), max(maxlevel-2,10), max(maxlevel-2,10)}
 
-int maXlevel(double x,double y, double z){
-    return (fabs(y) < 1.5*L1 && fabs(x) < 1.5*d1) ? maxlevel + 1 : maxlevel;
-}
+
 
 event adapt (i++){
 	double eps_arr[] = ADAPT_EPS_SCALARS;
 	MinMaxValues((scalar *) ADAPT_SCALARS, eps_arr);
-    if (adapt_method == 0)
+    if (adapt_method == 0){
         adapt_wavelet ((scalar *) ADAPT_SCALARS, eps_arr, maxlevel = maxlevel, minlevel = minlevel);
-    else if (adapt_method == 1)
-        adapt_wavelet_limited  ((scalar *) ADAPT_SCALARS, eps_arr, maXlevel, minlevel);
-    else if (adapt_method == 2)
+    }
+    else if (adapt_method == 1){
+        fprintf(ferr, "adapt scalar: adapt_method=1");
+        adapt_wavelet_limited  ((scalar *) ADAPT_SCALARS, eps_arr, refRegion, minlevel);
+    }
+    else if (adapt_method == 2){
         adapt_wavelet2((scalar *)ADAPT_SCALARS, eps_arr, (int [])ADAPT_MAXLEVEL, minlevel);
-
-fs.refine = fs.prolongation = fraction_refine;
-    solid_func(fs, fs_face);
+    }
+    solid_func(fs, fs_face, i);
     foreach_face() uf.x[] *= 1 - fs_face.x[];
     boundary((scalar *){uf});
     count_cells(t, i);

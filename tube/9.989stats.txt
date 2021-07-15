@@ -1,1 +1,0 @@
-time: 9.989 i: 0 coarse_x_mean: 16.0030498505  refined_x_mean: 16.002790451 refined_u_mean: 2.04853404251 len_min: 12.4429512024 len_max: 19.8217086792 len: 7.37875747681 len_bub: 3.37875747681 RAD_mean: 0.41907 delta: 0.08093

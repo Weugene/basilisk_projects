@@ -133,3 +133,139 @@ double change_weugene (scalar s, scalar sn, scalar fs)
     return max;
 }
 
+#define betwf(val) ((val > 0) && (val < 1))
+
+#define F_LIQ_EPS 1e-6
+void correct_f(scalar f, scalar f_corr){
+    double neighb, f1, f2;
+    foreach(){
+        f_corr[] = f[];
+    }
+    boundary((scalar *){f_corr});
+//    // Correction step
+    foreach(){
+        if (interfacial (point, f)){
+            neighb = f[-1,1];
+            f1 = f[-1,0];
+            f2 = f[0,1];
+            if ( !betwf(f1) && !betwf(f2) && betwf(neighb) ){
+                f_corr[-1,0] = f[-1,0]*fabs(f[-1,0] - F_LIQ_EPS);
+                f_corr[0, 1] = f[0, 1]*fabs(f[0, 1] - F_LIQ_EPS);
+            }
+            neighb = f[1,1];
+            f1 = f[0,1];
+            f2 = f[1,0];
+            if ( !betwf(f1) && !betwf(f2) && betwf(neighb) ){
+                f_corr[0,1] = f[0,1]*fabs(f[0,1] - F_LIQ_EPS);
+                f_corr[1,0] = f[1,0]*fabs(f[1,0] - F_LIQ_EPS);
+            }
+            neighb = f[1,-1];
+            f1 = f[1,0];
+            f2 = f[0,-1];
+            if ( !betwf(f1) && !betwf(f2) && betwf(neighb) ){
+                f_corr[1,0] = f[1,0]*fabs(f[1,0] - F_LIQ_EPS);
+                f_corr[0,-1] = f[0,-1]*fabs(f[0,-1] - F_LIQ_EPS);
+            }
+            neighb = f[-1,-1];
+            f1 = f[0,-1];
+            f2 = f[-1,0];
+            if ( !betwf(f1) && !betwf(f2) && betwf(neighb) ){
+                f_corr[0,-1] = f[0,-1]*fabs(f[0,-1] - F_LIQ_EPS);
+                f_corr[-1,0] = f[-1,0]*fabs(f[-1,0] - F_LIQ_EPS);
+            }
+        }
+    }
+    boundary((scalar *){f_corr});
+}
+
+//void correct_f(scalar f, scalar f_corr){
+//    double avg1, avg2, neighb, f1, f2;
+//    foreach(){
+//        f_corr[] = f[];
+//    }
+//    boundary((scalar *){f_corr});
+//    // Correction step
+//    foreach(){
+//        if (interfacial (point, f)){
+//            neighb = f[-1,1];
+//            f1 = f[-1,0];
+//            f2 = f[0,1];
+//            if ( !betwf(f1) && !betwf(f2) && betwf(neighb) ){
+//                avg1 = average_neighbors(point, f, -1, 0, 0);
+//                avg2 = average_neighbors(point, f, 0, 1, 0);
+//                f_corr[-1,0] = (avg1/(avg1 + avg2));
+//                f_corr[0,1] = (avg2/(avg1 + avg2));
+//            }
+//            neighb = f[1,1];
+//            f1 = f[0,1];
+//            f2 = f[1,0];
+//            if ( !betwf(f1) && !betwf(f2) && betwf(neighb) ){
+//                avg1 = average_neighbors(point, f, 0, 1, 0);
+//                avg2 = average_neighbors(point, f, 1, 0, 0);
+//                f_corr[0,1] = (avg1/(avg1 + avg2));
+//                f_corr[1,0] = (avg2/(avg1 + avg2));
+//            }
+//            neighb = f[1,-1];
+//            f1 = f[1,0];
+//            f2 = f[0,-1];
+//            if ( !betwf(f1) && !betwf(f2) && betwf(neighb) ){
+//                avg1 = average_neighbors(point, f, 1, 0, 0);
+//                avg2 = average_neighbors(point, f, 0, -1, 0);
+//                f_corr[1,0] = (avg1/(avg1 + avg2));
+//                f_corr[0,-1] = (avg2/(avg1 + avg2));
+//            }
+//            neighb = f[-1,-1];
+//            f1 = f[0,-1];
+//            f2 = f[-1,0];
+//            if ( !betwf(f1) && !betwf(f2) && betwf(neighb) ){
+//                avg1 = average_neighbors(point, f, 0, -1, 0);
+//                avg2 = average_neighbors(point, f, -1, 0, 0);
+//                f_corr[0,-1] = (avg1/(avg1 + avg2));
+//                f_corr[-1,0] = (avg2/(avg1 + avg2));
+//            }
+//        }
+//    }
+//    boundary((scalar *){f_corr});
+//}
+
+//void correct_f(scalar f, scalar f_corr){
+//    double avg1, avg2, neighb, f1, f2;
+//    foreach(){
+//        f_corr[] = f[];
+//    }
+//    boundary((scalar *){f_corr});
+//    // Correction step
+//    foreach(){
+//        if (interfacial (point, f)){
+//            neighb = f[-1,1];
+//            f1 = f[-1,0];
+//            f2 = f[0,1];
+//            if ( !betwf(f1) && !betwf(f2) && betwf(neighb) ){
+//                f_corr[-1,0] = fabs(f[-1,0] - F_LIQ_EPS);
+//                f_corr[0,1] = fabs(f[0,1] - F_LIQ_EPS);
+//            }
+//            neighb = f[1,1];
+//            f1 = f[0,1];
+//            f2 = f[1,0];
+//            if ( !betwf(f1) && !betwf(f2) && betwf(neighb) ){
+//                f_corr[0,1] = fabs(f[0,1] - F_LIQ_EPS);
+//                f_corr[1,0] = fabs(f[1,0] - F_LIQ_EPS);
+//            }
+//            neighb = f[1,-1];
+//            f1 = f[1,0];
+//            f2 = f[0,-1];
+//            if ( !betwf(f1) && !betwf(f2) && betwf(neighb) ){
+//                f_corr[1,0] = fabs(f[1,0] - F_LIQ_EPS);
+//                f_corr[0,-1] = fabs(f[0,-1] - F_LIQ_EPS);
+//            }
+//            neighb = f[-1,-1];
+//            f1 = f[0,-1];
+//            f2 = f[-1,0];
+//            if ( !betwf(f1) && !betwf(f2) && betwf(neighb) ){
+//                f_corr[0,-1] = fabs(f[0,-1] - F_LIQ_EPS);
+//                f_corr[-1,0] = fabs(f[-1,0] - F_LIQ_EPS);
+//            }
+//        }
+//    }
+//    boundary((scalar *){f_corr});
+//}

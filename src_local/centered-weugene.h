@@ -4,14 +4,14 @@
 We wish to approximate numerically the incompressible,
 variable-density Navier--Stokes equations
 $$
-\partial_t\mathbf{u}+\nabla\cdot(\mathbf{u}\otimes\mathbf{u}) = 
-\frac{1}{\rho}\left[-\nabla p + \nabla\cdot(2\mu\mathbf{D})\right] + 
+\partial_t\mathbf{u}+\nabla\cdot(\mathbf{u}\otimes\mathbf{u}) =
+\frac{1}{\rho}\left[-\nabla p + \nabla\cdot(2\mu\mathbf{D})\right] +
 \mathbf{a}
 $$
 $$
 \nabla\cdot\mathbf{u} = 0
 $$
-with the deformation tensor 
+with the deformation tensor
 $\mathbf{D}=[\nabla\mathbf{u} + (\nabla\mathbf{u})^T]/2$.
 
 The scheme implemented here is close to that used in Gerris ([Popinet,
@@ -73,7 +73,7 @@ zero.
 
 The statistics for the (multigrid) solution of the pressure Poisson
 problems and implicit viscosity are stored in *mgp*, *mgpf*, *mgu*
-respectively. 
+respectively.
 
 If *stokes* is set to *true*, the velocity advection term
 $\nabla\cdot(\mathbf{u}\otimes\mathbf{u})$ is omitted. This is a
@@ -84,7 +84,7 @@ for which inertia is negligible compared to viscosity. */
 (const) scalar rho = unity;
 mgstats mgp, mgpf, mgu;
 bool stokes = false;
-
+bool stokes_heat = nodata;
 /**
 ## Boundary conditions
 
@@ -145,7 +145,7 @@ event defaults (i = 0)
   The pressures are never dumped. */
 
   p.nodump = pf.nodump = true;
-  
+
   /**
   The default density field is set to unity (times the metric). */
 
@@ -199,6 +199,10 @@ event init (i = 0)
     uf.x[] = fm.x[]*face_value (u.x, 0);
   boundary ((scalar *){uf});
 
+#if BRINKMAN_PENALIZATION && CORRECT_UF_FLUXES
+    brinkman_correction_uf (uf);
+#endif
+
   /**
   We update fluid properties. */
 
@@ -222,9 +226,10 @@ timing of upcoming events. */
 event set_dtmax (i++,last) dtmax = DT;
 
 event stability (i++,last) {
-  dt = dtnext (stokes ? dtmax : timestep (uf, dtmax));
+    bool neglect_conv_CFL = (stokes_heat == nodata) ? stokes : stokes*stokes_heat;
+    dt = dtnext ( neglect_conv_CFL ? dtmax : timestep (uf, dtmax));
 
-  fprintf(ferr, "stability: dt=%g DT=%g dtmax=%g", dt, DT, dtmax );
+  fprintf(ferr, "TIME: dt=%g DT=%g dtmax=%g neglect_conv_CFL=%d\n", dt, DT, dtmax, neglect_conv_CFL );
 }
 
 /**
@@ -283,11 +288,6 @@ void prediction()
 	            du.x[] = 0.;
 	        else
 #endif
-//#ifdef BRINKMAN_PENALIZATION
-//            if (fabs(fs_face.x[] - 1) < SEPS || fabs(fs_face.x[1] - 1) < SEPS)
-//	            du.x[] = 0.; // inside solids
-//	        else
-//#endif
 	            du.x[] = (u.x[1] - u.x[-1])/(2.*Delta);
     }
   boundary ((scalar *){du});
@@ -329,13 +329,11 @@ event advection_term (i++,last)
 {
   if (!stokes) {
     prediction();
-#if BRINKMAN_PENALIZATION && MODIFIED_CHORIN
-        mgpf = project_bp (uf, pf, alpha, 0.5*dt, mgpf.nrelax, fs, target_U, u, eta_chorin);
-#else
     mgpf = project (uf, pf, alpha, dt/2., mgpf.nrelax);
-#endif
+//#if BRINKMAN_PENALIZATION && CORRECT_UF_FLUXES
+//      brinkman_correction_uf (uf);
+//#endif
     advection ((scalar *){u}, uf, dt, (scalar *){g});// original version
-//    event("vtk_file");
   }
 }
 
@@ -351,7 +349,6 @@ static void correction (double dt)
     	foreach_dimension()
       		u.x[] += dt*g.x[]; //original version
 	boundary ((scalar *){u});
-	//event("vtk_file");
 }
 
 /**
@@ -364,12 +361,10 @@ time $t+\Delta t$. */
 event viscous_term (i++,last)
 {
   if (constant(mu.x) != 0.) {
-	//event("vtk_file");
     correction (dt);
     mgu = viscosity (u, mu, rho, dt, mgu.nrelax);
-//    event("vtk_file");
+//    if (i%100 == 0) event("vtk_file");
     correction (-dt);
-
   }
 
   /**
@@ -380,6 +375,7 @@ event viscous_term (i++,last)
     trash ({af});
     foreach_face()
       af.x[] = 0.;
+    boundary((scalar *){af});
   }
 }
 
@@ -396,7 +392,7 @@ surface tension or hydrostatic pressure in the presence of gravity.
 To ensure a consistent discretisation, the acceleration term is
 defined on faces as are pressure gradients and the centered combined
 acceleration and pressure gradient term $\mathbf{g}$ is obtained by
-averaging. 
+averaging.
 
 The (provisionary) face velocity field at time $t+\Delta t$ is
 obtained by interpolation from the centered velocity field. The
@@ -407,10 +403,9 @@ event acceleration (i++,last)
   trash ({uf});
   face vector ia =a;
   foreach_face(){
-    uf.x[] = fm.x[]*(face_value (u.x, 0) + dt*a.x[]);
+    uf.x[] = fm.x[]*(face_value (u.x, 0) + dt*ia.x[]);
   }
-  boundary ((scalar *){uf, a});
-//  event("vtk_file");
+  boundary ((scalar *){uf, ia});
 }
 
 /**
@@ -422,14 +417,13 @@ and the cell-centered pressure field *p*. */
 
 void centered_gradient (scalar p, vector g)
 {
-
   /**
   We first compute a face field $\mathbf{g}_f$ combining both
   acceleration and pressure gradient. */
 
   face vector gf[];
   foreach_face()
-    gf.x[] = fm.x[]*a.x[] - alpha.x[]*(p[] - p[-1])/Delta;
+    gf.x[] = (fm.x[]*a.x[] - alpha.x[]*(p[] - p[-1])/Delta);
   boundary_flux ({gf});
 
   /**
@@ -450,27 +444,22 @@ next timestep). Then compute the centered gradient field *g*. */
 
 event projection (i++,last)
 {
-#if BRINKMAN_PENALIZATION && MODIFIED_CHORIN
-  mgp = project_bp (uf, p, alpha, dt, mgp.nrelax, fs, target_U, u, eta_chorin);
-#else
   mgp = project (uf, p, alpha, dt, mgp.nrelax);
-#endif
   centered_gradient (p, g); //calc gf^{n+1}, g^{n+1} using p^{n+1}, a^{n+1/2}
   /**
   We add the gradient field *g* to the centered velocity field. */
 //  correction (dt);
   foreach()
     foreach_dimension()
-      u.x[] += dt*g.x[]*(1 - fs[]); //original version
+      u.x[] += dt*g.x[];
   boundary ((scalar *){u});
-//    event("vtk_file");
 }
 
-#if BRINKMAN_PENALIZATION
-event brinkman_penalization(i++, last){
-    brinkman_correction(u, uf, rho, dt);
-}
-#endif
+//#if BRINKMAN_PENALIZATION
+//event brinkman_penalization(i++, last){
+//    brinkman_correction(u, uf, rho, dt);
+//}
+//#endif
 /**
 Some derived solvers need to hook themselves at the end of the
 timestep. */
@@ -498,13 +487,9 @@ event adapt (i++,last) {
       uf.x[] = 0.;
   boundary ((scalar *){uf});
 #endif
-//#if BRINKMAN_PENALIZATION
-//  foreach_face()
-//    // fs_face = 1 solid
-//    if ((uf.x[] - target_Uf.x[]) && fs_face.x[])
-//        uf.x[] = target_Uf.x[];
-//  boundary ((scalar *){uf});
-//#endif
+#if BRINKMAN_PENALIZATION && CORRECT_UF_FLUXES
+    brinkman_correction_uf (uf);
+#endif
   event ("properties");
 }
 #endif
@@ -515,7 +500,3 @@ event adapt (i++,last) {
 * [Double projection](double-projection.h)
 * [Performance monitoring](perfs.h)
 */
-
-
-
-
