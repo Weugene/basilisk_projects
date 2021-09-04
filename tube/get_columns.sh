@@ -9,8 +9,8 @@ time1=($(grep -e 'slice n=0' -e 'times' $file  | grep -e 'slice' -B 1 | sed '/^-
 volume=($(grep -v "cand" $file | grep  -e "refined_x_mean" | awk '{print $8}'))
 umean=($(grep -v "cand" $file | grep  -e "refined_x_mean" | awk '{print $4}' | sed 's/\[//'| sed 's/,//'))
 xmean=($(grep -v "cand" $file | grep  -e "refined_x_mean" | awk '{print $2}'))
-xpeak=($(grep -v "cand" $file | grep -e "x_peak" | awk '{print $2}'))
-ypeak=($(grep -v "cand" $file | grep -e "x_peak" | awk '{print $4}'))
+xpeak=($(grep -v "cand" $file | grep -e "^x_peak" | awk '{print $2}'))
+ypeak=($(grep -v "cand" $file | grep -e "^x_peak" | awk '{print $4}'))
 
 time2=($(cat $deltafile | awk '{print $1}'))
 delta_min=($(cat $deltafile | awk '{print $2}'))

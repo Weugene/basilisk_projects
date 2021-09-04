@@ -11,6 +11,7 @@
 //#define STOKES
 
 scalar fs[];
+face vector fs_face=zerof;
 scalar omega[];
 scalar l2[];
 #include "grid/octree.h"

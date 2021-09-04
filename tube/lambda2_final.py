@@ -264,12 +264,12 @@ axesGrid.Visibility = 1
 axesGrid.XTitle = 'X'
 axesGrid.YTitle = 'Y'
 axesGrid.ZTitle = 'Z'
-axesGrid.XTitleFontSize = 20
-axesGrid.YTitleFontSize = 20
-axesGrid.ZTitleFontSize = 20
-axesGrid.XLabelFontSize = 18
-axesGrid.YLabelFontSize = 18
-axesGrid.ZLabelFontSize = 18
+axesGrid.XTitleFontSize = 20 + 5
+axesGrid.YTitleFontSize = 20 + 5
+axesGrid.ZTitleFontSize = 20 + 5
+axesGrid.XLabelFontSize = 18 + 5
+axesGrid.YLabelFontSize = 18 + 5
+axesGrid.ZLabelFontSize = 18 + 5
 
 # Edit the Properties of the AxesGrid
 axesGrid.XAxisUseCustomLabels = 1    # 1 means true
@@ -869,7 +869,7 @@ if not noPic:
             TransparentBackground=0,
             CompressionLevel='2' )
         print('File=' + fn + ' generated succesfully')
-        break
+        # break
 
 #****************** CONNECTIVITY(f) AND CONTOUR2 (lambda2) ********************
         # set color bar visibility
