@@ -18,6 +18,8 @@ tracer_t=*.csv
 permiability_*.txt
 *.txt
 log
+log*
+out*
 log_*
 out_*
 log-*
