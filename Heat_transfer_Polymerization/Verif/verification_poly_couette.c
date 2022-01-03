@@ -273,7 +273,6 @@ event init (t = 0) {
         foreach() {
             f[] = 1;
             T[] = T_BC;
-            T_targetv[] = T_BC;
             alpha_doc[] = 0;
             u.x[] = u_BC; //u_BC*f[];// 0; // penalization will work
             u.y[] = 0;
@@ -281,7 +280,7 @@ event init (t = 0) {
                 rhov[] = var_hom(f[], fs[], rho1, rho2, rho3);
             }
         }
-        boundary ((scalar *){f, T, T_targetv, alpha_doc, u, rhov});
+        boundary ((scalar *){f, T, alpha_doc, u, rhov});
         foreach_face(){
             double ff2 = (fs[] + fs[-1])/2.; //solid
             if (kappa1 || kappa2)
