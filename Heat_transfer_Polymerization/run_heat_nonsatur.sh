@@ -4,7 +4,7 @@ set -o nounset
 echo "Usage: qsub or sbatch?"
 #parameters for solver
 solver_parallel=./a.out
-script=./run.sh
+script=./run_nonsatur.sh
 
 mode=$1
 if [[ "$mode" == "qsub" || "$mode" == "sbatch" ]]; then
@@ -14,11 +14,11 @@ else
   exit
 fi
 
-Tin=(300 350 370 400)
+Tin=(300 320 350 370 400)
 Tcyl=(300)
-maxlevel=(10)
+maxlevel=(9)
 iter_fp=(0 0 0 0 0 0 0 0 0 0 0 0)
-ratio_dist_x=(1.1 1.3 1.5 2)
+ratio_dist_x=(1.1 1.5 2 2.5 3 3.5)
 ratio_dist_y=(2)
 ratio_front_x=-6
 cyl_x=-5
@@ -28,13 +28,13 @@ dev_r=(0)
 dev_x=(0)
 dev_y=(0)
 shift_x=0
-shift_y=$2
-non_saturated=$3
+shift_y=1
+non_saturated=1
 queue=cpu
-Nnode=2
-np_parallel=48
-time_parallel=40:00:00
-pmem_parallel=2GB
+Nnode=1
+np_parallel=8
+time_parallel=43:30:00
+pmem_parallel=5GB
 my_mail=evgenii.sharaborin@skoltech.ru
 
 export PBS_O_WORKDIR=$PWD
@@ -54,7 +54,7 @@ for tc in "${Tcyl[@]}"; do
             for dx in "${dev_x[@]}"; do
               for dy in "${dev_y[@]}"; do
                 echo "./a.out arg= ${tc} ${ti} ${maxl} ${dr} ${dx} ${dy}"
-                tmp="Tin=${ti}_rdx=${rdx}_shfty=${shift_y}_nonsa=${non_saturated}"
+                tmp="Tin=${ti}_rdx=${rdx}"
 #                tmp="Tcyl=${tc}_Tin=${ti}_maxl=${maxl}_rdx=${rdx}_rdy=${rdy}_rfx=${ratio_front_x}_Ncx=${Ncx}_Ncy=${Ncy}_dr=${dr}_dx=${dx}_dy=${dy}"
                 name=${tmp}
                 if [[ "$mode" == "qsub" ]]; then
@@ -80,7 +80,7 @@ for tc in "${Tcyl[@]}"; do
                     sbatch --partition="${queue}" --export=ALL --job-name="${tmp}" --time=${time_parallel} \
                          --mail-user="${my_mail}" --mail-type=END,FAIL \
                          --ntasks=${np_parallel} --nodes="${Nnode}" \
-                         --mem-per-cpu="${pmem_parallel}" \
+                         --mem-per-cpu="${pmem_parallel}" --ntasks-per-node="${np_parallel}" \
                          --output="${tmp}-%x.%j.out" --error="${tmp}-%x.%j.log" \
                          --wrap="${script} ${tc} ${ti} ${maxl} ${rdx} ${rdy} ${ratio_front_x} ${cyl_x} ${Ncx} ${Ncy} ${dr} ${dx} ${dy} ${shift_x} ${shift_y} ${non_saturated} ${mode}"
                   fi

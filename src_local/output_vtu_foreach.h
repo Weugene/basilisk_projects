@@ -631,7 +631,8 @@ void output_vtu_MPI(struct PVD_output o){
         char name_pvtu[80], tmp[80];
 	    sprintf(name_pvtu, "res/%s_0_%4.4d.pvtu", subname, nf);
         sprintf(tmp, "%s_%4.4d", subname, nf);
-        fprintf(ferr, "+++vtk_file: %s, %s\n", name_pvtu, name_vtu);
+        fprintf(ferr, "vtk: iter_fp = %d myt = %g\n"
+                      "<DataSet timestep=\"%g\" part=\"0\" file=\"%s\"/>\n", nf, myt, myt, name_pvtu);
         fp = fopen(name_pvtu, "w");
         output_pvtu_bin(list, vlist, fvlist, 64, fp, tmp);
         fclose(fp);

@@ -29,7 +29,6 @@ double Cp1 = 0, Cp2 = 0, Cp3 = 0;
 /**
 Auxilliary fields are necessary to define the (variable) specific
 volume $\alpha=1/\rho$ as well as the cell-centered density. */
-
 face vector alphav[];
 scalar rhov[];
 #ifdef HEAT_TRANSFER
@@ -77,10 +76,17 @@ Usually, it is assumed that mu1 is variable, mu2 and mu3 are not. For simplisity
 #endif
 
 #ifndef kappav
+<<<<<<< HEAD
 #define kappav(f, fs) var_harm(f, fs, kappa1, kappa2, kappa3)
 //#define kappav(f, fs) ((1.0 - clamp(fs,0.,1.))*(kappa2 + (kappa1 - kappa2)*clamp(f,0.,1.)) + clamp(fs,0.,1.)*kappa3)
+=======
+    #define kappav(f, fs) var_harm(f, fs, kappa1, kappa2, kappa3)
+    //#define kappav(f, fs) ((1.0 - clamp(fs,0.,1.))*(kappa2 + (kappa1 - kappa2)*clamp(f,0.,1.)) + clamp(fs,0.,1.)*kappa3)
 #endif
-scalar alpha_doc[];
+#if REACTION_MODEL != NO_REACTION_MODEL
+    scalar alpha_doc[];
+>>>>>>> b96bb46 (gitignore)
+#endif
 scalar T[];
 /**
 # Variable rheology models
@@ -93,14 +99,24 @@ double Eeta_by_Rg = 0.1; //Kelvin
 double chi = 1;
 double alpha_gel = 0.8;
 #ifndef fpol
-#define fpol(alpha_doc, T) A*alpha_doc + B
+    #define fpol(alpha_doc, T) A*alpha_doc + B
 #endif
 
+
 #ifndef muf1
+<<<<<<< HEAD
 //#define mupol(alpha_doc, T) (mu0*exp(Eeta_by_Rg/(T))*pow(alpha_gel/(alpha_gel-alpha_doc), fpol(alpha_doc, T)))
 #define muf1(alpha_doc, T) (mu0*exp(Eeta_by_Rg/T + chi*alpha_doc))
 #else
 #define muf1(alpha_doc, T) mu1
+=======
+    #if REACTION_MODEL != NO_REACTION_MODEL
+        //#define mupol(alpha_doc, T) (mu0*exp(Eeta_by_Rg/(T))*pow(alpha_gel/(alpha_gel-alpha_doc), fpol(alpha_doc, T)))
+        #define muf1(alpha_doc, T) (mu0*exp(Eeta_by_Rg/T + chi*alpha_doc))
+    #else
+        #define muf1(alpha_doc, T) (mu0*exp(Eeta_by_Rg/T))
+    #endif
+>>>>>>> b96bb46 (gitignore)
 #endif
 
 #ifndef mu
@@ -167,10 +183,14 @@ event properties (i++) {
         double ff2 = (sf2[] + sf2[-1])/2.; //solid
         alphav.x[] = fm.x[]/rho(ff1, ff2);
         if (mu1 || mu2) {
-            double Tf = (T[] + T[-1])/2.;
-            double alpha_doc_f = (alpha_doc[] + alpha_doc[-1])/2.;
             face vector muv = mu;
+            double Tf = (T[] + T[-1])/2.;
+#if REACTION_MODEL != NO_REACTION_MODEL
+            double alpha_doc_f = (alpha_doc[] + alpha_doc[-1])/2.;
             muv.x[] = fm.x[]*mu(ff1, ff2, alpha_doc_f, Tf);
+#else
+            muv.x[] = fm.x[]*mu(ff1, ff2, 0, Tf);
+#endif
         }
 #ifdef HEAT_TRANSFER
         if (kappa1 || kappa2) {

@@ -11,7 +11,7 @@
 //#define STOKES
 #define DIRICHLET_BC 0
 scalar omega[];
-scalar l2[];
+scalar l2[], un[];
 face vector fs_face[];
 //face vector av[];
 
@@ -22,7 +22,7 @@ face vector fs_face[];
 #include "output_vtu_foreach.h"
 #include "tag.h"
 
-int snapshot_i = 500;
+int snapshot_i = 5000;
 double dt_vtk = 0.1;
 double Uin, Tin, Tcyl;
 double RhoR, RhoRS, MuR, MuRS, CpR, CpRS, KappaR, KappaRS;
@@ -36,6 +36,8 @@ double cyl_diam, domain_size, dist_x, dist_y, cyl_x, front_x, Rbmin, Rbmax;
 double ratio_Rbmin, ratio_Rbmax;
 double ratio_dist_x, ratio_dist_y, dev_r, develx, devely;
 double ratio_front_x;
+double shift_x, shift_y;
+int non_saturated;
 int Ncx, Ncy; //number of cylinders along Ox, Oy
 int Nb; //number of bubbles
 double Ca; // Ca = Mu*Ud/sigma
@@ -48,7 +50,7 @@ int maxlevel = 9;
 int minlevel = 5;
 int LEVEL = 7;
 int adapt_method = 1; // 0 - traditional, 1 - using limitation, 2 - using array for maxlevel
-double feps = 1e-10, fseps = 1e-10, ueps = 1e-3, Teps = 3e-2, aeps = 3e-2;
+double feps = 1e-10, fseps = 1e-10, ueps = 1e-2, Teps = 3e-2, aeps = 3e-2;
 double TOLERANCE_P = 1e-6, TOLERANCE_V = 1e-7, TOLERANCE_T = 1e-6;
 double *R = NULL;
 coord *centers = NULL;
@@ -58,7 +60,7 @@ int main(int argc, char * argv[]) {
     NITERMIN = 1;
     NITERMAX = 100;
     CFL = 0.5;
-    CFL_SIGMA = 0.7;
+    CFL_SIGMA = 0.3;
     CFL_ARR = 0.5;
     DT = 1e-5;
     m_bp = 1; // Brinkman layer resolution
@@ -85,7 +87,10 @@ int main(int argc, char * argv[]) {
     ratio_dist_x = 2; ratio_dist_y = 2;
     ratio_front_x = -6;
     cyl_x = -5;
+    shift_x = 0;
+    shift_y = 0;
     dev_r = 0.4, develx = 0.4, devely = 0.4;
+    non_saturated = 1;
 
     fprintf(ferr, "The solver must be run: ./a.out Tcyl, Tin, maxlevel, iter_fp, ratio_Rbmin, ratio_Rbmax, "
                   "ratio_dist_x, ratio_dist_y, ratio_front_x, cyl_x, Nb, Ncx, Ncy, "
@@ -101,43 +106,47 @@ int main(int argc, char * argv[]) {
         maxlevel = atoi(argv[3]);
     //stokes = true;
 	if (argc > 4)
-        iter_fp = atoi(argv[4]);
+        ratio_Rbmin = atof(argv[4]);
 	if (argc > 5)
-        ratio_Rbmin = atof(argv[5]);
+        ratio_Rbmax = atof(argv[5]);
 	if (argc > 6)
-        ratio_Rbmax = atof(argv[6]);
+        ratio_dist_x = atof(argv[6]);
 	if (argc > 7)
-        ratio_dist_x = atof(argv[7]);
-	if (argc > 8)
-        ratio_dist_y = atof(argv[8]);
-	if (argc > 9 )
-		ratio_front_x = atof(argv[9]);
-    if (argc > 10 )
-        cyl_x = atof(argv[10]);
+        ratio_dist_y = atof(argv[7]);
+	if (argc > 8 )
+		ratio_front_x = atof(argv[8]);
+    if (argc > 9 )
+        cyl_x = atof(argv[9]);
+	if (argc > 10)
+        Nb = atoi(argv[10]);
 	if (argc > 11)
-        Nb = atoi(argv[11]);
+        Ncx = atoi(argv[11]);
 	if (argc > 12)
-        Ncx = atoi(argv[12]);
+        Ncy = atoi(argv[12]);
 	if (argc > 13)
-        Ncy = atoi(argv[13]);
-	if (argc > 14)
-        TOLERANCE_P = atof(argv[14]);
+        TOLERANCE_P = atof(argv[13]);
+    if (argc > 14)
+        TOLERANCE_V = atof(argv[14]);
     if (argc > 15)
-        TOLERANCE_V = atof(argv[15]);
-    if (argc > 16)
-        TOLERANCE_T = atof(argv[16]);
+        TOLERANCE_T = atof(argv[15]);
+	if (argc > 16)
+		Htr = atof(argv[16]);
 	if (argc > 17)
-		Htr = atof(argv[17]);
+		Arrhenius_const = atof(argv[17]);
 	if (argc > 18)
-		Arrhenius_const = atof(argv[18]);
-	if (argc > 19)
-		Ea_by_R = atof(argv[19]);
-  if (argc > 20)
-		dev_r = atof(argv[20]);
-  if (argc > 21)
-		develx = atof(argv[21]);
-  if (argc > 22)
-		devely = atof(argv[22]);
+		Ea_by_R = atof(argv[18]);
+    if (argc > 19)
+        dev_r = atof(argv[19]);
+    if (argc > 20)
+        develx = atof(argv[20]);
+    if (argc > 21)
+        devely = atof(argv[21]);
+    if (argc > 22)
+        shift_x = atof(argv[22]);
+    if (argc > 23)
+        shift_y = atof(argv[23]);
+    if (argc > 24)
+        non_saturated = atoi(argv[24]);
 
 	cyl_diam = 15e-6;
 	dist_x = ratio_dist_x*cyl_diam, dist_y = ratio_dist_y*cyl_diam; //m 5-25 microns
@@ -158,6 +167,7 @@ int main(int argc, char * argv[]) {
                  Htr, Arrhenius_const, Ea_by_R, n_degree, m_degree,
                  Eeta_by_Rg, chi,
                  cyl_diam, domain_size, Dx_min, Ncx, Ncy, Nb);
+	Ncy += (shift_y > 0); //for saturated flow we add artificial cylinder
 // Dimensionless numbers
 	Re = Uin*cyl_diam*Rho1/Mu1;
 	Ca = Mu1*Uin/(Sigma + SEPS);
@@ -203,6 +213,7 @@ int main(int argc, char * argv[]) {
 				 "               Ggrav_ndim=%g Uin=%g\n"
                  "Dim-less nums: Re=%g,  Ca=%g, Fr=%g\n"
                  "               dev_r=%g develx=%g devely=%g ldomain=%g\n"
+                 "               shift_x=%g shift_y=%g non_saturated=%d\n"
                  "Solver:        DTmax=%g, CFL=%g, CFL_SIGMA=%g, CFL_ARR=%g, NITERMIN=%d,  NITERMAX=%d,\n"
                  "               TOLERANCE_P=%g, TOLERANCE_V=%g, TOLERANCE_T=%g\n"
                  "ADAPT:         minlevel=%d,  maxlevel=%d, feps=%g, fseps=%g, ueps=%g, Teps=%g, aeps=%g\n"
@@ -215,6 +226,7 @@ int main(int argc, char * argv[]) {
 				Ggrav_ndim, Uin,
                 Re, Ca, Fr,
                 dev_r, develx, devely, domain_size/L0,
+                shift_x, shift_y, non_saturated,
                 DT, CFL, CFL_SIGMA, CFL_ARR, NITERMIN, NITERMAX,
                 TOLERANCE_P, TOLERANCE_V, TOLERANCE_T,
                 minlevel, maxlevel, feps, fseps, ueps, Teps, aeps,
@@ -266,7 +278,7 @@ double sphere(double x, double y, double z, coord center, double radius) {
 
 double bubbles (double x, double y, double z)
 {
-    return front_x - x;// with front
+    return (non_saturated > 0)? front_x - x : 1;// with front
 
 }
 double xmin_center = 0, xmax_center = 0;
@@ -282,8 +294,14 @@ void calc_centers(coord * centers, double * R){
         for(int j = 0; j < Ncy; j++){
             k = i*Ncy + j;
             bool flag = 1;
-            minvx = limMin + i*dist_x, maxvx = minvx + develx;
-            minvy = -0.5*L0 + 0.5*dist_y + j*dist_y, maxvy = minvy + devely;
+            minvx = limMin + i*dist_x + shift_x*((j%2) > 0), maxvx = minvx + develx;
+            minvy = -0.5*L0 + 0.5*dist_y + j*dist_y - shift_y*((i%2) > 0), maxvy = minvy + devely;
+//            if ( (maxvx > X0 + L0 - cyl_diam) || (maxvy > Y0 + L0 - 0.5*cyl_diam) || (minvy < Y0 + 0.5*cyl_diam)){
+//                // otherwise centers are far away. In such a way I get rid of this points
+//                R[k] = 0;
+//                foreach_dimension() centers[k].x = 1e+9;
+//                continue;
+//            }
             trials = 0;
             while(1){
                 R[k] = RandMinMax(0.5*cyl_diam, 0.5*cyl_diam + dev_r);
@@ -311,9 +329,10 @@ void calc_centers(coord * centers, double * R){
             if (i == Ncx - 1) xmax_center += centers[k].x;
         }
     }
-    xmin_center /= Ncy;
-    xmax_center /= Ncy;
+    xmin_center /= Ncy - (shift_y > 0);// for satur flow true Ncy is less by 1
+    xmax_center /= Ncy - (shift_y > 0);
 }
+
 double geometry(double x, double y, double z){
     coord mypoint = {x,y,z};
     coord pnt_dist;
@@ -335,6 +354,9 @@ void solid_func(scalar fs, face vector fs_face){
     boundary ({phi});
     fractions (phi, fs, fs_face);
 }
+
+FILE *popen(const char *command, const char *mode);
+int pclose(FILE *stream);
 
 event init (t = 0) {
     R = (double *) malloc(Ncx*Ncy*sizeof(double));
@@ -363,7 +385,8 @@ event init (t = 0) {
         foreach() {
             T[] = Tin*(1 - fs[]) + fs[]*Tcyl;
             alpha_doc[] = 0;
-            u.x[] = 0; //u_BC*f[];// 0; //u_BC;//*(1-fs[]); // penalization will work
+            u.x[] = u.y[] = 0; //u_BC*f[];// 0; //u_BC;//*(1-fs[]); // penalization will work
+            un[] = u.x[];
             if (rho1 || rho2){
                 rhov[] = var_hom(f[], fs[], rho1, rho2, rho3);
             }
@@ -383,14 +406,39 @@ event init (t = 0) {
             }
         }
 		boundary((scalar *){kappa, mu});
+        event("vtk_file");
+    }else{
+        FILE *cmd;
+        char result[5000];
+
+        cmd = popen("grep \"vtk: iter_fp\" log | awk \'{print $7}\'", "r");
+        if (cmd == NULL) {
+            perror("popen");
+            exit(EXIT_FAILURE);
+        }
+        int k = 0;
+        while (fgets(result, sizeof(result), cmd)) {
+            printf("%s", result);
+            file_timesteps[k++] = atof(result);
+        }
+
+        cmd = popen("grep \"vtk: iter_fp\" log | tail -1 | awk \'{print $4}\'", "r");
+        if (cmd == NULL) {
+            perror("popen");
+            exit(EXIT_FAILURE);
+        }
+        fgets(result, sizeof(result), cmd);
+        iter_fp = atoi(result) + 1;
+        fprintf(ferr, "Read iter_fp+1: %d\n", iter_fp);
+        pclose(cmd);
     }
-	event("vtk_file");
 }
 
 event set_dtmax (i++) {
 	RELATIVE_RES_TOLERANCE = 0.01;
     DT *= 1.05;
-    DT = min(DT, 1e-3);
+    double maxDT = (non_saturated>0) ? 1e-3 : 1e-2;
+    DT = min(DT, maxDT);
     fprintf(ferr, "set_dtmax: tnext= %g, t=%g, DT=%g, dt=%g\n", tnext, t, DT, dt);
 }
 
@@ -467,8 +515,8 @@ struct Tip {
 };
 
 scalar m[];
-scalar ints[];
-event logfile(i+=1){
+double time_prev = 0;
+event logfile(i+=50){
     double dv_all, dv_in_resin_without_solid, dv_in_resin_solid, dv_in_resin_gas, dv_in_air_without_solid;
     double porosity, porositys;
     double xmax_tip = -1e+9, volume_all = SEPS, volume_of_fluids = SEPS, volume_of_resin = SEPS;
@@ -490,28 +538,34 @@ event logfile(i+=1){
     FILE * fppermeability;
 
     coord utip = {0.0,0.0,0.0}, ulocal = {0.0,0.0,0.0};
+    double avg = normf_weugene(u.x, fs).avg;
+    double du = change_weugene (u.x, un, fs)/(avg + SEPS); //change 1) Linf  2) un = u
+    fprintf(ferr, "du= %g, du/dt: %g\n", du, du/(t - time_prev + SEPS));
     if (i == 0 ){
         xmax_prev = front_x;
         ymax_prev = 0.5*L0;
-        fpv = fopen("statistics_volume.txt", "w+");
-        fpperm = fopen("statistics_p_uf_mu.txt", "w+");
-
-//        fclose(fopen("permiability.txt", "w"));
-        fppermeability = fopen("permiability.txt", "wb");
-        fprintf(fppermeability, "i, t, gradp, x_left, p_int[imin], x_right, p_int[imax], permeability1, permeability2, "
-                                "xmax_tip, xmax_prev, volume_all, volume_of_fluids, volume_of_resin, volume_of_resin_out_of_solid, "
-                                "volume_of_gas, volume_of_gas_out_of_solid, volume_of_solid, porosity, porositys, "
-                                "vel_in_all_region_x, vel_in_all_region_y, sqrt(sq(vel_in_all_region_x) + sq(vel_in_all_region_y)), "
-                                "vel_in_resin_x, vel_in_resin_y, sqrt(sq(vel_in_resin_x) + sq(vel_in_resin_y)), "
-                                "vel_in_resin_solid_x, vel_in_resin_solid_y, sqrt(sq(vel_in_resin_solid_x) + sq(vel_in_resin_solid_y)), "
-                                "vel_in_resin_gas_x, vel_in_resin_gas_y, sqrt(sq(vel_in_resin_gas_x) + sq(vel_in_resin_gas_y)), "
-                                "ulocal.x, ulocal.y, mynorm(ulocal), "
-                                "utip.x, utip.y, T_in_resin_avg, T_in_fluid_avg, T_in_all_region_avg, "
-                                "alpha_doc_avg, mu_avg, gradpx_in_resin_without_solid, gradpx_in_air_without_solid, vol_max");
+        if (pid() == 0){
+            fpv = fopen("statistics_volume.txt", "wb");
+            fpperm = fopen("statistics_pufmu.txt", "wb");
+            fppermeability = fopen("permiability.txt", "wb");
+            fprintf(fppermeability,
+            "i, t, gradp, x_left, p_int[imin], x_right, p_int[imax], permeability1, permeability2, "
+            "xmax_tip, xmax_prev, volume_all, volume_of_fluids, volume_of_resin, volume_of_resin_out_of_solid, "
+            "volume_of_gas, volume_of_gas_out_of_solid, volume_of_solid, porosity, porositys, "
+            "vel_in_all_region_x, vel_in_all_region_y, sqrt(sq(vel_in_all_region_x) + sq(vel_in_all_region_y)), "
+            "vel_in_resin_x, vel_in_resin_y, sqrt(sq(vel_in_resin_x) + sq(vel_in_resin_y)), "
+            "vel_in_resin_solid_x, vel_in_resin_solid_y, sqrt(sq(vel_in_resin_solid_x) + sq(vel_in_resin_solid_y)), "
+            "vel_in_resin_gas_x, vel_in_resin_gas_y, sqrt(sq(vel_in_resin_gas_x) + sq(vel_in_resin_gas_y)), "
+            "ulocal.x, ulocal.y, mynorm(ulocal), "
+            "utip.x, utip.y, T_in_resin_avg, T_in_fluid_avg, T_in_all_region_avg, "
+            "alpha_doc_avg, mu_avg, gradpx_in_resin_without_solid, gradpx_in_air_without_solid, vol_max\n");
+        }
     }else{
-      fpv = fopen("statistics_volume.txt", "a");
-      fpperm = fopen("statistics_p_uf_mu.txt", "a");
-      fppermeability = fopen("permiability.txt", "a");
+        if (pid() == 0){
+            fpv = fopen("statistics_volume.txt", "a");
+            fpperm = fopen("stat_p_uf_mu.txt", "a");
+            fppermeability = fopen("permiability.txt", "a");
+        }
     }
     for (int j = 0; j < psize; j++){
         foreach_dimension() {
@@ -523,19 +577,16 @@ event logfile(i+=1){
      */
     foreach(reduction(+:volume_all) reduction(+:volume_of_fluids) reduction(+:volume_of_resin) reduction(+:volume_of_resin_out_of_solid)
             reduction(+:volume_of_gas) reduction(+:volume_of_gas_out_of_solid) reduction(+:volume_of_solid)
-            reduction(+:T_in_resin_avg) reduction(+:T_in_fluid_avg) reduction(+:T_in_all_region_avg) ) {
-        if (f[] > 0 && f[] < 1) {
+            reduction(+:T_in_resin_avg) reduction(+:T_in_fluid_avg) reduction(+:T_in_all_region_avg)
+            reduction(max:xmax_tip)) {
+        if (f[-1] != f[1]) {
             if (x > xmax_tip) {
               xmax_tip = x;
               foreach_dimension() {
                   tip[pid].t.x = x;
                   tip[pid].ulocal.x = u.x[];
               }
-            }else{
-              foreach_dimension() {
-                  tip[pid].t.x = -1e+9;
-                  tip[pid].ulocal.x = -1e+9;
-              }
+//              printf("xmax_tip=%g\n", xmax_tip);
             }
         }
         if (region_of_averaging(x,y)){
@@ -593,10 +644,9 @@ event logfile(i+=1){
     #if _MPI
         MPI_Allreduce (MPI_IN_PLACE, tip, 2*dimension*psize, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
     #endif
-    xmax_tip = -1e+9;
+
     for (int j = 0; j < psize; j++){
-        if (tip[j].t.x > xmax_tip) {
-            xmax_tip = tip[j].t.x;
+        if (fabs(tip[j].t.x - xmax_tip) < 1e-10) {
             ymax = tip[j].t.y;
             foreach_dimension() ulocal.x = tip[j].ulocal.x;
         }
@@ -685,7 +735,7 @@ event logfile(i+=1){
             vol_max = v[j];
             i_vol_max = j;
         }
-        if (v[j]>0) fprintf (fpv, "i= %d t= %g j= %d v= %g bx/v= %g by/v= %g\n",
+        if (v[j]>0 && pid() == 0) fprintf (fpv, "i= %d t= %g j= %d v= %g bx/v= %g by/v= %g\n",
         i, t, j, v[j], b[j].x/v[j], b[j].y/v[j]);
     }
     fprintf(ferr, "i= %d t= %g i_vol_max= %d vol_max= %g\n", i, t, i_vol_max, vol_max);
@@ -733,21 +783,22 @@ event logfile(i+=1){
     double xmax = cyl_x + cyl_diam - 0.5*dist_x + (Ncx - 1)*dist_x, x_right=1e+9; // between cylinders right
     int imin=0, imax=0;
     double dd1, dd2, gradp;
-    for (int i = 0; i < nn; i++) {
-        xx = X0 + i*L0/pow(2, minlevel);
+    for (int i0 = 0; i0 < nn; i0++) {
+        xx = X0 + i0*L0/pow(2, minlevel);
         dd1 = fabs(xx - xmin);
         dd2 = fabs(xx - xmax);
         if (dmin > dd1){
             dmin = dd1;
-            imin = i;
+            imin = i0;
             x_left = xx;
         }
         if (dmax > dd2){
             dmax = dd2;
-            imax = i;
+            imax = i0;
             x_right = xx;
         }
-        fprintf(fpperm, "i= %d t= %g x= %g p= %g mu= %g uf= %g %g\n", i, t, xx, p_int[i], mu_mean[i], uf_mean[i][0], uf_mean[i][1]);
+        if (pid() == 0) fprintf(fpperm, "i0= %d t= %g x= %g p= %g mu= %g uf= %g %g\n",
+                         i0, t, xx, p_int[i0], mu_mean[i0], uf_mean[i0][0], uf_mean[i0][1]);
     }
     gradp = (p_int[imax] - p_int[imin])/(dist_x*(Ncx-2));//? how to consider capillary?
 
@@ -757,11 +808,12 @@ event logfile(i+=1){
     fprintf(ferr, "xmax=%g x_right=%g dmax=%g imax=%d\n", xmax, x_right, dmax, imax);
     fprintf(ferr, "t= %g x_left= %g p_left= %g x_right= %g p_right= %g mean_dp/dx= %g permeability:K1= %g K2= %g\n",
                     t, x_left, p_int[imin], x_right, p_int[imax], gradp, permeability1, permeability2);
-    fprintf(fppermeability, "%d, %g, %g, %g, %g, %g, %g, %g, %g, %g, "
+    if (pid() == 0){
+        fprintf(fppermeability, "%d, %g, %g, %g, %g, %g, %g, %g, %g, %g, "
                             "%g, %g, %g, %g, %g, %g, %g, %g, %g, %g, "
                             "%g, %g, %g, %g, %g, %g, %g, %g, "
                             "%g, %g, %g, %g, %g, %g, %g, %g, "
-                            "%g, %g, %g, %g, %g, %g, %g, %g\n",
+                            "%g, %g, %g, %g, %g, %g, %g, %g %g\n",
                             i, t, gradp,
                             x_left, p_int[imin],
                             x_right, p_int[imax],
@@ -776,20 +828,30 @@ event logfile(i+=1){
                             ulocal.x, ulocal.y, mynorm(ulocal), //3
                             utip.x, utip.y, //2
                             T_in_resin_avg, T_in_fluid_avg, T_in_all_region_avg, //3
-                            alpha_doc_avg, mu_avg, gradpx_in_resin_without_solid, gradpx_in_air_without_solid); //5
-
-    fclose(fpv);
-    fclose(fpperm);
-    fclose(fppermeability);
+                            alpha_doc_avg, mu_avg, gradpx_in_resin_without_solid, gradpx_in_air_without_solid, vol_max); //5
+        fclose(fpv);
+        fclose(fpperm);
+        fclose(fppermeability);
+    }
+    if ((non_saturated == 0) && (i > 1) && (du/(t - time_prev + SEPS) < 1e+0)) {
+        fprintf (ferr, "Converged!!!\n");
+        event("vtk_file");
+        return 9;
+    }
+    time_prev = t;
+    if ((p_int[imax] != p_int[imax]) || (p_int[imin] != p_int[imin]) || (vel_in_all_region_x != vel_in_all_region_x)){
+        fprintf (ferr, "NAN in values!!!\n");
+        event("vtk_file");
+        return 9;
+    }
 }
 
-// event vtk_file (i+=1)
+
+// event vtk_file (i += 1)
 event vtk_file (t += dt_vtk)
 {
     char subname[80]; sprintf(subname, "heat_pol");
     scalar l[]; foreach() l[] = level;
-    //	vector a_cell[]; foreach() foreach_dimension() a_cell.x[] = 0.5*(a.x[] + a.x[1]);
-    //	vector mu_cell_minus[], mu_cell_plus[];
     scalar mu_cell[], dpdx[];
     foreach() {
         double mus = 0;
@@ -800,41 +862,21 @@ event vtk_file (t += dt_vtk)
         dpdx[] = (p[1] - p[-1])/(2*Delta);
     }
     boundary((scalar *){mu_cell});
-    //	boundary((scalar *){mu_cell_minus, mu_cell_plus});
-    //	vector uf_cell[]; foreach() foreach_dimension() uf_cell.x[] = 0.5*(uf.x[] + uf.x[1]);
-    //	vector kappa_cell[]; foreach() foreach_dimension() kappa_cell.x[] = 0.5*(kappa.x[] + kappa.x[1]);
-    scalar curvature_by_sigma_cell[]; curvature (f, curvature_by_sigma_cell, f.sigma, add = false);
-    //    f.height = h;
-    //    fs.height = hs;
-    //    if (f.height.x.i)
-    //        heights (f, f.height);
-    //    if (fs.height.x.i)
-    //        heights (fs, fs.height);
-    //    vector nnf[], nnfs[];
-    //    foreach() {
-    //        coord nnfc = interface_normal (point, f);
-    //        coord nnfsc = interface_normal (point, fs);
-    //        coord nnfc = height_normal (point, f, f.height);
-    //        coord nnfsc = height_normal (point, fs, fs.height);
-    //        foreach_dimension(){
-    //            nnf.x[] = nnfc.x;
-    //            nnfs.x[] = nnfsc.x;
-    //        }
-    //    }
-    //    boundary((scalar *){nnf, nnfs});
+//    scalar curvature_by_sigma_cell[]; curvature (f, curvature_by_sigma_cell, f.sigma, add = false);
 #ifdef DEBUG_BRINKMAN_PENALIZATION
     output_vtu_MPI(subname, (iter_fp) ? t + dt : 0, (scalar *) {T, alpha_doc, p, fs, f, l,  rhov}, (vector *) {u, dbp, total_rhs, a, residual_of_u, conv_term, mu, kappa});
 #else
     fprintf(ferr, "output_vtu_MPI\n");
     //    output_vtu_MPI(subname, (iter_fp) ? t + dt : 0, (scalar *) {T, alpha_doc, p, fs, f}, (vector *) {u});
-    output_vtu_MPI(subname, (iter_fp) ? t + dt : 0, list = (scalar *) {T, dpdx, alpha_doc, p, fs, f, l, rhov, curvature_by_sigma_cell, mu_cell, m, ints},
+    output_vtu_MPI(subname, (iter_fp) ? t + dt : 0, list = (scalar *) {T, dpdx, alpha_doc, p, fs, f, l, rhov, mu_cell, m},
     vlist = (vector *) {u, a});//, mu_cell_minus, mu_cell_plus
 #endif
 }
 
-#if DUMP
+//#if DUMP
 event snapshot (i += snapshot_i)
 //event snapshot (t += 1e-1)
+//event snapshot (i += 1)
 {
     char name[80];
     if (t==0)
@@ -845,20 +887,19 @@ event snapshot (i += snapshot_i)
     p.nodump = false;
     dump (file = name);
 }
-#endif
+//#endif
 
 /**
 We adapt according to the error on the embedded geometry, velocity and
 tracer fields. */
 
-#define ADAPT_SCALARS {f, fs, un, T, alpha_doc}
-#define ADAPT_EPS_SCALARS {feps, fseps, ueps, Teps, aeps}
+#define ADAPT_SCALARS {f, fs, u.x, u.y, T, alpha_doc}
+#define ADAPT_EPS_SCALARS {feps, fseps, ueps, ueps, Teps, aeps}
 //#define ADAPT_SCALARS {f, fs}
 //#define ADAPT_EPS_SCALARS {feps, fseps}
 
-scalar un[];
+
 event adapt (i++){
-	foreach() un[] = norm(u); boundary((scalar *){un});
 	double eps_arr[] = ADAPT_EPS_SCALARS;
 	MinMaxValues((scalar *) ADAPT_SCALARS, eps_arr);
 	adapt_wavelet ((scalar *) ADAPT_SCALARS, eps_arr, maxlevel = maxlevel, minlevel = minlevel);
@@ -870,4 +911,4 @@ event adapt (i++){
     count_cells(t, i);
 }
 
-event stop(t = L0 / Uin);
+event stop(t = 10*L0 / Uin);

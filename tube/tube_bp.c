@@ -478,7 +478,6 @@ event vtk_file (t += dt_vtk)
 
 
 #define ADAPT_SCALARS {f, u.x, u.y, u.z}
-#define ADAPT_SCALARS_SMOOTHED {f, u.x, u.y, u.z}
 #define ADAPT_EPS_SCALARS {fseps, ueps, ueps, ueps}
 #define ADAPT_MAXLEVEL {maxlevel, max(maxlevel-2,10), max(maxlevel-2,10), max(maxlevel-2,10)}
 //#define ADAPT_SCALARS {fs, f, u}

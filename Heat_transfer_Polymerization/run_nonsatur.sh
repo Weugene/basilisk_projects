@@ -15,8 +15,8 @@ cyl_x=$7
 Nb=0
 Ncx=$8
 Ncy=$9
-TOLERANCE_P=4e-7
-TOLERANCE_V=4e-6
+TOLERANCE_P=1e-6
+TOLERANCE_V=1e-6
 TOLERANCE_T=1e-6
 Htr=355000
 Arrhenius_const=80600
@@ -30,21 +30,44 @@ non_saturated=${15}
 mode=${16}
 
 
-tmp="Tcyl=${Tcyl}_Tin=${Tin}_maxl=${maxlevel}_rdx=${ratio_dist_x}_rdy=${ratio_dist_y}_rfx=${ratio_front_x}_Ncx=${Ncx}_Ncy=${Ncy}_dr=${dev_r}_dx=${dev_x}_dy=${dev_y}_order=${shift_y}_nonsat=${non_saturated}"
+tmp="Tcyl=${Tcyl}_Tin=${Tin}_maxl=${maxlevel}_rdx=${ratio_dist_x}_rdy=${ratio_dist_y}_rfx=${ratio_front_x}_Ncx=${Ncx}_Ncy=${Ncy}_dr=${dev_r}_dx=${dev_x}_dy=${dev_y}"
 mkdir ${tmp} || continue
 cd ${tmp} || continue
 cp ../a.out .
 
 #find out iter_fp
-#iter_fp=$(grep "iter_fp=" log | tail -1 | awk '{print $4}')
+myarr=($(grep "<DataSet timestep=" heat_pol.pvd ))
+NN=${#myarr[@]}
+last_iter_fp=0
+if (($NN > 0)); then
+	last_iter_fp=$(echo ${myarr[${NN}-1]} | sed 's/file="res\/heat\_pol\_0\_//'| sed 's/\.pvtu"\/>//' | bc)
+fi
+if ((${last_iter_fp} > 0)); then
+  iter_fp=${last_iter_fp}
+else
+  iter_fp=0
+fi
 
-args="${Tcyl} ${Tin} ${maxlevel} ${ratio_Rbmin} ${ratio_Rbmax} ${ratio_dist_x} ${ratio_dist_y} ${ratio_front_x} \
+args="${Tcyl} ${Tin} ${maxlevel} ${iter_fp} ${ratio_Rbmin} ${ratio_Rbmax} ${ratio_dist_x} ${ratio_dist_y} ${ratio_front_x} \
 ${cyl_x} ${Nb} ${Ncx} ${Ncy} ${TOLERANCE_P} ${TOLERANCE_V} ${TOLERANCE_T} \
 ${Htr} ${Arrhenius_const} ${Ea_by_R} ${dev_r} ${dev_x} ${dev_y} ${shift_x} ${shift_y} ${non_saturated}"
 
 echo "args:${args}"
 
 echo "BASILISK=$BASILISK"
+
+
+#save the previous heat_pol.pvd and gather all in result.pvd
+
+lines_in_prev=$(head -n -2 heat_pol_prev.pvd | wc -l | bc)
+if (( $lines_in_prev > 0 )); then
+  head -n -2 heat_pol_prev.pvd > result.pvd
+  tail -n +$(($lines_in_prev + 1)) heat_pol.pvd >> result.pvd
+else
+  cp heat_pol.pvd heat_pol_prev.pvd || continue
+  cp heat_pol.pvd result.pvd || continue
+fi
+cp heat_pol.pvd heat_pol_prev.pvd
 
 #save last dump into restart
 dump_files=($(ls -1v dump-*))

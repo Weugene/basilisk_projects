@@ -48,6 +48,7 @@ void fraction_from_stl (scalar f, FILE * fp, double eps, int maxlevel)
   coord * p = input_stl (fp);
   coord min, max;
   bounding_box (p, &min, &max);
+  fprintf(ferr, "STL: min=%g %g %g max=%g %g %g", min.x, min.y, min.z, max.x, max.y, max.z);
   double maxl = -HUGE;
   foreach_dimension()
     if (max.x - min.x > maxl)
