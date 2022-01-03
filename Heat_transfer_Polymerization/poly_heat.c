@@ -9,10 +9,10 @@
 //#define RELATIVE_RES
 //#define PRINT_ALL_VALUES
 //#define STOKES
-
+#define CORRECT_UF_FLUXES
 scalar omega[];
 scalar l2[];
-face vector av[];
+face vector av[], fs_face[];
 scalar smoothed_f[], smoothed_fs[];
 vector h[], hs[];
 /**
@@ -24,8 +24,8 @@ functions](heights.h).
 
 We first overload the default function used to compute the normal,
 defined in [fractions.h](). */
-coord interface_normal (Point point, scalar c);
-#define interface_normal(point, c) interface_normal (point, c)
+//coord interface_normal (Point point, scalar c);
+//#define interface_normal(point, c) interface_normal (point, c)
 
 
 #include "centered-weugene.h"
@@ -38,13 +38,13 @@ We will compute the normal using height-functions instead. If this is
 not possible (typically at low resolutions) we revert back to
 the Mixed-Youngs-Centered approximation. */
 
-coord interface_normal (Point point, scalar c)
+/*coord interface_normal (Point point, scalar c)
 {
     coord n;
     if (!c.height.x.i || (n = height_normal (point, c, c.height)).x == nodata)
         n = mycs (point, c);
     return n;
-}
+}*/
 
 //#define snapshot_i 5000
 //#define dt_vtk 0.1
@@ -82,7 +82,6 @@ int main(int argc, char * argv[]) {
     NITERMIN = 1;
     NITERMAX = 100;
     CFL = 0.5;
-    CFL_SIGMA = 0.7;
     CFL_ARR = 0.5;
     DT = 2e-5;
 //	relative_residual_poisson = true;
@@ -205,7 +204,7 @@ int main(int argc, char * argv[]) {
 				 "               L0=%g, cyl_diam=%g, dist_x=%g, dist_y=%g, front_x=%g, Rbmin=%g, Rbmax=%g,\n"
 				 "               Ggrav_ndim=%g Uin=%g\n"
                  "Dim-less nums: Re=%g,  Ca=%g, Fr=%g\n"
-                 "Solver:        DTmax=%g, CFL=%g, CFL_SIGMA=%g, CFL_ARR=%g, NITERMIN=%d,  NITERMAX=%d,\n"
+                 "Solver:        DTmax=%g, CFL=%g, CFL_ARR=%g, NITERMIN=%d,  NITERMAX=%d,\n"
                  "               TOLERANCE_P=%g, TOLERANCE_V=%g, TOLERANCE_T=%g\n"
                  "ADAPT:         minlevel=%d,  maxlevel=%d, feps=%g, fseps=%g, ueps=%g, Teps=%g, aeps=%g\n"
                  "OUTPUT:        dt_vtk=%g,    number of procs=%d\n",
@@ -216,7 +215,7 @@ int main(int argc, char * argv[]) {
 				L0, cyl_diam, dist_x, dist_y, front_x, Rbmin, Rbmax,
 				Ggrav_ndim, Uin,
                 Re, Ca, Fr,
-                DT, CFL, CFL_SIGMA, CFL_ARR, NITERMIN, NITERMAX,
+                DT, CFL, CFL_ARR, NITERMIN, NITERMAX,
                 TOLERANCE_P, TOLERANCE_V, TOLERANCE_T,
                 minlevel, maxlevel, feps, fseps, ueps, Teps, aeps,
                 dt_vtk, npe());
@@ -287,7 +286,7 @@ double bubbles (double x, double y, double z)
         centers[i].y = RandMinMax(-L0/2.0 + Rbmax, L0/2.0 - Rbmax);
 #if dimension>2
         centers[i].z = RandMinMax(-L0/2.0 + Rbmax, L0/2.0 - Rbmin);
-#endif	
+#endif
         for (int j = 0; j < i; j++) {
             foreach_dimension() pnt_dist.x = centers[i].x - centers[j].x;
             if ( mynorm(pnt_dist) < 1.3*(R[i] + R[j]) ) {

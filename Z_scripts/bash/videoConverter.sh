@@ -7,4 +7,5 @@
 crf=25
 [[ $# > 3 ]] && cfr=$3
 
+#ffmpeg -i $1 -profile:v high -level:v 4.0 -pix_fmt yuv420p -crf $crf $2 >/tmp/video$1.log
 ffmpeg -i $1 -c:v libx264 -profile:v high -level:v 4.0 -pix_fmt yuv420p -crf $crf $2 >/tmp/video$1.log

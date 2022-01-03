@@ -4,39 +4,86 @@ Ca=0.1
 rad=0.0625
 Rrho=0.1
 Rmu=0.1
-maxlevel=10
+maxlevel=9
 parallel=8
-ind:=$(maxlevel)_mod_kappa4
-cylonwaterPHILMOVE:
-	rm -rf .qcc*
-	CC99='mpicc -std=c99' qcc -O2 -D_MPI=1 -DHYDROPHOBIC=0 -DMOVE=1  -Wall -events $(CFILE).c -lm
-	mpirun -np $(parallel)  ./a.out $(Re) $(Ca) $(rad) $(Rrho) $(Rmu) $(maxlevel) "vtk_2DPHILMOVE_$(ind)"> out2DPHILMOVE_$(ind) 2> log2DPHILMOVE_$(ind)
-cylonwaterPHOBMOVE:
-	rm -rf .qcc*
-	CC99='mpicc -std=c99' qcc -O2 -D_MPI=1 -DHYDROPHOBIC=1 -DMOVE=1 -Wall -events $(CFILE).c -lm
-	mpirun -np $(parallel)  ./a.out $(Re) $(Ca) $(rad) $(Rrho) $(Rmu) $(maxlevel) "vtk_2DPHOBMOVE_$(ind)"> out2DPHOBMOVE_$(ind) 2> log2DPHOBMOVE_$(ind)
-cylonwaterPHILSTEADY:
-	rm -rf .qcc*
-	CC99='mpicc -std=c99' qcc -O2 -D_MPI=1 -DHYDROPHOBIC=0 -DMOVE=0 -Wall -events $(CFILE).c -lm
-	mpirun -np $(parallel)  ./a.out $(Re) $(Ca) $(rad) $(Rrho) $(Rmu) $(maxlevel) "vtk_2DPHILSTEADY_$(ind)"> out2DPHILSTEADY_$(ind) 2> log2DPHILSTEADY_$(ind)
-cylonwaterPHOBSTEADY:
-	rm -rf .qcc*
-	CC99='mpicc -std=c99' qcc -O2 -D_MPI=1 -DHYDROPHOBIC=1 -DMOVE=0 -Wall -events $(CFILE).c -lm
-	mpirun -np $(parallel)  ./a.out $(Re) $(Ca) $(rad) $(Rrho) $(Rmu) $(maxlevel) "vtk_2DPHOBSTEADY_$(ind)"> out2DPHOBSTEADY_$(ind) 2> log2DPHOBSTEADY_$(ind)
+target=$(MAKECMDGOALS)
+ind:=$(target)_jmax=$(maxlevel)_Re=$(Re)_Ca=$(Ca)_no_patrcurv_film
+args:=$(Re) $(Ca) $(rad) $(Rrho) $(Rmu) $(maxlevel) $(ind)
+run:=mpirun -np $(parallel)  ./a.out $(args) > out$(ind) 2>> log$(ind)
+compile:=CC99='mpicc -std=c99' qcc -O2 -D_MPI=1 -Wall -events
+remove:=rm -rf .qcc*
 
+cylonwaterPHOBMOVEnoufcorr:
+	$(remove)
+	$(compile) -DHYDROPHOBIC=1 -DCORRECT_UF_FLUXES=0 -DMOVE=1 $(CFILE).c -lm
+	$(run)
+cylonwaterPHOBSTEADYnoufcorr:
+	$(remove)
+	$(compile) -DHYDROPHOBIC=1 -DCORRECT_UF_FLUXES=0 -DMOVE=0 $(CFILE).c -lm
+	$(run)
+cylonwaterPHOBMOVEuflinear:
+	$(remove)
+	$(compile) -DHYDROPHOBIC=1 -DCORRECT_UF_FLUXES=1 -DMOVE=1 $(CFILE).c -lm
+	$(run)
+cylonwaterPHOBSTEADYuflinear:
+	$(remove)
+	$(compile) -DHYDROPHOBIC=1 -DCORRECT_UF_FLUXES=1 -DMOVE=0 $(CFILE).c -lm
+	$(run)
+cylonwaterPHOBMOVEufsticky:
+	$(remove)
+	$(compile) -DHYDROPHOBIC=1 -DCORRECT_UF_FLUXES=1 -DSTICKY_SOLID=1 -DMOVE=1 $(CFILE).c -lm
+	$(run)
+cylonwaterPHOBSTEADYufsticky:
+	$(remove)
+	$(compile) -DHYDROPHOBIC=1 -DCORRECT_UF_FLUXES=1 -DSTICKY_SOLID=1 -DMOVE=0 $(CFILE).c -lm
+	$(run)
+
+cylonwater3DPHOBMOVEnoufcorr:
+	$(eval maxlevel=8)
+	$(remove)
+	$(compile) -DHYDROPHOBIC=1 -DMOVE=1 -DCORRECT_UF_FLUXES=0 -grid=octree $(CFILE).c -lm
+	$(run)
+cylonwater3DPHOBSTEADYnoufcorr:
+	$(eval maxlevel=8)
+	$(remove)
+	$(compile) -DHYDROPHOBIC=1 -DMOVE=0 -DCORRECT_UF_FLUXES=0 -grid=octree $(CFILE).c -lm
+	$(run)
+cylonwater3DPHOBMOVEuflinear:
+	$(eval maxlevel=8)
+	$(remove)
+	$(compile) -DHYDROPHOBIC=1 -DMOVE=1 -DCORRECT_UF_FLUXES=1 -grid=octree $(CFILE).c -lm
+	$(run)
+cylonwater3DPHOBSTEADYuflinear:
+	$(eval maxlevel=8)
+	$(remove)
+	$(compile) -DHYDROPHOBIC=1 -DMOVE=0 -DCORRECT_UF_FLUXES=1 -grid=octree $(CFILE).c -lm
+	$(run)
+cylonwater3DPHOBMOVEufsticky:
+	$(eval maxlevel=8)
+	$(remove)
+	$(compile) -DHYDROPHOBIC=1 -DMOVE=1 -DCORRECT_UF_FLUXES=1 -DSTICKY_SOLID=1 -grid=octree $(CFILE).c -lm
+	$(run)
+cylonwater3DPHOBSTEADYufsticky:
+	$(eval maxlevel=8)
+	$(remove)
+	$(compile) -DHYDROPHOBIC=1 -DMOVE=0 -DCORRECT_UF_FLUXES=1 -DSTICKY_SOLID=1 -grid=octree $(CFILE).c -lm
+	$(run)
+
+cylonwaterPHILMOVE:
+	$(remove)
+	$(compile) -DHYDROPHOBIC=0 -DMOVE=1 $(CFILE).c -lm
+	$(run)
+cylonwaterPHILSTEADY:
+	$(remove)
+	$(compile) -DHYDROPHOBIC=0 -DMOVE=0 $(CFILE).c -lm
+	$(run)
 cylonwater3DPHILMOVE:
-	rm -rf .qcc*
-	CC99='mpicc -std=c99' qcc -O2 -D_MPI=1 -DHYDROPHOBIC=0 -DMOVE=1 -Wall -events -grid=octree $(CFILE).c -lm
-	mpirun -np  $(parallel) ./a.out $(Re) $(Ca) $(rad) $(Rrho) $(Rmu) $(maxlevel) "vtk_3DPHILMOVE_$(ind)" > out3DPHILMOVE_$(ind) 2> log3DPHILMOVE_$(ind)
-cylonwater3DPHOBMOVE:
-	rm -rf .qcc*
-	CC99='mpicc -std=c99' qcc -O2 -D_MPI=1 -DHYDROPHOBIC=1 -DMOVE=1 -Wall -events -grid=octree $(CFILE).c -lm
-	mpirun -np $(parallel)  ./a.out $(Re) $(Ca) $(rad) $(Rrho) $(Rmu) $(maxlevel) "vtk_3DPHOBMOVE_$(ind)" > out3DPHOBMOVE_$(ind) 2> log3DPHOBMOVE_$(ind)
+	$(eval maxlevel=8)
+	$(remove)
+	$(compile) -DHYDROPHOBIC=0 -DMOVE=1 -grid=octree $(CFILE).c -lm
+	$(run)
 cylonwater3DPHILSTEADY:
-	rm -rf .qcc*
-	CC99='mpicc -std=c99' qcc -O2 -D_MPI=1 -DHYDROPHOBIC=0 -DMOVE=0  -Wall -events -grid=octree $(CFILE).c -lm
-	mpirun -np  $(parallel) ./a.out $(Re) $(Ca) $(rad) $(Rrho) $(Rmu) $(maxlevel) "vtk_3DPHILSTEADY_$(ind)" > out3DPHILSTEADY_$(ind) 2> log3DPHILSTEADY_$(ind)
-cylonwater3DPHOBSTEADY:
-	rm -rf .qcc*
-	CC99='mpicc -std=c99' qcc -O2 -D_MPI=1 -DHYDROPHOBIC=1 -DMOVE=0 -Wall -events -grid=octree $(CFILE).c -lm
-	mpirun -np $(parallel)  ./a.out $(Re) $(Ca) $(rad) $(Rrho) $(Rmu) $(maxlevel) "vtk_3DPHOBSTEADY_$(ind)" > out3DPHOBSTEADY_$(ind) 2> log3DPHOBSTEADY_$(ind)
+	$(eval maxlevel=8)
+	$(remove)
+	$(compile) -DHYDROPHOBIC=0 -DMOVE=0 -grid=octree $(CFILE).c -lm
+	$(run)

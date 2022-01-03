@@ -9,7 +9,7 @@ maxlevel=$2
 volumetric_repr=$3
 iter_cur=$4
 echo "in: Ncase=$bubcase maxlevel=$maxlevel volumetric_repr=$volumetric_repr"
-for f in convert_single extract_iso_volume.py; do
+for f in convert_single extract_isosurface.py; do
     test -e ${f} && echo "${f} exists" || echo "${f} does not exist. exit" || exit;
 done
 

@@ -1,5 +1,6 @@
 #set -x
-echo "$0 prefix root"
+set -o nounset
+echo "NOTE: We assume that files have format: prefix_t=1.0root.png run as $0 prefix root"
 ulimit -n 10000
 options="-y -framerate 10 -c:v libx264 -pix_fmt yuv420p -an -fs 10M "
 

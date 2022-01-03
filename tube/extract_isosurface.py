@@ -41,11 +41,8 @@ from scipy import interpolate
 
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy import interpolate, signal, ndimage
-from sklearn.decomposition import PCA
-from sklearn.utils import shuffle
-from sklearn.cluster import KMeans #, SpectralClustering, AgglomerativeClustering
-from sklearn.neighbors import NearestNeighbors
+from scipy import interpolate, ndimage
+
 import networkx as nx
 import statsmodels.api as sm
 import random
@@ -55,6 +52,11 @@ import operator
 from scipy.signal import find_peaks
 from tsmoothie.smoother import *
 from fractions import Fraction #convert a decimal number into fraction
+import plotly.graph_objects as go
+from pathlib import Path
+
+from matplotlib.pyplot import *
+from scipy import interpolate
 
 def my_custom_timer(func):
 	@functools.wraps(func)
@@ -138,8 +140,7 @@ def Show(*args, **kwargs):
 @my_custom_timer
 def SaveData(*args, **kwargs):
 	return paraview.simple.SaveData(*args, **kwargs)
-import plotly.graph_objects as go
-from pathlib import Path
+
 
 def plot_graph(list_x, list_y, names, xtitle, ytitle, image_name, list_x_fill=[], list_y_fill=[], mode=[], \
 			   dash=['solid', 'dot', 'dash', 'longdash'], \
@@ -305,7 +306,7 @@ def alpha_shape(points, alpha, only_outer=True):
 		b = np.sqrt((pb[0] - pc[0]) ** 2 + (pb[1] - pc[1]) ** 2)
 		c = np.sqrt((pc[0] - pa[0]) ** 2 + (pc[1] - pa[1]) ** 2)
 		s = (a + b + c) / 2.0
-		area = np.sqrt(s * (s - a) * (s - b) * (s - c))
+		area = np.sqrt(s * np.abs(s - a) * np.abs(s - b) * np.abs(s - c))
 		circum_r = a * b * c / (4.0 * (area + 1e-16)) #corrected by Weugene
 		if circum_r < alpha:
 			add_edge(edges, ia, ib)
@@ -384,8 +385,7 @@ def calc_thickness(x, y, x_peak, x_mean, prefix):
 	print("Estimated delta_{}".format(prefix), 'delta_min=', delta_min, 'delta_max=', delta_max, 'delta_avg=', delta_avg, 'delta_avg_std=', delta_avg_std, 'NOTE: here avg is calcculated differently')
 	return delta_min, delta_max, delta_avg, delta_avg_std
 
-from matplotlib.pyplot import *
-from scipy import interpolate
+
 def find_first_peak(x_fil, y_fil, x0, xmin, xmax, x_mean, time):
 	if x_fil[0] > x_fil[-1]:
 		x_fil = x_fil[::-1]
@@ -415,7 +415,7 @@ def find_first_peak(x_fil, y_fil, x0, xmin, xmax, x_mean, time):
 		length_x_peak_mean = 0
 	return x_peak, y_peak, length_x_peak_mean
 
-def find_smooth_curve_and_bounds(x, y, x_mean, alpha = 0.05):
+def find_smooth_curve_and_bounds(x, y, x_mean, alpha = 0.01):
 	# calculate xmin, xmax, ymin, ymax
 	xmin, xmax = min(x), max(x)
 	ymin, ymax = min(y), max(y)
@@ -428,7 +428,7 @@ def find_smooth_curve_and_bounds(x, y, x_mean, alpha = 0.05):
 	xyN = x[inds][ind_xyN], y[inds][ind_xyN]
 	length_x_clip_ends = xyN[0] - xy0[0]
 	#preprocess x, y arrays using histogram:
-	N=1000
+	N = 10000
 	xedges = xmin + (xmax - xmin)*np.linspace(0,1,N)
 	yedges = ymin + (ymax - ymin)*np.linspace(0,1,N)
 	H, xedges, yedges = np.histogram2d(x, y, bins=(xedges, yedges))
@@ -436,11 +436,15 @@ def find_smooth_curve_and_bounds(x, y, x_mean, alpha = 0.05):
 	# Histogram does not follow Cartesian convention (see Notes),
 	# therefore transpose H for visualization purposes.
 	H = H.T *(255.0/H.max())
-	coords = []
+	N_non_zero = np.count_nonzero(H)
+	coords = np.zeros((N_non_zero, 2))
+	k = 0
 	for i in range(len(xedges)-1):
 		for j in range(len(yedges)-1):
 			if H[i,j]>0:
-				coords.append((X[i,j], Y[i,j]))
+				coords[k,:] = X[i,j], Y[i,j]
+				k += 1
+	del X, Y, H
 	# upper and lower lines
 	lower_hull, upper_hull = find_min_max_curve(np.asarray(coords), alpha = alpha, p0=xy0, pN=xyN)
 
@@ -685,16 +689,25 @@ SetActiveView(renderView1)
 
 # defining of computational domains
 Show(my_source, renderView1)
-Hide(my_source, renderView1)
-boundsDomain = my_source.GetDataInformation().GetBounds()
+renderView1.Update()
+
+info = my_source.GetDataInformation()
+boundsDomain = info.GetBounds()
+Npoints = info.GetNumberOfPoints()
+Ncells  = info.GetNumberOfCells()
+print('Npoints=', Npoints, '  Ncells=', Ncells)
 
 lDomain = boundsDomain[1] - boundsDomain[0]
 print("boundsDomain of cube=", boundsDomain, " lDomain=", lDomain)
 
+if lDomain<1e-10:
+	print("Error: lDomain is too small:", lDomain)
+	sys.exit()
+Hide(my_source, renderView1)
 ###-----------------GENERATION of Cylinder-----------------------------------
 ### it is timeless therefore it is outside of the loop
 # create a new 'Cylinder'
-print ("creating a cylinder.. "),
+print ("creating a cylinder.. ")
 cylinder1 = Cylinder()
 cylinder1.Resolution = 100
 cylinder1.Height = 30
@@ -843,7 +856,7 @@ print("Isovolume finished")
 
 # create a new 'Connectivity' to extract the biggest isovolume
 connectivity1 = Connectivity(Input=isoVolume1)
-connectivity1.ExtractionMode = 'Extract Largest Region'
+# connectivity1.ExtractionMode = 'Extract Largest Region'
 connectivity1.ColorRegions = 0
 # ----------------------------------------------------------------
 # setup the visualization in view 'renderView1'
@@ -897,14 +910,14 @@ op = GetOpacityTransferFunction("ux")
 op.RescaleTransferFunction(0, range_max)
 uxLUTColorBar.UseCustomLabels = 1
 # labels from 100 to 200 in increments of 10
-uxLUTColorBar.CustomLabels = np.around(np.linspace(0, range_max, 4),1)
+uxLUTColorBar.CustomLabels = np.around(np.linspace(0, range_max, 4), 1)
 #         uxLUTColorBar.CustomLabels = np.arange(0, range_max, 0.5)
 print("CustomLabels=",uxLUTColorBar.CustomLabels )
 
 
 bounds = connectivity1.GetDataInformation().GetBounds()
 print("bounds_refined=",bounds)
-center = [(bounds[0] + bounds[1])/2, (bounds[2] + bounds[3])/2,(bounds[4] + bounds[5])/2]
+center = [(bounds[0] + bounds[1])/2, (bounds[2] + bounds[3])/2, (bounds[4] + bounds[5])/2]
 print('center_refined=',center)
 
 len_bub = bounds[1] - bounds[0]
@@ -1041,7 +1054,7 @@ if not Path(fn).exists():
 		f.write("t	x_tail	x_peak	y_peak	x_mean	x_nose	x_nose_ISC	volume	UmeanV	delta_min	delta_mean	delta_max	delta_min_smooth	delta_max_smooth\n")
 
 with open(fn, 'a') as f:
-	f.write("{} {} {} {} {} {} {} {} {} {} {} {} {} {}\n".format(timesteps[0], xy0[0], x_peak, y_peak, x_mean, xyN[0], '?', volume, u_mean, delta_min, delta_mean, delta_max, '0', '0' ))
+	f.write("{} {} {} {} {} {} {} {} {} {} {} {} {} {}\n".format(timesteps[0], xy0[0], x_peak, y_peak, x_mean, xyN[0], '?', volume, u_mean[0], delta_min, delta_mean, delta_max, '0', '0' ))
 print('Successfully save file:', fn)
 # ************************* CUT TAIL ***********************************************
 # create a new 'Clip'
@@ -1101,18 +1114,24 @@ SaveScreenshot( fn, renderView1,
 Hide(extractSurface1)
 # ***************** CONTOUR2 for LAMBDA2 l2 ****************************
 # create a new 'Contour'
+
+
 contour2 = Contour(Input=resampleToImage1)
 contour2.ContourBy = ['POINTS', 'l2']
-contour2.Isosurfaces = [-2.0, -1.0, -0.5]
+contour2.Isosurfaces = [-4, -2.0, -1.0, -0.5, -0.25, -0.125]
 contour2.PointMergeMethod = 'Uniform Binning'
 
+# create a new 'Threshold'
+threshold0 = Threshold(Input=contour2)
+threshold0.Scalars = ['POINTS', 'l2']
+threshold0.ThresholdRange = [-1.09, -0.49]
 
 # ***************** LAMBDA2 inside a bubble: ISOVOLUME1 for VOLUME FRACTION f ****************************
 
 # create a new 'Iso Volume'
 isoVolume2 = IsoVolume(Input=connectivity1)
 isoVolume2.InputScalars = ['POINTS', 'l2']
-isoVolume2.ThresholdRange = [-2.0, -1.0, -0.5]
+isoVolume2.ThresholdRange = [-2.0, -0.5]
 
 # create a new 'Connectivity'
 connectivity2 = Connectivity(Input=isoVolume2)
@@ -1192,7 +1211,7 @@ connectivity1Display.OpacityTransferFunction.Points = [0.5, 0.0, 0.5, 0.0, 0.500
 print ("end")
 # show data from contour2
 print ("Showing contour2.. "),
-contour2Display = Show(contour2, renderView1, 'GeometryRepresentation')
+contour2Display = Show(threshold0, renderView1, 'GeometryRepresentation')
 # trace defaults for the display properties.
 contour2Display.Representation = 'Surface'
 contour2Display.ColorArrayName = ['POINTS', 'l2']
@@ -1244,7 +1263,7 @@ SavePvdFile(fn, contour2, 'lambda2 surface data')
 #****************** LAMBDA2 inside a bubble  ********************
 
 print ("Showing connectivity1 and hiding contour2.. "),
-Hide(contour2, renderView1) # hide lambda2 all
+Hide(threshold0, renderView1) # hide lambda2 all
 print ("end")
 # trace defaults for the display properties.
 connectivity1Display.Representation = 'Surface'
@@ -1363,9 +1382,41 @@ slice1Display.ScaleTransferFunction.Points = [0.0, 0.0, 0.5, 0.0, 1.000000000000
 slice1Display.OpacityTransferFunction.Points = [0.0, 0.0, 0.5, 0.0, 1.0000000000000002, 1.0, 0.5, 0.0]
 
 fn = "{}/res/{}_0_{:04d}.vtp".format(path, 'slice', iter)
-SavePvdFile(fn, slice1, 'lambda2 slice data')
-# Freeing Memory
+SavePvdFile(fn, slice1, 'resampleToImage1 slice data')
 
+# ******************************SLICE bubble*******************************************
+# *************************************************************************************
+
+# create a new 'Contour'
+contour3 = Contour(Input=slice1)
+contour3.ContourBy = ['POINTS', 'f']
+contour3.Isosurfaces = [0.5]
+contour3.PointMergeMethod = 'Uniform Binning'
+Show(contour3, renderView1)
+
+# create a new 'Pass Arrays'
+passArrays1 = PassArrays(Input=contour3)
+passArrays1.PointDataArrays = [ 'Points']
+passArrays1.CellDataArrays = ['Volume']
+
+# update the view to ensure updated data information
+spreadSheetView1.Update()
+
+ss_data = paraview.servermanager.Fetch(passArrays1)
+Np = ss_data.GetNumberOfPoints()
+print('Np=', Np)
+xr = []
+for ip in range(Np):
+	xp = ss_data.GetPoint(ip)[0]
+	yp = ss_data.GetPoint(ip)[1]
+	xr.append((xp,yp))
+xr = np.array(xr)
+print('processing data size of x and y:', xr.shape[0])
+
+fn = "slice_t={}.csv".format(timesteps[0])
+Save1DArraysToFile([xr[:,0], xr[:,1]], fn)
+
+# Freeing Memory
 Delete(slice1)
 del slice1
 Delete(extractSurface2)

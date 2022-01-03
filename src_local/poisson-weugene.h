@@ -470,7 +470,9 @@ static double residual (scalar * al, scalar * bl, scalar * resl, void * data)
       maxres = fabs (res[]);
   }
   boundary (resl);
+#ifdef DEBUG_MODE_POISSON
   fprintf(ferr, "maxres*dt^2= %g maxres= %g maxb= %g maxres/maxb= %g\n", maxres*sq(dt), maxres, maxb, maxres/maxb);
+#endif
   return maxres/maxb;
 }
 
@@ -485,7 +487,6 @@ $$ */
 
 mgstats poisson (struct Poisson p)
 {
-	fprintf(ferr, "**********************\n");
   /**
   If $\alpha$ or $\lambda$ are not set, we replace them with constant
   unity vector (resp. zero scalar) fields. Note that the user is free to

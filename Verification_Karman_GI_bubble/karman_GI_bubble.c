@@ -1,30 +1,46 @@
 #define BRINKMAN_PENALIZATION 1
+#define DEBUG_MINMAXVALUES
 #define DEBUG_BRINKMAN_PENALIZATION 1
-#define DEBUG_OUTPUT_VTU_MPI
+//#define DEBUG_OUTPUT_VTU_MPI
+#define DEBUG_MODE_TENSION
+#define DEBUG_MODE_POISSON
 #define FILTERED
 #define JACOBI 1
+#define DAMP_CAPILLARY_WAVE
+#define CURVATURE_CORR
+#define CORRECT_UF_FLUXES 1
+#define RELATIVE_RES
 #define EPS_MAXA 2
+#ifdef DEBUG_MODE_TENSION
+    scalar f_hat[];
+#endif
 scalar omega[];
+scalar which_meth[];
 face vector fs_face[];
 vector target_Uv[];
-#include "../src_local/centered-weugene.h"
-#include "view.h"
-#include "../src_local/output_vtu_foreach.h"
-#include "../src_local/three-phase-weugene.h"
-#include "tension.h"
-//#include "fracface.h"
 
-int maxlevel = 10;
+#include "curvature_partstr.h"
+#include "centered-weugene.h"
+#include "three-phase-weugene.h"
+#include "tension.h"
+#include "utils-weugene.h"
+#include "rvachev.h"
+#include "output_vtu_foreach.h"
+
+
+int maxlevel = 9;
 int minlevel = 4;
 //double U0=0.01, rhol=1e+3, sig=73e-3, Lchar=5e-3, mul=1e-3, Lb=0.3, Rb=0.125;
 //double Rrho=1000, Rmu=53.73;
 double U0=1, rhol=1, sig=0.0005, Lchar=1, mul=1, Lb=0.3, Rb=0.0625;
 double Rrho=1, Rmu=1;
 double RE, CA, Rrad;
+double rhoeps=1e-8, feps=1e-8, ueps=1e-3;
+double TOLERANCE_P = 1e-8, TOLERANCE_V = 1e-7;
 double xs0 = -0.4, rad = 0.0625;
-const int nc = 4;
+const int nc = 1;
 static coord vel_s[4] = {{1,0},{-1,0},{1,0},{-1,0}};
-
+char subname[80];
 //(const) face vector target_Uf = zerof;
 
 /**

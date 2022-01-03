@@ -1,4 +1,4 @@
-#define BRINKMAN_PENALIZATION 4
+#define BRINKMAN_PENALIZATION 1
 #define DEBUG_BRINKMAN_PENALIZATION 1
 #define DEBUG_OUTPUT_VTU_MPI 1
 #define REDUCED 0
@@ -18,6 +18,7 @@ int maxlevel = 8;
 int minlevel = 5;
 int Nobst = 2; //250
 scalar fs[], omega[];
+face vector fs_face[];
 double U0=0.25, rhol=1e+3, sig=73e-3, Lchar=5e-3, mul=1e-3, grav=9.8;
 double RE, CA, FR;//RE=500.0, CA=0.013, FR=20;
 double Rrho=1000, Rmu=53.73, Ggrav;
@@ -301,7 +302,7 @@ event vtk_file (i++; t<10){
         foreach_dimension() divu[] += (uf.x[1]-uf.x[])/Delta;
     }
 #if DEBUG_BRINKMAN_PENALIZATION == 1 && BRINKMAN_PENALIZATION == 4
-    output_vtu_MPI( subname, (iter_fp) ? t + dt : 0, (scalar *) {fs, f, omega, p, l, npid, divu}, (vector *) {u, a, n_sol, target_U, dbp, total_rhs, utau, grad_utau_n});
+    output_vtu_MPI( subname, (iter_fp) ? t + dt : 0, (scalar *) {fs, f, omega, p, l, npid, divu}, (vector *) {u, a, n_sol, dbp, total_rhs, utau, grad_utau_n});
 #else
     output_vtu_MPI( subname, (iter_fp) ? t + dt : 0, (scalar *) {fs, f, omega, p, l, npid, divu}, (vector *) {u, a});
 #endif

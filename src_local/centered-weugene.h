@@ -133,6 +133,14 @@ void pressure_embed_gradient (Point point, scalar p, coord * g)
 }
 #endif // TREE && EMBED
 
+//#if TREE && BRINKMAN_PENALIZATION
+//void pressure_bpm_gradient (Point point, scalar p, coord * g)
+//{
+//  foreach_dimension()
+//    g->x = rho[]/(1 - fs[] + SEPS)*(a.x[] + a.x[1])/2.;
+//}
+//#endif // TREE && BRINKMAN_PENALIZATION
+
 /**
 ## Initial conditions */
 
@@ -170,6 +178,17 @@ event defaults (i = 0)
   /**
   When using [embedded boundaries](/src/embed.h), the restriction and
   prolongation operators need to take the boundary into account. */
+//#ifdef BRINKMAN_PENALIZATION
+//  uf.x.refine = refine_face;
+//  foreach_dimension()
+//    uf.x.prolongation = refine_bpm_face_x;
+//for (scalar s in {p, pf, u, g}) {
+//    s.restriction = restriction_embed_linear;
+//    s.refine = s.prolongation = refine_embed_linear;
+//  }
+//  for (scalar s in {p, pf})
+//    s.embed_gradient = pressure_bpm_gradient;
+//#endif
 
 #if EMBED
   uf.x.refine = refine_face;
@@ -199,10 +218,6 @@ event init (i = 0)
     uf.x[] = fm.x[]*face_value (u.x, 0);
   boundary ((scalar *){uf});
 
-#if BRINKMAN_PENALIZATION && CORRECT_UF_FLUXES
-    brinkman_correction_uf (uf);
-#endif
-
   /**
   We update fluid properties. */
 
@@ -225,11 +240,11 @@ timing of upcoming events. */
 
 event set_dtmax (i++,last) dtmax = DT;
 
-event stability (i++,last) {
-    bool neglect_conv_CFL = (stokes_heat == nodata) ? stokes : stokes*stokes_heat;
+event stability (i++, last) {
+    bool neglect_conv_CFL = (stokes_heat == nodata) ? stokes : stokes && stokes_heat;
     dt = dtnext ( neglect_conv_CFL ? dtmax : timestep (uf, dtmax));
 
-  fprintf(ferr, "TIME: dt=%g DT=%g dtmax=%g neglect_conv_CFL=%d\n", dt, DT, dtmax, neglect_conv_CFL );
+    fprintf(ferr, "TIME: t=%g tnext=%g dt=%g DT=%g dtmax=%g neglect_conv_CFL=%d\n", t, tnext, dt, DT, dtmax, neglect_conv_CFL );
 }
 
 /**
@@ -237,7 +252,11 @@ If we are using VOF or diffuse tracers, we need to advance them (to
 time $t+\Delta t/2$) here. Note that this assumes that tracer fields
 are defined at time $t-\Delta t/2$ i.e. are lagging the
 velocity/pressure fields by half a timestep. */
-
+#if BRINKMAN_PENALIZATION && CORRECT_UF_FLUXES
+event uf_correction(i++, last){
+    brinkman_correction_uf (uf);
+}
+#endif
 event vof (i++,last);
 event tracer_advection (i++,last);
 
@@ -363,7 +382,6 @@ event viscous_term (i++,last)
   if (constant(mu.x) != 0.) {
     correction (dt);
     mgu = viscosity (u, mu, rho, dt, mgu.nrelax);
-//    if (i%100 == 0) event("vtk_file");
     correction (-dt);
   }
 
@@ -398,15 +416,15 @@ The (provisionary) face velocity field at time $t+\Delta t$ is
 obtained by interpolation from the centered velocity field. The
 acceleration term is added. */
 
-event acceleration (i++,last)
-{
-  trash ({uf});
-  face vector ia =a;
-  foreach_face(){
-    uf.x[] = fm.x[]*(face_value (u.x, 0) + dt*ia.x[]);
-  }
-  boundary ((scalar *){uf, ia});
-}
+//event acceleration (i++,last)
+//{
+//  trash ({uf});
+//  face vector ia =a;
+//  foreach_face(){
+//    uf.x[] = fm.x[]*(face_value (u.x, 0) + dt*ia.x[]);
+//  }
+//  boundary ((scalar *){uf, ia});
+//}
 
 /**
 ## Approximate projection
@@ -486,9 +504,6 @@ event adapt (i++,last) {
     if (uf.x[] && !fs.x[])
       uf.x[] = 0.;
   boundary ((scalar *){uf});
-#endif
-#if BRINKMAN_PENALIZATION && CORRECT_UF_FLUXES
-    brinkman_correction_uf (uf);
 #endif
   event ("properties");
 }

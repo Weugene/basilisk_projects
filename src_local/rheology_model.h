@@ -58,15 +58,6 @@ double m_degree = 0.333;
     #define dFR_dalpha(alpha_doc) ( pow(1 - alpha_doc, n_degree)*( -n_degree/(1 - alpha_doc) + K_cat) )
     #define GENERAL_METHOD 1
 #elif REACTION_MODEL == REACTION_MODEL_PROUT_TOMPKINS_AUTOCATALYTIC
-<<<<<<< HEAD
-#define FR(alpha_doc) ( pow(1 - alpha_doc, n_degree)*pow(alpha_doc, m_degree) )
-#define dFR_dalpha(alpha_doc) ( FR(alpha_doc) * ( -n_degree/(1 - alpha_doc) + m_degree/alpha_doc) )
-#define GENERAL_METHOD 1
-#else // REACTION_MODEL_NON_AUTOCATALYTIC
-#define FR(alpha_doc) ( pow(1 - alpha_doc, n_degree) )
-#define dFR_dalpha(alpha_doc) ( -n_degree * pow(1 - alpha_doc, n_degree - 1) )
-#define GENERAL_METHOD 0
-=======
     #define FR(alpha_doc) ( pow(1 - alpha_doc, n_degree)*pow(alpha_doc, m_degree) )
     #define dFR_dalpha(alpha_doc) ( FR(alpha_doc) * ( -n_degree/(1 - alpha_doc) + m_degree/alpha_doc) )
     #define GENERAL_METHOD 1
@@ -74,16 +65,23 @@ double m_degree = 0.333;
     #define FR(alpha_doc) ( pow(1 - alpha_doc, n_degree) )
     #define dFR_dalpha(alpha_doc) ( -n_degree * pow(1 - alpha_doc, n_degree - 1) )
     #define GENERAL_METHOD 0
->>>>>>> b96bb46 (gitignore)
 #endif
+
+/**
+ * \rho C_p T_t = \nabla\kappa\nabla T^{n+1} + \rho_1 Q A (1-\alpha^n)^{n_degree}\exp(-E_a/(RT^n))(1 - E_a/(R T^n) + E_a T^{n+1}/(R (T^n)^2)) - \rho C_p \chi\frac{T^{n+1}- T_0}{\eta_T}
+ * \thetav = \rho C_p
+ * D = \kappav
+ * beta = \rho_1 Q A (1-\alpha^n)^{n_degree} \exp(-E_a/(RT^n)) \frac{E_a}{R (T^n)^2} - \frac{\rho C_p \chi}{\eta_T}
+ * r = \rho_1 Q A (1-\alpha^n)^{n_degree} \exp(-\frac{E_a}{RT^n})(1 - \frac{E_a}{RT^n}) + \frac{\rho C_p \chi T_0}{\eta_T}
+ */
 
 mgstats mgT;
 event end_timestep (i++){
     scalar r[], thetav[], beta[];
     double tmp;
     foreach() thetav[] =  var_hom(f[], fs[], rho1*Cp1, rho2*Cp2, rho3*Cp3);
-    foreach_face() kappav.x[] = kappav(f[], fs[]);
-    boundary ({kappav, thetav});
+//    foreach_face() kappav.x[] = kappav(f[], fs[]);//???
+    boundary ({thetav});
     //The advection step
     if (!stokes_heat) {
         advection((scalar *) {T}, uf, dt);
@@ -92,16 +90,6 @@ event end_timestep (i++){
     //solids play role in the conduction process
     if (fabs(Htr) > SEPS){
         foreach() {
-<<<<<<< HEAD
-            #if GENERAL_METHOD == 0
-                tmp = Htr * rho1 * f[] * (1 - fs[]) * Arrhenius_const * exp(-Ea_by_R / T[]) * pow(1 - alpha_doc[], n_degree);
-                r[] =  tmp * (1.0 - Eeta_by_Rg/T[]);
-                beta[] = tmp * Eeta_by_Rg/sq(T[]);
-            #else  //General case
-                tmp = Htr * rho1 * f[] * (1 - fs[]) * FR(alpha_doc[]);
-                r[] = tmp * ( KT(T[]) - dKT_dT(T[]) * T[]);
-                beta[] = tmp * dKT_dT(T[]);
-=======
             #if REACTION_MODEL != NO_REACTION_MODEL
                 #if GENERAL_METHOD == 0
                     tmp = Htr * rho1 * f[] * (1 - fs[]) * Arrhenius_const * exp(-Ea_by_R / T[]) * pow(1 - alpha_doc[], n_degree);
@@ -114,15 +102,14 @@ event end_timestep (i++){
                 #endif
             #else
                 beta[] = r[] = 0;
->>>>>>> b96bb46 (gitignore)
             #endif
-                //Penalization terms are:
+            //Penalization terms are:
             #if T_DIRICHLET_BC == 1
                 r[] += fs[] * thetav[] * T_target[] / eta_T;
                 beta[] += -fs[] * thetav[] / eta_T;
             #endif
         }
-    }else {
+    }else {// Htr = 0
             foreach() {
                 #if T_DIRICHLET_BC == 1
                     r[] = fs[] * thetav[] * T_target[] / eta_T;
@@ -136,8 +123,10 @@ event end_timestep (i++){
     boundary((scalar *){r, beta});
 
     if (constant(kappa.x) != 0.) {
-        mgT = diffusion(T, dt, D = kappa, r = r, beta = beta, theta = thetav);
+        mgT = diffusion(T, dt, D = kappav, r = r, beta = beta, theta = thetav);
+#ifdef DEBUG_HEAT
         fprintf (stderr, "mgT: i=%d t=%g dt=%g num of iterations T=%d\n", i, t, dt, mgT.i); //number of iterations
+#endif
     }else{
         foreach(){
             T[] = (thetav[] * T[] + dt * r[])/(thetav[] - dt * beta[]);
@@ -150,7 +139,10 @@ event end_timestep (i++){
     advection ((scalar *){alpha_doc}, uf, dt);
     foreach() {
         #if GENERAL_METHOD == 0
-			alpha_doc[] = 1.0 - pow(pow(fabs(1 - alpha_doc[]), 1 - n_degree) + (n_degree - 1.0) * dt * f[] * (1 - fs[]) * KT(T[]), 1.0 - n_degree);//direct integration from t to t + dt at fixed T
+			alpha_doc[] = 1.0 - pow(
+			        pow(fabs(1 - alpha_doc[]), 1 - n_degree) + (n_degree - 1.0) * dt * f[] * (1 - fs[]) * KT(T[]),
+			        1.0/(1.0 - n_degree));//direct integration from t to t + dt at fixed T
+//            fprintf(ferr, "==== %g %g\n", alpha_doc[], (1.0 - n_degree) * dt * f[] * (1 - fs[]) * KT(T[]) );
             //alpha_doc[] = (alpha_doc[] + dt * (tmp[] * (1.0 + n_degree*alpha_doc[] / (1 - alpha_doc[] + SEPS))))/(1 + dt * tmp[] * n_degree / (1 - alpha_doc[] + SEPS));//numerical solution
         #else
             alpha_doc[] = (alpha_doc[] + dt * KT(T[]) * (FR(alpha_doc[]) - dFR_dalpha(alpha_doc[]) * alpha_doc[])) /
@@ -191,12 +183,14 @@ event properties (i < 10){
 
 // integration time step
 double CFL_ARR = 0.01;//max changing of alpha in one timestep
-event stability(i += 100){
-	double maxT = -1e+10, mindelta = 0;
-	foreach( reduction(min:mindelta) reduction(max:maxT)){
-		if (T[] > maxT) maxT = T[];
-    }
-	double dt_Arr = CFL_ARR /(Arrhenius_const * exp(-Ea_by_R / maxT) + SEPS);
-	dt = min(dt, dt_Arr);
-	fprintf(ferr, "dt_Arr=%g dt_cur=%g\n", dt_Arr, dt);
+event stability(i++){
+  if (i % 100 == 0){
+  	double Tmax = -1e+10, mindelta = 0;
+  	foreach( reduction(min:mindelta) reduction(max:Tmax)){
+  		if (T[] > Tmax) Tmax = T[];
+      }
+  	double dt_Arr = CFL_ARR /(Arrhenius_const * exp(-Ea_by_R / Tmax) + SEPS);
+  	dt = min(dt, dt_Arr);
+  	fprintf(ferr, "dt_Arr=%g dt_cur=%g\n", dt_Arr, dt);
+  }
 }

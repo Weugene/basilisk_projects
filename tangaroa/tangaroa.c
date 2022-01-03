@@ -85,7 +85,7 @@ number](https://en.wikipedia.org/wiki/Froude_number) at runtime.
 long. If we assume that it moves at 20 knots (twice its actual cruise
 speed), this gives a Froude number of approx 0.4. */
 
-int MAXLEVEL = 8;
+int MAXLEVEL = 6;
 int LEVEL = 5;
 double FROUDE = 0.4;
 
@@ -224,7 +224,7 @@ the top of the steep primary Kelvin waves is particularly noticeable.
 The computations above were done on the Irene supercomputer using 12
 levels of refinement. */
 	      
-event movie (i += 1; t <= 10)
+/*event movie (i += 1; t <= 10)
 {
   view (fov = 5.86528,
     quat = {0.5,0.1,0.2,0.8},//	quat = {0.515965,0.140691,0.245247,0.808605},
@@ -248,7 +248,7 @@ event movie (i += 1; t <= 10)
   isosurface ("l2", -100);
   save ("l2.mp4");
 }
-
+*/
 #if DUMP
 event snapshot (i += 1)
 //event snapshot (i++)

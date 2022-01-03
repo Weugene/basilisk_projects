@@ -26,7 +26,7 @@ scalar f[], fs[], * interfaces = {f}, * interfaces_all = {f,fs};
 double mu0 = 0, rho1 = 1., mu1 = 0., rho2 = 1., mu2 = 0., rho3 = 1., mu3 = 0.;
 double kappa1 = 0, kappa2 = 0, kappa3 = 0;//W/(m*K)
 double Cp1 = 0, Cp2 = 0, Cp3 = 0;
-int N_smooth = 3;
+int N_smooth = 1;
 /**
 Auxilliary fields are necessary to define the (variable) specific
 volume $\alpha=1/\rho$ as well as the cell-centered density. */
@@ -125,44 +125,20 @@ jump. */
     #define sf1 f
     #define sf2 fs
 #endif
-void filter_scalar(scalar f, scalar sf){
-#if dimension <= 2
-    foreach()
-        sf[] = (4.*f[] +
-             2.*(f[0,1] + f[0,-1] + f[1,0] + f[-1,0]) +
-             f[-1,-1] + f[1,-1] + f[1,1] + f[-1,1])/16.;
-#else // dimension == 3
-    foreach()
-        sf[] = (8.*f[] +
-            4.*(f[-1] + f[1] + f[0,1] + f[0,-1] + f[0,0,1] + f[0,0,-1]) +
-            2.*(f[-1,1] + f[-1,0,1] + f[-1,0,-1] + f[-1,-1] +
-                f[0,1,1] + f[0,1,-1] + f[0,-1,1] + f[0,-1,-1] +
-                f[1,1] + f[1,0,1] + f[1,-1] + f[1,0,-1]) +
-            f[1,-1,1] + f[-1,1,1] + f[-1,1,-1] + f[1,1,1] +
-            f[1,1,-1] + f[-1,-1,-1] + f[1,-1,-1] + f[-1,-1,1])/64.;
-#endif
-#if TREE
-    sf.prolongation = refine_bilinear;
-    boundary ({sf});
-#endif
-}
+
 
 event tracer_advection (i++) {
-	scalar sf_s[];
     /**
     When using smearing of the density jump, we initialise *sf* with the
     vertex-average of *f*. */
-
-#ifndef sf1
-		filter_scalar(f, sf1);
-		for (int i_smooth=2; i_smooth<=N_smooth; i_smooth++){
-			filter_scalar(sf1, sf_s);
-			foreach() sf1[] = sf_s[];
-			boundary ({sf1});
-		}
-#endif
-
-#ifndef sf2
+#ifdef FILTERED
+    scalar sf_s[];
+    filter_scalar(f, sf1);
+    for (int i_smooth=2; i_smooth<=N_smooth; i_smooth++){
+        filter_scalar(sf1, sf_s);
+        foreach() sf1[] = sf_s[];
+        boundary ({sf1});
+    }
     filter_scalar(fs, sf2);
 		for (int i_smooth=2; i_smooth<=N_smooth; i_smooth++){
 			filter_scalar(sf2, sf_s);
@@ -170,21 +146,20 @@ event tracer_advection (i++) {
 			boundary ({sf2});
 		}
 #endif
-
 }
 
-#define n_mu_eff 4
-#define norm_mu_eff (sq(n_mu_eff) + 3*n_mu_eff + 2)
+//#define n_mu_eff 4
+//#define norm_mu_eff (sq(n_mu_eff) + 3*n_mu_eff + 2)
 event properties (i++) {
-#ifdef DAMP_CAPILLARY_WAVE
-    scalar f_very_smooth[], sf_s[];
-    filter_scalar(f, f_very_smooth);
-		for (int i_smooth=2; i_smooth<=5; i_smooth++){
-			filter_scalar(f_very_smooth, sf_s);
-			foreach() f_very_smooth[] = sf_s[];
-			boundary ({f_very_smooth});
-		}
-#endif
+//#ifdef DAMP_CAPILLARY_WAVE
+//    scalar f_very_smooth[], sf_s[];
+//    filter_scalar(f, f_very_smooth);
+//		for (int i_smooth=2; i_smooth<=5; i_smooth++){
+//			filter_scalar(f_very_smooth, sf_s);
+//			foreach() f_very_smooth[] = sf_s[];
+//			boundary ({f_very_smooth});
+//		}
+//#endif
     foreach_face() {
         double ff1 = (sf1[] + sf1[-1])/2.; //liquid
         double ff2 = (sf2[] + sf2[-1])/2.; //solid
@@ -198,9 +173,9 @@ event properties (i++) {
 #else
             muv.x[] = fm.x[]*mu(ff1, ff2, 0, Tf);
 #endif
-#ifdef DAMP_CAPILLARY_WAVE
-					 muv.x[] += fm.x[]*mu_eff*(ff1) * pow(1 - ff1, n_mu_eff)*norm_mu_eff;
-#endif
+//#ifdef DAMP_CAPILLARY_WAVE
+//					 muv.x[] += fm.x[]*mu_eff*(ff1) * pow(1 - ff1, n_mu_eff)*norm_mu_eff;
+//#endif
         }
 #ifdef HEAT_TRANSFER
         if (kappa1 || kappa2) {

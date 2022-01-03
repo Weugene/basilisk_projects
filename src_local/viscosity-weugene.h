@@ -120,7 +120,6 @@ static double residual_viscosity (scalar * a, scalar * b, scalar * resl, void * 
     #ifndef DEBUG_BRINKMAN_PENALIZATION
     vector divtauu[];// added: Weugene
     #endif
-//    fprintf(ferr, "residual_viscosity\n");
     #ifdef CALC_GRAD_U_TAU
         calc_target_U(u, target_U, n_sol);
     #endif
@@ -171,7 +170,9 @@ static double residual_viscosity (scalar * a, scalar * b, scalar * resl, void * 
         }
     }
     boundary (resl);
+#ifdef DEBUG_BRINKMAN_PENALIZATION
     fprintf(ferr, "visc: maxres=%15.12g maxb=%15.12g maxres/maxb=%15.12g\n", maxres, maxb, maxres/maxb);
+#endif
 //    event("vtk_file");
     return maxres/maxb; // Corrected by Weugene: return residual = rhs - du/dt
 }
@@ -203,6 +204,8 @@ mgstats viscosity (struct Viscosity p){
     }else{
         p.maxb = 1;
     }
+#ifdef DEBUG_BRINKMAN_PENALIZATION
     fprintf(ferr, "maxb = %g\n", p.maxb);
+#endif
     return mg_solve ((scalar *){u}, (scalar *){r}, residual_viscosity, relax_viscosity, &p, p.nrelax, p.res);
 }

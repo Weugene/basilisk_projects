@@ -10,7 +10,7 @@ const vector zerocf[] = {0.,0.,0.};
     (const) vector U_solid = zerocf;
     #if BRINKMAN_PENALIZATION == 1 //Dirichlet BC
         (const) vector target_U = zerocf, n_sol = zerocf;
-//        (const) face vector target_Uf = zerof;
+        (const) face vector target_Uf = zerof;
         #define PLUS_CONSTANT_BRINKMAN_RHS + (fbp*(target_U.x[])/eta_s)
         #define PLUS_VARIABLE_BRINKMAN_RHS - (fbp*(u.x[]/eta_s))
         #define PLUS_NUMERATOR_BRINKMAN    + 0
@@ -94,31 +94,15 @@ void calc_target_U(const vector u, vector target_U, const vector normal){
 				coord gradun;
                 foreach_dimension() {
 					gradun.x = (n_sol.x[] > 0) ? (utau.x[2] - utau.x[1])/Delta : (utau.x[-1] - utau.x[-2])/Delta;
-    //                    gradun = ((1 - fs[-1])*utau.x[-1] - (1 - fs[-2])*utau.x[-2] + (1 - fs[2])*utau.x[2] - (1 - fs[1])*utau.x[1])*n_sol.x[] / Delta
-    //                            #if dimension > 1
-    //                            + ((1 - fs[0,-1])*utau.x[0,-1] - (1 - fs[0,-2])*utau.x[0,-2] + (1 - fs[0,2])*utau.x[0,2] - (1 - fs[0,1])*utau.x[0,1])*n_sol.y[]/Delta
-    //                            #endif
-    //                            #if dimension > 2
-    //                            + ((1 - fs[0, 0, -1])*utau.x[0, 0, -1] - (1 - fs[0, 0, -2])*utau.x[0, 0, -2] +  (1 - fs[0, 0, 2])*utau.x[0, 0, 2] - (1 - fs[0, 0, 1])*utau.x[0, 0, 1])*n_sol.z[] / Delta
-    //                            #endif
-    //                            ;
-    //                    gradun = (utau.x[-1] - utau.x[-2] + utau.x[2] -  utau.x[1])*n_sol.x[] / Delta
-    //                            #if dimension > 1
-    //                            + (utau.x[0,-1] - utau.x[0,-2] + utau.x[0,2] - utau.x[0,1])*n_sol.y[]/Delta
-    //                            #endif
-    //                            #if dimension > 2
-    //                            + (utau.x[0, 0, -1] - utau.x[0, 0, -2] +  utau.x[0, 0, 2] - utau.x[0, 0, 1])*n_sol.z[] / Delta
-    //                            #endif
-    //                            ;
-                        gradun = ((utau.x[-1] - utau.x[-2])*0.5*(fs[-1] + fs[-2]) + (utau.x[2] -  utau.x[1])*0.5*(fs[1] + fs[2]))*n_sol.x[] / Delta
-                                #if dimension > 1
-                                + ((utau.x[0,-1] - utau.x[0,-2])*0.5*(fs[0,-1] + fs[0,-2]) + (utau.x[0,2] - utau.x[0,1])*0.5*(fs[0,1] + fs[0,2]))*n_sol.y[]/Delta
-                                #endif
-                                #if dimension > 2
-                                + ((utau.x[0, 0, -1] - utau.x[0, 0, -2])*0.5*(fs[0, 0, -1] + fs[0, 0, -2]) + (utau.x[0, 0, 2] - utau.x[0, 0, 1])*0.5*(fs[0, 0, 2] + fs[0, 0, 1]))*n_sol.z[] / Delta
-                                #endif
-                                ;
-                        target_U.x[] += lambda_slip*gradun;
+                    gradun = ((utau.x[-1] - utau.x[-2])*0.5*(fs[-1] + fs[-2]) + (utau.x[2] -  utau.x[1])*0.5*(fs[1] + fs[2]))*n_sol.x[] / Delta
+                            #if dimension > 1
+                            + ((utau.x[0,-1] - utau.x[0,-2])*0.5*(fs[0,-1] + fs[0,-2]) + (utau.x[0,2] - utau.x[0,1])*0.5*(fs[0,1] + fs[0,2]))*n_sol.y[]/Delta
+                            #endif
+                            #if dimension > 2
+                            + ((utau.x[0, 0, -1] - utau.x[0, 0, -2])*0.5*(fs[0, 0, -1] + fs[0, 0, -2]) + (utau.x[0, 0, 2] - utau.x[0, 0, 1])*0.5*(fs[0, 0, 2] + fs[0, 0, 1]))*n_sol.z[] / Delta
+                            #endif
+                            ;
+                    target_U.x[] += lambda_slip*gradun;
                 }
                 //            if (target_U.x[]) fprintf(ferr, "Ut = %g, U_s = %g, l=%g gr=%g\n", target_U.x[], U_solid.x[], lambda_slip, gradun);
             }else{
@@ -139,16 +123,28 @@ void brinkman_correction_u (vector u, double dt){
     }
     boundary ((scalar *){u});
 }
-
+static int i_bpm=0;
 void brinkman_correction_uf (face vector uf){
+
+    //sticky way. Everything near 1 cell is fixed at the surface (or has velocity of the solid)
+#if STICKY_SOLID == 1
+    if (i_bpm==0) {fprintf(ferr, "Sticky solid. uf.x is corrected even for a partial solid inclusion.\n"); i_bpm++;}
+    foreach_face()
+        if ((uf.x[] - target_Uf.x[]) && (fs_face.x[] > 0))
+            uf.x[] = target_Uf.x[];
+    boundary ((scalar *){uf});
+    //Not sticky way. Only cells inside of solid has velocity target_Uf
+#elif NO_STICKY_SOLID == 1
+    if (i_bpm==0) {fprintf(ferr, "No sticky solid. uf.x is corrected only inside solids.\n"); i_bpm++;}
+    foreach_face()
+    if ((uf.x[] - target_Uf.x[]) && (fs_face.x[] <= 0))
+        uf.x[] = target_Uf.x[];
+    boundary ((scalar *){uf});
+#else //LINEAR_STICKINESS
+    if (i_bpm==0) {fprintf(ferr, "Linear stickiness. uf.x is corrected proportionally to the fs.\n"); i_bpm++;}
     foreach_face() {
-        uf.x[] = (1 - fs_face.x[])*uf.x[] + fs_face.x[]*face_value(target_U.x, 0);
+        uf.x[] = (1 - fs_face.x[])*uf.x[] + fs_face.x[]*target_Uf.x[];
     }
     boundary((scalar *){uf});
-}
-
-void brinkman_correction (struct Brinkman p){
-    vector u = p.u; double dt = p.dt;
-    brinkman_correction_u (u, dt);
-//    brinkman_correction_uf (uf, dt);
+#endif
 }

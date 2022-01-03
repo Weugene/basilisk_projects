@@ -74,7 +74,6 @@ int main(int argc, char * argv[]) {
     NITERMIN = 1;
     NITERMAX = 100;
     CFL = 0.5;
-    CFL_SIGMA = 0.3;
     CFL_ARR = 0.5;
     DT = 1e-5;
     m_bp = 1; // Brinkman layer resolution
@@ -188,7 +187,7 @@ int main(int argc, char * argv[]) {
                  "Dim-less nums: Re=%g,  Ca=%g, Fr=%g\n"
                  "               dev_r=%g develx=%g devely=%g ldomain=%g\n"
                  "               shift_x=%g shift_y=%g non_saturated=%d\n"
-                 "Solver:        DTmax=%g, CFL=%g, CFL_SIGMA=%g, CFL_ARR=%g, NITERMIN=%d,  NITERMAX=%d,\n"
+                 "Solver:        DTmax=%g, CFL=%g, CFL_ARR=%g, NITERMIN=%d,  NITERMAX=%d,\n"
                  "               TOLERANCE_P=%g, TOLERANCE_V=%g, TOLERANCE_T=%g\n"
                  "ADAPT:         minlevel=%d,  maxlevel=%d, feps=%g, fseps=%g, ueps=%g, Teps=%g, aeps=%g\n"
                  "OUTPUT:        dt_vtk=%g,    number of procs=%d\n",
@@ -201,7 +200,7 @@ int main(int argc, char * argv[]) {
                 Re, Ca, Fr,
                 dev_r, develx, devely, domain_size/L0,
                 shift_x, shift_y, non_saturated,
-                DT, CFL, CFL_SIGMA, CFL_ARR, NITERMIN, NITERMAX,
+                DT, CFL, CFL_ARR, NITERMIN, NITERMAX,
                 TOLERANCE_P, TOLERANCE_V, TOLERANCE_T,
                 minlevel, maxlevel, feps, fseps, ueps, Teps, aeps,
                 dt_vtk, npe());
