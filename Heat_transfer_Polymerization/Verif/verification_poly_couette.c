@@ -1,14 +1,14 @@
 #define BRINKMAN_PENALIZATION 1
 //#define DEBUG_MINMAXVALUES
 //#define DEBUG_BRINKMAN_PENALIZATION
-#define DEBUG_MODE_POISSON
+//#define DEBUG_MODE_POISSON
 //#define DEBUG_HEAT
 #define REACTION_MODEL REACTION_MODEL_NON_AUTOCATALYTIC
 //#define DEBUG_OUTPUT_VTU_MPI
 #define FILTERED
 #define JACOBI 1
-//#define CORRECT_UF_FLUXES 1
-//#define STICKY_SOLID 1
+#define CORRECT_UF_FLUXES 1
+#define STICKY_SOLID 1
 #define RELATIVE_RES
 #define EPS_MAXA 2 // adapt based on Max-Min value
 //#define PRINT_ALL_VALUES
@@ -35,9 +35,9 @@ double CP1, CP2, CP3;
 double Ggrav, Ggrav_ndim;
 double channel_diam, channel_length;
 double Re; //Reynolds
-double Fr; //Froude number Fr = sqrt(u^2/(g*v))
+double Fr; //Froude number Fr = sqrt(u^2/(g*cyl_diam))
 double G;
-double Umean, PLeft=10;
+double Umean;
 double x_init = 2, Dx_min, dx_min;
 int maxlevel = 9;
 int minlevel = 5;
@@ -60,7 +60,7 @@ int main(int argc, char * argv[]) {
     CFL = 0.4;
     CFL_ARR = 0.5;
     DT = 1e-5;
-    maxDT0 = 1e-2;
+    maxDT0 = 2.5e-3;
 
     N_smooth = 1; //three-phase-rheology.h
 #ifdef STOKES
@@ -78,10 +78,10 @@ int main(int argc, char * argv[]) {
 // Physical parameters
 	Uin = 1e-2;
     channel_diam = 15e-6, channel_length = 10*channel_diam;
-	Tin = 300, T_solid = 400.15, Tam = 300;
+	Tin = 300, T_solid = 400, Tam = 300;
 //	Gorthala, R., Roux, J. A., & Vaughan, J. G. (1994). Resin Flow, Cure and Heat Transfer Analysis for Pultrusion Process. Journal of Composite Materials, 28(6), 486–506. doi:10.1177/002199839402800601  sci-hub.se/10.1177/002199839402800601
 //EPON 9310
-	Htr = 0;//355000; //J/kg
+	Htr = 355000; //J/kg
 	Arrhenius_const = 80600;//1/s //originally in Gothala: 80600
 	Ea_by_R = 12000/8.314;// Kelvin //origianally  64000/8.314;
     n_degree = 1.2;
@@ -143,7 +143,7 @@ int main(int argc, char * argv[]) {
     mindelta0 = L0/pow(2, 8);
     maxDT = maxDT0*sq(mindelta/mindelta0);  // h^2/DT = h0^2/DT0
 	RhoR = Rho2/Rho1, RhoRS = Rho3/Rho1;
-	MuR = Mu2/Mu1, MuRS = Mu3/Mu1;// Mu3/Mu1; // Mu3/Mu1 = Rho3/Rho1 => RhoRS leads bad result?
+	MuR = Mu2/Mu1, MuRS = 1;// Mu3/Mu1; // Mu3/Mu1 = Rho3/Rho1 => RhoRS leads bad result?
 	CpR = CP2/CP1, CpRS = CP3/CP1;
 	KappaR = Kappa2/Kappa1, KappaRS = Kappa3/Kappa1;
     rho1 = 1; rho2 = RhoR; rho3 = RhoRS;
@@ -165,12 +165,14 @@ int main(int argc, char * argv[]) {
     init_grid(1 << maxlevel);
     origin (-L0/2, -L0/2.);
     periodic(right);
-//    periodic(top);
+    periodic(top);
 	fprintf(ferr,"Dim-less vars: mu0=%g, mu1=%g, mu2=%g, mu3=%g,\n"
                  "               rho1=%g, rho2=%g, rho3=%g,\n"
                  "               nu1=%g, nu2=%g, nu3=%g,\n"
 				 "               kappa1=%g, kappa2=%g, kappa3=%g,\n"
                  "               Cp1=%g, Cp2=%g, Cp3=%g,\n"
+                 "               RhoR=%g, RhoRS=%g, MuR=%g, MuRS=%g,\n"
+                 "               KappaR=%g, KappaRS=%g, CpR=%g, CpRS=%g\n"
 				 "               Uin=%g, Tin=%g, T_solid=%g, Tam=%g,\n"
 				 "               Htr=%g, Arrhenius_const=%g, Ea_by_R=%g, Eeta_by_Rg=%g,\n"
 				 "               L0=%g, channel_diam=%g, maxDT0=%g for maxlevel=8, maxDT=%g for maxlevel=%d\n"
@@ -182,7 +184,10 @@ int main(int argc, char * argv[]) {
                  "OUTPUT:        dt_vtk=%g,    number of procs=%d\n",
 				mu0, mu1, mu2, mu3, rho1, rho2, rho3,
 				mu1/rho1, mu2/rho2, mu3/rho3,
-				kappa1, kappa2, kappa3, Cp1, Cp2, Cp3,
+				kappa1, kappa2, kappa3,
+				Cp1, Cp2, Cp3,
+                RhoR, RhoRS, MuR, MuRS,
+                KappaR, KappaRS, CpR, CpRS,
 				Uin, Tin, T_solid, Tam,
 				Htr, Arrhenius_const, Ea_by_R, Eeta_by_Rg,
 				L0, channel_diam, maxDT0, maxDT, maxlevel,
@@ -274,7 +279,7 @@ event init (t = 0) {
             f[] = 1;
             T[] = T_BC;
             alpha_doc[] = 0;
-            u.x[] = u_BC; //u_BC*f[];// 0; // penalization will work
+            u.x[] = u_BC; // penalization will work
             u.y[] = 0;
             if (rho1 || rho2){
                 rhov[] = var_hom(f[], fs[], rho1, rho2, rho3);
@@ -356,7 +361,7 @@ event set_dtmax (i++) {
     RELATIVE_RES_TOLERANCE = 0.01; //fabs(res1 - res2)/(res1 + 1e-30) < RELATIVE_RES_TOLERANCE
     DT *= 1.05;
     DT = min(DT, maxDT);
-     fprintf(ferr, "TIMEMAX set_dtmax: tnext= %g, t=%g, DT=%g, dt=%g\n", tnext, t, DT, dt);
+    fprintf(ferr, "TIMEMAX i=%d set_dtmax: tnext= %g, t=%g, DT=%g, dt=%g\n", i, tnext, t, DT, dt);
 }
 
 /**
@@ -400,7 +405,7 @@ event logoutput(t+=0.01){
     loc[0].x = xslice;
     loc[0].y = 0;
     loc[0].z = 0;
-    sprintf(name_vtu, "cylinder_polymerization_basilisk_x=%g.csv", xslice);
+    sprintf(name_vtu, "couette_polymerization_basilisk_x=%g.csv", xslice);
 
     if (firstWrite == 0){
         fp = fopen(name_vtu, "w");
@@ -414,7 +419,6 @@ event logoutput(t+=0.01){
     fclose(fp);
 }
 
-double tfix = 0.1;
 const int Ninterp = 101;
 event logoutput2(t+=1){
     char name_vtu[1000];
@@ -424,7 +428,7 @@ event logoutput2(t+=1){
         loc[i].x = -0.5 + i/(Ninterp - 1.0);
         loc[i].y = loc[i].z = 0;
     }
-    sprintf(name_vtu, "cylinder_polymerization_basilisk_tfix=%g.csv", t);
+    sprintf(name_vtu, "couette_polymerization_basilisk_tfix=%g.csv", t);
     fp = fopen(name_vtu, "w");
     if (pid() == 0) fprintf (fp, "x,T,alpha,u,mu\n");
     interpolate_array ((scalar*) {T, alpha_doc, u.x,mu_cell}, loc, Ninterp, v, true);
@@ -466,17 +470,18 @@ event adapt (i++){
 	double eps_arr[] = ADAPT_EPS_SCALARS;
 	MinMaxValues((scalar *) ADAPT_SCALARS, eps_arr);
 	adapt_wavelet ((scalar *) ADAPT_SCALARS, eps_arr, maxlevel = maxlevel, minlevel = minlevel);
+    if (i%100) count_cells(t, i);
 }
 
-//event snapshot (i += snapshot_i)
-//{
-//    char name[300];
-//    if (t==0)
-//        sprintf (name, "dump_%s-0.0", subname);
-//    else
-//        sprintf (name, "dump_%s-%g", subname, t);
-//    dump (file = name);
-//}
+event snapshot (t += 0.5)
+{
+    char name[300];
+    if (t==0)
+        sprintf (name, "dump_%s-0.0", subname);
+    else
+        sprintf (name, "dump_%s-%g", subname, t);
+    dump (file = name);
+}
 
 event check_fail(i += 100){
     double umax = 0;
@@ -487,5 +492,5 @@ event check_fail(i += 100){
         }
     }
 }
-event stop(t = 3 * L0 / Uin);
-//event stop(t = 20);
+
+event stop(t = 30);

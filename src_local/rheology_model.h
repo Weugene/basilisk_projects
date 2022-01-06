@@ -16,6 +16,7 @@ double eta_T = 0;
 double m_bp_T = 0;
 double chi_conductivity = 0;
 double Htr = 1;
+double K_cat = 1;
 double Arrhenius_const = 10;//1/s
 double Ea_by_R = 5;// Kelvin
 double n_degree = 1.667;
@@ -75,33 +76,52 @@ double m_degree = 0.333;
  * r = \rho_1 Q A (1-\alpha^n)^{n_degree} \exp(-\frac{E_a}{RT^n})(1 - \frac{E_a}{RT^n}) + \frac{\rho C_p \chi T_0}{\eta_T}
  */
 
-mgstats mgT;
-event end_timestep (i++){
-    scalar r[], thetav[], beta[];
-    double tmp;
-    foreach() thetav[] =  var_hom(f[], fs[], rho1*Cp1, rho2*Cp2, rho3*Cp3);
-//    foreach_face() kappav.x[] = kappav(f[], fs[]);//???
-    boundary ({thetav});
-    //The advection step
+event viscous_term (i++){
     if (!stokes_heat) {
         advection((scalar *) {T}, uf, dt);
+#if REACTION_MODEL != NO_REACTION_MODEL //  POLYMERIZATION_REACTION
+        advection ((scalar *){alpha_doc}, uf, dt);
+#endif
     }
+}
+
+mgstats mgT;
+event end_timestep (i++){
+    scalar r[], thetav[], beta[], R_source[];
+    double alpha_doc_old;
+    foreach()
+        thetav[] =  var_hom(f[], fs[], rho1*Cp1, rho2*Cp2, rho3*Cp3);
+    boundary ({thetav});
+
+    // advection term of kinetic equation is solved implicitly
+    // due to a linearized source term
+#if REACTION_MODEL != NO_REACTION_MODEL //  POLYMERIZATION_REACTION
+    foreach() {
+        alpha_doc_old = alpha_doc[];
+#if GENERAL_METHOD == 0
+        alpha_doc[] = 1.0 - pow(
+                pow(fabs(1 - alpha_doc[]), 1 - n_degree) + (n_degree - 1.0) * dt * f[] * KT(T[]), //* (1 - fs[])
+                1.0/(1.0 - n_degree));//direct integration from t to t + dt at fixed T
+#else
+        alpha_doc[] = (alpha_doc[] + 0.5 * dt * f[] * KT(T[]) * (2.0 * FR(alpha_doc[]) - dFR_dalpha(alpha_doc[]) * alpha_doc[])) / //* (1 - fs[])
+                          (1 - 0.5 * dt * f[] * KT(T[]) * dFR_dalpha(alpha_doc[])); //* (1 - fs[])
+#endif
+        R_source[] = (alpha_doc[] - alpha_doc_old) / dt;
+//        alpha_doc[] = clamp(alpha_doc[], 0.0, 1.0) * f[] * (1 - fs[]);
+    }
+    boundary ((scalar*) {alpha_doc, R_source});
+#endif
+
+
     //source and conductivity terms. f[] * (1 - fs[]) multiplications means gas and solids can't produce heat
     //solids play role in the conduction process
     if (fabs(Htr) > SEPS){
         foreach() {
+            beta[] = 0;
             #if REACTION_MODEL != NO_REACTION_MODEL
-                #if GENERAL_METHOD == 0
-                    tmp = Htr * rho1 * f[] * (1 - fs[]) * Arrhenius_const * exp(-Ea_by_R / T[]) * pow(1 - alpha_doc[], n_degree);
-                    r[] =  tmp * (1.0 - Eeta_by_Rg/T[]);
-                    beta[] = tmp * Eeta_by_Rg/sq(T[]);
-                #else  //General case
-                    tmp = Htr * rho1 * f[] * (1 - fs[]) * FR(alpha_doc[]);
-                    r[] = tmp * ( KT(T[]) - dKT_dT(T[]) * T[]);
-                    beta[] = tmp * dKT_dT(T[]);
-                #endif
+                r[] = R_source[];
             #else
-                beta[] = r[] = 0;
+                r[] = 0;
             #endif
             //Penalization terms are:
             #if T_DIRICHLET_BC == 1
@@ -133,25 +153,6 @@ event end_timestep (i++){
         }
     }
     boundary((scalar *){T});
-    // advection term of kinetic equation is solved implicitly
-    // due to a linearized source term
-#if REACTION_MODEL != NO_REACTION_MODEL //  POLYMERIZATION_REACTION
-    advection ((scalar *){alpha_doc}, uf, dt);
-    foreach() {
-        #if GENERAL_METHOD == 0
-			alpha_doc[] = 1.0 - pow(
-			        pow(fabs(1 - alpha_doc[]), 1 - n_degree) + (n_degree - 1.0) * dt * f[] * (1 - fs[]) * KT(T[]),
-			        1.0/(1.0 - n_degree));//direct integration from t to t + dt at fixed T
-//            fprintf(ferr, "==== %g %g\n", alpha_doc[], (1.0 - n_degree) * dt * f[] * (1 - fs[]) * KT(T[]) );
-            //alpha_doc[] = (alpha_doc[] + dt * (tmp[] * (1.0 + n_degree*alpha_doc[] / (1 - alpha_doc[] + SEPS))))/(1 + dt * tmp[] * n_degree / (1 - alpha_doc[] + SEPS));//numerical solution
-        #else
-            alpha_doc[] = (alpha_doc[] + dt * KT(T[]) * (FR(alpha_doc[]) - dFR_dalpha(alpha_doc[]) * alpha_doc[])) /
-                          (1 - dt * KT(T[]) * dFR_dalpha(alpha_doc[]));
-        #endif
-        alpha_doc[] = clamp(alpha_doc[], 0.0, 1.0) * f[] * (1 - fs[]);
-    }
-    boundary ((scalar*) {alpha_doc});
-#endif
 }
 
 // In first 10 steps, eta_T and m_bp_T will be adjusted

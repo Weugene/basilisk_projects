@@ -356,6 +356,7 @@ event advection_term (i++,last)
   }
 }
 
+
 /**
 ### Viscous term
 

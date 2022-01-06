@@ -1,4 +1,4 @@
-CFLAGS=-DDUMP=1 -Wall -O2 -events
+CFLAGS=-DDUMP=1 -O2 #-events
 CLIBS=-lm
 
 Tcyl=400
@@ -28,7 +28,7 @@ shift_y=$(shell echo 0.5\*$(ratio_dist_y) | bc)
 non_saturated=0
 
 parallel=4
-ind:=verif_wall_general0
+ind:=verif_wall_general1
 
 dumpname=dump-1.05384e-05
 args=$(Tcyl) $(Tin) $(maxlevel) $(iter_fp) $(ratio_Rbmin) $(ratio_Rbmax) $(ratio_dist_x) $(ratio_dist_y) $(ratio_front_x) \
@@ -38,9 +38,9 @@ $(Htr) $(Arrhenius_const) $(Ea_by_R) $(dev_r) $(dev_x) $(dev_y) $(shift_x) $(shi
 args_short=$(Tcyl) $(Tin) $(maxlevel) $(iter_fp) $(TOLERANCE_P) $(TOLERANCE_V) $(TOLERANCE_T) \
 $(Htr) $(Arrhenius_const) $(Ea_by_R) $(ind)
 
-run:=mpirun -np $(parallel)  ./a.out $(args) > out$(ind) 2> log$(ind)
+#run:=mpirun -np $(parallel)  ./a.out $(args) > out$(ind) 2> log$(ind)
 run_short:=mpirun -np $(parallel)  ./a.out $(args_short) > out$(ind) 2> log$(ind)
-compile:=CC99='mpicc -std=c99' qcc -O2 -D_MPI=1 -Wall -events
+compile:=CC99='mpicc -std=c99' qcc -O2 -D_MPI=1
 remove:=rm -rf .qcc*
 
 all: verify
@@ -56,7 +56,7 @@ verify_wall:
 verify_cylinder:
 	$(remove)
 	$(compile)  verification_poly_cylinder.c -lm
-	$(run)
+	$(run_short)
 verify_couette:
 	$(remove)
 	$(compile)  verification_poly_couette.c -lm

@@ -99,7 +99,6 @@ double mu_eff = 0;
     #define fpol(alpha_doc, T) A*alpha_doc + B
 #endif
 
-
 #ifndef muf1
     #if REACTION_MODEL != NO_REACTION_MODEL
         //#define mupol(alpha_doc, T) (mu0*exp(Eeta_by_Rg/(T))*pow(alpha_gel/(alpha_gel-alpha_doc), fpol(alpha_doc, T)))
