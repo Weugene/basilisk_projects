@@ -1,5 +1,5 @@
 #define BRINKMAN_PENALIZATION 1
-//#define DEBUG_MINMAXVALUES
+#define DEBUG_MINMAXVALUES
 //#define DEBUG_BRINKMAN_PENALIZATION
 //#define DEBUG_MODE_POISSON
 //#define DEBUG_HEAT
@@ -12,10 +12,11 @@
 #define RELATIVE_RES
 #define EPS_MAXA 2 // adapt based on Max-Min value
 //#define PRINT_ALL_VALUES
-#define STOKES
+//#define STOKES
 #define T_DIRICHLET_BC 1
 
 scalar mu_cell[];
+scalar Phi_visc[], Phi_src[];
 face vector fs_face[];
 static coord vel_s = {0, 0, 0};
 //#include "curvature_partstr.h"
@@ -45,7 +46,7 @@ int LEVEL = 7;
 double maxDT, maxDT0;
 double mu_max = 0, nu_max = 0;
 int adapt_method = 1; // 0 - traditional, 1 - using limitation, 2 - using array for maxlevel
-double feps = 1e-10, fseps = 1e-10, ueps = 1e-3, rhoeps = 1e-10, Teps = 1e-4, aeps = 1e-3, mueps=1e-3;
+double feps = 1e-10, fseps = 1e-10, ueps = 1e-5, rhoeps = 1e-10, Teps = 1e-5, aeps = 1e-5, mueps=1e-5;
 double TOLERANCE_P = 1e-7, TOLERANCE_V = 1e-8, TOLERANCE_T = 1e-7;
 double mindelta, mindelta0;
 
@@ -357,8 +358,7 @@ event init (t = 0) {
 
 void calc_mu(scalar muv){
     foreach(){
-        double mu1_tmp = muf1(alpha_doc[], T[]);
-        muv[] = var_hom(f[], fs[], mu1_tmp, mu2, mu3);
+        muv[] = mu(f[], fs[], alpha_doc[], T[]);
         if( muv[] > mu_max) mu_max = muv[];
     }
     boundary((scalar *){muv});
@@ -416,7 +416,7 @@ FILE *fp;
 int firstWrite = 0;
 double rslice = 1.2;
 const int Nvar = 4;
-event logoutput(t+=0.01){
+event logoutput(t += 0.01){
     char name_vtu[1000];
     coord loc[1];
     double v[Nvar];
@@ -439,25 +439,50 @@ event logoutput(t+=0.01){
 
 
 const int Ninterp = 101;
-event logoutput2(t+=1){
-    char name_vtu[1000];
-    coord loc[Ninterp];
-    double v[Nvar*Ninterp];
-    for (int i = 0; i < Ninterp; i++){
-        loc[i].x = L0*i/(Ninterp - 1.0);
-        loc[i].y = loc[i].z = 0;
-    }
-    sprintf(name_vtu, "cylinder_polymerization_basilisk_tfix=%g.csv", t);
-    fp = fopen(name_vtu, "w");
-    if (pid() == 0) fprintf (fp, "x,T,alpha,u,mu\n");
-    interpolate_array ((scalar*) {T, alpha_doc, u.x, mu_cell}, loc, Ninterp, v, true);
-    if (pid() == 0){
+event logoutput2(t += 0.1){
+    if (t < 2) {
+        char name_vtu[1000];
+        coord loc[Ninterp];
+        double v[Nvar*Ninterp];
         for (int i = 0; i < Ninterp; i++){
-            int ii = i*Nvar;
-            fprintf (fp, "%g,%g,%g,%g,%g\n", loc[i].x, v[ii], v[ii+1], v[ii+2], v[ii+3]);
+            loc[i].x = 0.5*L0*i/(Ninterp - 1.0);
+            loc[i].y = loc[i].z = 0;
         }
+        sprintf(name_vtu, "cylinder_polymerization_basilisk_tfix=%g.csv", t);
+        fp = fopen(name_vtu, "w");
+        if (pid() == 0) fprintf (fp, "x,T,alpha,u,mu\n");
+        interpolate_array ((scalar*) {T, alpha_doc, u.x, mu_cell}, loc, Ninterp, v, true);
+        if (pid() == 0){
+            for (int i = 0; i < Ninterp; i++){
+                int ii = i*Nvar;
+                fprintf (fp, "%g,%g,%g,%g,%g\n", loc[i].x, v[ii], v[ii+1], v[ii+2], v[ii+3]);
+            }
+        }
+        fclose(fp);
     }
-    fclose(fp);
+}
+
+void calcPhiVisc (vector u, face vector uf, scalar T, scalar alpha_doc, scalar f, scalar fs, scalar Phi_visc, scalar Phi_src){
+    foreach(){
+        double grad2 = 0.0;
+        foreach_dimension()
+            grad2 += sq((uf.x[1] - uf.x[]));
+        Phi_visc[] = 2*grad2/sq(Delta)
+#if dimension >= 2
+                + sq(0.5*(u.x[0,1] - u.x[0,-1])/Delta) // dv_x/dy
+                + sq(0.5*(u.y[1] - u.y[-1])/Delta)  // dv_y/dx
+#endif
+#if dimension > 2
+                + sq(0.5*(u.z[0,1] - u.z[0,-1])/Delta)// dv_z/dy
+                + sq(0.5*(u.y[0,0,1] - u.y[0,0,-1])/Delta) // dv_y/dz
+                + sq(0.5*(u.x[0,0,1] - u.x[0,0,-1])/Delta) // dv_x/dz
+                + sq(0.5*(u.z[1] - u.z[-1])/Delta) // dv_z/dx
+#endif
+                ;
+        Phi_visc[] *= mu(f[], fs[], alpha_doc[], T[]);
+        Phi_src[] = f[] * KT(T[]) * FR(alpha_doc[]);
+    }
+    boundary((scalar *){Phi_visc, Phi_src});
 }
 
 event vtk_file (t += dt_vtk)
@@ -470,11 +495,12 @@ event vtk_file (t += dt_vtk)
         l[] = level;
     }
     boundary((scalar *){l});
+//    calcPhiVisc (u, uf, T, alpha_doc, f, fs, Phi_visc, Phi_src);
 #ifdef DEBUG_BRINKMAN_PENALIZATION
     output_vtu_MPI(name, (iter_fp) ? t + dt : 0, list = (scalar *) {T, alpha_doc, p, fs, f, l, rhov, mu_cell},
     vlist = (vector *) {u, g, uf, dbp, total_rhs, residual_of_u, divtauu, fs_face, alpha});
 #else
-    output_vtu_MPI(name, (iter_fp) ? t + dt : 0, list = (scalar *) {T, alpha_doc, fs, l, mu_cell});
+    output_vtu_MPI(name, (iter_fp) ? t + dt : 0, list = (scalar *) {T, alpha_doc, fs, l, mu_cell, Phi_visc, Phi_src});
 #endif
 }
 
@@ -512,4 +538,4 @@ event check_fail(i += 100){
     }
 }
 
-event stop(t = 30);
+event stop(t = 2);

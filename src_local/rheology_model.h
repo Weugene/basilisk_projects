@@ -21,7 +21,7 @@ double Arrhenius_const = 10;//1/s
 double Ea_by_R = 5;// Kelvin
 double n_degree = 1.667;
 double m_degree = 0.333;
-
+bool viscDissipation = false;
 #undef SEPS
 #define SEPS 1e-10
 
@@ -76,6 +76,28 @@ double m_degree = 0.333;
  * r = \rho_1 Q A (1-\alpha^n)^{n_degree} \exp(-\frac{E_a}{RT^n})(1 - \frac{E_a}{RT^n}) + \frac{\rho C_p \chi T_0}{\eta_T}
  */
 
+void calcMuPhiVisc (scalar Phi_visc){
+    foreach(){
+        double grad2 = 0.0, muPhi = 0.0;
+        foreach_dimension()
+            grad2 += sq((uf.x[1] - uf.x[]));
+        muPhi += 2*grad2/sq(Delta)
+    #if dimension >= 2
+            + sq(0.5*(u.x[0,1] - u.x[0,-1])/Delta) // dv_x/dy
+                    + sq(0.5*(u.y[1] - u.y[-1])/Delta)  // dv_y/dx
+    #endif
+    #if dimension > 2
+            + sq(0.5*(u.z[0,1] - u.z[0,-1])/Delta)// dv_z/dy
+                    + sq(0.5*(u.y[0,0,1] - u.y[0,0,-1])/Delta) // dv_y/dz
+                    + sq(0.5*(u.x[0,0,1] - u.x[0,0,-1])/Delta) // dv_x/dz
+                    + sq(0.5*(u.z[1] - u.z[-1])/Delta) // dv_z/dx
+    #endif
+                ;
+        Phi_visc[] += mu(f[], fs[], alpha_doc[], T[]) * muPhi;
+    }
+    boundary((scalar *){Phi_visc});
+}
+
 event viscous_term (i++){
     if (!stokes_heat) {
         advection((scalar *) {T}, uf, dt);
@@ -119,7 +141,7 @@ event end_timestep (i++){
         foreach() {
             beta[] = 0;
             #if REACTION_MODEL != NO_REACTION_MODEL
-                r[] = R_source[];
+                r[] = rho1*Htr*R_source[];
             #else
                 r[] = 0;
             #endif
@@ -140,6 +162,8 @@ event end_timestep (i++){
                 #endif
             }
     }
+    if (viscDissipation)
+        calcMuPhiVisc (r);
     boundary((scalar *){r, beta});
 
     if (constant(kappa.x) != 0.) {

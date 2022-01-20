@@ -28,7 +28,7 @@ shift_y=$(shell echo 0.5\*$(ratio_dist_y) | bc)
 non_saturated=0
 
 parallel=4
-ind:=verif_wall_general1
+ind:=L0
 
 dumpname=dump-1.05384e-05
 args=$(Tcyl) $(Tin) $(maxlevel) $(iter_fp) $(ratio_Rbmin) $(ratio_Rbmax) $(ratio_dist_x) $(ratio_dist_y) $(ratio_front_x) \
