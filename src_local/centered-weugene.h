@@ -417,15 +417,15 @@ The (provisionary) face velocity field at time $t+\Delta t$ is
 obtained by interpolation from the centered velocity field. The
 acceleration term is added. */
 
-//event acceleration (i++,last)
-//{
-//  trash ({uf});
-//  face vector ia =a;
-//  foreach_face(){
-//    uf.x[] = fm.x[]*(face_value (u.x, 0) + dt*ia.x[]);
-//  }
-//  boundary ((scalar *){uf, ia});
-//}
+event acceleration (i++,last)
+{
+  trash ({uf});
+  face vector ia =a;
+  foreach_face(){
+    uf.x[] = fm.x[]*(face_value (u.x, 0) + dt*ia.x[]);
+  }
+  boundary ((scalar *){uf, ia});
+}
 
 /**
 ## Approximate projection

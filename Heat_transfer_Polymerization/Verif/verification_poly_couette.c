@@ -49,11 +49,12 @@ int maxlevel = 9;
 int minlevel = 5;
 int LEVEL = 7;
 double maxDT, maxDT0;
+double mindelta, mindelta0;
 double mu_max = 0, nu_max = 0;
 int adapt_method = 1; // 0 - traditional, 1 - using limitation, 2 - using array for maxlevel
+double m_hump = 3;
 double feps = 1e-10, fseps = 1e-10, ueps = 1e-6, rhoeps = 1e-10, Teps = 1e-6, aeps = 1e-6, mueps=1e-6;
 double TOLERANCE_P = 1e-7, TOLERANCE_V = 1e-8, TOLERANCE_T = 1e-7;
-double mindelta, mindelta0;
 
 char subname[150], logname[200];
 int main(int argc, char * argv[]) {
@@ -71,7 +72,7 @@ int main(int argc, char * argv[]) {
     N_smooth = 1; //three-phase-rheology.h
 #ifdef STOKES
     stokes = true;
-    stokes_heat = true;
+    stokes_heat = false;
 #endif
     m_bp = 2; // Brinkman layer resolution
     m_bp_T = 2;
@@ -83,7 +84,7 @@ int main(int argc, char * argv[]) {
     sprintf(logname, "log_saturated_1");
 // Physical parameters
 	Uin = 1e-2;
-    channel_diam = 15e-6, channel_length = (10.0)*channel_diam; //(1.0 - pow(2.0, -6))
+    channel_diam = 15e-6;
 	Tin = 300, T_solid = 400, Tam = 300;
 //	Gorthala, R., Roux, J. A., & Vaughan, J. G. (1994). Resin Flow, Cure and Heat Transfer Analysis for Pultrusion Process. Journal of Composite Materials, 28(6), 486–506. doi:10.1177/002199839402800601  sci-hub.se/10.1177/002199839402800601
 //EPON 9310
@@ -96,7 +97,7 @@ int main(int argc, char * argv[]) {
 	chi = 20;
     Rho1 = 1200, Rho2 = 1.092, Rho3 = 1200;//1790;//air at 23 C Graphite
     CP1 = 1255, CP2 = 1006, CP3 = 1255;//712;//J/(kg*K) !!!changed
-    Kappa1 = 0.2, Kappa2 = 0.02535, Kappa3 = 0.2;//8.70;//W/(m*K) !!!changed
+    Kappa1 = 0.002, Kappa2 = 0.02535, Kappa3 = 0.002;// 0.2 --- 8.70;//W/(m*K) !!!changed
     Ggrav = 0; // m/s^2
 
     if (argc > 1)
@@ -125,6 +126,7 @@ int main(int argc, char * argv[]) {
         sprintf (logname, "log%s", subname);
     }
 
+    channel_length = (2.0/(1.0 - pow(2.0, 1 - maxlevel)))*channel_diam;
 	fprintf(ferr,
                  "Props(SI): Mu0=%g, Mu1=%g, Mu2=%g, Mu3=%g, Rho1=%g, Rho2=%g,  Rho3=%g,\n"
                  "           nu1=%g, nu2=%g, nu3=%g,\n"
@@ -151,7 +153,7 @@ int main(int argc, char * argv[]) {
     mindelta0 = L0/pow(2, 8);
     maxDT = maxDT0*sq(mindelta/mindelta0);  // h^2/DT = h0^2/DT0
 	RhoR = Rho2/Rho1, RhoRS = Rho3/Rho1;
-	MuR = Mu2/Mu1, MuRS = 1;// Mu3/Mu1; // Mu3/Mu1 = Rho3/Rho1 => RhoRS leads bad result?
+	MuR = Mu2/Mu1, MuRS = 1;// Mu3/Mu1; //
 	CpR = CP2/CP1, CpRS = CP3/CP1;
 	KappaR = Kappa2/Kappa1, KappaRS = Kappa3/Kappa1;
     rho1 = 1; rho2 = RhoR; rho3 = RhoRS;
@@ -230,6 +232,8 @@ int main(int argc, char * argv[]) {
 
     run();
 }
+
+#define hump(x, xh) ((fabs(x) < xh) ? (1.0/pow(xh, 6))*cube(sq(xh) - sq(x)) : 0.0)
 // #define u_BC (0) // steady-state
 //#define u_BC (min(max(Uin*(y + 0.5), 0), Uin))  // limited linear function
 #define u_BC ( (fabs(y) <= 0.5) ? 0.5 * Uin - 0.5 * Uin * cos(pi*(y + 0.5)) :  \
@@ -237,8 +241,12 @@ int main(int argc, char * argv[]) {
 //#define T_BC (min(max((T_solid - Tin)*y + 0.5*(T_solid + Tin), Tin), T_solid)) // limited linear function
 //#define T_BC min(T_solid + (T_solid - Tin)*tanh( 100*(y - 0.5) ), T_solid)
 //#define T_BC ( (fabs(y) <= 0.5) ? 0.5 * (T_solid + Tin) - 0.5 * (T_solid - Tin) * cos(2*pi*y) :  T_solid   )
-#define T_BC ( (fabs(y) <= 0.5) ? 0.5 * (T_solid + Tin) - 0.5 * (T_solid - Tin) * cos(pi*(y + 0.5)) :  \
-               (y < -0.5) ? Tin : T_solid   ) // Smoothed
+//#define T_BC ( (fabs(y) <= 0.5) ? 0.5 * (T_solid + Tin) - 0.5 * (T_solid - Tin) * cos(pi*(y + 0.5)) :  \
+//               (y < -0.5) ? Tin : T_solid   ) // Smoothed
+//#define T_BC ( (fabs(y) <= 0.5) ? 0.5 * (T_solid + Tin) + 0.5 * (T_solid - Tin) * cos(2*pi*m_hump*(y + 0.5)) :  \
+//               (y < -0.5) ? T_solid : T_solid   ) // Smoothed with hump
+#define T_BC ( T_solid + (Tin - T_solid)*(hump(y - 0.05, 0.05) + hump(y + 0.05, 0.05) )) // Smoothed with 2 humps
+
 
 u.n[bottom] = dirichlet(0);
 u.t[bottom] = dirichlet(u_BC);
@@ -275,7 +283,7 @@ void solid_func(scalar fs, face vector fs_face, vector target_Uv, scalar T_targe
     foreach(){
         target_Uv.x[] = ( y > 0 ) ? Uin : 0;
         target_Uv.y[] = 0;
-        T_targetv[] = ( y > 0 ) ? T_solid : Tin;
+        T_targetv[] = T_solid;
     }
     boundary((scalar *){target_Uv, T_targetv});
 }
@@ -389,9 +397,6 @@ event properties(i++){
     fprintf(ferr, "mu3=%g was updated, mu_max=%g\n", mu3, mu_max);
 }
 
-//event stability(i++){
-//    stokes = (i<10) ? true : false;
-//}
 event set_dtmax (i++) {
     RELATIVE_RES_TOLERANCE = 0.01; //fabs(res1 - res2)/(res1 + 1e-30) < RELATIVE_RES_TOLERANCE
     DT *= 1.05;
@@ -432,9 +437,12 @@ event end_timestep(i++){
 
 FILE *fp;
 int firstWrite = 0;
-double yslice = 0.4;
+double yslice;
 const int Nvar = 4;
 event logoutput(t += 0.01){
+    yslice = 0.4;
+//    int Nh = (yslice - 0.5*mindelta)/mindelta;
+//    yslice = Nh*mindelta + 0.5*mindelta;
     char name_vtu[1000];
     coord loc[1];
     double v[Nvar];
@@ -556,4 +564,4 @@ event check_fail(i += 100){
     }
 }
 
-event stop(t = 5);
+event stop(t = 2);

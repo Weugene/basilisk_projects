@@ -1,8 +1,8 @@
 CFLAGS=-DDUMP=1 -O2 #-events
 CLIBS=-lm
 
-Tcyl=400
-Tin=300
+Tcyl=380
+Tin=400
 maxlevel=8
 iter_fp=0
 ratio_Rbmin=0.166666
@@ -18,7 +18,7 @@ TOLERANCE_P=1e-6
 TOLERANCE_V=1e-6
 TOLERANCE_T=1e-8
 Htr=355000 #355000
-Arrhenius_const=80600 #80600
+Arrhenius_const=0 #80600
 Ea_by_R=2400 #already divided by 8.31  =  7697=64000/8.314
 dev_r=0.
 dev_x=0.
@@ -28,7 +28,7 @@ shift_y=$(shell echo 0.5\*$(ratio_dist_y) | bc)
 non_saturated=0
 
 parallel=4
-ind:=L0
+ind=L0
 
 dumpname=dump-1.05384e-05
 args=$(Tcyl) $(Tin) $(maxlevel) $(iter_fp) $(ratio_Rbmin) $(ratio_Rbmax) $(ratio_dist_x) $(ratio_dist_y) $(ratio_front_x) \
@@ -39,7 +39,7 @@ args_short=$(Tcyl) $(Tin) $(maxlevel) $(iter_fp) $(TOLERANCE_P) $(TOLERANCE_V) $
 $(Htr) $(Arrhenius_const) $(Ea_by_R) $(ind)
 
 #run:=mpirun -np $(parallel)  ./a.out $(args) > out$(ind) 2> log$(ind)
-run_short:=mpirun -np $(parallel)  ./a.out $(args_short) > out$(ind) 2> log$(ind)
+run_short:=mpirun -np $(parallel)  ./a.out $(args_short) > out$(ind) 2> log$(ind)&
 compile:=CC99='mpicc -std=c99' qcc -O2 -D_MPI=1
 remove:=rm -rf .qcc*
 

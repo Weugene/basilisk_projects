@@ -1,28 +1,34 @@
 #define BRINKMAN_PENALIZATION 1
 #define DEBUG_MINMAXVALUES
 #define DEBUG_BRINKMAN_PENALIZATION
-#define DEBUG_MODE_TENSION
+//#define DEBUG_MODE_TENSION
 #define DEBUG_MODE_POISSON
 #define REACTION_MODEL REACTION_MODEL_NON_AUTOCATALYTIC
 //#define DEBUG_OUTPUT_VTU_MPI
 #define FILTERED
 #define JACOBI 1
 #define CORRECT_UF_FLUXES 1
-//#define CURVATURE_CORR // see tension.h
+#define CURV_PARTSTR 1// use Petr Karnakov's module
+#define STICKY_SOLID 1
 #define RELATIVE_RES
-#define EPS_MAXA 2
+#define EPS_MAXA 2 // adapt based on Max-Min value
 //#define PRINT_ALL_VALUES
 #ifdef DEBUG_MODE_TENSION
 scalar f_hat[];
 #endif
 //#define STOKES
-#define T_DIRICHLET_BC 1
-#define STICKY_SOLID 1
+//#define T_DIRICHLET_BC 1
+
+scalar mu_cell[];
+scalar Phi_visc[], Phi_src[];
 scalar which_meth[];
-scalar un[], mu_cell[];
+scalar un[];
 face vector fs_face[];
+face vector av[];
 static coord vel_s = {0, 0, 0};
-#include "curvature_partstr.h"
+#if CURV_PARTSTR==1
+    #include "curvature_partstr.h"
+#endif
 #include "centered-weugene.h"
 #include "rheology_model.h"
 #include "tension.h"
@@ -32,7 +38,7 @@ static coord vel_s = {0, 0, 0};
 
 int snapshot_i = 1000;
 double dt_vtk = 0.1;
-double Uin, Tin, Tcyl, Tam;
+double Uin, Tin, T_solid, Tam;
 double RhoR, RhoRS, MuR, MuRS, CpR, CpRS, KappaR, KappaRS;
 double Rho1, Rho2, Rho3;
 double Mu0, Mu1, Mu2, Mu3;
@@ -50,23 +56,28 @@ int Ncx, Ncy; //number of cylinders along Ox, Oy
 int Nb; //number of bubbles
 double Ca; // Ca = Mu*Ud/sigma
 double Re; //Reynolds
+double Pe; //Peclet number
+double Pr; //Prandtl number
 double Fr; //Froude number Fr = sqrt(u^2/(g*cyl_diam))
 double G;
 double Umean;
+double layer_velocity, layer_heat;
 double x_init = 2, Dx_min, dx_min;
 int maxlevel = 9;
 int minlevel = 5;
 int LEVEL = 7;
-double maxDT;
+double maxDT, maxDT0;
+double mindelta, mindelta0;
+double mu_max = 0, nu_max = 0;
 int adapt_method = 1; // 0 - traditional, 1 - using limitation, 2 - using array for maxlevel
 double feps = 1e-10, fseps = 1e-10, ueps = 1e-2, rhoeps = 1e-10, Teps = 3e-2, aeps = 3e-2, mueps=1e-2;
 double TOLERANCE_P = 1e-7, TOLERANCE_V = 1e-8, TOLERANCE_T = 1e-7;
 double *R = NULL;
 coord *centers = NULL;
-char subname[150], logname[80];
+char subname[150], logname[200];
 int main(int argc, char * argv[]) {
     fprintf(ferr,"correction of uf\n");
-    fprintf(ferr, "./a.out Tcyl, Tin, maxlevel, iter_fp, ratio_Rbmin, ratio_Rbmax, ratio_dist_x, ratio_dist_y, ratio_front_x, "
+    fprintf(ferr, "./a.out T_solid, Tin, maxlevel, iter_fp, ratio_Rbmin, ratio_Rbmax, ratio_dist_x, ratio_dist_y, ratio_front_x, "
                   "cyl_x, Nb, Ncx, Ncy, TOLERANCE_P, TOLERANCE_V, TOLERANCE_T, Htr, Arrhenius_const, Ea_by_R, dev_r, develx, devely, "
                   "shift_x, shift_y, non_saturated\n");
     TOLERANCE = 1e-7;
@@ -76,20 +87,22 @@ int main(int argc, char * argv[]) {
     ignore_tension_CFL = false;
     CFL_ARR = 0.5;
     DT = 1e-5;
+    maxDT0 = 2.5e-3;
     N_smooth = 1; //three-phase-rheology.h
 #ifdef STOKES
-    stokes = false;
+    stokes = true;
     stokes_heat = false;
 #endif
-    m_bp = 1; // Brinkman layer resolution, then it reduces to 0.1
-    fprintf(ferr, "Stokes flow:stokes=%d, stokes_heat=%d, uf.x correction. Rho2 is 10x and Mu2 is 100x higher\n", stokes, stokes_heat);
+    m_bp = 2; // Brinkman layer resolution
+    m_bp_T = 2;
+    fprintf(ferr, "Stokes flow:stokes=%d, stokes_heat=%d, uf.x correction.\n", stokes, stokes_heat);
 #if T_DIRICHLET_BC != 0
     fprintf(ferr, "T_DIRICHLET_BC: 1\n");
 #endif
     sprintf(subname, "saturated_1");
     sprintf(logname, "log_saturated_1");
 // Physical parameters
-	Uin = 1e-2, Tin = 300, Tcyl = 400.15, Tam = 300;
+	Uin = 1e-2, Tin = 300, T_solid = 400.15, Tam = 300;
 //	Gorthala, R., Roux, J. A., & Vaughan, J. G. (1994). Resin Flow, Cure and Heat Transfer Analysis for Pultrusion Process. Journal of Composite Materials, 28(6), 486–506. doi:10.1177/002199839402800601  sci-hub.se/10.1177/002199839402800601
 //EPON 9310
 	Htr = 355000; //J/kg
@@ -115,13 +128,12 @@ int main(int argc, char * argv[]) {
     dev_r = 0.4, develx = 0.4, devely = 0.4;
     non_saturated = 1;
 
-
     if (argc > 1)
-        Tcyl = atof(argv[1]);
+        T_solid = atof(argv[1]);
     if (argc > 2)
         Tin = atof(argv[2]);
 //	Mu1 = 3.85e-7*exp(Eeta_by_Rg/Tin), Mu2 = 1e-4;
-    Mu0 = 3.85e-7, Mu1 = Mu0*exp(Eeta_by_Rg/Tin), Mu2 = 1.963e-5, Mu3 = Mu1*Rho3/Rho1;//air at 50C //Mu2 = 1.963e-5
+    Mu0 = 3.85e-7, Mu1 = Mu0*exp(Eeta_by_Rg/Tin), Mu2 = 1.963e-5, Mu3 = Mu0*exp(Eeta_by_Rg/T_solid)*Rho3/Rho1;//air at 50C //Mu2 = 1.963e-5
 	if (argc > 3)
         maxlevel = atoi(argv[3]);
     if (argc > 4)
@@ -182,14 +194,14 @@ int main(int argc, char * argv[]) {
                  "Props(SI): Mu0=%g, Mu1=%g, Mu2=%g, Mu3=%g, Rho1=%g, Rho2=%g,  Rho3=%g,\n"
                  "           nu1=%g, nu2=%g, nu3=%g,\n"
                  "           Kappa1=%g, Kappa2=%g, Kappa3=%g, CP1=%g, CP2=%g, CP3=%g,\n"
-				 "           Sigma=%g, Uin=%g, time*=%g, Tin=%g, Tcyl=%g, Tam=%g\n"
+				 "           Sigma=%g, Uin=%g, time*=%g, Tin=%g, T_solid=%g, Tam=%g\n"
                  "           Htr=%g, Arrenius=%g, Ea_by_R=%g, n_deg=%g, m_deg=%g\n"
 				 "           Eeta_by_Rg=%g, chi=%g\n"
                  "Geometry: cyl_diam=%g,  domainSize=%g, Dx_min=%g, Ncx=%d, Ncy=%d, Nb=%d\n",
                  Mu0, Mu1, Mu2, Mu3, Rho1, Rho2, Rho3,
                  Mu1/Rho1, Mu2/Rho2, Mu3/Rho3,
                  Kappa1, Kappa2, Kappa3, CP1, CP2, CP3,
-                 Sigma, Uin, cyl_diam/Uin, Tin, Tcyl, Tam,
+                 Sigma, Uin, cyl_diam/Uin, Tin, T_solid, Tam,
                  Htr, Arrhenius_const, Ea_by_R, n_degree, m_degree,
                  Eeta_by_Rg, chi,
                  cyl_diam, domain_size, Dx_min, Ncx, Ncy, Nb);
@@ -197,9 +209,12 @@ int main(int argc, char * argv[]) {
 // Dimensionless numbers
 	Re = Uin*cyl_diam*Rho1/Mu1;
 	Ca = Mu1*Uin/(Sigma + SEPS);
+    Pe = CP1*Rho1*Uin*cyl_diam/Kappa1;
+    Pr = Mu1*CP1/Kappa1;
 	Fr = sqrt(sq(Uin)/(Ggrav*cyl_diam + SEPS));
 // Dimensionless parameters are chosen cyl_diam, rho1, Cp1, Tin, Uin
     size(domain_size/cyl_diam);
+    mindelta = L0/pow(2, maxlevel);
 	front_x = ratio_front_x;
 	Rbmin /= cyl_diam;
 	Rbmax /= cyl_diam;
@@ -207,7 +222,7 @@ int main(int argc, char * argv[]) {
 	dist_y /= cyl_diam;
     dx_min = L0/pow(2, maxlevel);
 	RhoR = Rho2/Rho1, RhoRS = Rho3/Rho1;
-	MuR = Mu2/Mu1, MuRS = Mu3/Mu1;
+	MuR = Mu2/Mu1, MuRS = 1;
 	CpR = CP2/CP1, CpRS = CP3/CP1;
 	KappaR = Kappa2/Kappa1, KappaRS = Kappa3/Kappa1;
     rho1 = 1; rho2 = RhoR; rho3 = RhoRS;
@@ -215,6 +230,7 @@ int main(int argc, char * argv[]) {
 //    mu3 = mu1*(rho3/rho1)*sq(1.0/(m_bp*dx_min));
 	Cp1 = 1; Cp2 = Cp1*CpR; Cp3 = Cp1*CpRS;//J/(kg*K)
 	kappa1 = Kappa1/(Rho1*CP1*cyl_diam*Uin + SEPS), kappa2 = kappa1*KappaR, kappa3 = kappa1*KappaRS;//W/(m*K)
+    chi_conductivity = kappa1 / (rho1 * Cp1);
 	Htr /= CP1*Tin;
 	Arrhenius_const *= cyl_diam/(Uin + SEPS);
 	Ea_by_R /= Tin;
@@ -224,24 +240,30 @@ int main(int argc, char * argv[]) {
 	Ggrav_ndim = 1./sq(Fr);
 	Uin = 1;
     Tam /= Tin;
-	Tcyl /= Tin;
+	T_solid /= Tin;
 	Tin  /= Tin;
-    const scalar temp_cyl[] = Tcyl;
+    const scalar temp_cyl[] = T_solid;
     T_target = temp_cyl;
     const vector U_sol[] = {vel_s.x, vel_s.y, vel_s.z};
     target_U = U_sol;
 	cyl_diam = 1;
+    layer_velocity = cyl_diam/sqrt(Re);
+    layer_heat = cyl_diam/sqrt(Pe);
+    eta_s = sq(m_bp*mindelta)/(mu1/rho1);
+    eta_T = sq(m_bp_T*mindelta)/chi_conductivity;
     init_grid(1 << LEVEL);
     origin (-L0/2, -L0/2.);
     periodic(top);
 	fprintf(ferr,"Dim-less vars: mu0=%g, mu1=%g, mu2=%g, mu3=%g, rho1=%g, rho2=%g, rho3=%g,\n"
                  "               nu1=%g, nu2=%g, nu3=%g,\n"
 				 "               kappa1=%g, kappa2=%g, kappa3=%g, Cp1=%g, Cp2=%g, Cp3=%g,\n"
-				 "               sigma=%g,  Uin=%g, Tin=%g, Tcyl=%g, Tam=%g,\n"
+                 "               RhoR=%g, RhoRS=%g, MuR=%g, MuRS=%g,\n"
+                 "               KappaR=%g, KappaRS=%g, CpR=%g, CpRS=%g\n"
+				 "               sigma=%g,  Uin=%g, Tin=%g, T_solid=%g, Tam=%g,\n"
 				 "               Htr=%g, Arrhenius_const=%g, Ea_by_R=%g, Eeta_by_Rg=%g,\n"
 				 "               L0=%g, cyl_diam=%g, dist_x=%g, dist_y=%g, front_x=%g, Rbmin=%g, Rbmax=%g,\n"
 				 "               Ggrav_ndim=%g Uin=%g\n"
-                 "Dim-less nums: Re=%g,  Ca=%g, Fr=%g\n"
+                 "Dim-less nums: Re=%g,  Ca=%g, Fr=%g, Pe=%g, Pr=%g\n"
                  "               dev_r=%g develx=%g devely=%g ldomain=%g\n"
                  "               shift_x=%g shift_y=%g non_saturated=%d\n"
                  "Solver:        DTmax=%g, CFL=%g, CFL_ARR=%g, NITERMIN=%d,  NITERMAX=%d,\n"
@@ -251,18 +273,20 @@ int main(int argc, char * argv[]) {
 				mu0, mu1, mu2, mu3, rho1, rho2, rho3,
 				mu1/rho1, mu2/rho2, mu3/rho3,
 				kappa1, kappa2, kappa3, Cp1, Cp2, Cp3,
-				sigma_ndim, Uin, Tin, Tcyl, Tam,
+                RhoR, RhoRS, MuR, MuRS,
+                KappaR, KappaRS, CpR, CpRS,
+                f.sigma, Uin, Tin, T_solid, Tam,
 				Htr, Arrhenius_const, Ea_by_R, Eeta_by_Rg,
 				L0, cyl_diam, dist_x, dist_y, front_x, Rbmin, Rbmax,
 				Ggrav_ndim, Uin,
-                Re, Ca, Fr,
+                Re, Ca, Fr, Pe, Pr,
                 dev_r, develx, devely, domain_size/L0,
                 shift_x, shift_y, non_saturated,
                 DT, CFL, CFL_ARR, NITERMIN, NITERMAX,
                 TOLERANCE_P, TOLERANCE_V, TOLERANCE_T,
                 minlevel, maxlevel, feps, fseps, ueps, Teps, aeps,
                 dt_vtk, npe());
-//    a = av;
+    a = av;
     fs.refine = fs.prolongation = fraction_refine;
     f.refine = f.prolongation = fraction_refine;
     boundary((scalar *){f, fs});
@@ -465,7 +489,7 @@ event init (t = 0) {
             filter_scalar(fs, fs_smoothed);
         }while (adapt_wavelet({f_smoothed, fs_smoothed}, (double []){feps, feps}, maxlevel=maxlevel, minlevel=minlevel).nf != 0 && ++it <= 10);
         foreach() {
-            T[] = var_hom(f[], fs[], Tin, Tam, Tcyl);
+            T[] = var_hom(f[], fs[], Tin, Tam, T_solid);
             alpha_doc[] = 0;
             u.x[] = u_BC*(1 - fs[]); //u_BC*f[];// 0; // penalization will work
             u.y[] = 0;
@@ -529,32 +553,26 @@ event init (t = 0) {
     }
 }
 
-event properties(i++){
-  fprintf(ferr, "TIMEMAX properties: tnext= %g, t=%g, DT=%g, dt=%g\n", tnext, t, DT, dt);
+void calc_mu(scalar muv){
+    foreach(){
+        muv[] = mu(f[], fs[], alpha_doc[], T[]);
+        if( muv[] > mu_max) mu_max = muv[];
+    }
+    boundary((scalar *){muv});
 }
 
-event properties(i+=100){
-    fprintf(ferr, "mu3 is updated\n", mu3);
-    double mu1_tmp, alpha_doc_max=-1e+10, T_min=1e+10;
-    face vector muv = mu;
-    foreach(reduction(max:alpha_doc_max) reduction(min:T_min)){
-        if (T[] < T_min) T_min = T[];
-        if (alpha_doc[] > alpha_doc_max) alpha_doc_max = alpha_doc[];
-    }
-
-#if REACTION_MODEL != NO_REACTION_MODEL
-    mu1_tmp = mu(1, 0, alpha_doc_max, T_min); //inside resin
-#else
-    mu1_tmp = mu(1, 0, 0, T_min); //inside resin
-#endif
-    mu3 = mu1_tmp*MuRS;
+event properties(i++){
+    solid_func(fs, fs_face);
+    calc_mu(mu_cell);
+    mu3 = mu_max*MuRS;
+    fprintf(ferr, "mu3=%g was updated, mu_max=%g\n", mu3, mu_max);
 }
 
 event set_dtmax (i++) {
-	  RELATIVE_RES_TOLERANCE = 0.01; //fabs(res1 - res2)/(res1 + 1e-30) < RELATIVE_RES_TOLERANCE
+    RELATIVE_RES_TOLERANCE = 0.01; //fabs(res1 - res2)/(res1 + 1e-30) < RELATIVE_RES_TOLERANCE
     DT *= 1.05;
     DT = min(DT, maxDT);
-    fprintf(ferr, "TIMEMAX set_dtmax: tnext= %g, t=%g, DT=%g, dt=%g\n", tnext, t, DT, dt);
+    fprintf(ferr, "TIMEMAX i=%d set_dtmax: tnext= %g, t=%g, DT=%g, dt=%g\n", i, tnext, t, DT, dt);
 }
 
 
@@ -573,14 +591,11 @@ event advection_term(i++){
 }
 
 event viscous_term(i++){
+    nu_max = mu_max/rho1;
     TOLERANCE = TOLERANCE_V;
-    m_bp = 1;//max(3 - 0.1*i, 0.4);
-    m_bp_T = m_bp;
-    double mindelta = L0/pow(2, maxlevel);
-    double nu_bp = mu1/rho1;
-    eta_s = sq(m_bp*mindelta)/nu_bp;
+    eta_s = sq(m_bp*mindelta)/nu_max;
     eta_T = sq(m_bp_T*mindelta)/chi_conductivity;
-    fprintf(ferr, "VISC: m=%g, mindelta=%g, nu=%g, chi_conductivity=%g, eta_s=%15.12g, eta_T=%15.12g\n", m_bp, mindelta, nu_bp, chi_conductivity, eta_s, eta_T);
+   fprintf(ferr, "VISC: m=%g, mindelta=%g, nu=%g, chi_conductivity=%g, eta_s=%15.12g, eta_T=%15.12g\n", m_bp, mindelta, nu_max, chi_conductivity, eta_s, eta_T);
 }
 
 event projection(i++){
@@ -591,7 +606,28 @@ event end_timestep(i++){
 	TOLERANCE = TOLERANCE_T;
 }
 
-
+void calcPhiVisc (vector u, face vector uf, scalar T, scalar alpha_doc, scalar f, scalar fs, scalar Phi_visc, scalar Phi_src){
+    foreach(){
+        double grad2 = 0.0;
+        foreach_dimension()
+        grad2 += sq((uf.x[1] - uf.x[]));
+        Phi_visc[] = 2*grad2/sq(Delta)
+#if dimension >= 2
+            + sq(0.5*(u.x[0,1] - u.x[0,-1])/Delta) // dv_x/dy
+                + sq(0.5*(u.y[1] - u.y[-1])/Delta)  // dv_y/dx
+#endif
+#if dimension > 2
+            + sq(0.5*(u.z[0,1] - u.z[0,-1])/Delta)// dv_z/dy
+                + sq(0.5*(u.y[0,0,1] - u.y[0,0,-1])/Delta) // dv_y/dz
+                + sq(0.5*(u.x[0,0,1] - u.x[0,0,-1])/Delta) // dv_x/dz
+                + sq(0.5*(u.z[1] - u.z[-1])/Delta) // dv_z/dx
+#endif
+                ;
+        Phi_visc[] *= mu(f[], fs[], alpha_doc[], T[]);
+        Phi_src[] = f[] * KT(T[]) * FR(alpha_doc[]);
+    }
+    boundary((scalar *){Phi_visc, Phi_src});
+}
 
 /*
  * xmax, ymax - maximum front tip along Ox
@@ -961,17 +997,17 @@ event vtk_file (i += 100)
     scalar l[], dpdx[];
     calc_scalar_from_face(mu, mu_cell);
     foreach() {
-        dpdx[] = (p[1] - p[-1])/(2*Delta);
         l[] = level;
+        dpdx[] = (p[1] - p[-1])/(2*Delta);
     }
     boundary((scalar *){l, dpdx});
-    fprintf(ferr, "output_vtu_MPI\n");
+    calcPhiVisc (u, uf, T, alpha_doc, f, fs, Phi_visc, Phi_src); //TODO: visc dissipation?
 #ifdef DEBUG_BRINKMAN_PENALIZATION
     output_vtu_MPI(name, (iter_fp) ? t + dt : 0, list = (scalar *) {T, alpha_doc, p, dpdx, fs, f, l, rhov, mu_cell, m, my_kappa, which_meth},
-    vlist = (vector *) {u, g, uf, a, dbp, total_rhs, residual_of_u, divtauu, fs_face, alpha});
+    vlist = (vector *) {u, g, uf, av, dbp, total_rhs, residual_of_u, divtauu, fs_face, alpha});
 #else
     output_vtu_MPI(name, (iter_fp) ? t + dt : 0, list = (scalar *) {T, dpdx, alpha_doc, p, fs, f, l, rhov, mu_cell, m},
-    vlist = (vector *) {u, a});//, mu_cell_minus, mu_cell_plus
+    vlist = (vector *) {u, av});
 #endif
 }
 
@@ -983,22 +1019,15 @@ tracer fields. */
 
 #define ADAPT_SCALARS {rhov, fs, u.x, u.y, T, alpha_doc, mu_cell}
 #define ADAPT_EPS_SCALARS {rhoeps, fseps, ueps, ueps, Teps, aeps, mueps}
-//#define ADAPT_SCALARS {f, fs}
-//#define ADAPT_EPS_SCALARS {feps, fseps}
-
 
 event adapt (i++){
-  calc_scalar_from_face(mu, mu_cell);
 	double eps_arr[] = ADAPT_EPS_SCALARS;
 	MinMaxValues((scalar *) ADAPT_SCALARS, eps_arr);
 	adapt_wavelet ((scalar *) ADAPT_SCALARS, eps_arr, maxlevel = maxlevel, minlevel = minlevel);
-
-    count_cells(t, i);
+    if (i%100) count_cells(t, i);
 }
 
 event snapshot (i += snapshot_i)
-//event snapshot (t += 1e-1)
-//event snapshot (i += 1)
 {
     char name[300];
     if (t==0)
@@ -1008,7 +1037,7 @@ event snapshot (i += snapshot_i)
     dump (file = name);
 }
 
-event check_fail(i += 20){
+event check_fail(i += 100){
     double umax = 0;
     foreach(){
         if ((u.x[] != u.x[]) || (umax > 10e+10)) {
@@ -1017,5 +1046,5 @@ event check_fail(i += 20){
         }
     }
 }
-//event stop(i=100);
-event stop(t = 20*L0 / Uin);
+
+event stop(t = 2);
