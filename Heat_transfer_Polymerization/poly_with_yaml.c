@@ -35,6 +35,7 @@ static coord vel_s = {0, 0, 0};
 #include "utils-weugene.h"
 #include "output_vtu_foreach.h"
 #include "tag.h"
+#include "config_reader.h"
 
 int snapshot_i = 1000;
 double snapshot_t = 0.5;

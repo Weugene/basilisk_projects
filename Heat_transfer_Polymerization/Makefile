@@ -47,7 +47,10 @@ heat_polymerization_front:
 	$(remove)
 	$(compile)  poly_heat_front.c -lm
 	$(run)
-
+poly_with_yaml:
+	$(remove)
+	$(compile)  poly_with_yaml.c -lm
+	#$(run)
 #mpirun -np 2 xterm -hold -e gdb -ex run --args ./a.out $(args)
 convert:
 	qcc -Wall -O2 -events dump2pvd_heat.c -lm -o convertdump2pvd
