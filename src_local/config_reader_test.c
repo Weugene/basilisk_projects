@@ -22,38 +22,51 @@ struct dimensional_vars {
 struct input_yaml {
     char* name;
     struct numbers n;
-    struct dimensional_vars dv;
+//    struct dimensional_vars dv;
 };
 
+//struct test = {
+//    float foo;
+//    int bar[10];
+//}
+
+//static const cyaml_schema_value_t bar_schema = {
+//        CYAML_VALUE_INT(CYAML_FLAG_DEFAULT, int)
+//};
+
+//static const cyaml_schema_field_t test_fields_schema[] = {
+//        CYAML_FIELD_FLOAT("name", CYAML_FLAG_OPTIONAL, struct test, foo),
+//        CYAML_FIELD_FLOAT("n", CYAML_FLAG_OPTIONAL, struct numbers, n),
+////        CYAML_FIELD_SEQUENCE_FIXED("bar", CYAML_FLAG_DEFAULT, struct test, bar, &bar_schema, 10),
+//        CYAML_FIELD_END
+//};
+
+//static const cyaml_schema_value_t test_schema = {
+//        CYAML_VALUE_MAPPING(CYAML_FLAG_POINTER, struct test, test_fields_schema)
+//};
 /* CYAML value schema for entries of the data sequence. */
 //static const cyaml_schema_value_t data_entry = {
 //        CYAML_VALUE_FLOAT(CYAML_FLAG_DEFAULT, double),
 //};
 
-//static const cyaml_schema_field_t numbers_fields[] = {
-//        CYAML_FIELD_FLOAT(
-//                "Re", CYAML_FLAG_OPTIONAL,
-//        double, Re),
-//        CYAML_FIELD_FLOAT(
-//        "Ca", CYAML_FLAG_OPTIONAL,
-//        double, Ca)
-//}
-//
-//static const cyaml_schema_field_t dimensional_fields[] = {
-//        CYAML_FIELD_FLOAT(
-//                "characteristic_size", CYAML_FLAG_OPTIONAL,
-//        double, characteristic_size)
-//}
+
+static const cyaml_schema_field_t numbers_fields[] = {
+        CYAML_FIELD_FLOAT("Re", CYAML_FLAG_DEFAULT, struct numbers, Re),
+        CYAML_FIELD_FLOAT("Ca", CYAML_FLAG_DEFAULT, struct numbers, Ca),
+};
+
+static const cyaml_schema_field_t dimensional_fields[] = {
+        CYAML_FIELD_FLOAT("characteristic_size", CYAML_FLAG_DEFAULT, struct dimensional_vars, characteristic_size),
+};
 
 /* CYAML mapping schema fields array for the top level mapping. */
 static const cyaml_schema_field_t top_mapping_schema[] = {
-        CYAML_FIELD_STRING_PTR("name", CYAML_FLAG_POINTER,
-        struct input_yaml, name,
-        0, CYAML_UNLIMITED),
-        CYAML_FIELD_FLOAT("numbers", CYAML_FLAG_DEFAULT,
-        struct input_yaml, numbers),
-        CYAML_FIELD_FLOAT("dimensional_vars", CYAML_FLAG_DEFAULT,
-        struct input_yaml, dimensional_vars),
+        CYAML_FIELD_STRING_PTR("name", CYAML_FLAG_POINTER,struct input_yaml, name,0, CYAML_UNLIMITED),
+        CYAML_FIELD_MAPPING("n", CYAML_FLAG_DEFAULT,struct numbers, n, numbers_fields),
+//        CYAML_FIELD_FLOAT("n", CYAML_FLAG_DEFAULT,
+//        struct input_yaml, numbers_fields),
+//        CYAML_FIELD_FLOAT("dv", CYAML_FLAG_DEFAULT,
+//        struct input_yaml, dv),
         CYAML_FIELD_END
 };
 
