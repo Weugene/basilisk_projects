@@ -63,7 +63,7 @@ static const cyaml_schema_field_t dimensional_fields[] = {
 static const cyaml_schema_field_t top_mapping_schema[] = {
         CYAML_FIELD_STRING_PTR("name", CYAML_FLAG_POINTER,struct input_yaml, name,0, CYAML_UNLIMITED),
         CYAML_FIELD_MAPPING("n", CYAML_FLAG_DEFAULT,struct input_yaml, n, numbers_fields),
-//        CYAML_FIELD_MAPPING("dv", CYAML_FLAG_DEFAULT,struct input_yaml, dv, dimensional_fields),
+        CYAML_FIELD_MAPPING("dv", CYAML_FLAG_DEFAULT,struct input_yaml, dv, dimensional_fields),
         CYAML_FIELD_END
 };
 
