@@ -1,9 +1,9 @@
 CFLAGS=-DDUMP=1 -Wall -O2 -events
-CLIBS=-lm
+CLIBS=-L/usr/local/lib/ -L/home/e.sharaborin/opt/lib -lcyaml -lm
 
 Tcyl=400
 Tin=300
-maxlevel=7
+maxlevel=8
 iter_fp=0
 ratio_Rbmin=0.166666
 ratio_Rbmax=0.6
@@ -11,7 +11,7 @@ ratio_dist_x=2
 ratio_dist_y=2
 ratio_front_x=100
 cyl_x=-0.5
-Nb=5
+Nb=9
 Ncx=2
 Ncy=3
 TOLERANCE_P=1e-6
@@ -41,17 +41,18 @@ remove:=rm -rf .qcc*
 
 all: heat_polymerization_front
 heat_polymerization:
-	$(compile)  poly_heat.c -lm
+	$(compile)  poly_heat.c $(CLIBS)
 	$(run)
 heat_polymerization_front:
 	$(remove)
-	$(compile)  poly_heat_front.c -lm
+	$(compile)  poly_heat_front.c $(CLIBS)
 	$(run)
 poly_with_yaml:
 	$(remove)
-	$(compile)  poly_with_yaml.c -lm
-	#$(run)
-#mpirun -np 2 xterm -hold -e gdb -ex run --args ./a.out $(args)
+	$(compile)  poly_with_yaml.c $(CLIBS)
+	# $(run)
+debug:
+	mpirun -np 2 xterm -hold -e gdb -ex run --args ./a.out $(args)
 convert:
 	qcc -Wall -O2 -events dump2pvd_heat.c -lm -o convertdump2pvd
 	./convertdump2pvd $(dumpname) $(iter_fp) $(maxlevel)

@@ -60,8 +60,6 @@ double Re; //Reynolds
 double Pe; //Peclet number
 double Pr; //Prandtl number
 double Fr; //Froude number Fr = sqrt(u^2/(g*cyl_diam))
-double G;
-double Umean;
 double layer_velocity, layer_heat;
 double x_init = 2, Dx_min, dx_min;
 int maxlevel = 9;
@@ -71,7 +69,7 @@ double maxDT, maxDT0;
 double mindelta, mindelta0;
 double mu_max = 0, nu_max = 0;
 int adapt_method = 1; // 0 - traditional, 1 - using limitation, 2 - using array for maxlevel
-double feps = 1e-10, fseps = 1e-10, ueps = 1e-2, rhoeps = 1e-10, Teps = 3e-2, aeps = 3e-2, mueps=1e-2;
+double feps = 1e-10, ueps = 1e-2, rhoeps = 1e-10, Teps = 3e-2, aeps = 3e-2, mueps=1e-2;
 double TOLERANCE_P = 1e-7, TOLERANCE_V = 1e-8, TOLERANCE_T = 1e-7;
 double *R = NULL;
 coord *centers = NULL;
@@ -269,7 +267,7 @@ int main(int argc, char * argv[]) {
                  "               shift_x=%g shift_y=%g non_saturated=%d\n"
                  "Solver:        DTmax=%g, CFL=%g, CFL_ARR=%g, NITERMIN=%d,  NITERMAX=%d,\n"
                  "               TOLERANCE_P=%g, TOLERANCE_V=%g, TOLERANCE_T=%g\n"
-                 "ADAPT:         minlevel=%d,  maxlevel=%d, feps=%g, fseps=%g, ueps=%g, Teps=%g, aeps=%g\n"
+                 "ADAPT:         minlevel=%d,  maxlevel=%d, feps=%g, ueps=%g, Teps=%g, aeps=%g\n"
                  "OUTPUT:        dt_vtk=%g,    number of procs=%d\n",
 				mu0, mu1, mu2, mu3, rho1, rho2, rho3,
 				mu1/rho1, mu2/rho2, mu3/rho3,
@@ -285,7 +283,7 @@ int main(int argc, char * argv[]) {
                 shift_x, shift_y, non_saturated,
                 DT, CFL, CFL_ARR, NITERMIN, NITERMAX,
                 TOLERANCE_P, TOLERANCE_V, TOLERANCE_T,
-                minlevel, maxlevel, feps, fseps, ueps, Teps, aeps,
+                minlevel, maxlevel, feps, ueps, Teps, aeps,
                 dt_vtk, npe());
     a = av;
     fs.refine = fs.prolongation = fraction_refine;
@@ -996,7 +994,6 @@ event vtk_file (t += dt_vtk)
     char name[300];
     sprintf (name, "vtk_%s", subname);
     scalar l[], dpdx[];
-    calc_scalar_from_face(mu, mu_cell);
     foreach() {
         l[] = level;
         dpdx[] = (p[1] - p[-1])/(2*Delta);
@@ -1019,7 +1016,7 @@ We adapt according to the error on the embedded geometry, velocity and
 tracer fields. */
 
 #define ADAPT_SCALARS {rhov, fs, u.x, u.y, T, alpha_doc, mu_cell}
-#define ADAPT_EPS_SCALARS {rhoeps, fseps, ueps, ueps, Teps, aeps, mueps}
+#define ADAPT_EPS_SCALARS {rhoeps, feps, ueps, ueps, Teps, aeps, mueps}
 
 event adapt (i++){
 	double eps_arr[] = ADAPT_EPS_SCALARS;
@@ -1049,4 +1046,4 @@ event check_fail(i += 100){
     }
 }
 
-event stop(t = 2);
+event stop(t = 10);
