@@ -539,7 +539,6 @@ event init (t = 0) {
         strcat(cmd_str, " | tail -1 | awk \'{print $4}\' ");
         fprintf(ferr, "grep iter_fp: %s", cmd_str);
         cmd = popen(cmd_str, "r");
-//        cmd = popen("grep \"vtk: iter_fp\" log | tail -1 | awk \'{print $4}\'", "r");
         if (cmd == NULL) {
             fprintf(ferr, "Error in opening log file and searching iter_fp");
             perror("popen");
@@ -547,7 +546,7 @@ event init (t = 0) {
         }
         fgets(result, sizeof(result), cmd);
         iter_fp = atoi(result) + 1;
-        fprintf(ferr, "Read iter_fp+1: %d\n", iter_fp);
+        fprintf(ferr, "Read last iter_fp: %d, new iter_fp: %d\n", atoi(result), iter_fp);
         pclose(cmd);
     }
 }

@@ -1,14 +1,14 @@
 #!/bin/bash
-#SBATCH --job-name=heat_poly         # Job name
-#SBATCH --mail-type=END,FAIL         # Mail events (NONE, BEGIN, END, FAIL, ALL)
-#SBATCH --mail-user=weugene@mail.ru  # Where to send mail.  Set this to your email address
-#SBATCH --cpus-per-task=1            # Number of cores per MPI task 
-#SBATCH --nodes=1                    # Maximum number of nodes to be allocated
-#SBATCH --ntasks-per-node=35         # Maximum number of tasks on each node
-#SBATCH --mem-per-cpu=10gb           # Memory (i.e. RAM) per processor
+##SBATCH --job-name=heat_poly         # Job name
+##SBATCH --mail-type=END,FAIL         # Mail events (NONE, BEGIN, END, FAIL, ALL)
+##SBATCH --mail-user=weugene@mail.ru  # Where to send mail.  Set this to your email address
+##SBATCH --cpus-per-task=1            # Number of cores per MPI task 
+##SBATCH --nodes=1                    # Maximum number of nodes to be allocated
+##SBATCH --ntasks-per-node=3          # Maximum number of tasks on each node
+##SBATCH --mem-per-cpu=10gb           # Memory (i.e. RAM) per processor
 #SBATCH --time=1-00:00:00            # Wall time limit (days-hrs:min:sec)
 #SBATCH --output=mpi_test_%j.log     # Path to the standard output and error files relative to the working directory
-#SBATCH -p htc
+#SBATCH -p cpu
 echo $BASILISK
 
 echo "Date              = $(date)"
@@ -19,19 +19,15 @@ echo "Number of Nodes Allocated      = $SLURM_JOB_NUM_NODES"
 echo "Number of Tasks Allocated      = $SLURM_NTASKS"
 echo "Number of Cores/Task Allocated = $SLURM_CPUS_PER_TASK"
 
-module load intel/2020
+module load compilers/gcc-8.3.0
+module load mpich-3.3.2-gcc-8.3.0-hfwhupo
+#module load intel/2020
+#module load compilers/intel_2020.1.217
+#unset I_MPI_PMI_LIBRARY
+#export I_MPI_JOB_RESPECT_PROCESS_PLACEMENT=0   # the option -ppn only works if you set this before
+export LD_LIBRARY_PATH=$HOME/opt/trinity/shared/opt/rh/gcc-8.3.0/lib64:$LD_LIBRARY_PATH
+export C_INCLUDE_PATH=$HOME/opt/include:$C_INCLUDE_PATH
+cd $HOME/basilisk/work/Heat_transfer_Polymerization/$1
+#CC99='mpicc -std=c99' qcc -DDUMP=1 -Wall -O2 -events -D_MPI=1  poly_with_yaml.c -L/usr/local/lib/ -L/home/e.sharaborin/opt/lib -L/trinity/home/e.sharaborin/opt/lib -L/trinity/home/e.sharaborin/opt/trinity/shared/opt/rh/gcc-8.3.0/lib64 -lcyaml -lm
 
-cd $HOME/basilisk/work/Heat_transfer_Polymerization/big_cold_small_bubble/
-#qcc -DDUMP=1 -Wall -O2 -events -g -lm poly_heat.c
-CC99='mpicc -std=c99' qcc -DDUMP=1 -Wall -O2 -events -lm -D_MPI=1  poly_heat.c
-Tcyl=280
-maxlevel=10
-iter_fp=2
-ratio_Rbmin=0.166666
-ratio_Rbmax=0.75
-ratio_dist_x=2
-ratio_dist_y=2
-Nb=10
-Ncx=5
-Ncy=7
-mpirun ./a.out $Tcyl $maxlevel $iter_fp $ratio_Rbmin $ratio_Rbmax $ratio_dist_x $ratio_dist_y $Nb $Ncx $Ncy 
+mpirun ./a.out $2

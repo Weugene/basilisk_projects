@@ -955,7 +955,7 @@ trace cstats curvature_partstr(struct Curvature p) {
   vector nn[];
   CalcNormal(c, nn);
 
-  boundary({nn});
+  boundary((scalar *){nn});
 
   foreach (reduction(+:sh) reduction(+:sc)) {
     if (!interfacial(point, c)) {

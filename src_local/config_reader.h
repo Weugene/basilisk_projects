@@ -250,7 +250,7 @@ static const cyaml_schema_field_t top_mapping_schema[] = {
         CYAML_FIELD_STRING_PTR("name", CYAML_FLAG_POINTER,struct input_yaml, name,0, CYAML_UNLIMITED),
         CYAML_FIELD_MAPPING("dimensional_vars", CYAML_FLAG_DEFAULT,struct input_yaml, dv, dimensional_fields),
         CYAML_FIELD_MAPPING("non_dimensional_vars", CYAML_FLAG_DEFAULT,struct input_yaml, ndv, non_dimensional_fields),
-        CYAML_FIELD_MAPPING("nums", CYAML_FLAG_DEFAULT,struct input_yaml, nums, numbers_fields),
+        CYAML_FIELD_MAPPING("nums", CYAML_FLAG_OPTIONAL,struct input_yaml, nums, numbers_fields),
         CYAML_FIELD_MAPPING("num_params", CYAML_FLAG_DEFAULT,struct input_yaml, num_params, numerical_params_fields),
         CYAML_FIELD_END
 };
@@ -313,8 +313,8 @@ struct input_yaml* read_config(int argc, char *argv[])
 //    Mu0*exp(Eeta_by_Rg/Tin)
     if (!input->dv.Mu[0]) dv->Mu[0] = 3.85e-7;
     if (!input->dv.Mu[1]) dv->Mu[1] = dv->Mu[0]*exp(dv->Eeta_by_Rg/dv->Tin);
-    if (!input->dv.Mu[2]) dv->Mu[2] = 1.963e-5;
-    if (!input->dv.Mu[3]) dv->Mu[3] = dv->Mu[0]*exp(dv->Eeta_by_Rg/dv->T_solid)*dv->Rho[2]/dv->Rho[0];
+    if (!input->dv.Mu[2]) dv->Mu[2] = 1.963e-2;//1.963e-5
+    if (!input->dv.Mu[3]) dv->Mu[3] = dv->Mu[0]*exp(dv->Eeta_by_Rg/dv->T_solid);
     if (!input->dv.domain_size && !input->ndv.domain_size){
         dv->domain_size = dv->characteristic_size*ndv->ratio_dist_x*max( max(ndv->Ncx, ndv->Ncy),1);
         ndv->domain_size = ndv->ratio_dist_x*max( max(ndv->Ncx, ndv->Ncy),1);
@@ -353,8 +353,8 @@ struct input_yaml* read_config(int argc, char *argv[])
     ndv->rho[1] = nums->RhoR;
     ndv->rho[2] = nums->RhoRS;
     ndv->kappa[0] = dv->Kappa[0]/(dv->Rho[0]*dv->CP[0]*dv->characteristic_size*dv->Uin + 1e-10);
-    ndv->kappa[1] = dv->Kappa[0]*nums->KappaR;
-    ndv->kappa[2] = dv->Kappa[0]*nums->KappaRS;
+    ndv->kappa[1] = ndv->kappa[0]*nums->KappaR;
+    ndv->kappa[2] = ndv->kappa[0]*nums->KappaRS;
     ndv->Cp[0] = 1.0;
     ndv->Cp[1] = ndv->Cp[0]*nums->CpR;
     ndv->Cp[2] = ndv->Cp[0]*nums->CpRS;
@@ -475,6 +475,7 @@ struct input_yaml* read_config(int argc, char *argv[])
     fprintf(fout, "CFL=%g CFL_ARR=%g\n", numpar->CFL, numpar->CFL_ARR);
     fprintf(fout, "DT=%g maxDT=%g\n", numpar->DT, numpar->maxDT);
     fprintf(fout, "m_bp=%g m_bp_T=%g\n", numpar->m_bp, numpar->m_bp_T);
+    fprintf(fout, "layer_velocity=%g layer_heat=%g\n", 1.0/sqrt(input->nums.Re), 1.0/sqrt(input->nums.Pe));
     fprintf(fout, "feps=%g ueps=%g rhoeps=%g Teps=%g aeps=%g mueps=%g\n", numpar->feps, numpar->ueps, numpar->rhoeps, numpar->Teps, numpar->aeps, numpar->mueps);
 
     /* Free the data */
@@ -522,9 +523,9 @@ struct input_yaml* read_config_and_assign_global_vars(int argc, char *argv[])
     Tin = 1;
     T_solid = input->ndv.T_solid;
     Tam = input->ndv.Tam;
-    Ggrav_ndim[0] = input->ndv.Ggrav_ndim[0];
-    Ggrav_ndim[1] = input->ndv.Ggrav_ndim[1];
-    Ggrav_ndim[2] = input->ndv.Ggrav_ndim[2];
+    Ggrav_ndim.x = input->ndv.Ggrav_ndim[0];
+    Ggrav_ndim.y = input->ndv.Ggrav_ndim[1];
+    Ggrav_ndim.z = input->ndv.Ggrav_ndim[2];
     f.sigma = (fabs(input->ndv.sigma_ndim) < 1e+10) ? input->ndv.sigma_ndim : 0;
     domain_size = input->ndv.domain_size;
     dist_x = input->ndv.ratio_dist_x;

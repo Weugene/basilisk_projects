@@ -3,13 +3,15 @@
 #define DEBUG_BRINKMAN_PENALIZATION
 #define DEBUG_MODE_TENSION
 #define DEBUG_MODE_POISSON
+#define DEBUG_MULTIGRID
 #define REACTION_MODEL REACTION_MODEL_NON_AUTOCATALYTIC
+#define IGNORE_SOLID_MU
 //#define DEBUG_OUTPUT_VTU_MPI
 #define FILTERED
 #define JACOBI 1
 #define CORRECT_UF_FLUXES 1
-#define CURV_PARTSTR 1// use Petr Karnakov's module
 #define STICKY_SOLID 1
+#define CURV_PARTSTR 1// use Petr Karnakov's module
 #define RELATIVE_RES
 #define EPS_MAXA 2 // adapt based on Max-Min value
 //#define PRINT_ALL_VALUES
@@ -42,7 +44,8 @@ double dt_vtk = 0.1;
 double Uin, Tin, T_solid, Tam;
 double MuRS;
 double timeend;
-double Ggrav_ndim[3];
+coord Ggrav_ndim;
+bool gravityModule = false;
 double cyl_diam, domain_size, dist_x, dist_y, cyl_x, front_x, Rbmin, Rbmax;
 double dev_r, develx, devely;
 double shift_x, shift_y;
@@ -71,7 +74,7 @@ int main(int argc, char * argv[]) {
 
     MuRS = input->nums.MuRS;
     Ncy += (shift_y > 0); //for saturated flow we add artificial cylinder
-
+    gravityModule = (fabs(Ggrav_ndim.x) + fabs(Ggrav_ndim.y) + fabs(Ggrav_ndim.z) > SEPS);
     ignore_tension_CFL = false;
 #ifdef STOKES
     stokes = true;
@@ -105,7 +108,7 @@ int main(int argc, char * argv[]) {
 #endif
 #if CURV_PARTSTR==1
     DumpCsvInit();
-    partstr_conf.nohf = false; // both GHF and particle curvature are possible
+    partstr_conf.nohf = false; // false: both GHF and particle curvature are possible, true: use only particle
 #endif
     run();
 #if CURV_PARTSTR==1
@@ -149,12 +152,12 @@ double bubbles (double x, double y, double z)
     coord pnt_dist;
     front_x = (non_saturated) ? front_x : 1e+10;
     double limMin = X0 + Rbmax, limMax = min(min(front_x, cyl_x), X0 + L0) - Rbmax;
-    double *R = malloc(Nb * sizeof(double));
+    double *R = malloc(max(Nb,1) * sizeof(double));
     if (R == NULL) {
         fprintf(stderr, "malloc failed with R\n");
         return -1;
     }
-    coord *centers = malloc(Nb * sizeof(coord));
+    coord *centers = malloc(max(Nb,1) * sizeof(coord));
     if (centers == NULL) {
         fprintf(stderr, "malloc failed with centers\n");
         return -1;
@@ -197,6 +200,8 @@ double bubbles (double x, double y, double z)
 }
 double xmin_center = 0, xmax_center = 0;
 void calc_centers(coord * centers, double * R){
+    if (Ncx*Ncy == 0)
+        return;
     int k;
     coord pnt_dist;
     double minvx, maxvx, minvy, maxvy;
@@ -228,14 +233,14 @@ void calc_centers(coord * centers, double * R){
                         break;
                     }
                 }
-                fprintf(ferr, "k=%d R=%g x=%g y=%g\n", k, R[k], centers[k].x, centers[k].y);
+//                fprintf(ferr, "k=%d R=%g x=%g y=%g\n", k, R[k], centers[k].x, centers[k].y);
                 trials++;
                 if (trials > 10000) {
                     fprintf(ferr, "ERROR: Trials are more than 10000\n");
                     break;
                 }
                 if (flag) {
-                  fprintf(ferr, "k=%d R=%g x=%g y=%g\n", k, R[k], centers[k].x, centers[k].y);
+//                  fprintf(ferr, "k=%d R=%g x=%g y=%g\n", k, R[k], centers[k].x, centers[k].y);
                   break;
                 }
             }
@@ -270,12 +275,12 @@ void solid_func(scalar fs, face vector fs_face){
 event init (t = 0) {
     char name[300];
     sprintf (name, "restart_%s", subname);
-    R = (double *) malloc(Ncx*Ncy*sizeof(double));
+    R = (double *) malloc(max(Ncx*Ncy,1)*sizeof(double));
     if (R == NULL) {
         fprintf(stderr, "malloc failed with R\n");
         return -1;
     }
-    centers = (coord *) malloc(Ncx*Ncy*sizeof(coord));
+    centers = (coord *) malloc(max(Ncx*Ncy,1)*sizeof(coord));
     if (centers == NULL) {
         fprintf(stderr, "malloc failed with centers\n");
         return -1;
@@ -316,7 +321,9 @@ event init (t = 0) {
         }
 		boundary((scalar *){kappa, mu});
         event("vtk_file");
-    }else{
+    }
+    else
+    {
         FILE *popen(const char *cmd_str, const char *mode);
         int pclose(FILE *stream);
         FILE *cmd;
@@ -359,7 +366,7 @@ event init (t = 0) {
 void calc_mu(scalar muv){
     foreach(){
         muv[] = mu(f[], fs[], alpha_doc[], T[]);
-        if( muv[] > mu_max) mu_max = muv[];
+        if( (muv[] > mu_max) && (fs[] < 1)) mu_max = muv[];
     }
     boundary((scalar *){muv});
 }
@@ -367,13 +374,13 @@ void calc_mu(scalar muv){
 event properties(i++){
     solid_func(fs, fs_face);
     calc_mu(mu_cell);
-    mu3 = mu_max*MuRS;
-    fprintf(ferr, "mu3=%g was updated, mu_max=%g\n", mu3, mu_max);
+    mu3 = mu_max;
+    fprintf(ferr, "mu3=mu_max=%g was updated\n", mu3);
 }
 
 event set_dtmax (i++) {
     RELATIVE_RES_TOLERANCE = 0.01; //fabs(res1 - res2)/(res1 + 1e-30) < RELATIVE_RES_TOLERANCE
-    DT *= 1.05;
+    DT *= 1.03;
     DT = min(DT, maxDT);
     fprintf(ferr, "TIMEMAX i=%d set_dtmax: tnext= %g, t=%g, DT=%g, dt=%g\n", i, tnext, t, DT, dt);
 }
@@ -383,20 +390,21 @@ event set_dtmax (i++) {
 The gravity vector is aligned with the channel and viscosity is
 unity. */
 
-//event acceleration (i++) {
-//  if (fabs(Ggrav_ndim) > 1e-10){
-//  	foreach_face(x)	av.x[] = Ggrav_ndim[0];
-//  }
-//}
+event acceleration (i++) {
+  if (gravityModule){
+  	foreach_face()	av.x[] = Ggrav_ndim.x;
+  }
+}
 
 event advection_term(i++){
     TOLERANCE = TOLERANCE_P;
 }
-
+double m_bp_iter = 100;
 event viscous_term(i++){
+    m_bp_iter -= 2;
     nu_max = mu_max/rho1;
     TOLERANCE = TOLERANCE_V;
-    eta_s = sq(m_bp*mindelta)/nu_max;
+    eta_s = sq(max(m_bp, m_bp_iter)*mindelta)/nu_max;
     eta_T = sq(m_bp_T*mindelta)/chi_conductivity;
    fprintf(ferr, "VISC: m=%g, mindelta=%g, nu=%g, chi_conductivity=%g, eta_s=%15.12g, eta_T=%15.12g\n", m_bp, mindelta, nu_max, chi_conductivity, eta_s, eta_T);
 }
@@ -792,8 +800,8 @@ double time_prev = 0;
 
 
 //event vtk_file (i += 100)
-event vtk_file (t += dt_vtk)
-//event vtk_file (i += 1)
+//event vtk_file (t += dt_vtk)
+event vtk_file (i += 1)
 {
     char name[300];
     sprintf (name, "vtk_%s", subname);
@@ -805,10 +813,10 @@ event vtk_file (t += dt_vtk)
     boundary((scalar *){l, dpdx});
     calcPhiVisc (u, uf, T, alpha_doc, f, fs, Phi_visc, Phi_src); //TODO: visc dissipation?
 #ifdef DEBUG_BRINKMAN_PENALIZATION
-    output_vtu_MPI(name, (iter_fp) ? t + dt : 0, list = (scalar *) {T, alpha_doc, p, dpdx, fs, f, l, rhov, mu_cell, m, my_kappa, which_meth},
-    vlist = (vector *) {u, g, uf, av, dbp, total_rhs, residual_of_u, divtauu, fs_face, alpha});
+    output_vtu_MPI(name, (iter_fp) ? t + dt : 0, list = (scalar *) {T, alpha_doc, p, dpdx, fs, f, l, rhov, mu_cell, which_meth, Phi_visc, Phi_src},
+    vlist = (vector *) {u, uf, av, fs_face});
 #else
-    output_vtu_MPI(name, (iter_fp) ? t + dt : 0, list = (scalar *) {T, dpdx, alpha_doc, p, fs, f, l, rhov, mu_cell, m},
+    output_vtu_MPI(name, (iter_fp) ? t + dt : 0, list = (scalar *) {T, dpdx, alpha_doc, p, fs, f, l, rhov, mu_cell},
     vlist = (vector *) {u, av});
 #endif
 }
@@ -826,7 +834,7 @@ event adapt (i++){
 	double eps_arr[] = ADAPT_EPS_SCALARS;
 	MinMaxValues((scalar *) ADAPT_SCALARS, eps_arr);
 	adapt_wavelet ((scalar *) ADAPT_SCALARS, eps_arr, maxlevel = maxlevel, minlevel = minlevel);
-    if (i%100) count_cells(t, i);
+    if (i%100==0) count_cells(t, i);
 }
 
 //event snapshot (i += snapshot_i)
@@ -840,7 +848,7 @@ event snapshot (t += snapshot_t)
     dump (file = name);
 }
 
-event check_fail(i += 100){
+event check_fail(i += 10){
     double umax = 0;
     foreach(){
         if ((u.x[] != u.x[]) || (umax > 10e+10)) {

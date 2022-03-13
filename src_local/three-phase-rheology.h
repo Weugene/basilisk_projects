@@ -63,22 +63,29 @@ averages (i.e. harmonic).
 Usually, it is assumed that mu1 is variable, mu2 and mu3 are not. For simplisity mu3=mu2
  */
 #ifndef var_hom
-#define var_hom(f, fs, A1, A2, A3) ((1.0 - clamp(fs,0.,1.))*(A2 + (A1 - A2)*clamp(f,0.,1.)) + clamp(fs,0.,1.)*A3)
+    #ifdef IGNORE_SOLID_MU
+    #define var_hom(f, fs, A1, A2, A3) ((A2) + ((A1) - (A2))*clamp(f,0.,1.))
+    #else
+    #define var_hom(f, fs, A1, A2, A3) ((1.0 - clamp(fs,0.,1.))*((A2) + ((A1) - (A2))*clamp(f,0.,1.)) + clamp(fs,0.,1.)*(A3))
+    #endif
 #endif
 
 #ifndef var_harm
-#define var_harm(f, fs, A1, A2, A3) (1.0/(  (1.0 - clamp(fs,0.,1.))*( clamp(f,0.,1.)*(1.0/(A1) - 1.0/(A2)) + 1.0/(A2)) + clamp(fs,0.,1.)/(A3)))
-
+    #ifdef IGNORE_SOLID_MU
+//    #define var_harm(f, fs, A1, A2, A3) ( (A1)*(A2)/( clamp(f,0.,1.) * ((A2) - (A1)) + (A1) ) )
+    #define var_harm(f, fs, A1, A2, A3) ( 1.0/( clamp(f,0.,1.) * (1.0/(A1) - 1.0/(A2)) + 1.0/(A2) ) )
+    #else
+    #define var_harm(f, fs, A1, A2, A3) (1.0/(  (1.0 - clamp(fs,0.,1.))*( clamp(f,0.,1.)*(1.0/(A1) - 1.0/(A2)) + 1.0/(A2)) + clamp(fs,0.,1.)/(A3)))
+    #endif
 #endif
 
 #ifndef rho
 #define rho(f, fs) var_hom(f, fs, rho1, rho2, rho3)
-//#define rho(f, fs) ((1.0 - clamp(fs,0.,1.))*(rho2 + (rho1 - rho2)*clamp(f,0.,1.)) + clamp(fs,0.,1.)*rho3)
 #endif
 
 #ifndef kappav
-//    #define kappav(f, fs) var_harm(f, fs, kappa1, kappa2, kappa3)
-    #define kappav(f, fs) ((1.0 - clamp(fs,0.,1.))*(kappa2 + (kappa1 - kappa2)*clamp(f,0.,1.)) + clamp(fs,0.,1.)*kappa3)
+    #define kappav(f, fs) var_harm(f, fs, kappa1, kappa2, kappa3)
+//    #define kappav(f, fs) ((1.0 - clamp(fs,0.,1.))*(kappa2 + (kappa1 - kappa2)*clamp(f,0.,1.)) + clamp(fs,0.,1.)*kappa3)
 #endif
 #if REACTION_MODEL != NO_REACTION_MODEL
     scalar alpha_doc[];
@@ -109,9 +116,11 @@ double mu_eff = 0;
 #endif
 
 #ifndef mu
+    #define mu(f, fs, alpha_doc, T) var_hom(f, fs, muf1(alpha_doc, T), mu2, mu3)
+//    #define mu(f, fs, alpha_doc, T) var_harm(f, fs, muf1(alpha_doc, T), mu2, mu3)
 //#define mu(f, fs, alpha_doc, T) (mu2 + (mu1 - mu2)*clamp(f,0.,1.))
 //slow convergence
-#define mu(f, fs, alpha_doc, T) ((1.0 - clamp(fs,0.,1.))*(mu2 + (muf1(alpha_doc, T) - mu2)*clamp(f,0.,1.)) + clamp(fs,0.,1.)*mu3)
+//#define mu(f, fs, alpha_doc, T) ((1.0 - clamp(fs,0.,1.))*(mu2 + (muf1(alpha_doc, T) - mu2)*clamp(f,0.,1.)) + clamp(fs,0.,1.)*mu3)
 //#define mu(f, fs, alpha_doc, T) ((fs == 0)*(mu2 + (muf1(alpha_doc, T) - mu2)*clamp(f,0.,1.)) + clamp(fs,0.,1.)*mu3)
 //#define mu(f, fs, alpha_doc, T) (1.0/(  (fs == 0)*( clamp(f,0.,1.)*(1.0/muf1(alpha_doc, T) - 1.0/mu2) + 1.0/mu2) + clamp(fs,0.,1.)/mu3))
 // #define mu(f, fs, alpha_doc, T) (1.0/(  (1.0 - clamp(fs,0.,1.))*( clamp(f,0.,1.)*(1.0/muf1(alpha_doc, T) - 1.0/mu2) + 1.0/mu2) + clamp(fs,0.,1.)/mu3))
@@ -151,18 +160,7 @@ event tracer_advection (i++) {
 #endif
 }
 
-//#define n_mu_eff 4
-//#define norm_mu_eff (sq(n_mu_eff) + 3*n_mu_eff + 2)
 event properties (i++) {
-//#ifdef DAMP_CAPILLARY_WAVE
-//    scalar f_very_smooth[], sf_s[];
-//    filter_scalar(f, f_very_smooth);
-//		for (int i_smooth=2; i_smooth<=5; i_smooth++){
-//			filter_scalar(f_very_smooth, sf_s);
-//			foreach() f_very_smooth[] = sf_s[];
-//			boundary ({f_very_smooth});
-//		}
-//#endif
     foreach_face() {
         double ff1 = (sf1[] + sf1[-1])/2.; //liquid
         double ff2 = (sf2[] + sf2[-1])/2.; //solid
@@ -176,9 +174,6 @@ event properties (i++) {
 #else
             muv.x[] = fm.x[]*mu(ff1, ff2, 0, Tf);
 #endif
-//#ifdef DAMP_CAPILLARY_WAVE
-//					 muv.x[] += fm.x[]*mu_eff*(ff1) * pow(1 - ff1, n_mu_eff)*norm_mu_eff;
-//#endif
         }
 #ifdef HEAT_TRANSFER
         if (kappa1 || kappa2) {
