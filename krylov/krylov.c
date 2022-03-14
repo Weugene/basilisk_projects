@@ -10,8 +10,6 @@
 #include "utils.h"
 #include "utils-weugene.h"
 #include "output_vtu_foreach.h"
-//#include <mpi.h>
-#include "common.h"
 
 scalar u[], rhs[], Ap_result[], uexact[];
 double w = 1.0;
