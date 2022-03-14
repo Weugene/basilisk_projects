@@ -10,13 +10,16 @@
 #include "utils.h"
 #include "utils-weugene.h"
 #include "output_vtu_foreach.h"
+//#include <mpi.h>
+#include "common.h"
+
 scalar u[], rhs[], Ap_result[], uexact[];
 double w = 1.0;
 double ueps = 1e-3;
 double dtmax = 1e-21;
 int minlevel = 2;
 int maxlevel = 9;
-int LEVEL = 6;
+int LEVEL = 7;
 
 int main(int argc, char * argv[]) {
     DT = 1e+0;
@@ -95,7 +98,6 @@ event step(i++){
     }
     boundary((scalar*) {rhs});
 
-
     struct Poisson p;
     p.a = u;
     p.b = rhs;
@@ -145,12 +147,9 @@ event vtk_file (i+=1)
 
 }
 
-event move_next(i++){
-    foreach(){
-        u[] = Ap_result[];
-    }
-    boundary((scalar*) {u});
-}
+
+
+
 
 event stop_end(i = 10){
     scalar du[];
@@ -160,6 +159,13 @@ event stop_end(i = 10){
     boundary((scalar *){du});
     double eps_arr[] = {1};
     MinMaxValues((scalar *){du}, eps_arr);
+    //count_cells(t, i);
     fprintf(fout, "L2 h=%g L2Err=%g Nc=%ld\n", L0/pow(2.0, maxlevel), eps_arr[0], perf.tnc);
 
 }
+#if TRACE > 1
+event profiling (i++) {
+  static FILE * fp = fopen ("profiling", "w");
+  trace_print (fp, 1);
+}
+#endif

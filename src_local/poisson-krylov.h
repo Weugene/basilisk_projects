@@ -466,10 +466,14 @@ void calcAy (scalar a, scalar Ap_result, struct Poisson p){
   boundary((scalar*){Ap_result});
 };
 
+/*
+ * x^{n+1} = x^n + M^{-1} \left( b - A x^n \right)
+ * MG(x^n, b)
+ * M^{-1}r = MG(0, r)
+ */
 mgstats calcInvMy (scalar a, scalar InvMy_result, struct Poisson p){
   mgstats s = {0};
-  fprintf(ferr, "calcInvMy...\n");
-//  return s;
+//  fprintf(ferr, "calcInvMy...\n");
   foreach(){
     InvMy_result[] = a[];
 //    InvMy_result[] = 0.0;
@@ -528,7 +532,7 @@ mgstats poisson (struct Poisson p)
 
 
   double maxres = residual (&a, &b, &res0, &p);
-  fprintf(ferr, "+++maxres=%g nrelax=%d minlevel=%d\n", maxres, p.nrelax, p.minlevel);
+//  fprintf(ferr, "maxres=%g nrelax=%d minlevel=%d\n", maxres, p.nrelax, p.minlevel);
   s = calcInvMy (res0, z0, p);
   foreach(){
     p0[] = z0[];
@@ -541,7 +545,6 @@ mgstats poisson (struct Poisson p)
   for (int iteration = 1; iteration < 10; iteration++){
     fprintf(ferr, "iteration=%d\n", iteration);
     calcAy (p0, Ap, p);
-    fprintf(ferr, "calcAy. scalar_product(Ap, p0)=%g\n", scalar_product(Ap, p0));
     double alpha0 = scalar_product(res0, z0)/scalar_product(Ap, p0); // minus due to Ap
     fprintf(ferr, "alpha0=%g\n", alpha0);
     foreach(reduction(max:maxda))

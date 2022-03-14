@@ -47,24 +47,17 @@ void MinMaxValues(scalar * list, double * arr_eps) {// for each scalar min and m
 }
 
 int count_cells(double t, int i){
-    int tnc = 0, nc = 0, maxlev=0;
-    foreach( reduction(+:tnc) reduction(max:maxlev) ){
-        tnc++;
-        if (level > maxlev) maxlev = level;
-    }
 #if _MPI
-    foreach()
-        nc++;
     int rank, h_len;
     char hostname[MPI_MAX_PROCESSOR_NAME];
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Get_processor_name(hostname, &h_len);
-    printf("i %d t %g hostname %s rank %d num cells %d total num cells %d compression rate %g\n", i, t, hostname, rank, nc, tnc, pow(2, dimension*maxlev)/tnc);
+    printf("i %d t %g hostname %s rank %d num cells %d total num cells %d compression rate %g\n", i, t, hostname, rank, grid->n, grid->tn, pow(2, dimension*grid->maxdepth)/grid->tn);
 #else
-    printf("i %d t %g total num cells %d\n", i, t, tnc);
+    printf("i %d t %g total num cells %d\n", i, t, grid->tn);
 #endif
     fflush(stdout);
-    return tnc;
+    return grid->tn;
 }
 // statistical values inside cells with liquid
 stats statsf_weugene (scalar f, scalar fs)
