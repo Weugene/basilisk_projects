@@ -3,6 +3,7 @@
 #define DEBUG_MULTIGRID
 #define DEBUG_MODE_POISSON
 #define PRINT_ALL_VALUES
+const face vector unityfn[] = {-1.,-1.,-1.};
 #include "run.h"
 #include "timestep.h"
 #include "poisson-krylov.h"
@@ -43,9 +44,10 @@ int main(int argc, char * argv[]) {
     return 0;
 }
 
-#define u_BC (sin(w*x*y))
-#define du_BC (w*(y + x)*cos(w*x*y))// (w*y*cos + x)*cos(w*x*y))
-#define d2u_BC (-sq(w)*(sq(y)+sq(x))*sin(w*x*y))
+#define u_BC (sin(x)*sin(y))
+//#define u_BC (sin(x)*sin(y)*(sq(x) - sq(pi)))
+//#define du_BC (w*(y + x)*cos(w*x*y))// (w*y*cos + x)*cos(w*x*y))
+//#define d2u_BC (-sq(w)*(sq(y)+sq(x))*sin(w*x*y))
 u[left] = dirichlet(u_BC);
 u[right] = dirichlet(u_BC);
 u[bottom] = dirichlet(u_BC);
@@ -88,7 +90,7 @@ event step(i++){
 //        rhs[] = d2u_BC;
     }
     boundary((scalar*) {rhs});
-    poisson (u, rhs, unityf, zeroc, nrelax=4); //alpha=1, lambda=0
+    poisson (u, rhs, unityfn, zeroc); //alpha=1, lambda=0
 #else
     foreach(){
         rhs[] = 0;
@@ -145,14 +147,14 @@ event vtk_file (i+=1)
 
 }
 
-event move_next(i++){
-    foreach(){
-        u[] = Ap_result[];
-    }
-    boundary((scalar*) {u});
-}
+//event move_next(i++){
+//    foreach(){
+//        u[] = Ap_result[];
+//    }
+//    boundary((scalar*) {u});
+//}
 
-event stop_end(i = 10){
+event stop_end(i = 0){
     scalar du[];
     foreach(){
         du[] = fabs(u[] - uexact[]);

@@ -420,7 +420,7 @@ static double residual (scalar * al, scalar * bl, scalar * resl, void * data)
   boundary ((scalar *){residual_of_p});
 #endif
 #ifdef DEBUG_MULTIGRID
-  fprintf(ferr, "residual: maxres= %15.12g\n", maxres);
+//  fprintf(ferr, "residual: maxres= %15.12g\n", maxres);
 #endif
   return maxres;
 }
@@ -458,7 +458,6 @@ void calcAy (scalar a, scalar Ap_result, struct Poisson p){
     b[] = 0.0;
   }
   boundary((scalar*){b});
-  p.b = b;
   residual ((scalar *){a}, (scalar *){b}, (scalar *){Ap_result}, &p); // res = b - Ay = -Ay
   foreach(){
     Ap_result[] *= -1;
@@ -466,12 +465,10 @@ void calcAy (scalar a, scalar Ap_result, struct Poisson p){
   boundary((scalar*){Ap_result});
 };
 
-mgstats calcInvMy (scalar a, scalar InvMy_result, struct Poisson p){
+mgstats calcInvMy (scalar aa, scalar InvMy_result, struct Poisson p){
   mgstats s = {0};
-  fprintf(ferr, "calcInvMy...\n");
-//  return s;
   foreach(){
-    InvMy_result[] = a[];
+    InvMy_result[] = aa[];
 //    InvMy_result[] = 0.0;
   }
   boundary((scalar*) {InvMy_result});
@@ -535,36 +532,50 @@ mgstats poisson (struct Poisson p)
   }
   boundary((scalar*) {p0});
 
-  double maxda = 0;
   double dai;
+  double beta0, alpha0;
+  scalar restmp[];
   fprintf(ferr, "init...\n");
-  for (int iteration = 1; iteration < 10; iteration++){
+
+  calcAy (a, Ap, p);
+
+//  double maxx=0;
+//  foreach(reduction(max:maxx)){
+//    maxx = fabs(Ap[] - 2*a[]);
+//  }
+//  fprintf(ferr, "maxx = %g\n", maxx);
+
+  for (int iteration = 0; iteration < 100; iteration++){
+    maxres = 0;
     fprintf(ferr, "iteration=%d\n", iteration);
     calcAy (p0, Ap, p);
-    fprintf(ferr, "calcAy. scalar_product(Ap, p0)=%g\n", scalar_product(Ap, p0));
-    double alpha0 = scalar_product(res0, z0)/scalar_product(Ap, p0); // minus due to Ap
-    fprintf(ferr, "alpha0=%g\n", alpha0);
-    foreach(reduction(max:maxda))
+    alpha0 = scalar_product(res0, z0)/scalar_product(Ap, p0); // minus due to Ap
+    foreach(reduction(max:maxres))
     {
-      a[] += alpha0 * p0[];
-      dai = alpha0 * Ap[];
-      res1[] = res0[] - dai; // plus due to Ap
-      if (maxda < fabs(dai)){
-        maxda = fabs(dai);
+      a[] = a[] + alpha0 * p0[];
+      res1[] = res0[] - alpha0 * Ap[]; // plus due to Ap
+      if (maxres < fabs(res1[])){
+        maxres = fabs(res1[]);
       }
     }
     boundary((scalar*) {a, res1});
-    if (maxda < TOLERANCE)
+    double maxrestmp = residual (&a, &b, &restmp, &p);
+    fprintf(ferr, "tmp: maxrestmp=%g\n", maxrestmp);
+    fprintf(ferr, "***maxres=%g\n", maxres);
+    if (maxres < TOLERANCE)
       break;
-    s = calcInvMy (res1, z1, p);
-    double beta0 = scalar_product(res1, z1)/scalar_product(res0, z0);
-    fprintf(ferr, "beta0=%g\n", beta0);
+    calcInvMy (res1, z1, p);
+    beta0 = scalar_product(res1, z1)/scalar_product(res0, z0);
     foreach()
     {
       p0[] = z1[] + beta0 * p0[];
+      z0[] = z1[];
+      res0[] = res1[];
     }
-    boundary((scalar*) {p0});
+    boundary((scalar*) {p0, z0, res0});
   }
+  maxres = residual (&a, &b, &res0, &p);
+  fprintf(ferr, "final: maxres=%g\n", maxres);
   /**
   We restore the default. */
   if (p.tolerance)
