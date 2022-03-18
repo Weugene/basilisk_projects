@@ -48,6 +48,7 @@ int main(int argc, char * argv[]) {
 //#define u_BC (sin(x)*sin(y)*(sq(x) - sq(pi)))
 //#define du_BC (w*(y + x)*cos(w*x*y))// (w*y*cos + x)*cos(w*x*y))
 //#define d2u_BC (-sq(w)*(sq(y)+sq(x))*sin(w*x*y))
+
 u[left] = dirichlet(u_BC);
 u[right] = dirichlet(u_BC);
 u[bottom] = dirichlet(u_BC);
@@ -143,7 +144,7 @@ event vtk_file (i+=1)
     }
     boundary((scalar *){l, uexact});
 
-    output_vtu_MPI(name, (iter_fp) ? t + dt : 0, list = (scalar *) {u, uexact, rhs, Ap_result, l, residual_of_p});
+    output_vtu_MPI(name, (iter_fp) ? t + dt : 0, list = (scalar *) {u, uexact, rhs, Ap_result, l, residual_of_p, res0,res1,p0,Ap}, fvlist = (vector*){g});
 
 }
 

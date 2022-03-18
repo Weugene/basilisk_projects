@@ -377,7 +377,7 @@ static void relax (scalar * al, scalar * bl, int l, void * data)
 The equivalent residual function is obtained in a similar way in the
 case of a Cartesian grid, however the case of the tree mesh
 requires more careful consideration... */
-
+    face vector g[];
 static double residual (scalar * al, scalar * bl, scalar * resl, void * data)
 {
   scalar a = al[0], b = bl[0], res = resl[0];
@@ -387,9 +387,11 @@ static double residual (scalar * al, scalar * bl, scalar * resl, void * data)
   double maxres = 0.;
 #if TREE
   /* conservative coarse/fine discretisation (2nd order) */
-  face vector g[];
-  foreach_face()
+
+  foreach_face(){
     g.x[] = alpha.x[]*face_gradient_x (a, 0);
+//    if (fabs(g.x[]) >2 )fprintf(ferr, "%g | %g %g %g\n", g.x[], a[], a[1], a[-1]);
+  }
   boundary_flux ({g});
   foreach (reduction(max:maxres)) {
     res[] = b[] - lambda[]*a[]; // lambda = 0 in usual case. it is a linear part in Functional
@@ -452,17 +454,29 @@ double scalar_product(scalar a, scalar b){
     fprintf(ferr, "scalar_prod: %15.12g, k=%d", scalar_product(a, b), k);
  *
  */
-void calcAy (scalar a, scalar Ap_result, struct Poisson p){
+void calcAy (scalar a, scalar Ap_result, struct Poisson p1){
+
+  struct Poisson p;
+  p.alpha = unityf;
+  p.lambda = zeroc;
+
   scalar b[];
   foreach(){
     b[] = 0.0;
   }
   boundary((scalar*){b});
-  residual ((scalar *){a}, (scalar *){b}, (scalar *){Ap_result}, &p); // res = b - Ay = -Ay
-  foreach(){
-    Ap_result[] *= -1;
-  }
-  boundary((scalar*){Ap_result});
+
+//  foreach(){
+//    if (fabs(a[]) >1 || fabs(a[1]) >1 || fabs(a[-1]) >1  )
+//        fprintf(ferr, " %g %g %g\n", a[], a[1], a[-1]);
+//  }
+//        Ap_result.boundary[b] = Ap_result.boundary_homogeneous[b];
+//  restriction({Ap_result,a});
+  residual (&a, &b, &Ap_result, &p); // res = b - Ay = -Ay
+//  foreach(){
+//    Ap_result[] *= -1;
+//  }
+//  boundary((scalar*){Ap_result});
 };
 
 mgstats calcInvMy (scalar aa, scalar InvMy_result, struct Poisson p){
@@ -483,9 +497,18 @@ mgstats calcInvMy (scalar aa, scalar InvMy_result, struct Poisson p){
 //  void * data,
 //  int nrelax, int minlevel, int maxlevel)
 };
+
+scalar z0[], z1[], res0[], res1[], p0[], Ap[];
+
 mgstats poisson (struct Poisson p)
 {
-  scalar z0[], z1[], res0[], res1[], p0[], Ap[];
+for (int b = 0; b < nboundary; b++)
+    for (scalar s in {res0,res1,p0,Ap,z0,z1}){
+        s.boundary[b] = s.boundary_homogeneous[b];
+//        s.boundary[b] = dirichlet_homogeneous_bc;
+
+    }
+
   /**
   If $\alpha$ or $\lambda$ are not set, we replace them with constant
   unity vector (resp. zero scalar) fields. Note that the user is free to
@@ -537,42 +560,61 @@ mgstats poisson (struct Poisson p)
   scalar restmp[];
   fprintf(ferr, "init...\n");
 
-  calcAy (a, Ap, p);
+//  calcAy (a, Ap, p);
 
-//  double maxx=0;
+  double maxx=0;
 //  foreach(reduction(max:maxx)){
-//    maxx = fabs(Ap[] - 2*a[]);
+//      if (maxx < fabs(Ap[] - 2*a[]))
+//        maxx = fabs(Ap[] - 2*a[]);
 //  }
-//  fprintf(ferr, "maxx = %g\n", maxx);
+//  fprintf(ferr, "max(Ap[] - 2*a[]) = %g\n", maxx);
 
-  for (int iteration = 0; iteration < 100; iteration++){
+  maxx=0;
+  foreach(reduction(max:maxx)){
+      if (maxx < fabs(p0[] + 2*a[]))
+        maxx = fabs(p0[] + 2*a[]);
+  }
+  fprintf(ferr, "p0max = %g\n", maxx);
+
+  for (int iteration = 0; iteration < 1; iteration++){
     maxres = 0;
     fprintf(ferr, "iteration=%d\n", iteration);
     calcAy (p0, Ap, p);
-    alpha0 = scalar_product(res0, z0)/scalar_product(Ap, p0); // minus due to Ap
+      return s;
+//    double maxAp=0;
+//    foreach(reduction(max:maxAp)){
+//          if (maxAp < fabs(Ap[] + 4*a[]))
+//              maxAp = fabs(Ap[] + 4*a[]);
+//    }
+//    fprintf(ferr, "max(fabs(Ap[] + 4*a[])) = %g\n", maxAp);
+    alpha0 = scalar_product(res0, res0)/scalar_product(Ap, p0); // minus due to Ap
+    fprintf(ferr, "alpha0=%g\n", alpha0);
     foreach(reduction(max:maxres))
     {
-      a[] = a[] + alpha0 * p0[];
+//      a[] = p0[];
+      a[] = Ap[];
+//      a[] = a[] + alpha0 * res0[];
       res1[] = res0[] - alpha0 * Ap[]; // plus due to Ap
       if (maxres < fabs(res1[])){
         maxres = fabs(res1[]);
       }
     }
     boundary((scalar*) {a, res1});
-    double maxrestmp = residual (&a, &b, &restmp, &p);
+
+    residual ({a}, {b}, {res1}, &p);
+    double maxrestmp = residual ({a}, {b}, {restmp}, &p);
     fprintf(ferr, "tmp: maxrestmp=%g\n", maxrestmp);
     fprintf(ferr, "***maxres=%g\n", maxres);
     if (maxres < TOLERANCE)
       break;
-    calcInvMy (res1, z1, p);
-    beta0 = scalar_product(res1, z1)/scalar_product(res0, z0);
+    beta0 = scalar_product(res1, res1)/scalar_product(res0, res0);
+    fprintf(ferr, "beta0=%g\n", beta0);
     foreach()
     {
-      p0[] = z1[] + beta0 * p0[];
-      z0[] = z1[];
+      p0[] = res1[] + beta0 * p0[];
       res0[] = res1[];
     }
-    boundary((scalar*) {p0, z0, res0});
+    boundary((scalar*) {p0, res0});
   }
   maxres = residual (&a, &b, &res0, &p);
   fprintf(ferr, "final: maxres=%g\n", maxres);
