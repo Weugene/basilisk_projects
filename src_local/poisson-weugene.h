@@ -60,6 +60,7 @@ void mg_cycle (scalar * a, scalar * res, scalar * da,
     if (l == minlevel)
       foreach_level_or_leaf (l)
         for (scalar s in da)
+	  foreach_blockf (s)
           s[] = 0.;
 
     /**
@@ -69,6 +70,7 @@ void mg_cycle (scalar * a, scalar * res, scalar * da,
     else
       foreach_level (l)
         for (scalar s in da)
+	  foreach_blockf (s)
           s[] = bilinear (point, s);
 
     /**
@@ -88,9 +90,9 @@ void mg_cycle (scalar * a, scalar * res, scalar * da,
   foreach() {
     scalar s, ds;
     for (s, ds in a, da)
+      foreach_blockf (s)
       s[] += ds[];
   }
-  boundary (a);
 }
 
 /**
@@ -149,10 +151,7 @@ mgstats mg_solve (struct MGSolve p)
 
   scalar * da = list_clone (p.a), * res = p.res;
   if (!res)
-    for (scalar s in p.a) {
-      scalar r = new scalar;
-      res = list_append (res, r);
-    }
+    res = list_clone (p.b);
 
   /**
   The boundary conditions for the correction fields are the
@@ -189,6 +188,7 @@ mgstats mg_solve (struct MGSolve p)
   	double res_previous2 = 0;
   #endif
   int patient = 0;
+
   if (p.tolerance == 0.)
     p.tolerance = TOLERANCE;
   for (s.i = 0;
@@ -207,7 +207,7 @@ mgstats mg_solve (struct MGSolve p)
     on the finest grid. */
 
 #if 1
-    if (s.resa > TOLERANCE) {
+    if (s.resa > p.tolerance) {
       if (resb/s.resa < 1.2 && s.nrelax < 100)
 	    s.nrelax++;
       else if (resb/s.resa > 10 && s.nrelax > 2)
@@ -222,7 +222,7 @@ mgstats mg_solve (struct MGSolve p)
 
     resb = s.resa;
 //break if resudual does not change. Weugene correction
-#ifdef RELATIVE_RES
+#ifdef RELATIVE_RESIDUAL
       double res1 = 0.5*(res_previous1+res_previous2);
       double res2 = 0.5*(res_previous1+s.resa);
 	  double res_rel = fabs(res1 - res2)/(res2 + 1e-30);
@@ -284,11 +284,7 @@ default *TOLERANCE* of the multigrid solver, *nrelax* controls the
 initial number of relaxations (default is one), *minlevel* controls
 the minimum level of the hierarchy (default is one) and *res* is an
 optional list of fields used to store the final residual (which can be
-useful to monitor convergence).
-
-When using [embedded boundaries](embed.h) boundary fluxes on the
-boundary need to be included. They are computed by the *embed_flux*
-function. */
+useful to monitor convergence). */
 
 struct Poisson {
   scalar a, b;
@@ -297,58 +293,8 @@ struct Poisson {
   double tolerance;
   int nrelax, minlevel;
   scalar * res;
-#if EMBED
-  double (* embed_flux) (Point, scalar, vector, double *);
-#endif
-  double maxb;
+    double maxb;
 };
-//#if dimension == 1
-////    #define refcoord (x==X0 + 0.5*Delta)
-//    #define refcoord 1
-//#elif dimension == 2
-////    #define refcoord (x==X0 + 0.5*Delta && y==Y0 + 0.5*Delta)
-//    #define refcoord y==Y0 + 0.5*Delta
-//#else
-////    #define refcoord (x==X0 + 0.5*Delta && y==Y0 + 0.5*Delta && z==Z0 + 0.5*Delta)
-//    #define refcoord (y==(Y0 + 0.5*Delta) && (z==Z0 + 0.5*Delta))
-//#endif
-//bool reference_pressure = false;
-//double xref, yref, zref, sref = 0;
-//double first_value (scalar s, int l){
-//    double scor = 0;
-//    int masternode = 0;
-//    foreach_boundary(left){
-//        if (refcoord) {
-//            scor = s[];
-//#ifdef DEBUG_MODE_POISSON
-//            if (scor>0.1) fprintf(ferr, "first value = %g; data=%g x = %g; y = %g; z = %g ", scor, data(0,0,0)[s.i], x, y, z);
-//#endif
-//            masternode = pid();
-//            break;
-//        }
-//    }
-//#if _MPI
-//        MPI_Bcast (&scor, 1, MPI_DOUBLE, masternode, MPI_COMM_WORLD);
-//#endif
-////    foreach(){
-////        if (refcoord) {
-////            scor = s[];
-////            fprintf(ferr, "first value = %g; x = %g; y = %g; z = %g ", scor, x, y, z);
-////            break;
-////        }
-////    }
-////    fprintf(ferr, " success \n");
-//    return scor;
-//}
-//    xref = X0 + L0, yref = Y0 + 0.75*L0, zref = Z0;
-//    double scor = interpolate (s, xref, yref) - sref;
-//    fprintf(ferr, "first value = %g; x = %g; y = %g; z = %g\n", scor, xref, yref, zref);
-//    return scor;
-//    foreach_level(l) {
-//        fprintf(ferr, "first value = %g; x = %g; y = %g\n", s[], x, y);
-//        return s[];
-//    }
-//}
 
 /**
 We can now write the relaxation function. We first recover the extra
@@ -360,6 +306,9 @@ static void relax (scalar * al, scalar * bl, int l, void * data)
   struct Poisson * p = (struct Poisson *) data;
   (const) face vector alpha = p->alpha;
   (const) scalar lambda = p->lambda;
+#if EMBED
+  bool embedded = (a.boundary[embed] != symmetry);
+#endif
 
   /**
   We use either Jacobi (under)relaxation or we directly reuse values
@@ -390,8 +339,8 @@ static void relax (scalar * al, scalar * bl, int l, void * data)
       d += alpha.x[1] + alpha.x[];
     }
 #if EMBED
-    if (p->embed_flux) {
-      double c, e = p->embed_flux (point, a, alpha, &c);
+    if (embedded) {
+      double c, e = embed_flux (point, a, alpha, &c);
       n -= c*sq(Delta);
       d += e*sq(Delta);
     }
@@ -401,13 +350,6 @@ static void relax (scalar * al, scalar * bl, int l, void * data)
 #endif // EMBED
       c[] = n/d;
   }
-//  if (reference_pressure) {
-//      double u_clip = first_value(a, l);
-//      foreach_level_or_leaf(l)
-//      {
-//          c[] -= u_clip;
-//      }
-//  }
 
   /**
   For weighted Jacobi we under-relax with a weight of 2/3. */
@@ -438,17 +380,28 @@ static double residual (scalar * al, scalar * bl, scalar * resl, void * data)
   struct Poisson * p = (struct Poisson *) data;
   (const) face vector alpha = p->alpha;
   (const) scalar lambda = p->lambda;
+#if EMBED
+  bool embedded = (a.boundary[embed] != symmetry);
+#endif
   double maxres = 0., maxb = p->maxb;
 #if TREE
   /* conservative coarse/fine discretisation (2nd order) */
   face vector g[];
   foreach_face()
     g.x[] = alpha.x[]*face_gradient_x (a, 0);
-  boundary_flux ({g});
   foreach (reduction(max:maxres)) {
     res[] = b[] - lambda[]*a[]; // lambda = 0 in usual case.
     foreach_dimension()
       res[] -= (g.x[1] - g.x[])/Delta;
+#if EMBED
+    if (embedded) {
+      double c, e = embed_flux (point, a, alpha, &c);
+      res[] += c - e*a[];
+    }
+#endif // EMBED
+    if (fabs (res[]) > maxres)
+      maxres = fabs (res[]);
+  }
 #else // !TREE
   /* "naive" discretisation (only 1st order on trees) */
   foreach (reduction(max:maxres)) {
@@ -456,10 +409,9 @@ static double residual (scalar * al, scalar * bl, scalar * resl, void * data)
     foreach_dimension()
       res[] += (alpha.x[0]*face_gradient_x (a, 0) -
 		alpha.x[1]*face_gradient_x (a, 1))/Delta;
-#endif // !TREE
 #if EMBED
-    if (p->embed_flux) {
-      double c, e = p->embed_flux (point, a, alpha, &c);
+    if (embedded) {
+      double c, e = embed_flux (point, a, alpha, &c);
       res[] += c - e*a[];
     }
 #endif // EMBED
@@ -469,9 +421,9 @@ static double residual (scalar * al, scalar * bl, scalar * resl, void * data)
     if (fabs (res[]) > maxres)
       maxres = fabs (res[]);
   }
-  boundary (resl);
-#ifdef DEBUG_MODE_POISSON
-  fprintf(ferr, "maxres*dt^2= %g maxres= %g maxb= %g maxres/maxb= %g\n", maxres*sq(dt), maxres, maxb, maxres/maxb);
+#endif // !TREE
+#ifdef DEBUG_MULTIGRID
+  fprintf(ferr, "maxres= %g maxb= %g maxres/maxb= %g\n", maxres, maxb, maxres/maxb);
 #endif
   return maxres/maxb;
 }
@@ -487,6 +439,7 @@ $$ */
 
 mgstats poisson (struct Poisson p)
 {
+
   /**
   If $\alpha$ or $\lambda$ are not set, we replace them with constant
   unity vector (resp. zero scalar) fields. Note that the user is free to
@@ -523,10 +476,6 @@ mgstats poisson (struct Poisson p)
   }else{
     p.maxb = 1;
   }
-#if EMBED
-  if (!p.embed_flux && a.boundary[embed] != symmetry)
-    p.embed_flux = embed_flux;
-#endif // EMBED
   mgstats s = mg_solve ({a}, {b}, residual, relax,
 			&p, p.nrelax, p.res, minlevel = max(1, p.minlevel));
 
@@ -573,7 +522,7 @@ mgstats project (struct Project q)
     face vector uf = q.uf;
     scalar p = q.p;
     (const) face vector alpha = q.alpha.x.i ? q.alpha : unityf;
-    double dt = q.dt ? q.dt : 1., d;
+    double dt = q.dt ? q.dt : 1.;
     int nrelax = q.nrelax ? q.nrelax : 4;
 
     /**
@@ -583,19 +532,15 @@ mgstats project (struct Project q)
 
     scalar div[];
     foreach() {
-        d = 0.;
-        foreach_dimension(){
-            d += uf.x[1] - uf.x[];
-        }
-        div[] = d/(dt*Delta);
+        div[] = 0.;
+        foreach_dimension()
+          div[] += uf.x[1] - uf.x[];
+        div[] /= dt*Delta;
 #ifdef DEBUG_MODE_POISSON
         divutmp[] = div[]*dt;
 #endif
     }
-    boundary((scalar*){div});
-#ifdef DEBUG_MODE_POISSON
-    boundary((scalar*){divutmp});
-#endif
+
     /**
     We solve the Poisson problem. The tolerance (set with *TOLERANCE*) is
     the maximum relative change in volume of a cell (due to the divergence
@@ -608,26 +553,17 @@ mgstats project (struct Project q)
 // res=div(u*)/dt - laplace delta p ~ dt
     mgstats mgp;
     if (relative_residual_poisson)
-      mgp = poisson (p, div , alpha, tolerance = TOLERANCE, nrelax = nrelax);
+      mgp = poisson (p, div , alpha,
+                     tolerance = TOLERANCE, nrelax = nrelax);
     else
-      mgp = poisson (p, div , alpha, tolerance = TOLERANCE/sq(dt), nrelax = nrelax);
+      mgp = poisson (p, div , alpha,
+                     tolerance = TOLERANCE/sq(dt), nrelax = nrelax);
 
-//    double xref = X0 + L0 - L0/pow(2,maxlevel), yref = Y0 + 0.75*L0, zref = Z0; //reference location
-////    double xref = -0.5, yref = Y0 + 0.5*L0, zref = Z0 + 0.5*L0; //reference location
-//    double pref = 0;                                            //reference pressure
-//    double pcor = interpolate (p, xref, yref, zref) - pref;
-//    fprintf(ferr, "pcorr=%g at x=%g y=%g z=%g\n", pcor, xref, yref, zref);
-//#if _MPI
-//        MPI_Allreduce (MPI_IN_PLACE, &pcor, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
-//#endif
-//    foreach()
-//        p[] -= pcor;
-//    boundary ({p});
     /**
     And compute $\mathbf{u}_f^{n+1}$ using $\mathbf{u}_f$ and $p$. */
 
-    foreach_face() uf.x[] -= dt*alpha.x[]*face_gradient_x (p, 0);
-    boundary ((scalar *){uf});
+  foreach_face()
+    uf.x[] -= dt*alpha.x[]*face_gradient_x (p, 0);
 
 #ifdef DEBUG_MODE_POISSON
     double divuf, maxdivuf = -1e30;
@@ -638,7 +574,6 @@ mgstats project (struct Project q)
       divuf = fabs(divuf);
       if (maxdivuf < divuf) maxdivuf = divuf;
     }
-    boundary((scalar*){divutmpAfter});
     fprintf(ferr, "Projection MAX{div uf} = %g\n", maxdivuf);
 #endif
     return mgp;

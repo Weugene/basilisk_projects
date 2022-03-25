@@ -14,7 +14,6 @@ face vector fs_face[];
 #include "../src_local/three-phase-weugene.h"
 //#include "tension.h"
 //#include "navier-stokes/conserving.h"
-//#include "fracface.h"
 /**
 We also need to compute distance functions (to describe the solid geometry
 ), use visualisation functions. */

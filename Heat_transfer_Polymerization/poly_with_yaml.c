@@ -248,8 +248,11 @@ void calc_centers(coord * centers, double * R){
             if (i == Ncx - 1) xmax_center += centers[k].x;
         }
     }
-    xmin_center /= Ncy - (shift_y > 0);// for satur flow true Ncy is less by 1
-    xmax_center /= Ncy - (shift_y > 0);
+    int nny = Ncy - (shift_y > 0);
+    if (nny > 0)
+        xmin_center /= nny;// for satur flow true Ncy is less by 1
+    if (nny > 0)
+        xmax_center /= nny;
 }
 
 double geometry(double x, double y, double z){

@@ -2,6 +2,16 @@
 //#include "poisson.h"
 #include "poisson-weugene.h" // added by Weugene 3/12/20 at 11:55
 
+struct Viscosity {
+    vector u;
+    face vector mu;
+    scalar rho;
+    double dt;
+    int nrelax;
+    scalar * res;
+    double maxb;
+};
+
 #undef SEPS
 #define SEPS 1e-12
 bool relative_residual_viscous = false;
@@ -35,16 +45,6 @@ bool relative_residual_viscous = false;
     #define m_scalar_a_by_b(a, b) (a.x[]*(b[1] - b[-1]) + a.y[]*(b[0,1] - b[0,-1]) + a.z[]*(b[0,0,1] - b[0,0,-1]))
 #endif
 
-struct Viscosity {
-    vector u;
-    face vector mu;
-    scalar rho;
-    double dt;
-    int nrelax;
-    scalar * res;
-    double maxb;
-};
-
 //relaxation function is written for errors e^n = u - u^n, u is an exact solution, u^n is numerical
 //here u is e^{n+1}, r is e^n
 static void relax_viscosity (scalar*a, scalar*b, int l, void*data)
@@ -54,14 +54,15 @@ static void relax_viscosity (scalar*a, scalar*b, int l, void*data)
     (const) scalar rho = p->rho;
     double dt = p->dt;
     vector u = vector(a[0]), r = vector(b[0]);
+
     #if JACOBI
         vector w[];
     #else
         vector w = u;
     #endif
-//    fprintf(ferr, "relax_viscosity\n");
+
     foreach_level_or_leaf (l) {
-        foreach_dimension(){
+        foreach_dimension()
             w.x[] = (frhs*(dt/rho[])*(2.*mu.x[1]*u.x[1] + 2.*mu.x[]*u.x[-1]
                 #if dimension > 1
                     + mu.y[0,1]*(u.x[0,1] +
@@ -92,7 +93,6 @@ static void relax_viscosity (scalar*a, scalar*b, int l, void*data)
                 #endif
                     ));
         }
-    }
 
     #if JACOBI
         foreach_level_or_leaf (l)
@@ -102,14 +102,20 @@ static void relax_viscosity (scalar*a, scalar*b, int l, void*data)
 
     #if TRASH
         vector u1[];
-        foreach_level_or_leaf (l)  foreach_dimension() u1.x[] = u.x[];
+  foreach_level_or_leaf (l)
+    foreach_dimension()
+      u1.x[] = u.x[];
         trash ({u});
-        foreach_level_or_leaf (l) foreach_dimension()  u.x[] = u1.x[];
+  foreach_level_or_leaf (l)
+    foreach_dimension()
+      u.x[] = u1.x[];
     #endif
 }
 
 //here r is u^n, u is u^{n+1}. u is not an error, it is actual velocity
-static double residual_viscosity (scalar * a, scalar * b, scalar * resl, void * data) {
+    static double residual_viscosity (scalar * a, scalar * b, scalar * resl,
+                                      void * data)
+{
     struct Viscosity * p = (struct Viscosity *) data;
     (const) face vector mu = p->mu;
     (const) scalar rho = p->rho;
@@ -139,8 +145,6 @@ static double residual_viscosity (scalar * a, scalar * b, scalar * resl, void * 
                      (u.z[1,0,-1] + u.z[1,0,0])/4. -
                      (u.z[-1,0,-1] + u.z[-1,0,0])/4.)/Delta;
 #endif
-        boundary_flux({taux});
-
         foreach() {
             d = 0.0;
             foreach_dimension() {
@@ -149,7 +153,6 @@ static double residual_viscosity (scalar * a, scalar * b, scalar * resl, void * 
             divtauu.x[] = d/Delta;
         }
     }
-    boundary((scalar *){divtauu});
 
     foreach (reduction(max:maxres)) {
         /* Lu = b
@@ -180,7 +183,8 @@ static double residual_viscosity (scalar * a, scalar * b, scalar * resl, void * 
 #undef lambda
 
 trace
-mgstats viscosity (struct Viscosity p){
+mgstats viscosity (struct Viscosity p)
+{
     #if AXI
         fprintf(ferr, "Not correct solution for AXI in viscosity-weugene.h");
         exit(9);
@@ -190,7 +194,9 @@ mgstats viscosity (struct Viscosity p){
         exit(1);
     #endif
     vector u = p.u, r[];
-    foreach() foreach_dimension(){ r.x[] = u.x[] + (PLUS_CONSTANT_BRINKMAN_RHS)*dt;} // the RHS of the equation: Lu=b
+    foreach() foreach_dimension()
+        r.x[] = u.x[] + (PLUS_CONSTANT_BRINKMAN_RHS) * dt; // the RHS of the equation: Lu=b
+
     face vector mu = p.mu;
     scalar rho = p.rho;
     restriction ({mu,rho});
@@ -207,5 +213,6 @@ mgstats viscosity (struct Viscosity p){
 #ifdef DEBUG_BRINKMAN_PENALIZATION
     fprintf(ferr, "maxb = %g\n", p.maxb);
 #endif
-    return mg_solve ((scalar *){u}, (scalar *){r}, residual_viscosity, relax_viscosity, &p, p.nrelax, p.res);
+    return mg_solve ((scalar *){u}, (scalar *){r},
+                     residual_viscosity, relax_viscosity, &p, p.nrelax, p.res);
 }

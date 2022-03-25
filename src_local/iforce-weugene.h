@@ -32,7 +32,6 @@ event defaults (i = 0) {
     a = new face vector;
     foreach_face()
       a.x[] = 0.;
-    boundary ((scalar *){a});
   }
 }
 
@@ -58,8 +57,8 @@ event acceleration (i++)
       values of the volume fraction larger than one or smaller than
       zero. */
 
-      foreach()	f[] = clamp (f[], 0., 1.);
-      boundary ({f});
+      foreach()
+	f[] = clamp (f[], 0., 1.);
     }
 
   /**
@@ -70,9 +69,10 @@ event acceleration (i++)
   fraction field as applied to the pressure field. */
   
 #if TREE
-  for (scalar f in list)
+  for (scalar f in list) {
     f.prolongation = p.prolongation;
-  boundary (list);
+    f.dirty = true; // boundary conditions need to be updated
+  }
 #endif
 
   /**
@@ -82,11 +82,11 @@ event acceleration (i++)
   \phi\mathbf{n}\delta_s/\rho \approx \alpha\phi\nabla f
   $$ 
   */
-
+//  double alpha_mean = 2.0/(rho1 + rho2);
   face vector ia = a;
   foreach_face()
     for (scalar f in list)
-      if (f[] != f[-1]) {
+      if (f[] != f[-1] && fm.x[] > 0.) {
 
 	/**
 	We need to compute the potential *phif* on the face, using its
@@ -112,9 +112,10 @@ event acceleration (i++)
   volume fraction field. */
   
 #if TREE
-  for (scalar f in list)
+  for (scalar f in list) {
     f.prolongation = fraction_refine;
-  boundary (list);
+    f.dirty = true; // boundary conditions need to be updated
+  }
 #endif
   
   /**

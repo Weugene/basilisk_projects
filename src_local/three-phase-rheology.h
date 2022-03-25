@@ -84,7 +84,8 @@ Usually, it is assumed that mu1 is variable, mu2 and mu3 are not. For simplisity
 #endif
 
 #ifndef kappav
-    #define kappav(f, fs) var_harm(f, fs, kappa1, kappa2, kappa3)
+    #define kappav(f, fs) var_hom(f, fs, kappa1, kappa2, kappa3)
+//    #define kappav(f, fs) var_harm(f, fs, kappa1, kappa2, kappa3)
 //    #define kappav(f, fs) ((1.0 - clamp(fs,0.,1.))*(kappa2 + (kappa1 - kappa2)*clamp(f,0.,1.)) + clamp(fs,0.,1.)*kappa3)
 #endif
 #if REACTION_MODEL != NO_REACTION_MODEL

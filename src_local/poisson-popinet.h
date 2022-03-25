@@ -54,6 +54,7 @@ void mg_cycle (scalar * a, scalar * res, scalar * da,
     if (l == minlevel)
       foreach_level_or_leaf (l)
 	for (scalar s in da)
+	  foreach_blockf (s)
 	  s[] = 0.;
 
     /**
@@ -63,6 +64,7 @@ void mg_cycle (scalar * a, scalar * res, scalar * da,
     else
       foreach_level (l)
 	for (scalar s in da)
+	  foreach_blockf (s)
 	  s[] = bilinear (point, s);
 
     /**
@@ -82,9 +84,9 @@ void mg_cycle (scalar * a, scalar * res, scalar * da,
   foreach() {
     scalar s, ds;
     for (s, ds in a, da)
+      foreach_blockf (s)
       s[] += ds[];
   }
-  boundary (a);
 }
 
 /**
@@ -143,10 +145,7 @@ mgstats mg_solve (struct MGSolve p)
 
   scalar * da = list_clone (p.a), * res = p.res;
   if (!res)
-    for (scalar s in p.a) {
-      scalar r = new scalar;
-      res = list_append (res, r);
-    }
+    res = list_clone (p.b);
 
   /**
   The boundary conditions for the correction fields are the
@@ -200,7 +199,7 @@ mgstats mg_solve (struct MGSolve p)
     on the finest grid. */
 
 #if 1
-    if (s.resa > TOLERANCE) {
+    if (s.resa > p.tolerance) {
       if (resb/s.resa < 1.2 && s.nrelax < 100)
 	s.nrelax++;
       else if (resb/s.resa > 10 && s.nrelax > 2)
@@ -218,14 +217,14 @@ mgstats mg_solve (struct MGSolve p)
 #ifdef RELATIVE_RESIDUAL
       double res1 = 0.5*(res_previous1+res_previous2);
       double res2 = 0.5*(res_previous1+s.resa);
+	  double res_rel = fabs(res1 - res2)/(res2 + 1e-30);
       if (s.i == 2 && fabs(s.resa) < 1e-30) break;
-      if( fabs(res1 - res2)/(res1 + 1e-30) < RELATIVE_RES_TOLERANCE && patient > 3){
-//          scalar v = p.a[0];
-//          fprintf (ferr,
-//             "WARNING: Relative residual did not reach convergence for %s after %d iterations\n"
-//             "  res: %g prev_res: %g %g sum: %g nrelax: %d\n",
-//             v.name, s.i, s.resa, res_previous1, res_previous2, s.sum, s.nrelax);
-//          fflush (ferr);
+      if( res_rel < RELATIVE_RES_TOLERANCE && patient > 3){
+          scalar v = p.a[0];
+          fprintf (ferr,
+             "WARNING: Relative residual did not reach convergence for %s after %d iterations\n"
+             "  rel_res: %g res: %g prev_res: %g %g sum: %g nrelax: %d\n",
+             v.name, s.i, res_rel, s.resa, res_previous1, res_previous2, s.sum, s.nrelax), fflush (ferr);;
           break;
       }
       else{
@@ -233,7 +232,6 @@ mgstats mg_solve (struct MGSolve p)
           res_previous1 = s.resa;
           patient++;
       }
-
 #endif
   }
   s.minlevel = p.minlevel;
@@ -278,11 +276,7 @@ default *TOLERANCE* of the multigrid solver, *nrelax* controls the
 initial number of relaxations (default is one), *minlevel* controls
 the minimum level of the hierarchy (default is one) and *res* is an
 optional list of fields used to store the final residual (which can be
-useful to monitor convergence).
-
-When using [embedded boundaries](embed.h) boundary fluxes on the
-boundary need to be included. They are computed by the *embed_flux*
-function. */
+useful to monitor convergence). */
 
 struct Poisson {
   scalar a, b;
@@ -291,9 +285,6 @@ struct Poisson {
   double tolerance;
   int nrelax, minlevel;
   scalar * res;
-#if EMBED
-  double (* embed_flux) (Point, scalar, vector, double *);
-#endif
 };
 
 /**
@@ -306,6 +297,9 @@ static void relax (scalar * al, scalar * bl, int l, void * data)
   struct Poisson * p = (struct Poisson *) data;
   (const) face vector alpha = p->alpha;
   (const) scalar lambda = p->lambda;
+#if EMBED
+  bool embedded = (a.boundary[embed] != symmetry);
+#endif
 
   /**
   We use either Jacobi (under)relaxation or we directly reuse values
@@ -336,8 +330,8 @@ static void relax (scalar * al, scalar * bl, int l, void * data)
       d += alpha.x[1] + alpha.x[];
     }
 #if EMBED
-    if (p->embed_flux) {
-      double c, e = p->embed_flux (point, a, alpha, &c);
+    if (embedded) {
+      double c, e = embed_flux (point, a, alpha, &c);
       n -= c*sq(Delta);
       d += e*sq(Delta);
     }
@@ -377,36 +371,48 @@ static double residual (scalar * al, scalar * bl, scalar * resl, void * data)
   struct Poisson * p = (struct Poisson *) data;
   (const) face vector alpha = p->alpha;
   (const) scalar lambda = p->lambda;
+#if EMBED
+  bool embedded = (a.boundary[embed] != symmetry);
+#endif
   double maxres = 0.;
 #if TREE
   /* conservative coarse/fine discretisation (2nd order) */
   face vector g[];
   foreach_face()
     g.x[] = alpha.x[]*face_gradient_x (a, 0);
-  boundary_flux ({g});
   foreach (reduction(max:maxres)) {
     res[] = b[] - lambda[]*a[];
     foreach_dimension()
       res[] -= (g.x[1] - g.x[])/Delta;
+#if EMBED
+    if (embedded) {
+      double c, e = embed_flux (point, a, alpha, &c);
+      res[] += c - e*a[];
+    }
+#endif // EMBED
+    if (fabs (res[]) > maxres)
+      maxres = fabs (res[]);
+  }
 #else // !TREE
   /* "naive" discretisation (only 1st order on trees) */
   foreach (reduction(max:maxres)) {
     res[] = b[] - lambda[]*a[];
     foreach_dimension()
       res[] += (alpha.x[0]*face_gradient_x (a, 0) -
-		alpha.x[1]*face_gradient_x (a, 1))/Delta;  
-#endif // !TREE    
+		alpha.x[1]*face_gradient_x (a, 1))/Delta;
 #if EMBED
-    if (p->embed_flux) {
-      double c, e = p->embed_flux (point, a, alpha, &c);
+    if (embedded) {
+      double c, e = embed_flux (point, a, alpha, &c);
       res[] += c - e*a[];
     }
 #endif // EMBED    
     if (fabs (res[]) > maxres)
       maxres = fabs (res[]);
   }
-  boundary (resl);
-  fprintf(ferr, "maxres= %g \n", maxres);
+#endif // !TREE
+#ifdef DEBUG_MULTIGRID
+  fprintf(ferr, "maxres=%15.12g\n", maxres);
+#endif
   return maxres;
 }
 
@@ -448,10 +454,6 @@ mgstats poisson (struct Poisson p)
     TOLERANCE = p.tolerance;
 
   scalar a = p.a, b = p.b;
-#if EMBED
-  if (!p.embed_flux && a.boundary[embed] != symmetry)
-    p.embed_flux = embed_flux;
-#endif // EMBED
   mgstats s = mg_solve ({a}, {b}, residual, relax,
 			&p, p.nrelax, p.res, minlevel = max(1, p.minlevel));
 
@@ -525,77 +527,13 @@ mgstats project (struct Project q)
   Given the scaling of the divergence above, this gives */
 
   mgstats mgp = poisson (p, div, alpha,
-			 tolerance = TOLERANCE/dt, nrelax = nrelax);
+			 tolerance = TOLERANCE/sq(dt), nrelax = nrelax);
 
   /**
   And compute $\mathbf{u}_f^{n+1}$ using $\mathbf{u}_f$ and $p$. */
 
   foreach_face()
     uf.x[] -= dt*alpha.x[]*face_gradient_x (p, 0);
-  boundary ((scalar *){uf});
 
   return mgp;
 }
-
-
-
-
-//#define solid_vel ((fs[-1]*target_U.x[-1] + fs[]*target_U.x[])/(fs[-1] + fs[] + 1e-20))
-/*#define solid_vel (((fs[-1] > 0)*target_U.x[-1] + (fs[] > 0)*target_U.x[])/((fs[-1] > 0) + (fs[] > 0) + 1e-20))
-extern scalar f;
-extern scalar fs;
-extern vector target_U;
-trace
-mgstats project_bp (struct Project q)
-{
-  face vector uf = q.uf;
-  face vector u_rhs[], alpha_mod[], target_Uf[];
-  vector u = q.u;
-  scalar p = q.p;
-  (const) face vector alpha = q.alpha.x.i ? q.alpha : unityf;
-  double dt = q.dt ? q.dt : 1., tmp;
-  int nrelax = q.nrelax ? q.nrelax : 4;
-
-
-  double adv=0;
-  foreach_face(){
-    target_Uf.x[] = solid_vel;
-  }
-
-  foreach_face(){
-//      tmp = 0;
-//      adv = 0;
-      tmp = (dt/eta_s)*alpha.x[]*face_value(fs, 0);
-      adv = target_Uf.x[]*(u.x[] - u.x[-1])/Delta;
-      u_rhs.x[] = (uf.x[] + tmp*(solid_vel - eta_s*adv))/(1.0 + tmp);
-      alpha_mod.x[] = alpha.x[]/(1.0 + tmp);
-//      if (fs[]>0) fprintf(ferr, "tmp=%g urhs=%g uf=%g alphaM=%g alpha=%g eta_s=%g fs=%g Ut=%g \n", tmp, u_rhs.x[], uf.x[], alpha_mod.x[], alpha.x[], eta_s, face_value(fs, 0), face_value(target_U.x,0));
-  }
-  boundary ({u_rhs, alpha_mod});
-  fprintf(ferr, "tmp done\n");
-  scalar div[];
-  foreach() {
-    div[] = 0.;
-    foreach_dimension()
-      div[] += u_rhs.x[1] - u_rhs.x[];
-    div[] /= dt*Delta;
-  }
-    fprintf(ferr, "div done\n");
-//  int diri=0;
-//  foreach_face(){fprintf(ferr, "%d: a=%g div=%g\n", (diri++)%2, alpha_mod.x[], div[]);}
-  mgstats mgp = poisson (p, div, alpha_mod,
-			 tolerance = TOLERANCE/dt, nrelax = nrelax); //corrected: WEUGENE
-    fprintf(ferr, "poisson done\n");
-//  int idir=0;
-  foreach_face(){
-      tmp = (dt/eta_s)*alpha.x[]*face_value(fs, 0);
-      adv = target_Uf.x[]*(u.x[] - u.x[-1])/Delta;
-      uf.x[] = (uf.x[] - dt * alpha.x[] * face_gradient_x(p, 0) + tmp*(solid_vel - eta_s*adv)) / (1.0 + tmp);
-//      if (face_value(fs,0)>0 && face_value(fs,0)<1) fprintf(ferr, "%d: fs[]=%g %g tmp=%g uf.x=%g ? Usol=%g f=%g %g\n", ((idir++) % 2),fs[-1], fs[], tmp, uf.x[], solid_vel, f[-1], f[]);
-//      if (!(fs[-1]==1 && fs[]==1 && fs[1]==1 || fs[-1]==0 && fs[]==0 && fs[1]==0)) fprintf(ferr, "%d: fs[]=%g %g %g tmp=%g uf.x=%g %g %g Usol=%g f=%g %g %g\n", ((idir++) % 2),fs[-1], fs[], fs[1], tmp, uf.x[-1], uf.x[], uf.x[1], solid_vel, f[-1], f[], f[1]);
-  }
-  fprintf(ferr, "ud done\n");
-  boundary ((scalar *){uf});
-
-  return mgp;
-}*/

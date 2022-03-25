@@ -29,7 +29,6 @@ scalar l2[];
 #include "output_vtu_foreach.h"
 #include "maxruntime.h"
 #include "tag.h"
-//#include "fracface.h"
 
 #define uexact(x,y,z) 2.*(1. - 4*sq(y) - 4*sq(z))
 //#define uexact(x,y,z) 0.25*(G/mu1)*(sq(0.5) - sq(y) - sq(z))

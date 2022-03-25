@@ -2,23 +2,23 @@ CFLAGS=-DDUMP=1 -Wall -O2 -events
 CLIBS=-L/usr/local/lib/ -L/home/e.sharaborin/opt/lib -L/trinity/home/e.sharaborin/opt/lib -L/trinity/home/e.sharaborin/opt/trinity/shared/opt/rh/gcc-8.3.0/lib64 -lcyaml -lm
 C_INCLUDE_PATH=-I$(HOME)/opt/include
 Tcyl=400
-Tin=300
+Tin=400
 maxlevel=8
 iter_fp=0
-ratio_Rbmin=0.166666
-ratio_Rbmax=0.6
+ratio_Rbmin=0.9
+ratio_Rbmax=0.9
 ratio_dist_x=2
 ratio_dist_y=2
 ratio_front_x=100
 cyl_x=-0.5
-Nb=9
-Ncx=2
-Ncy=3
-TOLERANCE_P=1e-6
-TOLERANCE_V=1e-6
-TOLERANCE_T=1e-6
+Nb=1
+Ncx=0
+Ncy=0
+TOLERANCE_P=1e-9
+TOLERANCE_V=1e-8
+TOLERANCE_T=1e-8
 Htr=355000 #355000
-Arrhenius_const=80600 #80600
+Arrhenius_const=0 #80600
 Ea_by_R=2400 #already divided by 8.31  =  7697=64000/8.314
 dev_r=0.
 dev_x=0.
@@ -28,7 +28,7 @@ shift_y=$(shell echo 0.5\*$(ratio_dist_y) | bc)
 non_saturated=0
 
 parallel=8
-ind:=verif_wall_general0
+ind:=bug_fix
 
 dumpname=dump-1.05384e-05
 args=$(Tcyl) $(Tin) $(maxlevel) $(iter_fp) $(ratio_Rbmin) $(ratio_Rbmax) $(ratio_dist_x) $(ratio_dist_y) $(ratio_front_x) \
@@ -50,7 +50,7 @@ heat_polymerization_front:
 poly_with_yaml:
 	$(remove)
 	$(compile)  poly_with_yaml.c $(CLIBS)
-	mpirun -np 2  ./a.out test.yml > out$(ind) 2> log$(ind)
+	mpirun -np 2  ./a.out test.yml > out_yaml_$(ind) 2> log_yaml_$(ind)
 debug:
 	mpirun -np 2 xterm -hold -e gdb -ex run --args ./a.out $(args)
 convert:

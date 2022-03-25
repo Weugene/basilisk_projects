@@ -83,11 +83,10 @@ int main(int argc, char * argv[]) {
     NITERMIN = 1;
     NITERMAX = 100;
     CFL = 0.4;
-    ignore_tension_CFL = false;
     CFL_ARR = 0.5;
-    DT = 1e-5;
-    maxDT0 = 2.5e-3;
-    N_smooth = 1; //three-phase-rheology.h
+    DT = 1e-6;
+    maxDT0 = 2.5e-4;
+    N_smooth = 2; //three-phase-rheology.h
 #ifdef STOKES
     stokes = true;
     stokes_heat = false;
@@ -106,14 +105,15 @@ int main(int argc, char * argv[]) {
 //EPON 9310
 	Htr = 355000; //J/kg
 	Arrhenius_const = 80600;//1/s //originally in Gothala: 80600
-	Ea_by_R = 12000/8.314;// Kelvin //origianally  64000/8.314;
+	Ea_by_R = 64000/8.314;// Kelvin //originally  64000/8.314;
     n_degree = 1.2;
 
 	Eeta_by_Rg = 3.76e+4/8.314;// Kelvin Epon 9310,Safonov page 21
-	chi = 20;
-    Rho1 = 1200, Rho2 = 1.092, Rho3 = 1790;//air at 23 C Graphite
-    CP1 = 1255, CP2 = 1006, CP3 = 712;//J/(kg*K)
-    Kappa1 = 0.2, Kappa2 = 0.02535, Kappa3 = 8.70;//W/(m*K)
+	chi = 0; // 20
+	fprintf(ferr, "chi = 0!!! BE CAREFUL\n");
+    Rho1 = 1200, Rho2 = 1.092, Rho3 = 2560;//air at 23 C Graphite
+    CP1 = 1255, CP2 = 1006, CP3 = 670;//J/(kg*K)
+    Kappa1 = 0.2, Kappa2 = 0.02535, Kappa3 = 1.04;//W/(m*K)
     Sigma = 0.040;// N/m  0.040;
     Ggrav = 0; // m/s^2
 
@@ -126,13 +126,16 @@ int main(int argc, char * argv[]) {
     shift_y = 0;
     dev_r = 0.4, develx = 0.4, devely = 0.4;
     non_saturated = 1;
+    viscDissipation = true;
 
     if (argc > 1)
         T_solid = atof(argv[1]);
     if (argc > 2)
         Tin = atof(argv[2]);
 //	Mu1 = 3.85e-7*exp(Eeta_by_Rg/Tin), Mu2 = 1e-4;
-    Mu0 = 3.85e-7, Mu1 = Mu0*exp(Eeta_by_Rg/Tin), Mu2 = 1.963e-5, Mu3 = Mu0*exp(Eeta_by_Rg/T_solid)*Rho3/Rho1;//air at 50C //Mu2 = 1.963e-5
+    Mu0 = 3.85e-9; // 3.85e-7
+    fprintf(ferr, "Mu0 = 3.85e-9!!! alpha_doc[left]=0.5  BE CAREFUL\n");
+    Mu1 = Mu0*exp(Eeta_by_Rg/Tin), Mu2 = 1.963e-5, Mu3 = Mu0*exp(Eeta_by_Rg/T_solid)*Rho3/Rho1;//air at 50C //Mu2 = 1.963e-5
 	if (argc > 3)
         maxlevel = atoi(argv[3]);
     if (argc > 4)
@@ -187,7 +190,7 @@ int main(int argc, char * argv[]) {
 	cyl_diam = 15e-6;
 	dist_x = ratio_dist_x*cyl_diam, dist_y = ratio_dist_y*cyl_diam; //m 5-25 microns
 	Rbmin = ratio_Rbmin*cyl_diam, Rbmax = ratio_Rbmax*cyl_diam;
-	domain_size = dist_y*max(max(Ncx,Ncy),1);
+	domain_size = dist_y*max(max(Ncx,Ncy),5);
     Dx_min = domain_size/pow(2.0, maxlevel);
 	fprintf(ferr,
                  "Props(SI): Mu0=%g, Mu1=%g, Mu2=%g, Mu3=%g, Rho1=%g, Rho2=%g,  Rho3=%g,\n"
@@ -317,7 +320,7 @@ pf[left]   = neumann(0.);
 f[left]    = dirichlet(1);
 T[left]    = dirichlet(Tin);
 fs[left]   = dirichlet(0);
-alpha_doc[left] = dirichlet(0);//inflow is fresh resin
+alpha_doc[left] = dirichlet(0.5);//inflow is fresh resin
 
 u.n[right] = neumann(0);
 p[right]   = dirichlet(0);
@@ -359,7 +362,7 @@ double bubbles (double x, double y, double z)
     srand (10); // for consistency
     int iter = 0, i = 0;
     //fprintf(ferr, "bubble in\n");
-    while(i < Nb){
+    while(i < Nb && Nb > 0){
         R[i] = RandMinMax(Rbmin, Rbmax);
         centers[i].x = RandMinMax(limMin, limMax);
         centers[i].y = RandMinMax(Y0 + Rbmax, Y0 + L0 - Rbmax);
@@ -439,8 +442,11 @@ void calc_centers(coord * centers, double * R){
             if (i == Ncx - 1) xmax_center += centers[k].x;
         }
     }
-    xmin_center /= Ncy - (shift_y > 0);// for satur flow true Ncy is less by 1
-    xmax_center /= Ncy - (shift_y > 0);
+    int nny = Ncy - (shift_y > 0);
+    if (nny > 0)
+        xmin_center /= nny;// for satur flow true Ncy is less by 1
+    if (nny > 0)
+        xmax_center /= nny;
 }
 
 double geometry(double x, double y, double z){
@@ -478,7 +484,7 @@ event init (t = 0) {
     }
     calc_centers(centers, R);
     if (!restore (file = name)) {
-        fprintf(ferr, "The file %s can not be successfully read! Iniitial conditions are set\n", name);
+        fprintf(ferr, "The file %s can not be successfully read! Initial conditions are set\n", name);
         int it = 0;
         scalar f_smoothed[], fs_smoothed[];
         do {
@@ -486,10 +492,10 @@ event init (t = 0) {
             fraction(f, bubbles(x, y, z));
             filter_scalar(f, f_smoothed);
             filter_scalar(fs, fs_smoothed);
-        }while (adapt_wavelet({f_smoothed, fs_smoothed}, (double []){feps, feps}, maxlevel=maxlevel, minlevel=minlevel).nf != 0 && ++it <= 10);
+        } while (adapt_wavelet({f_smoothed, fs_smoothed}, (double []){feps, feps}, maxlevel=maxlevel, minlevel=minlevel).nf != 0 && ++it <= 10);
         foreach() {
             T[] = var_hom(f[], fs[], Tin, Tam, T_solid);
-            alpha_doc[] = 0;
+            alpha_doc[] = 0.5*f[];
             u.x[] = u_BC*(1 - fs[]); //u_BC*f[];// 0; // penalization will work
             u.y[] = 0;
             un[] = u.x[];
@@ -552,7 +558,7 @@ event init (t = 0) {
 }
 
 void calc_mu(scalar muv){
-    foreach(){
+    foreach(reduction(max:mu_max)){
         muv[] = mu(f[], fs[], alpha_doc[], T[]);
         if( muv[] > mu_max) mu_max = muv[];
     }
@@ -986,9 +992,9 @@ double time_prev = 0;
 //}
 
 
-//event vtk_file (i += 100)
-event vtk_file (t += dt_vtk)
 //event vtk_file (i += 1)
+//event vtk_file (t += dt_vtk)
+event vtk_file (i += 500)
 {
     char name[300];
     sprintf (name, "vtk_%s", subname);
@@ -999,11 +1005,12 @@ event vtk_file (t += dt_vtk)
     }
     boundary((scalar *){l, dpdx});
     calcPhiVisc (u, uf, T, alpha_doc, f, fs, Phi_visc, Phi_src); //TODO: visc dissipation?
+
 #ifdef DEBUG_BRINKMAN_PENALIZATION
-    output_vtu_MPI(name, (iter_fp) ? t + dt : 0, list = (scalar *) {T, alpha_doc, p, dpdx, fs, f, l, rhov, mu_cell, m, my_kappa, which_meth},
-    vlist = (vector *) {u, g, uf, av, dbp, total_rhs, residual_of_u, divtauu, fs_face, alpha});
+    output_vtu_MPI(name, (iter_fp) ? t + dt : 0, list = (scalar *) {T, alpha_doc, p, dpdx, fs, f, l, rhov, mu_cell, m, my_kappa, which_meth, Phi_visc, Phi_src},
+    vlist = (vector *) {u, g, uf, av, dbp, total_rhs, residual_of_u, divtauu, divutmpAfter, fs_face});
 #else
-    output_vtu_MPI(name, (iter_fp) ? t + dt : 0, list = (scalar *) {T, dpdx, alpha_doc, p, fs, f, l, rhov, mu_cell, m},
+    output_vtu_MPI(name, (iter_fp) ? t + dt : 0, list = (scalar *) {T, dpdx, alpha_doc, p, fs, f, l, rhov, mu_cell, m, Phi_visc, Phi_src},
     vlist = (vector *) {u, av});
 #endif
 }

@@ -14,7 +14,9 @@ the interface mean curvature. */
 
 #include "iforce.h"
 #include "curvature.h"
-
+#ifdef DEBUG_MODE_TENSION
+    scalar my_kappa[];
+#endif
 /**
 The surface tension coefficient is associated to each VOF tracer. */
 
@@ -33,14 +35,16 @@ $$
 with $\rho_m=(\rho_1+\rho_2)/2.$ and $\rho_1$, $\rho_2$ the densities
 on either side of the interface. */
 
-event stability (i++) {
+event stability (i++)
+{
 
   /**
   We first compute the minimum and maximum values of $\alpha/f_m =
   1/\rho$, as well as $\Delta_{min}$. */
 
   double amin = HUGE, amax = -HUGE, dmin = HUGE;
-  foreach_face (reduction(min:amin) reduction(max:amax) reduction(min:dmin)) {
+  foreach_face (reduction(min:amin) reduction(max:amax) reduction(min:dmin))
+    if (fm.x[] > 0.) {
     if (alpha.x[]/fm.x[] > amax) amax = alpha.x[]/fm.x[];
     if (alpha.x[]/fm.x[] < amin) amin = alpha.x[]/fm.x[];
     if (Delta < dmin) dmin = Delta;
@@ -90,6 +94,8 @@ event acceleration (i++)
 	curvature (f, phi, f.sigma, add = false);
 	f.phi = phi;
       }
+#ifdef DEBUG_MODE_TENSION
       foreach() my_kappa[]=phi[];//Weugene: added
+#endif
     }
 }

@@ -88,9 +88,9 @@ void calcMuPhiVisc (scalar Phi_visc){
     #endif
     #if dimension > 2
             + sq(0.5*(u.z[0,1] - u.z[0,-1])/Delta)// dv_z/dy
-                    + sq(0.5*(u.y[0,0,1] - u.y[0,0,-1])/Delta) // dv_y/dz
-                    + sq(0.5*(u.x[0,0,1] - u.x[0,0,-1])/Delta) // dv_x/dz
-                    + sq(0.5*(u.z[1] - u.z[-1])/Delta) // dv_z/dx
+            + sq(0.5*(u.y[0,0,1] - u.y[0,0,-1])/Delta) // dv_y/dz
+            + sq(0.5*(u.x[0,0,1] - u.x[0,0,-1])/Delta) // dv_x/dz
+            + sq(0.5*(u.z[1] - u.z[-1])/Delta) // dv_z/dx
     #endif
                 ;
         Phi_visc[] += mu(f[], fs[], alpha_doc[], T[]) * muPhi;
@@ -98,7 +98,7 @@ void calcMuPhiVisc (scalar Phi_visc){
     boundary((scalar *){Phi_visc});
 }
 
-event viscous_term (i++){
+event chem_advection_term (i++){
     if (!stokes_heat) {
         advection((scalar *) {T}, uf, dt);
 #if REACTION_MODEL != NO_REACTION_MODEL //  POLYMERIZATION_REACTION
@@ -122,18 +122,21 @@ event end_timestep (i++){
         alpha_doc_old = alpha_doc[];
 #if GENERAL_METHOD == 0
         alpha_doc[] = 1.0 - pow(
-                pow(fabs(1 - alpha_doc[]), 1 - n_degree) + (n_degree - 1.0) * dt * f[] * KT(T[]), //* (1 - fs[])
+                pow(fabs(1 - alpha_doc[]), 1 - n_degree) + (n_degree - 1.0) * dt * f[] * (1 - fs[]) * KT(T[]),
                 1.0/(1.0 - n_degree));//direct integration from t to t + dt at fixed T
 #else
-        alpha_doc[] = (alpha_doc[] + 0.5 * dt * f[] * KT(T[]) * (2.0 * FR(alpha_doc[]) - dFR_dalpha(alpha_doc[]) * alpha_doc[])) / //* (1 - fs[])
-                          (1 - 0.5 * dt * f[] * KT(T[]) * dFR_dalpha(alpha_doc[])); //* (1 - fs[])
+// Crank--Nicolson
+//        alpha_doc[] = (alpha_doc[] + 0.5 * dt * f[] * (1 - fs[]) * KT(T[]) * (2.0 * FR(alpha_doc[]) - dFR_dalpha(alpha_doc[]) * alpha_doc[])) /
+//                          (1 - 0.5 * dt * f[] * (1 - fs[]) * KT(T[]) * dFR_dalpha(alpha_doc[]));
+// Backward Euler
+        alpha_doc[] = (alpha_doc[] + dt * f[] * (1 - fs[]) * KT(T[]) * ( FR(alpha_doc[]) - dFR_dalpha(alpha_doc[]) * alpha_doc[])) /
+                          (1 - dt * f[] * (1 - fs[]) * KT(T[]) * dFR_dalpha(alpha_doc[]));
 #endif
         R_source[] = (alpha_doc[] - alpha_doc_old) / dt;
 //        alpha_doc[] = clamp(alpha_doc[], 0.0, 1.0) * f[] * (1 - fs[]);
     }
     boundary ((scalar*) {alpha_doc, R_source});
 #endif
-
 
     //source and conductivity terms. f[] * (1 - fs[]) multiplications means gas and solids can't produce heat
     //solids play role in the conduction process
@@ -207,15 +210,15 @@ event properties (i < 10){
 }
 
 // integration time step
-double CFL_ARR = 0.01;//max changing of alpha in one timestep
+double CFL_ARR = 0.3;//max changing of alpha in one timestep
 event stability(i++){
   if (i % 100 == 0){
-  	double Tmax = -1e+10, mindelta = 0;
-  	foreach( reduction(min:mindelta) reduction(max:Tmax)){
-  		if (T[] > Tmax) Tmax = T[];
-      }
-  	double dt_Arr = CFL_ARR /(Arrhenius_const * exp(-Ea_by_R / Tmax) + SEPS);
-  	dt = min(dt, dt_Arr);
-  	fprintf(ferr, "dt_Arr=%g dt_cur=%g\n", dt_Arr, dt);
+  	double dt_Arr_min = 1e+10;
+  	foreach( reduction(min:dt_Arr_min)){
+  	    double dt_arr = CFL_ARR / (KT(T[]) * dFR_dalpha(alpha_doc[]) + SEPS);
+        if (dt_arr > dt_Arr_min) dt_Arr_min = dt_arr;
+    }
+  	dt = min(dt, dt_Arr_min);
+  	fprintf(ferr, "dt_Arr=%g min(dt,dt_arr)=%g\n", dt_Arr_min, dt);
   }
 }

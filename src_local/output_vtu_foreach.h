@@ -357,13 +357,14 @@ void output_vtu_bin_foreach (scalar * list, vector * vlist, vector * fvlist, int
   long long int no_points = 0, no_cells = 0;
   foreach_vertex(){
     if (MY_BOX_CONDITION) {
-      marker[] = no_points++;
+      marker[] = no_points++;// locally for each CPU counting the number of points
     }else{
     	marker[] = -1; //if you see -1 in vtu file=> there is a mistake
+    	fprintf(ferr, "marker[] = -1");
     }
   }
   foreach(){
-    if (MY_BOX_CONDITION) no_cells++;
+    if (MY_BOX_CONDITION) no_cells++;// locally for each CPU counting the number of cells
   }
   fputs ("<?xml version=\"1.0\"?>\n"
   "<VTKFile type=\"UnstructuredGrid\" version=\"1.0\" byte_order=\"LittleEndian\" header_type=\"UInt64\">\n", fp);

@@ -505,7 +505,6 @@ mgstats poisson (struct Poisson p)
 for (int b = 0; b < nboundary; b++)
     for (scalar s in {res0,res1,p0,Ap,z0,z1}){
         s.boundary[b] = s.boundary_homogeneous[b];
-//        s.boundary[b] = dirichlet_homogeneous_bc;
 
     }
 

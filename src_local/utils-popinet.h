@@ -239,8 +239,7 @@ void gradients (scalar * f, vector * g)
   assert (list_len(f) == vectors_len(g));
   foreach() {
     scalar s; vector v;
-    for (s,v in f,g) {
-      if (s.gradient)
+    for (s,v in f,g)
 	foreach_dimension() {
 #if EMBED
 	  if (!fs.x[] || !fs.x[1])
@@ -249,19 +248,8 @@ void gradients (scalar * f, vector * g)
 #endif
 	    v.x[] = s.gradient (s[-1], s[], s[1])/Delta;
 	}
-      else // centered
-	foreach_dimension() {
-#if EMBED
-	  if (!fs.x[] || !fs.x[1])
-	    v.x[] = 0.;
-	  else
-#endif
-	    v.x[] = (s[1] - s[-1])/(2.*Delta);
-	}
     }
   }
-  boundary ((scalar *) g);
-}
 
 /**
 ## Other functions
@@ -270,17 +258,21 @@ Given a velocity field $\mathbf{u}$, this function fills a scalar
 field $\omega$ with the vorticity field
 $$
 \omega = \partial_x u_y - \partial_y u_x
-$$ */
+$$
+To properly take the metric into account, $\omega$ is computed as an
+average over the (surface) element, which is easily obtained as
+the circulation of $\mathbf{u}$ along the boundary of the
+element. Using the definitions of the [metric
+factors](README#general-orthogonal-coordinates) `fm` and `cm`, this
+gives the expression below. */
 
 void vorticity (const vector u, scalar omega)
 {
-  struct { double x, y; } a = {1., -1.};
-  foreach() {
-    omega[] = 0.;
-    foreach_dimension(2)
-      omega[] += a.x*center_gradient (u.y);
-  }
-  boundary ({omega});
+  foreach()
+    omega[] = ((fm.x[1] - fm.x[])*u.y[] +
+	       fm.x[1]*u.y[1] - fm.x[]*u.y[-1] -
+	       (fm.y[0,1] - fm.y[])*u.x[] +
+	       fm.y[]*u.x[0,-1] - fm.y[0,1]*u.x[0,1])/(2.*cm[]*Delta + SEPS);
 }
 
 /**
@@ -362,4 +354,26 @@ the sub-segment contained in each cell are defined by `p[0]` and
 @
 @define end_foreach_segment() } } end_foreach(); }
 
+/**
+This function returns a summary of the currently-defined fields. */
+
+void fields_stats()
+{
+  fprintf (ferr, "# t = %g, fields = {", t);
+  for (scalar s in all)
+    fprintf (ferr, " %s", s.name);
+  fputs (" }\n", ferr);
+  fprintf (ferr, "# %12s: %12s %12s %12s %12s\n",
+	   "name", "min", "avg", "stddev", "max");
+  for (scalar s in all) {
+    stats ss = statsf (s);
+    fprintf (ferr, "# %12s: %12g %12g %12g %12g\n",
+	     s.name, ss.min, ss.sum/ss.volume, ss.stddev, ss.max);
+  }
+}
+
 #include "output.h"
+
+#ifdef DISPLAY
+# include "display.h" // nodep
+#endif

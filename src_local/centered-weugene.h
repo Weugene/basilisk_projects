@@ -165,7 +165,6 @@ event defaults (i = 0)
     face vector alphav = alpha;
     foreach_face()
       alphav.x[] = fm.x[];
-    boundary ((scalar *){alpha});
   }
 
   /**
@@ -178,17 +177,6 @@ event defaults (i = 0)
   /**
   When using [embedded boundaries](/src/embed.h), the restriction and
   prolongation operators need to take the boundary into account. */
-//#ifdef BRINKMAN_PENALIZATION
-//  uf.x.refine = refine_face;
-//  foreach_dimension()
-//    uf.x.prolongation = refine_bpm_face_x;
-//for (scalar s in {p, pf, u, g}) {
-//    s.restriction = restriction_embed_linear;
-//    s.refine = s.prolongation = refine_embed_linear;
-//  }
-//  for (scalar s in {p, pf})
-//    s.embed_gradient = pressure_bpm_gradient;
-//#endif
 
 #if EMBED
   uf.x.refine = refine_face;
@@ -197,12 +185,20 @@ event defaults (i = 0)
   for (scalar s in {p, pf, u, g}) {
     s.restriction = restriction_embed_linear;
     s.refine = s.prolongation = refine_embed_linear;
+    s.depends = list_add (s.depends, cs);
   }
   for (scalar s in {p, pf})
     s.embed_gradient = pressure_embed_gradient;
 #endif // EMBED
 #endif // TREE
 }
+
+
+/**
+We had some objects to display by default. */
+
+event default_display (i = 0)
+  display ("squares (color = 'u.x', spread = -1);");
 
 /**
 After user initialisation, we initialise the face velocity and fluid
@@ -212,11 +208,9 @@ double dtmax;
 
 event init (i = 0)
 {
-  boundary ((scalar *){u});
   trash ({uf});
   foreach_face()
     uf.x[] = fm.x[]*face_value (u.x, 0);
-  boundary ((scalar *){uf});
 
   /**
   We update fluid properties. */
@@ -259,17 +253,14 @@ event uf_correction(i++, last){
 #endif
 event vof (i++,last);
 event tracer_advection (i++,last);
+event tracer_diffusion (i++,last);
 
 /**
 The fluid properties such as specific volume (fields $\alpha$ and
 $\alpha_c$) or dynamic viscosity (face field $\mu_f$) -- at time
 $t+\Delta t/2$ -- can be defined by overloading this event. */
 
-event properties (i++,last) {
-  boundary ((scalar *){alpha, mu, rho, kappa}); // Weugene: kappa added
-}
-
-event tracer_diffusion (i++,last);
+event properties (i++,last);
 
 /**
 ### Predicted face velocity field
@@ -309,7 +300,6 @@ void prediction()
 #endif
 	            du.x[] = (u.x[1] - u.x[-1])/(2.*Delta);
     }
-  boundary ((scalar *){du});
 
   trash ({uf});
   foreach_face() {
@@ -330,7 +320,6 @@ void prediction()
     #endif
     uf.x[] *= fm.x[];
   }
-  boundary ((scalar *){uf});
 
   delete ((scalar *){du});
 }
@@ -355,8 +344,10 @@ event advection_term (i++,last)
     advection ((scalar *){u}, uf, dt, (scalar *){g});// original version
   }
 }
-
-
+/**
+ *  Advection of the temperature and polymerization fields
+ */
+event chem_advection_term (i++, last);
 /**
 ### Viscous term
 
@@ -367,8 +358,7 @@ static void correction (double dt)
 {
 	foreach()
     	foreach_dimension()
-      		u.x[] += dt*g.x[]; //original version
-	boundary ((scalar *){u});
+      u.x[] += dt*g.x[];
 }
 
 /**
@@ -394,11 +384,8 @@ event viscous_term (i++,last)
     trash ({af});
     foreach_face()
       af.x[] = 0.;
-    boundary((scalar *){af});
   }
 }
-
-
 
 /**
 ### Acceleration term
@@ -420,11 +407,8 @@ acceleration term is added. */
 event acceleration (i++,last)
 {
   trash ({uf});
-  face vector ia =a;
-  foreach_face(){
-    uf.x[] = fm.x[]*(face_value (u.x, 0) + dt*ia.x[]);
-  }
-  boundary ((scalar *){uf, ia});
+  foreach_face()
+    uf.x[] = fm.x[]*(face_value (u.x, 0) + dt*a.x[]);
 }
 
 /**
@@ -436,14 +420,14 @@ and the cell-centered pressure field *p*. */
 
 void centered_gradient (scalar p, vector g)
 {
+
   /**
   We first compute a face field $\mathbf{g}_f$ combining both
   acceleration and pressure gradient. */
 
   face vector gf[];
   foreach_face()
-    gf.x[] = (fm.x[]*a.x[] - alpha.x[]*(p[] - p[-1])/Delta);
-  boundary_flux ({gf});
+    gf.x[] = fm.x[]*a.x[] - alpha.x[]*(p[] - p[-1])/Delta;
 
   /**
   We average these face values to obtain the centered, combined
@@ -452,8 +436,7 @@ void centered_gradient (scalar p, vector g)
   trash ({g});
   foreach()
     foreach_dimension()
-      g.x[] = (gf.x[] + gf.x[1])/(fm.x[] + fm.x[1] + SEPS); //!!! ???: Weugene, numerator = gf.x[]*fm.x[] + gf.x[1]*fm.x[1]
-  boundary ((scalar *){g});
+      g.x[] = (gf.x[] + gf.x[1])/(fm.x[] + fm.x[1] + SEPS);
 }
 
 /**
@@ -467,11 +450,8 @@ event projection (i++,last)
   centered_gradient (p, g); //calc gf^{n+1}, g^{n+1} using p^{n+1}, a^{n+1/2}
   /**
   We add the gradient field *g* to the centered velocity field. */
-//  correction (dt);
-  foreach()
-    foreach_dimension()
-      u.x[] += dt*g.x[];
-  boundary ((scalar *){u});
+
+  correction (dt);
 }
 
 /**
@@ -479,7 +459,6 @@ Some derived solvers need to hook themselves at the end of the
 timestep. */
 
 event end_timestep (i++, last);
-
 
 /**
 Output vtk files*/
@@ -499,7 +478,6 @@ event adapt (i++,last) {
     // fs = 0 solid
     if (uf.x[] && !fs.x[])
       uf.x[] = 0.;
-  boundary ((scalar *){uf});
 #endif
   event ("properties");
 }
