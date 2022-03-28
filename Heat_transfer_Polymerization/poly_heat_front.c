@@ -3,13 +3,15 @@
 #define DEBUG_BRINKMAN_PENALIZATION
 #define DEBUG_MODE_TENSION
 #define DEBUG_MODE_POISSON
+#define DEBUG_MULTIGRID
 #define REACTION_MODEL REACTION_MODEL_NON_AUTOCATALYTIC
+//#define IGNORE_SOLID_MU
 //#define DEBUG_OUTPUT_VTU_MPI
 #define FILTERED
 #define JACOBI 1
 #define CORRECT_UF_FLUXES 1
-#define CURV_PARTSTR 1// use Petr Karnakov's module
 #define STICKY_SOLID 1
+#define CURV_PARTSTR 1// use Petr Karnakov's module
 #define RELATIVE_RES
 #define EPS_MAXA 2 // adapt based on Max-Min value
 //#define PRINT_ALL_VALUES
@@ -40,6 +42,7 @@ int snapshot_i = 1000;
 double snapshot_t = 0.5;
 double dt_vtk = 0.1;
 double Uin, Tin, T_solid, Tam;
+double timeend = 20;
 double RhoR, RhoRS, MuR, MuRS, CpR, CpRS, KappaR, KappaRS;
 double Rho1, Rho2, Rho3;
 double Mu0, Mu1, Mu2, Mu3;
@@ -53,6 +56,7 @@ double ratio_dist_x, ratio_dist_y, dev_r, develx, devely;
 double ratio_front_x;
 double shift_x, shift_y;
 int non_saturated;
+int gravityModule = 0;
 int Ncx, Ncy; //number of cylinders along Ox, Oy
 int Nb; //number of bubbles
 double Ca; // Ca = Mu*Ud/sigma
@@ -62,7 +66,7 @@ double Pr; //Prandtl number
 double Fr; //Froude number Fr = sqrt(u^2/(g*cyl_diam))
 double layer_velocity, layer_heat;
 double x_init = 2, Dx_min, dx_min;
-int maxlevel = 9;
+int maxlevel = 8;
 int minlevel = 5;
 int LEVEL = 7;
 double maxDT, maxDT0;
@@ -110,7 +114,7 @@ int main(int argc, char * argv[]) {
 
 	Eeta_by_Rg = 3.76e+4/8.314;// Kelvin Epon 9310,Safonov page 21
 	chi = 0; // 20
-	fprintf(ferr, "chi = 0!!! BE CAREFUL\n");
+	fprintf(ferr, "chi = 0!!! Ea changed BE CAREFUL\n");
     Rho1 = 1200, Rho2 = 1.092, Rho3 = 2560;//air at 23 C Graphite
     CP1 = 1255, CP2 = 1006, CP3 = 670;//J/(kg*K)
     Kappa1 = 0.2, Kappa2 = 0.02535, Kappa3 = 1.04;//W/(m*K)
@@ -291,7 +295,7 @@ int main(int argc, char * argv[]) {
     a = av;
     fs.refine = fs.prolongation = fraction_refine;
     f.refine = f.prolongation = fraction_refine;
-    boundary((scalar *){f, fs});
+
 #ifdef _MPI
     int rank, psize, h_len;
     char hostname[MPI_MAX_PROCESSOR_NAME];
@@ -348,12 +352,12 @@ double bubbles (double x, double y, double z)
     coord pnt_dist;
     front_x = (non_saturated) ? front_x : 1e+10;
     double limMin = X0 + Rbmax, limMax = min(min(front_x, cyl_x), X0 + L0) - Rbmax;
-    double *R = malloc(Nb * sizeof(double));
+    double *R = malloc(max(Nb,1) * sizeof(double));
     if (R == NULL) {
         fprintf(stderr, "malloc failed with R\n");
         return -1;
     }
-    coord *centers = malloc(Nb * sizeof(coord));
+    coord *centers = malloc(max(Nb,1) * sizeof(coord));
     if (centers == NULL) {
         fprintf(stderr, "malloc failed with centers\n");
         return -1;
@@ -361,7 +365,6 @@ double bubbles (double x, double y, double z)
 // generating of Radii and centers of bubbles which are not overlapping
     srand (10); // for consistency
     int iter = 0, i = 0;
-    //fprintf(ferr, "bubble in\n");
     while(i < Nb && Nb > 0){
         R[i] = RandMinMax(Rbmin, Rbmax);
         centers[i].x = RandMinMax(limMin, limMax);
@@ -396,6 +399,8 @@ double bubbles (double x, double y, double z)
 }
 double xmin_center = 0, xmax_center = 0;
 void calc_centers(coord * centers, double * R){
+    if (Ncx*Ncy == 0)
+        return;
     int k;
     coord pnt_dist;
     double minvx, maxvx, minvy, maxvy;
@@ -427,14 +432,14 @@ void calc_centers(coord * centers, double * R){
                         break;
                     }
                 }
-                fprintf(ferr, "k=%d R=%g x=%g y=%g\n", k, R[k], centers[k].x, centers[k].y);
+//                fprintf(ferr, "k=%d R=%g x=%g y=%g\n", k, R[k], centers[k].x, centers[k].y);
                 trials++;
                 if (trials > 10000) {
                     fprintf(ferr, "ERROR: Trials are more than 10000\n");
                     break;
                 }
                 if (flag) {
-                  fprintf(ferr, "k=%d R=%g x=%g y=%g\n", k, R[k], centers[k].x, centers[k].y);
+//                  fprintf(ferr, "k=%d R=%g x=%g y=%g\n", k, R[k], centers[k].x, centers[k].y);
                   break;
                 }
             }
@@ -465,19 +470,18 @@ void solid_func(scalar fs, face vector fs_face){
     foreach_vertex() {
         phi[] = geometry(x, y, z);
     }
-    boundary ({phi});
     fractions (phi, fs, fs_face);
 }
 
 event init (t = 0) {
     char name[300];
     sprintf (name, "restart_%s", subname);
-    R = (double *) malloc(Ncx*Ncy*sizeof(double));
+    R = (double *) malloc(max(Ncx*Ncy,1)*sizeof(double));
     if (R == NULL) {
         fprintf(stderr, "malloc failed with R\n");
         return -1;
     }
-    centers = (coord *) malloc(Ncx*Ncy*sizeof(coord));
+    centers = (coord *) malloc(max(Ncx*Ncy,1)*sizeof(coord));
     if (centers == NULL) {
         fprintf(stderr, "malloc failed with centers\n");
         return -1;
@@ -503,7 +507,6 @@ event init (t = 0) {
                 rhov[] = var_hom(f[], fs[], rho1, rho2, rho3);
             }
         }
-        boundary ({T, alpha_doc, u, rho});
         foreach_face(){
             double ff1 = (f[] + f[-1])/2.;
             double ff2 = (fs[] + fs[-1])/2.; //solid
@@ -516,9 +519,10 @@ event init (t = 0) {
                 muv.x[] = fm.x[] * mu(ff1, ff2, alphaf, Tf); //((1 - clamp(fs,0.,1.)) < SEPS);//
             }
         }
-		boundary((scalar *){kappa, mu});
         event("vtk_file");
-    }else{
+    }
+    else
+    {
         FILE *popen(const char *cmd_str, const char *mode);
         int pclose(FILE *stream);
         FILE *cmd;
@@ -560,9 +564,8 @@ event init (t = 0) {
 void calc_mu(scalar muv){
     foreach(reduction(max:mu_max)){
         muv[] = mu(f[], fs[], alpha_doc[], T[]);
-        if( muv[] > mu_max) mu_max = muv[];
+        if( (muv[] > mu_max) && (fs[] < 1)) mu_max = muv[];
     }
-    boundary((scalar *){muv});
 }
 
 event properties(i++){
@@ -584,20 +587,21 @@ event set_dtmax (i++) {
 The gravity vector is aligned with the channel and viscosity is
 unity. */
 
-//event acceleration (i++) {
-//  if (fabs(Ggrav_ndim) > 1e-10){
-//  	foreach_face(x)	av.x[] = Ggrav_ndim;
-//  }
-//}
+event acceleration (i++) {
+  if (gravityModule){
+  	foreach_face(x)	av.x[] = Ggrav_ndim;
+  }
+}
 
 event advection_term(i++){
     TOLERANCE = TOLERANCE_P;
 }
-
+double m_bp_iter = 30;
 event viscous_term(i++){
+    m_bp_iter -= 2;
     nu_max = mu_max/rho1;
     TOLERANCE = TOLERANCE_V;
-    eta_s = sq(m_bp*mindelta)/nu_max;
+    eta_s = sq(max(m_bp, m_bp_iter)*mindelta)/nu_max;
     eta_T = sq(m_bp_T*mindelta)/chi_conductivity;
    fprintf(ferr, "VISC: m=%g, mindelta=%g, nu=%g, chi_conductivity=%g, eta_s=%15.12g, eta_T=%15.12g\n", m_bp, mindelta, nu_max, chi_conductivity, eta_s, eta_T);
 }
@@ -630,7 +634,6 @@ void calcPhiVisc (vector u, face vector uf, scalar T, scalar alpha_doc, scalar f
         Phi_visc[] *= mu(f[], fs[], alpha_doc[], T[]);
         Phi_src[] = f[] * KT(T[]) * FR(alpha_doc[]);
     }
-    boundary((scalar *){Phi_visc, Phi_src});
 }
 
 /*
@@ -836,7 +839,6 @@ double time_prev = 0;
 //                  alpha_doc_avg, mu_avg, gradpx_in_resin_without_solid, gradpx_in_air_without_solid);
 //    //    scalar m[];
 //    foreach() m[] = (((1 - f[])*(fs[] <=0))*region_of_averaging(x,y) > 1e-3); // m is 0 and 1 array
-//    boundary((scalar *){m});
 //
 //    int n = tag (m); // m is modified filled be indices
 //    /**
@@ -992,31 +994,43 @@ double time_prev = 0;
 //}
 
 
-//event vtk_file (i += 1)
-//event vtk_file (t += dt_vtk)
-event vtk_file (i += 500)
-{
-    char name[300];
-    sprintf (name, "vtk_%s", subname);
+////event vtk_file (i += 1)
+////event vtk_file (t += dt_vtk)
+//event vtk_file (i += 1000)
+//{
+//    char name[300];
+//    sprintf (name, "vtk_%s", subname);
+//    scalar l[], dpdx[];
+//    foreach() {
+//        l[] = level;
+//        dpdx[] = (p[1] - p[-1])/(2*Delta);
+//    }
+//    calcPhiVisc (u, uf, T, alpha_doc, f, fs, Phi_visc, Phi_src); //TODO: visc dissipation?
+//
+//#ifdef DEBUG_BRINKMAN_PENALIZATION
+//    output_vtu_MPI(name, (iter_fp) ? t + dt : 0, list = (scalar *) {T, alpha_doc, p, dpdx, fs, f, l, rhov, mu_cell, my_kappa, which_meth, Phi_visc, Phi_src},
+//    vlist = (vector *) {u, g, uf, av, dbp, total_rhs, residual_of_u, divtauu, fs_face});
+//#else
+//    output_vtu_MPI(name, (iter_fp) ? t + dt : 0, list = (scalar *) {T, dpdx, alpha_doc, p, fs, f, l, rhov, mu_cell, m, Phi_visc, Phi_src},
+//    vlist = (vector *) {u, av});
+//#endif
+//}
+
+#include "output_htg.h"
+event report(i+=1000){
+    char path[]="res"; // no slash at the end!!
+    char prefix[80];
+    sprintf(prefix, "data_%06d", i);
     scalar l[], dpdx[];
     foreach() {
         l[] = level;
         dpdx[] = (p[1] - p[-1])/(2*Delta);
     }
-    boundary((scalar *){l, dpdx});
     calcPhiVisc (u, uf, T, alpha_doc, f, fs, Phi_visc, Phi_src); //TODO: visc dissipation?
 
-#ifdef DEBUG_BRINKMAN_PENALIZATION
-    output_vtu_MPI(name, (iter_fp) ? t + dt : 0, list = (scalar *) {T, alpha_doc, p, dpdx, fs, f, l, rhov, mu_cell, m, my_kappa, which_meth, Phi_visc, Phi_src},
-    vlist = (vector *) {u, g, uf, av, dbp, total_rhs, residual_of_u, divtauu, divutmpAfter, fs_face});
-#else
-    output_vtu_MPI(name, (iter_fp) ? t + dt : 0, list = (scalar *) {T, dpdx, alpha_doc, p, fs, f, l, rhov, mu_cell, m, Phi_visc, Phi_src},
-    vlist = (vector *) {u, av});
-#endif
+    output_htg((scalar *) {T, alpha_doc, p, dpdx, fs, f, l, rhov, mu_cell, my_kappa, which_meth, Phi_visc, Phi_src},
+    (vector *){u, g, uf, av, dbp, total_rhs, residual_of_u, divtauu, fs_face}, path, prefix, i, t);
 }
-
-
-
 /**
 We adapt according to the error on the embedded geometry, velocity and
 tracer fields. */
@@ -1028,7 +1042,7 @@ event adapt (i++){
 	double eps_arr[] = ADAPT_EPS_SCALARS;
 	MinMaxValues((scalar *) ADAPT_SCALARS, eps_arr);
 	adapt_wavelet ((scalar *) ADAPT_SCALARS, eps_arr, maxlevel = maxlevel, minlevel = minlevel);
-    if (i%100) count_cells(t, i);
+    if (i%100==0) count_cells(t, i);
 }
 
 //event snapshot (i += snapshot_i)
@@ -1043,13 +1057,22 @@ event snapshot (t += snapshot_t)
 }
 
 event check_fail(i += 100){
-    double umax = 0;
-    foreach(){
-        if ((u.x[] != u.x[]) || (umax > 10e+10)) {
-            fprintf(ferr, "NAN values, u.x=%g, umax=%g", u.x[], umax);
+    foreach(serial, noauto){
+        if ((u.x[] != u.x[]) || (fabs(u.x[]) > 10e+10)) {
+            printf("Nan values: x=%g y=%g |u|=%g, pid()=%d\n", x, y, fabs(u.x[]), pid());
             return 9;
         }
     }
 }
 
-event stop(t = 10);
+event stop(t = timeend);
+
+
+//    double xz1=0, xz2=0;
+//    foreach (serial, noauto){
+//        if (pid() == 0)
+//            xz1++;
+//        else if(pid() == 1)
+//            xz2++;
+//    }
+//    printf ("---%g %g %d\n", xz1, xz2, pid());

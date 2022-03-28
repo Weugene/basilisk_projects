@@ -98,19 +98,23 @@ void calcMuPhiVisc (scalar Phi_visc){
     boundary((scalar *){Phi_visc});
 }
 
-event chem_advection_term (i++){
-    if (!stokes_heat) {
-        advection((scalar *) {T}, uf, dt);
-#if REACTION_MODEL != NO_REACTION_MODEL //  POLYMERIZATION_REACTION
-        advection ((scalar *){alpha_doc}, uf, dt);
-#endif
-    }
-}
+//#if REACTION_MODEL != NO_REACTION_MODEL //  POLYMERIZATION_REACTION
+//event vof (i++){
+//    if (!stokes_heat) {
+//        advection ((scalar *){alpha_doc}, uf, dt);
+//    }
+//}
+//#endif
+
+//event chem_advection_term (i++){
+//    if (!stokes_heat) {
+//        advection((scalar *) {T}, uf, dt);
+//    }
+//}
 
 mgstats mgT;
 event end_timestep (i++){
     scalar r[], thetav[], beta[], R_source[];
-    double alpha_doc_old;
     foreach()
         thetav[] =  var_hom(f[], fs[], rho1*Cp1, rho2*Cp2, rho3*Cp3);
     boundary ({thetav});
@@ -119,7 +123,7 @@ event end_timestep (i++){
     // due to a linearized source term
 #if REACTION_MODEL != NO_REACTION_MODEL //  POLYMERIZATION_REACTION
     foreach() {
-        alpha_doc_old = alpha_doc[];
+        double alpha_doc_old = alpha_doc[];
 #if GENERAL_METHOD == 0
         alpha_doc[] = 1.0 - pow(
                 pow(fabs(1 - alpha_doc[]), 1 - n_degree) + (n_degree - 1.0) * dt * f[] * (1 - fs[]) * KT(T[]),

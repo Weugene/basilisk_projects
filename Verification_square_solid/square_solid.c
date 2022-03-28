@@ -8,7 +8,7 @@ scalar omega[];
 #include "../src_local/centered-weugene.h"
 #include "view.h"
 #include "../src_local/output_vtu_foreach.h"
-#include "../src_local/three-phase-weugene.h"
+#include "../src_local/not-used/three-phase-weugene.h"
 #include "tension.h"
 
 int maxlevel = 10;

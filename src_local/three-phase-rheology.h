@@ -22,7 +22,7 @@ The densities and dynamic viscosities for fluid 1 and 2 are *rho1*,
 
 #include "vof.h"
 double VOF_cutoff = 0.01;
-scalar f[], fs[], * interfaces = {f}, * interfaces_all = {f,fs};
+scalar f[], fs[], * interfaces = {f, alpha_doc,T};
 double mu0 = 0, rho1 = 1., mu1 = 0., rho2 = 1., mu2 = 0., rho3 = 1., mu3 = 0.;
 double kappa1 = 0, kappa2 = 0, kappa3 = 0;//W/(m*K)
 double Cp1 = 0, Cp2 = 0, Cp3 = 0;

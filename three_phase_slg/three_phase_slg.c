@@ -20,8 +20,8 @@
 #include "../src_local/centered-weugene.h"
 // Smering out the interfaces for high density and viscosity ratios.
 #define FILTERED
-#include "../src_local/three-phase-weugene.h"
-#include "../src_local/tension_three-phase-weugene.h"
+#include "../src_local/not-used/three-phase-weugene.h"
+#include "../src_local/not-used/tension_three-phase-weugene.h"
 #include "distance.h"
 
 #define MAXlevel 10                                              // maximum level

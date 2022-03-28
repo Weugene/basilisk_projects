@@ -5,7 +5,7 @@
 #define DEBUG_MODE_POISSON
 #define DEBUG_MULTIGRID
 #define REACTION_MODEL REACTION_MODEL_NON_AUTOCATALYTIC
-#define IGNORE_SOLID_MU
+//#define IGNORE_SOLID_MU
 //#define DEBUG_OUTPUT_VTU_MPI
 #define FILTERED
 #define JACOBI 1
@@ -42,8 +42,8 @@ int snapshot_i = 1000;
 double snapshot_t = 0.5;
 double dt_vtk = 0.1;
 double Uin, Tin, T_solid, Tam;
+double timeend = 20;
 double MuRS;
-double timeend;
 coord Ggrav_ndim;
 bool gravityModule = false;
 double cyl_diam, domain_size, dist_x, dist_y, cyl_x, front_x, Rbmin, Rbmax;
@@ -75,7 +75,6 @@ int main(int argc, char * argv[]) {
     MuRS = input->nums.MuRS;
     Ncy += (shift_y > 0); //for saturated flow we add artificial cylinder
     gravityModule = (fabs(Ggrav_ndim.x) + fabs(Ggrav_ndim.y) + fabs(Ggrav_ndim.z) > SEPS);
-    ignore_tension_CFL = false;
 #ifdef STOKES
     stokes = true;
     stokes_heat = false;
@@ -96,6 +95,7 @@ int main(int argc, char * argv[]) {
     a = av;
     fs.refine = fs.prolongation = fraction_refine;
     f.refine = f.prolongation = fraction_refine;
+
 #ifdef _MPI
     int rank, psize, h_len;
     char hostname[MPI_MAX_PROCESSOR_NAME];
@@ -165,8 +165,7 @@ double bubbles (double x, double y, double z)
 // generating of Radii and centers of bubbles which are not overlapping
     srand (10); // for consistency
     int iter = 0, i = 0;
-    //fprintf(ferr, "bubble in\n");
-    while(i < Nb){
+    while(i < Nb && Nb > 0){
         R[i] = RandMinMax(Rbmin, Rbmax);
         centers[i].x = RandMinMax(limMin, limMax);
         centers[i].y = RandMinMax(Y0 + Rbmax, Y0 + L0 - Rbmax);
@@ -271,7 +270,6 @@ void solid_func(scalar fs, face vector fs_face){
     foreach_vertex() {
         phi[] = geometry(x, y, z);
     }
-    boundary ({phi});
     fractions (phi, fs, fs_face);
 }
 
@@ -290,7 +288,7 @@ event init (t = 0) {
     }
     calc_centers(centers, R);
     if (!restore (file = name)) {
-        fprintf(ferr, "The file %s can not be successfully read! Iniitial conditions are set\n", name);
+        fprintf(ferr, "The file %s can not be successfully read! Initial conditions are set\n", name);
         int it = 0;
         scalar f_smoothed[], fs_smoothed[];
         do {
@@ -309,7 +307,6 @@ event init (t = 0) {
                 rhov[] = var_hom(f[], fs[], rho1, rho2, rho3);
             }
         }
-        boundary ({T, alpha_doc, u, rho});
         foreach_face(){
             double ff1 = (f[] + f[-1])/2.;
             double ff2 = (fs[] + fs[-1])/2.; //solid
@@ -322,7 +319,6 @@ event init (t = 0) {
                 muv.x[] = fm.x[] * mu(ff1, ff2, alphaf, Tf); //((1 - clamp(fs,0.,1.)) < SEPS);//
             }
         }
-		boundary((scalar *){kappa, mu});
         event("vtk_file");
     }
     else
@@ -353,7 +349,6 @@ event init (t = 0) {
         strcat(cmd_str, " | tail -1 | awk \'{print $4}\' ");
         fprintf(ferr, "grep iter_fp: %s", cmd_str);
         cmd = popen(cmd_str, "r");
-//        cmd = popen("grep \"vtk: iter_fp\" log | tail -1 | awk \'{print $4}\'", "r");
         if (cmd == NULL) {
             fprintf(ferr, "Error in opening log file and searching iter_fp");
             perror("popen");
@@ -361,29 +356,28 @@ event init (t = 0) {
         }
         fgets(result, sizeof(result), cmd);
         iter_fp = atoi(result) + 1;
-        fprintf(ferr, "Read iter_fp+1: %d\n", iter_fp);
+        fprintf(ferr, "Read last iter_fp: %d, new iter_fp: %d\n", atoi(result), iter_fp);
         pclose(cmd);
     }
 }
 
 void calc_mu(scalar muv){
-    foreach(){
+    foreach(reduction(max:mu_max)){
         muv[] = mu(f[], fs[], alpha_doc[], T[]);
         if( (muv[] > mu_max) && (fs[] < 1)) mu_max = muv[];
     }
-    boundary((scalar *){muv});
 }
 
 event properties(i++){
     solid_func(fs, fs_face);
     calc_mu(mu_cell);
-    mu3 = mu_max;
-    fprintf(ferr, "mu3=mu_max=%g was updated\n", mu3);
+    mu3 = mu_max*MuRS;
+    fprintf(ferr, "mu3=%g was updated, mu_max=%g\n", mu3, mu_max);
 }
 
 event set_dtmax (i++) {
     RELATIVE_RES_TOLERANCE = 0.01; //fabs(res1 - res2)/(res1 + 1e-30) < RELATIVE_RES_TOLERANCE
-    DT *= 1.03;
+    DT *= 1.05;
     DT = min(DT, maxDT);
     fprintf(ferr, "TIMEMAX i=%d set_dtmax: tnext= %g, t=%g, DT=%g, dt=%g\n", i, tnext, t, DT, dt);
 }
@@ -402,7 +396,7 @@ event acceleration (i++) {
 event advection_term(i++){
     TOLERANCE = TOLERANCE_P;
 }
-double m_bp_iter = 100;
+double m_bp_iter = 30;
 event viscous_term(i++){
     m_bp_iter -= 2;
     nu_max = mu_max/rho1;
@@ -440,7 +434,6 @@ void calcPhiVisc (vector u, face vector uf, scalar T, scalar alpha_doc, scalar f
         Phi_visc[] *= mu(f[], fs[], alpha_doc[], T[]);
         Phi_src[] = f[] * KT(T[]) * FR(alpha_doc[]);
     }
-    boundary((scalar *){Phi_visc, Phi_src});
 }
 
 /*
@@ -646,7 +639,6 @@ double time_prev = 0;
 //                  alpha_doc_avg, mu_avg, gradpx_in_resin_without_solid, gradpx_in_air_without_solid);
 //    //    scalar m[];
 //    foreach() m[] = (((1 - f[])*(fs[] <=0))*region_of_averaging(x,y) > 1e-3); // m is 0 and 1 array
-//    boundary((scalar *){m});
 //
 //    int n = tag (m); // m is modified filled be indices
 //    /**
@@ -802,29 +794,43 @@ double time_prev = 0;
 //}
 
 
-//event vtk_file (i += 100)
+//event vtk_file (i += 1)
 //event vtk_file (t += dt_vtk)
-event vtk_file (i += 1)
-{
-    char name[300];
-    sprintf (name, "vtk_%s", subname);
+//event vtk_file (i += 1000)
+//{
+//    char name[300];
+//    sprintf (name, "vtk_%s", subname);
+//    scalar l[], dpdx[];
+//    foreach() {
+//        l[] = level;
+//        dpdx[] = (p[1] - p[-1])/(2*Delta);
+//    }
+//    calcPhiVisc (u, uf, T, alpha_doc, f, fs, Phi_visc, Phi_src); //TODO: visc dissipation?
+//
+//#ifdef DEBUG_BRINKMAN_PENALIZATION
+//    output_vtu_MPI(name, (iter_fp) ? t + dt : 0, list = (scalar *) {T, alpha_doc, p, dpdx, fs, f, l, rhov, mu_cell, my_kappa, which_meth, Phi_visc, Phi_src},
+//    vlist = (vector *) {u, g, uf, av, dbp, total_rhs, residual_of_u, divtauu, fs_face});
+//#else
+//    output_vtu_MPI(name, (iter_fp) ? t + dt : 0, list = (scalar *) {T, dpdx, alpha_doc, p, fs, f, l, rhov, mu_cell, m, Phi_visc, Phi_src},
+//    vlist = (vector *) {u, av});
+//#endif
+//}
+
+#include "output_htg.h"
+event report(i+=1000){
+    char path[]="res"; // no slash at the end!!
+    char prefix[80];
+    sprintf(prefix, "data_%06d", i);
     scalar l[], dpdx[];
     foreach() {
         l[] = level;
         dpdx[] = (p[1] - p[-1])/(2*Delta);
     }
-    boundary((scalar *){l, dpdx});
     calcPhiVisc (u, uf, T, alpha_doc, f, fs, Phi_visc, Phi_src); //TODO: visc dissipation?
-#ifdef DEBUG_BRINKMAN_PENALIZATION
-    output_vtu_MPI(name, (iter_fp) ? t + dt : 0, list = (scalar *) {T, alpha_doc, p, dpdx, fs, f, l, rhov, mu_cell, which_meth, Phi_visc, Phi_src},
-    vlist = (vector *) {u, uf, av, fs_face});
-#else
-    output_vtu_MPI(name, (iter_fp) ? t + dt : 0, list = (scalar *) {T, dpdx, alpha_doc, p, fs, f, l, rhov, mu_cell},
-    vlist = (vector *) {u, av});
-#endif
+
+    output_htg((scalar *) {T, alpha_doc, p, dpdx, fs, f, l, rhov, mu_cell, my_kappa, which_meth, Phi_visc, Phi_src},
+           (vector *){u, g, uf, av, dbp, total_rhs, residual_of_u, divtauu, fs_face}, path, prefix, i, t);
 }
-
-
 
 /**
 We adapt according to the error on the embedded geometry, velocity and
@@ -851,11 +857,10 @@ event snapshot (t += snapshot_t)
     dump (file = name);
 }
 
-event check_fail(i += 10){
-    double umax = 0;
-    foreach(){
-        if ((u.x[] != u.x[]) || (umax > 10e+10)) {
-            fprintf(ferr, "NAN values, u.x=%g, umax=%g", u.x[], umax);
+event check_fail(i += 100){
+    foreach(serial, noauto){
+        if ((u.x[] != u.x[]) || (fabs(u.x[]) > 10e+10)) {
+            printf("Nan values: x=%g y=%g |u|=%g, pid()=%d\n", x, y, fabs(u.x[]), pid());
             return 9;
         }
     }

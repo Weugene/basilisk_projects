@@ -1,6 +1,6 @@
 #include "../src_local/centered-weugene.h"
 // #include "navier-stokes/perfs.h"
-#include "../src_local/three-phase-weugene.h"
+#include "../src_local/not-used/three-phase-weugene.h"
 #include "tension.h"
 
 #define MAXLEVEL 10
