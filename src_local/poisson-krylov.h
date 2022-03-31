@@ -93,7 +93,6 @@ void mg_cycle (scalar * a, scalar * res, scalar * da,
       foreach_blockf (s)
       s[] += ds[];
   }
-  boundary (a);
 }
 
 /**
@@ -377,7 +376,7 @@ static void relax (scalar * al, scalar * bl, int l, void * data)
 The equivalent residual function is obtained in a similar way in the
 case of a Cartesian grid, however the case of the tree mesh
 requires more careful consideration... */
-    face vector g[];
+face vector g[];
 static double residual (scalar * al, scalar * bl, scalar * resl, void * data)
 {
   scalar a = al[0], b = bl[0], res = resl[0];
@@ -390,9 +389,7 @@ static double residual (scalar * al, scalar * bl, scalar * resl, void * data)
 
   foreach_face(){
     g.x[] = alpha.x[]*face_gradient_x (a, 0);
-//    if (fabs(g.x[]) >2 )fprintf(ferr, "%g | %g %g %g\n", g.x[], a[], a[1], a[-1]);
   }
-  boundary_flux ({g});
   foreach (reduction(max:maxres)) {
     res[] = b[] - lambda[]*a[]; // lambda = 0 in usual case. it is a linear part in Functional
     foreach_dimension()
@@ -402,8 +399,7 @@ static double residual (scalar * al, scalar * bl, scalar * resl, void * data)
   foreach (reduction(max:maxres)) {
     res[] = b[] - lambda[]*a[];
     foreach_dimension()
-      res[] += (alpha.x[0]*face_gradient_x (a, 0) -
-		alpha.x[1]*face_gradient_x (a, 1))/Delta;
+      res[] -= (alpha.x[1]*face_gradient_x (a, 1) - alpha.x[0]*face_gradient_x (a, 0) )/Delta;
 #endif // !TREE
 #if EMBED
     if (p->embed_flux) {
@@ -417,16 +413,41 @@ static double residual (scalar * al, scalar * bl, scalar * resl, void * data)
     if (fabs (res[]) > maxres)
       maxres = fabs (res[]);
   }
-  boundary (resl);
-#ifdef DEBUG_MODE_POISSON
-  boundary ((scalar *){residual_of_p});
-#endif
 #ifdef DEBUG_MULTIGRID
 //  fprintf(ferr, "residual: maxres= %15.12g\n", maxres);
 #endif
   return maxres;
 }
 
+static double calcAy (scalar a, scalar res, void * data)
+{
+  struct Poisson * p = (struct Poisson *) data;
+  (const) face vector alpha = p->alpha;
+  (const) scalar lambda = p->lambda;
+#if TREE
+  /* conservative coarse/fine discretisation (2nd order) */
+  foreach_face(){
+    g.x[] = alpha.x[]*face_gradient_x (a, 0);
+  }
+  foreach () {
+    res[] = lambda[]*a[]; // lambda = 0 in usual case. it is a linear part in Functional
+    foreach_dimension()
+      res[] += (g.x[1] - g.x[])/Delta;
+#else // !TREE
+      /* "naive" discretisation (only 1st order on trees) */
+  foreach () {
+    res[] = lambda[]*a[];
+    foreach_dimension()
+      res[] += (alpha.x[1]*face_gradient_x (a, 1) - alpha.x[0]*face_gradient_x (a, 0))/Delta;
+#endif // !TREE
+#if EMBED
+    if (p->embed_flux) {
+      double c, e = p->embed_flux (point, a, alpha, &c);
+      res[] += e*a[] - c;
+    }
+#endif // EMBED
+  }
+}
 /**
 ## User interface
 
@@ -454,30 +475,6 @@ double scalar_product(scalar a, scalar b){
     fprintf(ferr, "scalar_prod: %15.12g, k=%d", scalar_product(a, b), k);
  *
  */
-void calcAy (scalar a, scalar Ap_result, struct Poisson p1){
-
-  struct Poisson p;
-  p.alpha = unityf;
-  p.lambda = zeroc;
-
-  scalar b[];
-  foreach(){
-    b[] = 0.0;
-  }
-  boundary((scalar*){b});
-
-//  foreach(){
-//    if (fabs(a[]) >1 || fabs(a[1]) >1 || fabs(a[-1]) >1  )
-//        fprintf(ferr, " %g %g %g\n", a[], a[1], a[-1]);
-//  }
-//        Ap_result.boundary[b] = Ap_result.boundary_homogeneous[b];
-//  restriction({Ap_result,a});
-  residual (&a, &b, &Ap_result, &p); // res = b - Ay = -Ay
-//  foreach(){
-//    Ap_result[] *= -1;
-//  }
-//  boundary((scalar*){Ap_result});
-};
 
 mgstats calcInvMy (scalar aa, scalar InvMy_result, struct Poisson p){
   mgstats s = {0};
@@ -485,28 +482,61 @@ mgstats calcInvMy (scalar aa, scalar InvMy_result, struct Poisson p){
     InvMy_result[] = aa[];
 //    InvMy_result[] = 0.0;
   }
-  boundary((scalar*) {InvMy_result});
   return s;
-//  return mg_solve_My ((scalar *){InvMy_result}, (scalar *){a}, residual, relax,
+//  return mg_solve_My ((scalar *){InvMy_result}, (scalar *){aa}, residual, relax,
 //                           &p, res=p.res, minlevel = 5);
 
-//  p.residual (p.a, p.b, res, p.data)
-//  mg_cycle (scalar * a, scalar * res, scalar * da,
-//            void (* relax) (scalar * da, scalar * res,
-//                            int depth, void * data),
-//  void * data,
-//  int nrelax, int minlevel, int maxlevel)
 };
 
-scalar z0[], z1[], res0[], res1[], p0[], Ap[];
+
+res0[left] = dirichlet(0);
+res0[right] = dirichlet(0);
+res0[bottom] = dirichlet(0);
+res0[top] = dirichlet(0);
+
+res1[left] = dirichlet(0);
+res1[right] = dirichlet(0);
+res1[bottom] = dirichlet(0);
+res1[top] = dirichlet(0);
+
+p0[left] = dirichlet(0);
+p0[right] = dirichlet(0);
+p0[bottom] = dirichlet(0);
+p0[top] = dirichlet(0);
+
+//Ap[left] = dirichlet(0);
+//Ap[right] = dirichlet(0);
+//Ap[bottom] = dirichlet(0);
+//Ap[top] = dirichlet(0);
+
+z0[left] = dirichlet(0);
+z0[right] = dirichlet(0);
+z0[bottom] = dirichlet(0);
+z0[top] = dirichlet(0);
+
+z1[left] = dirichlet(0);
+z1[right] = dirichlet(0);
+z1[bottom] = dirichlet(0);
+z1[top] = dirichlet(0);
+
+
+da[left] = dirichlet(0);
+da[right] = dirichlet(0);
+da[bottom] = dirichlet(0);
+da[top] = dirichlet(0);
+
+//da[left] = neumann(0);
+//da[right] = neumann(0);
+//da[bottom] = neumann(0);
+//da[top] = neumann(0);
 
 mgstats poisson (struct Poisson p)
 {
-for (int b = 0; b < nboundary; b++)
-    for (scalar s in {res0,res1,p0,Ap,z0,z1}){
-        s.boundary[b] = s.boundary_homogeneous[b];
-
-    }
+//for (int b = 0; b < nboundary; b++)
+//    for (scalar s in {res0,res1,p0,Ap,z0,z1}){
+//        s.boundary[b] = s.boundary_homogeneous[b];
+//
+//    }
 
   /**
   If $\alpha$ or $\lambda$ are not set, we replace them with constant
@@ -545,78 +575,68 @@ for (int b = 0; b < nboundary; b++)
 //                          &p, p.nrelax, p.res, minlevel = max(1, p.minlevel));
 //    return s;
 
-
   double maxres = residual (&a, &b, &res0, &p);
+//      return s;
   fprintf(ferr, "+++maxres=%g nrelax=%d minlevel=%d\n", maxres, p.nrelax, p.minlevel);
   s = calcInvMy (res0, z0, p);
   foreach(){
     p0[] = z0[];
+    da[] = 0;
   }
-  boundary((scalar*) {p0});
 
   double dai;
   double beta0, alpha0;
   scalar restmp[];
-  fprintf(ferr, "init...\n");
 
-//  calcAy (a, Ap, p);
+//  fprintf(ferr, "init...\n");
 
-  double maxx=0;
-//  foreach(reduction(max:maxx)){
-//      if (maxx < fabs(Ap[] - 2*a[]))
-//        maxx = fabs(Ap[] - 2*a[]);
-//  }
-//  fprintf(ferr, "max(Ap[] - 2*a[]) = %g\n", maxx);
 
-  maxx=0;
-  foreach(reduction(max:maxx)){
-      if (maxx < fabs(p0[] + 2*a[]))
-        maxx = fabs(p0[] + 2*a[]);
-  }
-  fprintf(ferr, "p0max = %g\n", maxx);
-
-  for (int iteration = 0; iteration < 1; iteration++){
+//  return s;
+  for (int iteration = 0; iteration < 1000; iteration++){
+//    fprintf(ferr, "iteration=%d\n", iteration);
+    calcAy (p0, Ap, &p);
+//      return s;
+    alpha0 = scalar_product(res0, z0)/scalar_product(Ap, p0);
+//    fprintf(ferr, "alpha0=%g\n", alpha0);
     maxres = 0;
-    fprintf(ferr, "iteration=%d\n", iteration);
-    calcAy (p0, Ap, p);
-      return s;
-//    double maxAp=0;
-//    foreach(reduction(max:maxAp)){
-//          if (maxAp < fabs(Ap[] + 4*a[]))
-//              maxAp = fabs(Ap[] + 4*a[]);
-//    }
-//    fprintf(ferr, "max(fabs(Ap[] + 4*a[])) = %g\n", maxAp);
-    alpha0 = scalar_product(res0, res0)/scalar_product(Ap, p0); // minus due to Ap
-    fprintf(ferr, "alpha0=%g\n", alpha0);
     foreach(reduction(max:maxres))
     {
-//      a[] = p0[];
-      a[] = Ap[];
-//      a[] = a[] + alpha0 * res0[];
-      res1[] = res0[] - alpha0 * Ap[]; // plus due to Ap
+      da[] += alpha0 * p0[];
+      res1[] = res0[] - alpha0 * Ap[];
       if (maxres < fabs(res1[])){
         maxres = fabs(res1[]);
       }
     }
-    boundary((scalar*) {a, res1});
+    boundary((scalar*){da});
+//    fprintf(ferr, "***maxres=%g\n", maxres);
+//    maxres = residual (&a, &b, &res1, &p);
+//    fprintf(ferr, "*** Honest: maxres=%g\n", maxres);
 
-    residual ({a}, {b}, {res1}, &p);
-    double maxrestmp = residual ({a}, {b}, {restmp}, &p);
-    fprintf(ferr, "tmp: maxrestmp=%g\n", maxrestmp);
-    fprintf(ferr, "***maxres=%g\n", maxres);
-    if (maxres < TOLERANCE)
+    foreach_boundary (top)
+      fprintf(ferr, "top: x=%g y=%g *=%g ghost=%g inside=%g %g\n", x, y, da[0,1], da[ghost], da[], da[0,-1]);
+    foreach_boundary (bottom)
+      fprintf(ferr, "bottom: x=%g y=%g *=%g ghost=%g inside=%g %g\n", x, y, da[0,-1], da[ghost], da[], da[0,1]);
+
+    if (maxres < TOLERANCE && iteration > 2)
       break;
-    beta0 = scalar_product(res1, res1)/scalar_product(res0, res0);
-    fprintf(ferr, "beta0=%g\n", beta0);
+    s = calcInvMy (res1, z1, p);
+//    return s;
+    beta0 = scalar_product(res1, z1)/scalar_product(res0, z0);
+//    fprintf(ferr, "beta0=%g\n", beta0);
     foreach()
     {
-      p0[] = res1[] + beta0 * p0[];
+      p0[] = z1[] + beta0 * p0[];
       res0[] = res1[];
+      z0[] = z1[];
     }
-    boundary((scalar*) {p0, res0});
   }
-  maxres = residual (&a, &b, &res0, &p);
-  fprintf(ferr, "final: maxres=%g\n", maxres);
+  foreach()
+  {
+    a[] += da[];
+  }
+  boundary((scalar*){a});
+//  maxres = residual (&a, &b, &res0, &p);
+//  fprintf(ferr, "final: maxres=%g\n", maxres);
   /**
   We restore the default. */
   if (p.tolerance)
@@ -678,10 +698,6 @@ $$ */
 //        divutmp[] = div[]*dt;
 //#endif
 //    }
-//    boundary((scalar*){div});
-//#ifdef DEBUG_MODE_POISSON
-//    boundary((scalar*){divutmp});
-//#endif
 //    /**
 //    We solve the Poisson problem. The tolerance (set with *TOLERANCE*) is
 //    the maximum relative change in volume of a cell (due to the divergence
@@ -708,12 +724,10 @@ $$ */
 ////#endif
 ////    foreach()
 ////        p[] -= pcor;
-////    boundary ({p});
 //    /**
 //    And compute $\mathbf{u}_f^{n+1}$ using $\mathbf{u}_f$ and $p$. */
 //
 //    foreach_face() uf.x[] -= dt*alpha.x[]*face_gradient_x (p, 0);
-//    boundary ((scalar *){uf});
 //
 //#ifdef DEBUG_MODE_POISSON
 //    double divuf, maxdivuf = -1e30;
@@ -724,8 +738,37 @@ $$ */
 //      divuf = fabs(divuf);
 //      if (maxdivuf < divuf) maxdivuf = divuf;
 //    }
-//    boundary((scalar*){divutmpAfter});
 //    fprintf(ferr, "Projection MAX{div uf} = %g\n", maxdivuf);
 //#endif
 //    return mgp;
 //}
+
+
+
+
+
+
+
+//    double maxx=0;
+//  foreach(reduction(max:maxx)){
+//      if (maxx < fabs(Ap[] - 2*a[]))
+//        maxx = fabs(Ap[] - 2*a[]);
+//  }
+//  fprintf(ferr, "max(Ap[] - 2*a[]) = %g\n", maxx);
+
+//  maxx=0;
+//  foreach(reduction(max:maxx)){
+//      if (maxx < fabs(p0[] + 2*a[]))
+//        maxx = fabs(p0[] + 2*a[]);
+//  }
+//  fprintf(ferr, "p0max = %g\n", maxx);
+
+
+
+
+//    double maxAp=0;
+//    foreach(reduction(max:maxAp)){
+//          if (maxAp < fabs(Ap[] + 4*a[]))
+//              maxAp = fabs(Ap[] + 4*a[]);
+//    }
+//    fprintf(ferr, "max(fabs(Ap[] + 4*a[])) = %g\n", maxAp);

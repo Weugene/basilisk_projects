@@ -121,7 +121,7 @@ static void relax_viscosity (scalar*a, scalar*b, int l, void*data)
     (const) scalar rho = p->rho;
     double dt = p->dt;
     vector u = vector(a[0]), r = vector(b[0]), res = vector(resl[0]);
-    double maxres = 0, d = 0, maxb = p->maxb;
+    double maxres = 0, maxb = p->maxb;
     coord LU;
     #ifndef DEBUG_BRINKMAN_PENALIZATION
     vector divtauu[];// added: Weugene
@@ -146,7 +146,7 @@ static void relax_viscosity (scalar*a, scalar*b, int l, void*data)
                      (u.z[-1,0,-1] + u.z[-1,0,0])/4.)/Delta;
 #endif
         foreach() {
-            d = 0.0;
+            double d = 0.0;
             foreach_dimension() {
                 d += taux.x[1] - taux.x[];
             }
@@ -172,7 +172,6 @@ static void relax_viscosity (scalar*a, scalar*b, int l, void*data)
 #endif
         }
     }
-    boundary (resl);
 #ifdef DEBUG_BRINKMAN_PENALIZATION
     fprintf(ferr, "visc: maxres=%15.12g maxb=%15.12g maxres/maxb=%15.12g\n", maxres, maxb, maxres/maxb);
 #endif

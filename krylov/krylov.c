@@ -4,13 +4,16 @@
 #define DEBUG_MODE_POISSON
 #define PRINT_ALL_VALUES
 const face vector unityfn[] = {-1.,-1.,-1.};
+scalar z0[], z1[], res0[], res1[], p0[], Ap[];
+scalar da[];
 #include "run.h"
 #include "timestep.h"
 #include "poisson-krylov.h"
 //#include "poisson.h"
 #include "utils.h"
 #include "utils-weugene.h"
-#include "output_vtu_foreach.h"
+#include "output_htg.h"
+//#include "output_vtu_foreach.h"
 scalar u[], rhs[], Ap_result[], uexact[];
 double w = 1.0;
 double ueps = 1e-3;
@@ -22,8 +25,8 @@ int LEVEL = 6;
 int main(int argc, char * argv[]) {
     DT = 1e+0;
     CFL = 0.5;
-    TOLERANCE = 1e-8;
-    size(2.0*pi);
+    TOLERANCE = 1e-12;
+    size(2.0);
     init_grid(1 << LEVEL);
     origin (-L0/2, -L0/2.);
 //    periodic(right);
@@ -44,7 +47,10 @@ int main(int argc, char * argv[]) {
     return 0;
 }
 
-#define u_BC (sin(x)*sin(y))
+//#define u_BC (sin(2*pi*x)*sin(3*pi*y))
+//#define d2u_BC (-13*sq(pi)*u_BC)
+#define u_BC (sin(2*pi*x)*sin(3*pi*y))
+#define d2u_BC (13*sq(pi)*u_BC)
 //#define u_BC (sin(x)*sin(y)*(sq(x) - sq(pi)))
 //#define du_BC (w*(y + x)*cos(w*x*y))// (w*y*cos + x)*cos(w*x*y))
 //#define d2u_BC (-sq(w)*(sq(y)+sq(x))*sin(w*x*y))
@@ -54,27 +60,12 @@ u[right] = dirichlet(u_BC);
 u[bottom] = dirichlet(u_BC);
 u[top] = dirichlet(u_BC);
 
-//u[left] = 0;
-//u[right] = 0;
-//u[bottom] = 0;
-//u[top] = 0;
-
-//u[right] = neumann (0);
-//u[left]  = neumann (0);
-//u[top]    = neumann (0);
-//u[bottom] = neumann (0);
-
-//rhs[left] = 0;
-//rhs[right] = 0;
-//rhs[bottom] = 0;
-//rhs[top] = 0;
-
 event init (t = 0) {
     foreach(){
-        u[] = u_BC;
+        u[] = 0.5*noise();
+//        u[] = u_BC;
     }
-    boundary((scalar *) {u});
-    event("vtk_file");
+    event("report");
 }
 
 event set_dtmax (i++,last) dtmax = DT;
@@ -84,42 +75,10 @@ event stability (i++, last) {
 }
 
 event step(i++){
-//    diffusion (u, DT, r=rhs);
-#if 1
     foreach(){
-        rhs[] = 0;
-//        rhs[] = d2u_BC;
+        rhs[] = d2u_BC;
     }
-    boundary((scalar*) {rhs});
-    poisson (u, rhs, unityfn, zeroc); //alpha=1, lambda=0
-#else
-    foreach(){
-        rhs[] = 0;
-    }
-    boundary((scalar*) {rhs});
-
-
-    struct Poisson p;
-    p.a = u;
-    p.b = rhs;
-    p.alpha = unityf;
-    p.lambda = zeroc;
-    p.minlevel = 5;
-    p.tolerance = 1e-7;
-    p.nrelax = 100;
-
-    if (!p.alpha.x.i)
-        p.alpha = unityf;
-    if (!p.lambda.i)
-        p.lambda = zeroc;
-    face vector alpha = p.alpha;
-    scalar lambda = p.lambda;
-    restriction ({alpha,lambda});
-
-
-    residual ((scalar *){u}, (scalar *){rhs}, (scalar *){Ap_result}, &p); // res = b - Ay = -Ay
-#endif
-//    calcAy (u, rhs, p);
+    poisson (u, rhs, unityfn, zeroc); //alpha=1, lambda=0: div( unityfn*grad u ) = rhs
 
 }
 
@@ -133,34 +92,47 @@ event step(i++){
 //
 //}
 
-event vtk_file (i+=1)
-{
-    char name[300];
-    sprintf (name, "vtk_krylov");
-    scalar l[];
+//event vtk_file (i+=1)
+//{
+//    char name[300];
+//    sprintf (name, "vtk_krylov");
+//    scalar l[];
+//    foreach() {
+//        l[] = level;
+//        uexact[] = u_BC;
+//    }
+//
+//    output_vtu_MPI(name, (iter_fp) ? t + dt : 0, list = (scalar *) {u, uexact, rhs, Ap_result, level, residual_of_p, res0,res1,p0,Ap}, fvlist = (vector*){g});
+//
+//}
+
+
+event report(i++){
+    char path[] = "res"; // no slash at the end!!
+    char prefix[] = "data";
+    scalar l[], laplaceU[];
     foreach() {
         l[] = level;
         uexact[] = u_BC;
+//        laplaceU[] = (u[-1] - 2 * u[] + u[1]) / sq(Delta) + (u[0,-1] - 2 * u[] + u[0,1]) / sq(Delta);
+        laplaceU[] = 0;
+        foreach_dimension()
+            laplaceU[] += (u[-1] - 2 * u[] + u[1]) / sq(Delta);
     }
-    boundary((scalar *){l, uexact});
-
-    output_vtu_MPI(name, (iter_fp) ? t + dt : 0, list = (scalar *) {u, uexact, rhs, Ap_result, l, residual_of_p, res0,res1,p0,Ap}, fvlist = (vector*){g});
-
+    output_htg(path, prefix,  (iter_fp) ? t + dt : 0, (scalar *) {u, uexact, rhs, Ap_result, l, res0, res1, p0, Ap, laplaceU});
 }
-
-//event move_next(i++){
-//    foreach(){
-//        u[] = Ap_result[];
-//    }
-//    boundary((scalar*) {u});
-//}
+#if TRACE > 1
+    event profiling (i += 20) {
+      static FILE * fp = fopen ("profiling", "w");
+      trace_print (fp, 1);
+    }
+#endif
 
 event stop_end(i = 0){
     scalar du[];
     foreach(){
         du[] = fabs(u[] - uexact[]);
     }
-    boundary((scalar *){du});
     double eps_arr[] = {1};
     MinMaxValues((scalar *){du}, eps_arr);
     fprintf(fout, "L2 h=%g L2Err=%g Nc=%ld\n", L0/pow(2.0, maxlevel), eps_arr[0], perf.tnc);

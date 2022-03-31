@@ -22,7 +22,15 @@ The densities and dynamic viscosities for fluid 1 and 2 are *rho1*,
 
 #include "vof.h"
 double VOF_cutoff = 0.01;
-scalar f[], fs[], * interfaces = {f, alpha_doc,T};
+scalar f[], fs[];
+scalar T[];
+
+#if REACTION_MODEL != NO_REACTION_MODEL
+    scalar alpha_doc[];
+#endif
+scalar * interfaces = {f};
+
+
 double mu0 = 0, rho1 = 1., mu1 = 0., rho2 = 1., mu2 = 0., rho3 = 1., mu3 = 0.;
 double kappa1 = 0, kappa2 = 0, kappa3 = 0;//W/(m*K)
 double Cp1 = 0, Cp2 = 0, Cp3 = 0;
@@ -88,10 +96,8 @@ Usually, it is assumed that mu1 is variable, mu2 and mu3 are not. For simplisity
 //    #define kappav(f, fs) var_harm(f, fs, kappa1, kappa2, kappa3)
 //    #define kappav(f, fs) ((1.0 - clamp(fs,0.,1.))*(kappa2 + (kappa1 - kappa2)*clamp(f,0.,1.)) + clamp(fs,0.,1.)*kappa3)
 #endif
-#if REACTION_MODEL != NO_REACTION_MODEL
-    scalar alpha_doc[];
-#endif
-scalar T[];
+
+
 /**
 # Variable rheology models
  $$\mu = \mu_1 \exp(\frac{E_\eta}{RT})(\frac{\alpha_{gel}}{\alpha_{gel}-\alpha})^f(\alpha, T)$$

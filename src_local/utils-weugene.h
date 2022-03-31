@@ -47,13 +47,14 @@ void MinMaxValues(scalar * list, double * arr_eps) {// for each scalar min and m
 }
 
 int count_cells(double t, int i){
-    int tnc = 0, nc = 0, maxlev=0;
+    int tnc = 0, maxlev=0;
     foreach( reduction(+:tnc) reduction(max:maxlev) ){
         tnc++;
         if (level > maxlev) maxlev = level;
     }
 #if _MPI
-    foreach()
+    int nc = 0;
+    foreach(serial)
         nc++;
     int rank, h_len;
     char hostname[MPI_MAX_PROCESSOR_NAME];
@@ -69,11 +70,11 @@ int count_cells(double t, int i){
 // statistical values inside cells with liquid
 stats statsf_weugene (scalar f, scalar fs)
 {
-    double dvr, val, min = 1e100, max = -1e100, sum = 0., sum2 = 0., volume = 0.;
+    double min = 1e100, max = -1e100, sum = 0., sum2 = 0., volume = 0.;
     foreach(reduction(+:sum) reduction(+:sum2) reduction(+:volume)
     reduction(max:max) reduction(min:min)){
-        dvr = dv()*(1. - fs[]);
-        val = f[]*(1. - fs[]);
+        double dvr = dv()*(1. - fs[]);
+        double val = f[]*(1. - fs[]);
         volume += dvr;
         sum    += f[]*dvr;
         sum2   += sq(f[])*dvr;
@@ -94,11 +95,11 @@ stats statsf_weugene (scalar f, scalar fs)
 // statistical values inside pure liquid
 stats statsf_weugene2 (scalar f, scalar fs)
 {
-    double dvr, min = 1e100, max = -1e100, sum = 0., sum2 = 0., volume = 0.;
+    double min = 1e100, max = -1e100, sum = 0., sum2 = 0., volume = 0.;
     foreach(reduction(+:sum) reduction(+:sum2) reduction(+:volume)
     reduction(max:max) reduction(min:min))
     if (fs[] == 0.) {
-        dvr = dv()*(1. - fs[]);
+        double dvr = dv()*(1. - fs[]);
         volume += dvr;
         sum    += dvr*f[];
         sum2   += dvr*sq(f[]);
@@ -137,9 +138,9 @@ norm normf_weugene (scalar f, scalar fs)
 
 double change_weugene (scalar s, scalar sn, scalar fs)
 {
-    double max = 0., ds;
+    double max = 0.;
     foreach(reduction(max:max)) {
-        ds = fabs (s[] - sn[])*(1. - fs[]);
+        double ds = fabs (s[] - sn[])*(1. - fs[]);
         if (ds > max)
             max = ds;
         sn[] = s[];

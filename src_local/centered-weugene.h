@@ -84,7 +84,7 @@ for which inertia is negligible compared to viscosity. */
 (const) scalar rho = unity;
 mgstats mgp, mgpf, mgu;
 bool stokes = false;
-bool stokes_heat = nodata;
+bool stokes_heat = false;
 /**
 ## Boundary conditions
 

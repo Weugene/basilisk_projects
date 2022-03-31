@@ -1,8 +1,11 @@
 CFLAGS=-DDUMP=1 -Wall -O2 -events
-CLIBS=-L/usr/local/lib/ -L/home/e.sharaborin/opt/lib -L/trinity/home/e.sharaborin/opt/lib -L/trinity/home/e.sharaborin/opt/trinity/shared/opt/rh/gcc-8.3.0/lib64 -lcyaml -lm
+CLIBS=-L/usr/local/lib/ -L/home/e.sharaborin/opt/lib/ \
+-L/trinity/home/e.sharaborin/opt/lib \
+-L/trinity/home/e.sharaborin/opt/trinity/shared/opt/rh/gcc-8.3.0/lib64 \
+-lcyaml -lm
 C_INCLUDE_PATH=-I$(HOME)/opt/include
-Tcyl=400
-Tin=400
+Tcyl=330
+Tin=330
 maxlevel=8
 iter_fp=0
 ratio_Rbmin=0.9
@@ -12,13 +15,13 @@ ratio_dist_y=2
 ratio_front_x=100
 cyl_x=-0.5
 Nb=1
-Ncx=0
-Ncy=0
+Ncx=1
+Ncy=3
 TOLERANCE_P=1e-9
-TOLERANCE_V=1e-8
+TOLERANCE_V=1e-9
 TOLERANCE_T=1e-8
 Htr=355000 #355000
-Arrhenius_const=0 #80600
+Arrhenius_const=80600 #80600
 Ea_by_R=2400 #already divided by 8.31  =  7697=64000/8.314
 dev_r=0.
 dev_x=0.
@@ -36,7 +39,7 @@ $(cyl_x) $(Nb) $(Ncx) $(Ncy) $(TOLERANCE_P) $(TOLERANCE_V) $(TOLERANCE_T) \
 $(Htr) $(Arrhenius_const) $(Ea_by_R) $(dev_r) $(dev_x) $(dev_y) $(shift_x) $(shift_y) $(non_saturated) $(ind)
 
 run:=mpirun -np $(parallel)  ./a.out $(args) > out$(ind) 2> log$(ind)
-compile:=CC99='mpicc -std=c99' qcc -O2 -D_MPI=1 -events $(C_INCLUDE_PATH)
+compile:=CC99='mpicc -std=c99' qcc -O3 -D_MPI=1 -events $(C_INCLUDE_PATH)
 remove:=rm -rf .qcc*
 
 all: heat_polymerization_front
@@ -50,7 +53,7 @@ heat_polymerization_front:
 poly_with_yaml:
 	$(remove)
 	$(compile)  poly_with_yaml.c $(CLIBS)
-	mpirun -np 2  ./a.out test.yml > out_yaml_$(ind) 2> log_yaml_$(ind)
+	#mpirun -np 2  ./a.out test.yml > out_yaml_$(ind) 2> log_yaml_$(ind)
 debug:
 	mpirun -np 2 xterm -hold -e gdb -ex run --args ./a.out $(args)
 convert:

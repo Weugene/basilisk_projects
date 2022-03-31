@@ -92,33 +92,59 @@ void calcMuPhiVisc (scalar Phi_visc){
             + sq(0.5*(u.x[0,0,1] - u.x[0,0,-1])/Delta) // dv_x/dz
             + sq(0.5*(u.z[1] - u.z[-1])/Delta) // dv_z/dx
     #endif
-                ;
-        Phi_visc[] += mu(f[], fs[], alpha_doc[], T[]) * muPhi;
+            ;
+        Phi_visc[] = mu(f[], fs[], alpha_doc[], T[]) * muPhi * f[] * (1 - fs[]);
     }
-    boundary((scalar *){Phi_visc});
 }
 
-//#if REACTION_MODEL != NO_REACTION_MODEL //  POLYMERIZATION_REACTION
-//event vof (i++){
-//    if (!stokes_heat) {
-//        advection ((scalar *){alpha_doc}, uf, dt);
-//    }
-//}
-//#endif
 
-//event chem_advection_term (i++){
-//    if (!stokes_heat) {
-//        advection((scalar *) {T}, uf, dt);
-//    }
-//}
+void calcMuPhiViscAccurate (scalar Phi_visc){
+    vector divtauu[];// added: Weugene
+    foreach_dimension() {
+        face vector taux[];
+        foreach_face()
+            taux.x[] = 2.*mu.x[]*uf.x[]*(u.x[] - u.x[-1])/Delta
+#if dimension > 1
+                       + mu.y[]*uf.y[]*(u.x[] - u.x[0,-1] +
+                     (u.y[1,-1] + u.y[1,0])/4. -
+                     (u.y[-1,-1] + u.y[-1,0])/4.)/Delta;
+#endif
+#if dimension > 2
+        foreach_face(z)
+            taux.z[] = mu.z[]*(u.x[] - u.x[0,0,-1] +
+                     (u.z[1,0,-1] + u.z[1,0,0])/4. -
+                     (u.z[-1,0,-1] + u.z[-1,0,0])/4.)/Delta;
+#endif
+        foreach() {
+            double d = 0.0;
+            foreach_dimension() {
+                d += taux.x[1] - taux.x[];
+            }
+            divtauu.x[] = d/Delta;
+        }
+    }
+}
+
+
+#if REACTION_MODEL != NO_REACTION_MODEL //  POLYMERIZATION_REACTION
+event vof (i++){
+    if (!stokes_heat) {
+        advection ((scalar *){alpha_doc}, uf, dt);
+    }
+}
+#endif
+
+event chem_advection_term (i++){
+    if (!stokes_heat) {
+        advection((scalar *) {T}, uf, dt);
+    }
+}
 
 mgstats mgT;
 event end_timestep (i++){
     scalar r[], thetav[], beta[], R_source[];
     foreach()
         thetav[] =  var_hom(f[], fs[], rho1*Cp1, rho2*Cp2, rho3*Cp3);
-    boundary ({thetav});
-
     // advection term of kinetic equation is solved implicitly
     // due to a linearized source term
 #if REACTION_MODEL != NO_REACTION_MODEL //  POLYMERIZATION_REACTION
@@ -126,23 +152,22 @@ event end_timestep (i++){
         double alpha_doc_old = alpha_doc[];
 #if GENERAL_METHOD == 0
         alpha_doc[] = 1.0 - pow(
-                pow(fabs(1 - alpha_doc[]), 1 - n_degree) + (n_degree - 1.0) * dt * f[] * (1 - fs[]) * KT(T[]),
+                pow(fabs(1 - alpha_doc[]), 1 - n_degree) + (n_degree - 1.0) * dt * KT(T[]),
                 1.0/(1.0 - n_degree));//direct integration from t to t + dt at fixed T
 #else
 // Crank--Nicolson
-//        alpha_doc[] = (alpha_doc[] + 0.5 * dt * f[] * (1 - fs[]) * KT(T[]) * (2.0 * FR(alpha_doc[]) - dFR_dalpha(alpha_doc[]) * alpha_doc[])) /
-//                          (1 - 0.5 * dt * f[] * (1 - fs[]) * KT(T[]) * dFR_dalpha(alpha_doc[]));
+//        alpha_doc[] = (alpha_doc[] + 0.5 * dt * KT(T[]) * (2.0 * FR(alpha_doc[]) - dFR_dalpha(alpha_doc[]) * alpha_doc[])) /
+//                          (1 - 0.5 * dt * KT(T[]) * dFR_dalpha(alpha_doc[]));
 // Backward Euler
-        alpha_doc[] = (alpha_doc[] + dt * f[] * (1 - fs[]) * KT(T[]) * ( FR(alpha_doc[]) - dFR_dalpha(alpha_doc[]) * alpha_doc[])) /
-                          (1 - dt * f[] * (1 - fs[]) * KT(T[]) * dFR_dalpha(alpha_doc[]));
+        alpha_doc[] = (alpha_doc[] + dt * KT(T[]) * ( FR(alpha_doc[]) - dFR_dalpha(alpha_doc[]) * alpha_doc[])) /
+                          (1 - dt * KT(T[]) * dFR_dalpha(alpha_doc[]));
 #endif
-        R_source[] = (alpha_doc[] - alpha_doc_old) / dt;
-//        alpha_doc[] = clamp(alpha_doc[], 0.0, 1.0) * f[] * (1 - fs[]);
+        //source and conductivity terms. f[] * (1 - fs[]) multiplications means gas and solids can't produce heat
+        R_source[] = (alpha_doc[] - alpha_doc_old) * f[] * (1 - fs[]) / dt;
+        alpha_doc[] = clamp(alpha_doc[], 0.0, 1.0);
     }
-    boundary ((scalar*) {alpha_doc, R_source});
 #endif
 
-    //source and conductivity terms. f[] * (1 - fs[]) multiplications means gas and solids can't produce heat
     //solids play role in the conduction process
     if (fabs(Htr) > SEPS){
         foreach() {
@@ -171,8 +196,6 @@ event end_timestep (i++){
     }
     if (viscDissipation)
         calcMuPhiVisc (r);
-    boundary((scalar *){r, beta});
-
     if (constant(kappa.x) != 0.) {
         mgT = diffusion(T, dt, D = kappav, r = r, beta = beta, theta = thetav);
 #ifdef DEBUG_HEAT
@@ -183,7 +206,6 @@ event end_timestep (i++){
             T[] = (thetav[] * T[] + dt * r[])/(thetav[] - dt * beta[]);
         }
     }
-    boundary((scalar *){T});
 }
 
 // In first 10 steps, eta_T and m_bp_T will be adjusted

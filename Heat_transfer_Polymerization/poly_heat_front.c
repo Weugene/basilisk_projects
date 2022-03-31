@@ -35,7 +35,8 @@ static coord vel_s = {0, 0, 0};
 #include "rheology_model.h"
 #include "tension.h"
 #include "utils-weugene.h"
-#include "output_vtu_foreach.h"
+//#include "output_vtu_foreach.h"
+#include "output_htg.h"
 #include "tag.h"
 
 int snapshot_i = 1000;
@@ -130,12 +131,13 @@ int main(int argc, char * argv[]) {
     shift_y = 0;
     dev_r = 0.4, develx = 0.4, devely = 0.4;
     non_saturated = 1;
-    viscDissipation = true;
+    viscDissipation = false;
 
     if (argc > 1)
         T_solid = atof(argv[1]);
     if (argc > 2)
         Tin = atof(argv[2]);
+    Tam = Tin;
 //	Mu1 = 3.85e-7*exp(Eeta_by_Rg/Tin), Mu2 = 1e-4;
     Mu0 = 3.85e-9; // 3.85e-7
     fprintf(ferr, "Mu0 = 3.85e-9!!! alpha_doc[left]=0.5  BE CAREFUL\n");
@@ -324,7 +326,7 @@ pf[left]   = neumann(0.);
 f[left]    = dirichlet(1);
 T[left]    = dirichlet(Tin);
 fs[left]   = dirichlet(0);
-alpha_doc[left] = dirichlet(0.5);//inflow is fresh resin
+alpha_doc[left] = dirichlet(0); //inflow is fresh resin
 
 u.n[right] = neumann(0);
 p[right]   = dirichlet(0);
@@ -499,7 +501,7 @@ event init (t = 0) {
         } while (adapt_wavelet({f_smoothed, fs_smoothed}, (double []){feps, feps}, maxlevel=maxlevel, minlevel=minlevel).nf != 0 && ++it <= 10);
         foreach() {
             T[] = var_hom(f[], fs[], Tin, Tam, T_solid);
-            alpha_doc[] = 0.5*f[];
+            alpha_doc[] = 0;
             u.x[] = u_BC*(1 - fs[]); //u_BC*f[];// 0; // penalization will work
             u.y[] = 0;
             un[] = u.x[];
@@ -994,8 +996,8 @@ double time_prev = 0;
 //}
 
 
-////event vtk_file (i += 1)
-////event vtk_file (t += dt_vtk)
+//event vtk_file (i += 1)
+//event vtk_file (t += dt_vtk)
 //event vtk_file (i += 1000)
 //{
 //    char name[300];
@@ -1016,11 +1018,10 @@ double time_prev = 0;
 //#endif
 //}
 
-#include "output_htg.h"
-event report(i+=1000){
-    char path[]="res"; // no slash at the end!!
-    char prefix[80];
-    sprintf(prefix, "data_%06d", i);
+
+event report (i+=1000){
+    char path[] = "res"; // no slash at the end!!
+    char prefix[] = "data";
     scalar l[], dpdx[];
     foreach() {
         l[] = level;
@@ -1028,9 +1029,10 @@ event report(i+=1000){
     }
     calcPhiVisc (u, uf, T, alpha_doc, f, fs, Phi_visc, Phi_src); //TODO: visc dissipation?
 
-    output_htg((scalar *) {T, alpha_doc, p, dpdx, fs, f, l, rhov, mu_cell, my_kappa, which_meth, Phi_visc, Phi_src},
-    (vector *){u, g, uf, av, dbp, total_rhs, residual_of_u, divtauu, fs_face}, path, prefix, i, t);
+    output_htg(path, prefix, (iter_fp) ? t + dt : 0, (scalar *) {T, alpha_doc, p, dpdx, fs, f, l, rhov, mu_cell, my_kappa, which_meth, Phi_visc, Phi_src},
+    (vector *){u, g, uf, av, dbp, total_rhs, residual_of_u, divtauu, fs_face});
 }
+
 /**
 We adapt according to the error on the embedded geometry, velocity and
 tracer fields. */

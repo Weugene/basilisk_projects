@@ -35,7 +35,8 @@ static coord vel_s = {0, 0, 0};
 #include "rheology_model.h"
 #include "tension.h"
 #include "utils-weugene.h"
-#include "output_vtu_foreach.h"
+//#include "output_vtu_foreach.h"
+#include "output_htg.h"
 #include "tag.h"
 
 int snapshot_i = 1000;
@@ -45,11 +46,11 @@ double Uin, Tin, T_solid, Tam;
 double timeend = 20;
 double MuRS;
 coord Ggrav_ndim;
-bool gravityModule = false;
 double cyl_diam, domain_size, dist_x, dist_y, cyl_x, front_x, Rbmin, Rbmax;
 double dev_r, develx, devely;
 double shift_x, shift_y;
 int non_saturated;
+bool gravityModule = false;
 int Ncx, Ncy; //number of cylinders along Ox, Oy
 int Nb; //number of bubbles
 double layer_velocity, layer_heat;
@@ -816,11 +817,10 @@ double time_prev = 0;
 //#endif
 //}
 
-#include "output_htg.h"
+
 event report(i+=1000){
     char path[]="res"; // no slash at the end!!
-    char prefix[80];
-    sprintf(prefix, "data_%06d", i);
+    char prefix[] = "data";
     scalar l[], dpdx[];
     foreach() {
         l[] = level;
@@ -828,8 +828,8 @@ event report(i+=1000){
     }
     calcPhiVisc (u, uf, T, alpha_doc, f, fs, Phi_visc, Phi_src); //TODO: visc dissipation?
 
-    output_htg((scalar *) {T, alpha_doc, p, dpdx, fs, f, l, rhov, mu_cell, my_kappa, which_meth, Phi_visc, Phi_src},
-           (vector *){u, g, uf, av, dbp, total_rhs, residual_of_u, divtauu, fs_face}, path, prefix, i, t);
+    output_htg(path, prefix, (iter_fp) ? t + dt : 0, (scalar *) {T, alpha_doc, p, dpdx, fs, f, l, rhov, mu_cell, my_kappa, which_meth, Phi_visc, Phi_src},
+           (vector *){u, g, uf, av, dbp, total_rhs, residual_of_u, divtauu, fs_face});
 }
 
 /**
