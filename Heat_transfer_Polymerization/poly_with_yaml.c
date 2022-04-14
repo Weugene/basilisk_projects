@@ -415,28 +415,6 @@ event end_timestep(i++){
 	TOLERANCE = TOLERANCE_T;
 }
 
-void calcPhiVisc (vector u, face vector uf, scalar T, scalar alpha_doc, scalar f, scalar fs, scalar Phi_visc, scalar Phi_src){
-    foreach(){
-        double grad2 = 0.0;
-        foreach_dimension()
-        grad2 += sq((uf.x[1] - uf.x[]));
-        Phi_visc[] = 2*grad2/sq(Delta)
-#if dimension >= 2
-            + sq(0.5*(u.x[0,1] - u.x[0,-1])/Delta) // dv_x/dy
-                + sq(0.5*(u.y[1] - u.y[-1])/Delta)  // dv_y/dx
-#endif
-#if dimension > 2
-            + sq(0.5*(u.z[0,1] - u.z[0,-1])/Delta)// dv_z/dy
-                + sq(0.5*(u.y[0,0,1] - u.y[0,0,-1])/Delta) // dv_y/dz
-                + sq(0.5*(u.x[0,0,1] - u.x[0,0,-1])/Delta) // dv_x/dz
-                + sq(0.5*(u.z[1] - u.z[-1])/Delta) // dv_z/dx
-#endif
-                ;
-        Phi_visc[] *= mu(f[], fs[], alpha_doc[], T[]);
-        Phi_src[] = f[] * KT(T[]) * FR(alpha_doc[]);
-    }
-}
-
 /*
  * xmax, ymax - maximum front tip along Ox
  * xmax_prev, ymax_prev - maximum front tip at the previous time step
@@ -806,13 +784,12 @@ double time_prev = 0;
 //        l[] = level;
 //        dpdx[] = (p[1] - p[-1])/(2*Delta);
 //    }
-//    calcPhiVisc (u, uf, T, alpha_doc, f, fs, Phi_visc, Phi_src); //TODO: visc dissipation?
 //
 //#ifdef DEBUG_BRINKMAN_PENALIZATION
-//    output_vtu_MPI(name, (iter_fp) ? t + dt : 0, list = (scalar *) {T, alpha_doc, p, dpdx, fs, f, l, rhov, mu_cell, my_kappa, which_meth, Phi_visc, Phi_src},
+//    output_vtu_MPI(name, (iter_fp) ? t + dt : 0, list = (scalar *) {T, alpha_doc, p, dpdx, fs, f, l, rhov, mu_cell, my_kappa, which_meth, Phi_visc},
 //    vlist = (vector *) {u, g, uf, av, dbp, total_rhs, residual_of_u, divtauu, fs_face});
 //#else
-//    output_vtu_MPI(name, (iter_fp) ? t + dt : 0, list = (scalar *) {T, dpdx, alpha_doc, p, fs, f, l, rhov, mu_cell, m, Phi_visc, Phi_src},
+//    output_vtu_MPI(name, (iter_fp) ? t + dt : 0, list = (scalar *) {T, dpdx, alpha_doc, p, fs, f, l, rhov, mu_cell, m, Phi_visc},
 //    vlist = (vector *) {u, av});
 //#endif
 //}
@@ -825,8 +802,9 @@ event report(i+=1000){
     foreach() {
         l[] = level;
         dpdx[] = (p[1] - p[-1])/(2*Delta);
+        Phi_src[] = f[]*(1 - fs[])*rho1*Htr*KT(T[])*FR(alpha_doc[]);
     }
-    calcPhiVisc (u, uf, T, alpha_doc, f, fs, Phi_visc, Phi_src); //TODO: visc dissipation?
+    dissipation (Phi_visc, u, mu = mu);
 
     output_htg(path, prefix, (iter_fp) ? t + dt : 0, (scalar *) {T, alpha_doc, p, dpdx, fs, f, l, rhov, mu_cell, my_kappa, which_meth, Phi_visc, Phi_src},
            (vector *){u, g, uf, av, dbp, total_rhs, residual_of_u, divtauu, fs_face});

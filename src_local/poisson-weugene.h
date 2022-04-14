@@ -293,7 +293,7 @@ struct Poisson {
   double tolerance;
   int nrelax, minlevel;
   scalar * res;
-    double maxb;
+  double maxb;
 };
 
 /**
@@ -511,7 +511,8 @@ struct Project {
   face vector alpha; // optional: default unityf
   double dt;         // optional: default one
   int nrelax;        // optional: default four
-  scalar fs;
+  scalar fs;         // optional: solid volume fraction
+  double eta;        // optional: penalization coefficient
   vector target_U;   // optional: default 0
   vector u;
 };
@@ -521,15 +522,17 @@ mgstats project (struct Project q)
 {
     face vector uf = q.uf;
     scalar p = q.p;
+    scalar fs = q.fs;
     (const) face vector alpha = q.alpha.x.i ? q.alpha : unityf;
     double dt = q.dt ? q.dt : 1.;
     int nrelax = q.nrelax ? q.nrelax : 4;
+    double eta = q.eta ? q.eta : 1.0E-6;
 
     /**
     We allocate a local scalar field and compute the divergence of
     $\mathbf{u}_f$. The divergence is scaled by *dt* so that the
     pressure has the correct dimension. */
-
+    face vector alpha_modified[];
     scalar div[];
     foreach() {
         div[] = 0.;
@@ -539,6 +542,9 @@ mgstats project (struct Project q)
 #ifdef DEBUG_MODE_POISSON
         divutmp[] = div[]*dt;
 #endif
+    }
+    foreach_face(){
+      alpha_modified.x[] = alpha.x[]/(1 + face_value (fs, 0)*dt/eta);
     }
 
     /**
@@ -553,22 +559,22 @@ mgstats project (struct Project q)
 // res=div(u*)/dt - laplace delta p ~ dt
     mgstats mgp;
     if (relative_residual_poisson)
-      mgp = poisson (p, div , alpha,
+      mgp = poisson (p, div , alpha_modified,
                      tolerance = TOLERANCE, nrelax = nrelax);
     else
-      mgp = poisson (p, div , alpha,
+      mgp = poisson (p, div , alpha_modified,
                      tolerance = TOLERANCE/sq(dt), nrelax = nrelax);
 
     /**
     And compute $\mathbf{u}_f^{n+1}$ using $\mathbf{u}_f$ and $p$. */
 
   foreach_face()
-    uf.x[] -= dt*alpha.x[]*face_gradient_x (p, 0);
+    uf.x[] -= dt*alpha_modified.x[]*face_gradient_x (p, 0);
 
 #ifdef DEBUG_MODE_POISSON
-    double divuf, maxdivuf = -1e30;
+    double maxdivuf = -1e30;
     foreach(reduction(max:maxdivuf)) {
-      divuf = 0;
+      double divuf = 0;
       foreach_dimension() divuf += (uf.x[1]-uf.x[])/Delta;
       divutmpAfter[] = divuf/dt;
       divuf = fabs(divuf);

@@ -525,8 +525,7 @@ static coord Mycs(Point point, scalar c) {
 
 void DumpCsvInit() {
   int nc = 0;
-  foreach ()
-   ++nc;
+  foreach (serial, noauto) ++nc;
   dumpcsv_state.nxx = 0;
   dumpcsv_state.xx =
       (coord*)malloc(sizeof(coord) * nc * partstr_conf.Np * partstr_conf.Ns);

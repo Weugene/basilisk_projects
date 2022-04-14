@@ -25,7 +25,7 @@ int LEVEL = 6;
 int main(int argc, char * argv[]) {
     DT = 1e+0;
     CFL = 0.5;
-    TOLERANCE = 1e-12;
+    TOLERANCE = 1e-6;
     size(2.0);
     init_grid(1 << LEVEL);
     origin (-L0/2, -L0/2.);

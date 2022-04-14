@@ -9,7 +9,7 @@
 
 #include "three-phase-rheology.h"
 #include "diffusion-weugene.h"
-
+#include "dissipation.h"
 //const scalar const_temp_solid[] = 1.1;
 (const) scalar T_target = unity;
 double eta_T = 0;
@@ -76,55 +76,6 @@ bool viscDissipation = false;
  * r = \rho_1 Q A (1-\alpha^n)^{n_degree} \exp(-\frac{E_a}{RT^n})(1 - \frac{E_a}{RT^n}) + \frac{\rho C_p \chi T_0}{\eta_T}
  */
 
-void calcMuPhiVisc (scalar Phi_visc){
-    foreach(){
-        double grad2 = 0.0, muPhi = 0.0;
-        foreach_dimension()
-            grad2 += sq((uf.x[1] - uf.x[]));
-        muPhi += 2*grad2/sq(Delta)
-    #if dimension >= 2
-            + sq(0.5*(u.x[0,1] - u.x[0,-1])/Delta) // dv_x/dy
-                    + sq(0.5*(u.y[1] - u.y[-1])/Delta)  // dv_y/dx
-    #endif
-    #if dimension > 2
-            + sq(0.5*(u.z[0,1] - u.z[0,-1])/Delta)// dv_z/dy
-            + sq(0.5*(u.y[0,0,1] - u.y[0,0,-1])/Delta) // dv_y/dz
-            + sq(0.5*(u.x[0,0,1] - u.x[0,0,-1])/Delta) // dv_x/dz
-            + sq(0.5*(u.z[1] - u.z[-1])/Delta) // dv_z/dx
-    #endif
-            ;
-        Phi_visc[] = mu(f[], fs[], alpha_doc[], T[]) * muPhi * f[] * (1 - fs[]);
-    }
-}
-
-
-void calcMuPhiViscAccurate (scalar Phi_visc){
-    vector divtauu[];// added: Weugene
-    foreach_dimension() {
-        face vector taux[];
-        foreach_face()
-            taux.x[] = 2.*mu.x[]*uf.x[]*(u.x[] - u.x[-1])/Delta
-#if dimension > 1
-                       + mu.y[]*uf.y[]*(u.x[] - u.x[0,-1] +
-                     (u.y[1,-1] + u.y[1,0])/4. -
-                     (u.y[-1,-1] + u.y[-1,0])/4.)/Delta;
-#endif
-#if dimension > 2
-        foreach_face(z)
-            taux.z[] = mu.z[]*(u.x[] - u.x[0,0,-1] +
-                     (u.z[1,0,-1] + u.z[1,0,0])/4. -
-                     (u.z[-1,0,-1] + u.z[-1,0,0])/4.)/Delta;
-#endif
-        foreach() {
-            double d = 0.0;
-            foreach_dimension() {
-                d += taux.x[1] - taux.x[];
-            }
-            divtauu.x[] = d/Delta;
-        }
-    }
-}
-
 
 #if REACTION_MODEL != NO_REACTION_MODEL //  POLYMERIZATION_REACTION
 event vof (i++){
@@ -167,15 +118,20 @@ event end_timestep (i++){
         alpha_doc[] = clamp(alpha_doc[], 0.0, 1.0);
     }
 #endif
-
+    // considering the viscous dissipation
+    if (viscDissipation){
+        dissipation (r, u, mu = mu);
+    }else{
+        foreach () {
+            r[] = 0.;
+        }
+    }
     //solids play role in the conduction process
     if (fabs(Htr) > SEPS){
         foreach() {
             beta[] = 0;
             #if REACTION_MODEL != NO_REACTION_MODEL
-                r[] = rho1*Htr*R_source[];
-            #else
-                r[] = 0;
+                r[] += rho1*Htr*R_source[];
             #endif
             //Penalization terms are:
             #if T_DIRICHLET_BC == 1
@@ -186,16 +142,14 @@ event end_timestep (i++){
     }else {// Htr = 0
             foreach() {
                 #if T_DIRICHLET_BC == 1
-                    r[] = fs[] * thetav[] * T_target[] / eta_T;
+                    r[] += fs[] * thetav[] * T_target[] / eta_T;
                     beta[] = -fs[] * thetav[] / eta_T;
                 #else
-                    r[] = 0;
                     beta[] = 0;
                 #endif
             }
     }
-    if (viscDissipation)
-        calcMuPhiVisc (r);
+
     if (constant(kappa.x) != 0.) {
         mgT = diffusion(T, dt, D = kappav, r = r, beta = beta, theta = thetav);
 #ifdef DEBUG_HEAT
