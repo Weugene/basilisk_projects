@@ -592,7 +592,8 @@ mgstats poisson (struct Poisson p)
 
 
 //  return s;
-  for (int iteration = 0; iteration < 1000; iteration++){
+  int iteration;
+  for (iteration = 0; iteration < 1000; iteration++){
 //    fprintf(ferr, "iteration=%d\n", iteration);
     calcAy (p0, Ap, &p);
 //      return s;
@@ -612,10 +613,10 @@ mgstats poisson (struct Poisson p)
 //    maxres = residual (&a, &b, &res1, &p);
 //    fprintf(ferr, "*** Honest: maxres=%g\n", maxres);
 
-    foreach_boundary (top)
-      fprintf(ferr, "top: x=%g y=%g *=%g ghost=%g inside=%g %g\n", x, y, da[0,1], da[ghost], da[], da[0,-1]);
-    foreach_boundary (bottom)
-      fprintf(ferr, "bottom: x=%g y=%g *=%g ghost=%g inside=%g %g\n", x, y, da[0,-1], da[ghost], da[], da[0,1]);
+//    foreach_boundary (top)
+//      fprintf(ferr, "top: x=%g y=%g *=%g ghost=%g inside=%g %g\n", x, y, da[0,1], da[ghost], da[], da[0,-1]);
+//    foreach_boundary (bottom)
+//      fprintf(ferr, "bottom: x=%g y=%g *=%g ghost=%g inside=%g %g\n", x, y, da[0,-1], da[ghost], da[], da[0,1]);
 
     if (maxres < TOLERANCE && iteration > 2)
       break;
@@ -636,7 +637,7 @@ mgstats poisson (struct Poisson p)
   }
   boundary((scalar*){a});
 //  maxres = residual (&a, &b, &res0, &p);
-//  fprintf(ferr, "final: maxres=%g\n", maxres);
+  fprintf(ferr, "final: maxres=%g iteration=%d\n", maxres, iteration);
   /**
   We restore the default. */
   if (p.tolerance)

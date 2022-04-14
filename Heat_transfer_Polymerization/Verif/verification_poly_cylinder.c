@@ -462,29 +462,6 @@ event logoutput2(t += 0.1){
     }
 }
 
-void calcPhiVisc (vector u, face vector uf, scalar T, scalar alpha_doc, scalar f, scalar fs, scalar Phi_visc, scalar Phi_src){
-    foreach(){
-        double grad2 = 0.0;
-        foreach_dimension()
-            grad2 += sq((uf.x[1] - uf.x[]));
-        Phi_visc[] = 2*grad2/sq(Delta)
-#if dimension >= 2
-                + sq(0.5*(u.x[0,1] - u.x[0,-1])/Delta) // dv_x/dy
-                + sq(0.5*(u.y[1] - u.y[-1])/Delta)  // dv_y/dx
-#endif
-#if dimension > 2
-                + sq(0.5*(u.z[0,1] - u.z[0,-1])/Delta)// dv_z/dy
-                + sq(0.5*(u.y[0,0,1] - u.y[0,0,-1])/Delta) // dv_y/dz
-                + sq(0.5*(u.x[0,0,1] - u.x[0,0,-1])/Delta) // dv_x/dz
-                + sq(0.5*(u.z[1] - u.z[-1])/Delta) // dv_z/dx
-#endif
-                ;
-        Phi_visc[] *= mu(f[], fs[], alpha_doc[], T[]);
-        Phi_src[] = f[] * KT(T[]) * FR(alpha_doc[]);
-    }
-    boundary((scalar *){Phi_visc, Phi_src});
-}
-
 event vtk_file (t += dt_vtk)
 //event vtk_file (i += 1)
 {
@@ -493,9 +470,10 @@ event vtk_file (t += dt_vtk)
     scalar l[];
     foreach() {
         l[] = level;
+        Phi_src[] = f[]*(1 - fs[])*rho1*Htr*KT(T[])*FR(alpha_doc[]);
     }
     boundary((scalar *){l});
-//    calcPhiVisc (u, uf, T, alpha_doc, f, fs, Phi_visc, Phi_src);
+    dissipation (Phi_visc, u, mu = mu);
 #ifdef DEBUG_BRINKMAN_PENALIZATION
     output_vtu_MPI(name, (iter_fp) ? t + dt : 0, list = (scalar *) {T, alpha_doc, p, fs, f, l, rhov, mu_cell},
     vlist = (vector *) {u, g, uf, dbp, total_rhs, residual_of_u, divtauu, fs_face, alpha});

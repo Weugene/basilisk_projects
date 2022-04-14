@@ -124,7 +124,7 @@ struct numerical_params {
     double Teps;
     double aeps;
     double mueps;
-    bool viscDissipation;
+    int viscDissipation;
 };
 
 struct input_yaml {
@@ -408,7 +408,7 @@ struct input_yaml* read_config(int argc, char *argv[])
     if (!input->num_params.Teps) numpar->Teps = 1e-2;
     if (!input->num_params.aeps) numpar->aeps = 1e-2;
     if (!input->num_params.mueps) numpar->mueps = 1e-2;
-    if (!input->num_params.viscDissipation) numpar->viscDissipation = false;
+    if (!input->num_params.viscDissipation) numpar->viscDissipation = 0;
 
     fprintf(fout, "%s============ Dimensional params ============\n%s", KRED, KNRM);
     fprintf(fout, "characteristic_size=%g [m] ", dv->characteristic_size);

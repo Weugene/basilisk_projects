@@ -53,7 +53,7 @@ heat_polymerization_front:
 poly_with_yaml:
 	$(remove)
 	$(compile)  poly_with_yaml.c $(CLIBS)
-	#mpirun -np 2  ./a.out test.yml > out_yaml_$(ind) 2> log_yaml_$(ind)
+	mpirun -np 2  ./a.out test.yml > out_yaml_$(ind) 2> log_yaml_$(ind)
 debug:
 	mpirun -np 2 xterm -hold -e gdb -ex run --args ./a.out $(args)
 convert:

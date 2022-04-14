@@ -3,8 +3,10 @@ This function writes one XML file which allows to read the *.vtu files generated
 by output_vtu_ascii_foreach() when used in MPI. Tested in (quad- and oct-)trees
 using MPI.
 */
-#define SMALL_VAL 1e-12
+#define SMALL_VAL 0
+//#define SMALL_VAL 1e-12
 
+//#define MY_BOX_CONDITION true
 #ifdef _MPI
 #if dimension == 1
     #define MY_BOX_CONDITION ((!Period.x) || ((x - Pmin.x - 0.5*Delta > 0) && (Pmax.x - x - 0.5*Delta > 0)))
@@ -360,7 +362,7 @@ void output_vtu_bin_foreach (scalar * list, vector * vlist, vector * fvlist, int
       marker[] = no_points++;// locally for each CPU counting the number of points
     }else{
     	marker[] = -1; //if you see -1 in vtu file=> there is a mistake
-    	fprintf(ferr, "marker[] = -1");
+    	fprintf(ferr, "marker[] = -1, x=%g y=%g\n", x, y);
     }
   }
   foreach(){
