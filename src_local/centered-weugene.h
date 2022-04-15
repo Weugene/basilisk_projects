@@ -80,7 +80,7 @@ $\nabla\cdot(\mathbf{u}\otimes\mathbf{u})$ is omitted. This is a
 reference to [Stokes flows](http://en.wikipedia.org/wiki/Stokes_flow)
 for which inertia is negligible compared to viscosity. */
 
-(const) face vector mu = zerof, a = zerof, alpha = unityf, kappa = zerof;
+(const) face vector mu = zerof, a = zerof, alpha = unityf, kappa = zerof, alpham = unityf;
 (const) scalar rho = unity;
 mgstats mgp, mgpf, mgu;
 bool stokes = false;
@@ -160,11 +160,15 @@ event defaults (i = 0)
   if (alpha.x.i == unityf.x.i) {
     alpha = fm;
     rho = cm;
+    alpham = fm;
   }
   else if (!is_constant(alpha.x)) {
     face vector alphav = alpha;
-    foreach_face()
+    face vector alphamv = alpham;
+    foreach_face(){
       alphav.x[] = fm.x[];
+      alphamv.x[] = fm.x[];
+    }
   }
 
   /**
@@ -337,7 +341,7 @@ event advection_term (i++,last)
 {
   if (!stokes) {
     prediction();
-    mgpf = project (uf, pf, alpha, dt/2., mgpf.nrelax);
+    mgpf = project (uf, pf, alpham, dt/2., mgpf.nrelax);
 //#if BRINKMAN_PENALIZATION && CORRECT_UF_FLUXES
 //      brinkman_correction_uf (uf);
 //#endif
@@ -446,7 +450,7 @@ next timestep). Then compute the centered gradient field *g*. */
 
 event projection (i++,last)
 {
-  mgp = project (uf, p, alpha, dt, mgp.nrelax);
+  mgp = project (uf, p, alpham, dt, mgp.nrelax);
   centered_gradient (p, g); //calc gf^{n+1}, g^{n+1} using p^{n+1}, a^{n+1/2}
   /**
   We add the gradient field *g* to the centered velocity field. */

@@ -9,8 +9,8 @@
 //#define DEBUG_OUTPUT_VTU_MPI
 #define FILTERED
 #define JACOBI 1
-#define CORRECT_UF_FLUXES 1
-#define STICKY_SOLID 1
+//#define CORRECT_UF_FLUXES 1
+//#define STICKY_SOLID 1
 #define CURV_PARTSTR 1// use Petr Karnakov's module
 #define RELATIVE_RES
 #define EPS_MAXA 2 // adapt based on Max-Min value
@@ -91,7 +91,7 @@ int main(int argc, char * argv[]) {
     CFL_ARR = 0.5;
     DT = 1e-6;
     maxDT0 = 2.5e-4;
-    N_smooth = 2; //three-phase-rheology.h
+    N_smooth = 1; //three-phase-rheology.h
 #ifdef STOKES
     stokes = true;
     stokes_heat = false;
@@ -107,7 +107,7 @@ int main(int argc, char * argv[]) {
 // Physical parameters
 	Uin = 1e-2, Tin = 300, T_solid = 400.15, Tam = 300;
 //	Gorthala, R., Roux, J. A., & Vaughan, J. G. (1994). Resin Flow, Cure and Heat Transfer Analysis for Pultrusion Process. Journal of Composite Materials, 28(6), 486–506. doi:10.1177/002199839402800601  sci-hub.se/10.1177/002199839402800601
-//EPON 9310
+//  EPON 9310
 	Htr = 355000; //J/kg
 	Arrhenius_const = 80600;//1/s //originally in Gothala: 80600
 	Ea_by_R = 64000/8.314;// Kelvin //originally  64000/8.314;

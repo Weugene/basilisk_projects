@@ -39,6 +39,7 @@ int N_smooth = 1;
 Auxilliary fields are necessary to define the (variable) specific
 volume $\alpha=1/\rho$ as well as the cell-centered density. */
 face vector alphav[];
+face vector alphamv[];
 scalar rhov[];
 #ifdef HEAT_TRANSFER
 	face vector kappav[];
@@ -47,7 +48,7 @@ scalar rhov[];
 event defaults (i = 0) {
     alpha = alphav;
     rho = rhov;
-
+    alpham = alphamv;
     /**
     If the viscosity and conductivity are non-zero, we need to allocate the face-centered
     viscosity and conductivity fields. */
@@ -172,6 +173,7 @@ event properties (i++) {
         double ff1 = (sf1[] + sf1[-1])/2.; //liquid
         double ff2 = (sf2[] + sf2[-1])/2.; //solid
         alphav.x[] = fm.x[]/rho(ff1, ff2);
+        alphamv.x[] = fm.x[]/((1.0 + ff2*dt/eta_s)*rho(ff1, ff2));
         if (mu1 || mu2) {
             face vector muv = mu;
             double Tf = (T[] + T[-1])/2.;
