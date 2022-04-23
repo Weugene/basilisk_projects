@@ -9,8 +9,8 @@
 //#define DEBUG_OUTPUT_VTU_MPI
 #define FILTERED
 #define JACOBI 1
-#define CORRECT_UF_FLUXES 1
-#define STICKY_SOLID 1
+//#define CORRECT_UF_FLUXES 1
+//#define STICKY_SOLID 1
 #define CURV_PARTSTR 1// use Petr Karnakov's module
 #define RELATIVE_RES
 #define EPS_MAXA 2 // adapt based on Max-Min value
@@ -40,6 +40,7 @@ static coord vel_s = {0, 0, 0};
 #include "tag.h"
 
 int snapshot_i = 1000;
+int report_i = 1000;
 double snapshot_t = 0.5;
 double dt_vtk = 0.1;
 double Uin, Tin, T_solid, Tam;
@@ -274,6 +275,15 @@ void solid_func(scalar fs, face vector fs_face){
     fractions (phi, fs, fs_face);
 }
 
+/*
+ * Here we solve the problem:
+ * $\nabla\cdot\left(\mu\left(\mathbf{u}+\mathbf{u}^T\right)\right) = \chi\frac{u - U}{\eta}$
+ * in order to set physical initial conditions which are consistent with the boundary conditions
+ */
+void velocity_initialization(scalar u, face vector muv, double eta_s){
+
+}
+
 event init (t = 0) {
     char name[300];
     sprintf (name, "restart_%s", subname);
@@ -297,30 +307,34 @@ event init (t = 0) {
             fraction(f, bubbles(x, y, z));
             filter_scalar(f, f_smoothed);
             filter_scalar(fs, fs_smoothed);
-        }while (adapt_wavelet({f_smoothed, fs_smoothed}, (double []){feps, feps}, maxlevel=maxlevel, minlevel=minlevel).nf != 0 && ++it <= 10);
-        foreach() {
-            T[] = var_hom(f[], fs[], Tin, Tam, T_solid);
-            alpha_doc[] = 0;
-            u.x[] = u_BC*(1 - fs[]); //u_BC*f[];// 0; // penalization will work
-            u.y[] = 0;
-            un[] = u.x[];
-            if (rho1 || rho2){
-                rhov[] = var_hom(f[], fs[], rho1, rho2, rho3);
+            foreach() {
+                T[] = var_hom(f[], fs[], Tin, Tam, T_solid);
+                alpha_doc[] = 0;
+                u.x[] = u_BC*(1 - fs[]); //u_BC*f[];// 0; // penalization will work
+                u.y[] = 0;
+                un[] = u.x[];
+                if (rho1 || rho2){
+                    rhov[] = var_hom(f_smoothed[], fs_smoothed[], rho1, rho2, rho3);
+                }
             }
-        }
-        foreach_face(){
-            double ff1 = (f[] + f[-1])/2.;
-            double ff2 = (fs[] + fs[-1])/2.; //solid
-            if (kappa1 || kappa2)
-                kappav.x[] = var_hom(ff1, ff2, kappa1, kappa2, kappa3);
-            if (mu1 || mu2) {
-                double Tf = (T[] + T[-1])/2.;
-                double alphaf = (alpha_doc[] + alpha_doc[-1])/2.;
-                face vector muv = mu;
-                muv.x[] = fm.x[] * mu(ff1, ff2, alphaf, Tf); //((1 - clamp(fs,0.,1.)) < SEPS);//
+            foreach_face(){
+                double ff1 = (f_smoothed[] + f_smoothed[-1])/2.;
+                double ff2 = (fs_smoothed[] + fs_smoothed[-1])/2.; //solid
+                if (kappa1 || kappa2)
+                    kappav.x[] = var_hom(ff1, ff2, kappa1, kappa2, kappa3);
+                if (mu1 || mu2) {
+                    double Tf = (T[] + T[-1])/2.;
+                    double alphaf = (alpha_doc[] + alpha_doc[-1])/2.;
+                    face vector muv = mu;
+                    muv.x[] = fm.x[] * mu(ff1, ff2, alphaf, Tf); //((1 - clamp(fs,0.,1.)) < SEPS);//
+                }
             }
-        }
-        event("vtk_file");
+//            event("report");
+//            mgstats mgu;
+//            mgu = viscosity (u, mu, rho, 0.1, nrelax = 4);
+//            fprintf (ferr, "mgu: i=%d nrelax=%d sum=%g", mgu.i, mgu.nrelax, mgu.sum);
+        } while (adapt_wavelet({f_smoothed, fs_smoothed}, (double []){feps, feps}, maxlevel=maxlevel, minlevel=minlevel).nf != 0 && ++it <= 10);
+            event("report");
     }
     else
     {
@@ -795,7 +809,9 @@ double time_prev = 0;
 //}
 
 
-event report(i+=1000){
+//event report(i += report_i){
+//event report(t += dt_vtk){
+event report(i += 2){
     char path[]="res"; // no slash at the end!!
     char prefix[] = "data";
     scalar l[], dpdx[];
@@ -835,7 +851,7 @@ event snapshot (t += snapshot_t)
     dump (file = name);
 }
 
-event check_fail(i += 100){
+event check_fail(i += 1){
     foreach(serial, noauto){
         if ((u.x[] != u.x[]) || (fabs(u.x[]) > 10e+10)) {
             printf("Nan values: x=%g y=%g |u|=%g, pid()=%d\n", x, y, fabs(u.x[]), pid());

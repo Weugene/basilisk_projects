@@ -119,7 +119,7 @@ event end_timestep (i++){
     }
 #endif
     // considering the viscous dissipation
-    if (viscDissipation){
+    if ((i>1000) && viscDissipation){
         dissipation (r, u, mu = mu);
     }else{
         foreach () {

@@ -103,6 +103,7 @@ struct numerical_params {
     double time;
     int iter_fp;
     int snapshot_i;
+    int report_i;
     double snapshot_t;
     double dt_vtk;
     int N_smooth;
@@ -222,6 +223,7 @@ static const cyaml_schema_field_t numerical_params_fields[] = {
         CYAML_FIELD_FLOAT("time", CYAML_FLAG_DEFAULT, struct numerical_params, time),
         CYAML_FIELD_INT("iter_fp", CYAML_FLAG_DEFAULT, struct numerical_params, iter_fp),
         CYAML_FIELD_INT("snapshot_i", CYAML_FLAG_OPTIONAL, struct numerical_params, snapshot_i),
+        CYAML_FIELD_INT("report_i", CYAML_FLAG_OPTIONAL, struct numerical_params, report_i),
         CYAML_FIELD_FLOAT("snapshot_t", CYAML_FLAG_OPTIONAL, struct numerical_params, snapshot_t),
         CYAML_FIELD_FLOAT("dt_vtk", CYAML_FLAG_OPTIONAL, struct numerical_params, dt_vtk),
         CYAML_FIELD_INT("N_smooth", CYAML_FLAG_OPTIONAL, struct numerical_params, N_smooth),
@@ -389,6 +391,7 @@ struct input_yaml* read_config(int argc, char *argv[])
 //    setting up default values for numerical simulation params
     if (!input->num_params.N_smooth) numpar->N_smooth = 1;
     if (!input->num_params.snapshot_i) numpar->snapshot_i = 1000;
+    if (!input->num_params.report_i) numpar->report_i = 1000;
     if (!input->num_params.snapshot_t) numpar->snapshot_t = 0.5;
     if (!input->num_params.dt_vtk) numpar->dt_vtk = 0.1;
     if (!input->num_params.TOLERANCE) numpar->TOLERANCE = 1e-7;
@@ -471,7 +474,7 @@ struct input_yaml* read_config(int argc, char *argv[])
     fprintf(fout, "minlevel=%d LEVEL=%d maxlevel=%d\n", numpar->minlevel, numpar->LEVEL, numpar->maxlevel);
     fprintf(fout, "time=%g\n", numpar->time);
     fprintf(fout, "iter_fp=%d\n", numpar->iter_fp);
-    fprintf(fout, "snapshot_i=%d snapshot_t=%g dt_vtk=%g\n", numpar->snapshot_i, numpar->snapshot_t, numpar->dt_vtk);
+    fprintf(fout, "snapshot_i=%d snapshot_t=%g report_i=%d dt_vtk=%g\n", numpar->snapshot_i, numpar->snapshot_t, numpar->report_i, numpar->dt_vtk);
     fprintf(fout, "N_smooth=%d\n", numpar->N_smooth);
     fprintf(fout, "TOLERANCE=%g TOLERANCE_V=%g TOLERANCE_P=%g TOLERANCE_T=%g\n", numpar->TOLERANCE, numpar->TOLERANCE_V, numpar->TOLERANCE_P, numpar->TOLERANCE_T);
     fprintf(fout, "NITERMIN=%d NITERMAX=%d\n", numpar->NITERMIN, numpar->NITERMAX);
@@ -496,6 +499,7 @@ struct input_yaml* read_config_and_assign_global_vars(int argc, char *argv[])
     sprintf(subname, "%s", input->name);
     sprintf(logname, "log_%s", input->name);
     snapshot_i = input->num_params.snapshot_i;
+    report_i = input->num_params.report_i;
     snapshot_t = input->num_params.snapshot_t;
     dt_vtk = input->num_params.dt_vtk;
     minlevel = input->num_params.minlevel;
@@ -557,14 +561,14 @@ struct input_yaml* read_config_and_assign_global_vars(int argc, char *argv[])
 
     rho1 = input->ndv.rho[0];
     rho2 = input->ndv.rho[1];
-    rho3 = input->ndv.rho[2];
+    rho3 = input->ndv.rho[2]; // not physical density
     mu0 = input->ndv.mu[0];
     mu1 = input->ndv.mu[1];
     mu2 = input->ndv.mu[2];
     mu3 = input->ndv.mu[3];
     Cp1 = input->ndv.Cp[0];
     Cp2 = input->ndv.Cp[1];
-    Cp3 = input->ndv.Cp[2];
+    Cp3 = input->ndv.Cp[2];//*input->ndv.rho[2]/input->ndv.rho[0]; // rho3*Cp3
     kappa1 = input->ndv.kappa[0];
     kappa2 = input->ndv.kappa[1];
     kappa3 = input->ndv.kappa[2];

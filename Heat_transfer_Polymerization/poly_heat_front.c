@@ -1036,7 +1036,7 @@ event snapshot (t += snapshot_t)
     dump (file = name);
 }
 
-event check_fail(i += 100){
+event check_fail(i += 1){
     foreach(serial, noauto){
         if ((u.x[] != u.x[]) || (fabs(u.x[]) > 10e+10)) {
             printf("Nan values: x=%g y=%g |u|=%g, pid()=%d\n", x, y, fabs(u.x[]), pid());

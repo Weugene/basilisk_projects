@@ -9,7 +9,7 @@ import os
 file = sys.argv[1]
 myenv = os.environ.copy()
 print('LD_LIBRARY_PATH:', myenv['LD_LIBRARY_PATH'], ' C_INCLUDE_PATH:', myenv['C_INCLUDE_PATH'])
-Uin = np.array([0.005, 0.1,  0.2])
+Uin = np.array([0.005, 0.01,  0.05])
 Tin = np.array([300, 350])
 T_solid = np.array([300, 350, 400])
 #Uin = [0.01]

@@ -51,43 +51,22 @@ SetActiveView(renderView1)
 output_respvd = PVDReader(registrationName='output_res.pvd', FileName='/Users/weugene/basilisk/work/Heat_transfer_Polymerization/output_res.pvd')
 
 # create a new 'HyperTreeGrid To Dual Grid'
-hyperTreeGridToDualGrid1 = HyperTreeGridToDualGrid(registrationName='HyperTreeGridToDualGrid1', Input=output_respvd)
-
-# create a new 'Contour'
-contour1 = Contour(registrationName='Contour1', Input=hyperTreeGridToDualGrid1)
-contour1.ContourBy = ['POINTS', 'fs']
-contour1.Isosurfaces = [0.5]
-contour1.PointMergeMethod = 'Uniform Binning'
-
-# create a new 'HyperTreeGrid To Dual Grid'
 hyperTreeGridToDualGrid2 = HyperTreeGridToDualGrid(registrationName='HyperTreeGridToDualGrid2', Input=output_respvd)
-
-# create a new 'Contour'
-contour4 = Contour(registrationName='Contour4', Input=hyperTreeGridToDualGrid2)
-contour4.ContourBy = ['POINTS', 'fs']
-contour4.Isosurfaces = [0.5]
-contour4.PointMergeMethod = 'Uniform Binning'
-
-# create a new 'Contour'
-contour3 = Contour(registrationName='Contour3', Input=hyperTreeGridToDualGrid2)
-contour3.ContourBy = ['POINTS', 'f']
-contour3.Isosurfaces = [0.5]
-contour3.PointMergeMethod = 'Uniform Binning'
 
 # create a new 'HyperTreeGrid To Dual Grid'
 hyperTreeGridToDualGrid3 = HyperTreeGridToDualGrid(registrationName='HyperTreeGridToDualGrid3', Input=output_respvd)
-
-# create a new 'Contour'
-contour6 = Contour(registrationName='Contour6', Input=hyperTreeGridToDualGrid3)
-contour6.ContourBy = ['POINTS', 'fs']
-contour6.Isosurfaces = [0.5]
-contour6.PointMergeMethod = 'Uniform Binning'
 
 # create a new 'Contour'
 contour5 = Contour(registrationName='Contour5', Input=hyperTreeGridToDualGrid3)
 contour5.ContourBy = ['POINTS', 'f']
 contour5.Isosurfaces = [0.5]
 contour5.PointMergeMethod = 'Uniform Binning'
+
+# create a new 'Contour'
+contour4 = Contour(registrationName='Contour4', Input=hyperTreeGridToDualGrid2)
+contour4.ContourBy = ['POINTS', 'fs']
+contour4.Isosurfaces = [0.5]
+contour4.PointMergeMethod = 'Uniform Binning'
 
 # create a new 'HyperTreeGrid To Dual Grid'
 hyperTreeGridToDualGrid4 = HyperTreeGridToDualGrid(registrationName='HyperTreeGridToDualGrid4', Input=output_respvd)
@@ -99,10 +78,31 @@ contour7.Isosurfaces = [0.5]
 contour7.PointMergeMethod = 'Uniform Binning'
 
 # create a new 'Contour'
+contour6 = Contour(registrationName='Contour6', Input=hyperTreeGridToDualGrid3)
+contour6.ContourBy = ['POINTS', 'fs']
+contour6.Isosurfaces = [0.5]
+contour6.PointMergeMethod = 'Uniform Binning'
+
+# create a new 'Contour'
 contour8 = Contour(registrationName='Contour8', Input=hyperTreeGridToDualGrid4)
 contour8.ContourBy = ['POINTS', 'fs']
 contour8.Isosurfaces = [0.5]
 contour8.PointMergeMethod = 'Uniform Binning'
+
+# create a new 'Contour'
+contour3 = Contour(registrationName='Contour3', Input=hyperTreeGridToDualGrid2)
+contour3.ContourBy = ['POINTS', 'f']
+contour3.Isosurfaces = [0.5]
+contour3.PointMergeMethod = 'Uniform Binning'
+
+# create a new 'HyperTreeGrid To Dual Grid'
+hyperTreeGridToDualGrid1 = HyperTreeGridToDualGrid(registrationName='HyperTreeGridToDualGrid1', Input=output_respvd)
+
+# create a new 'Contour'
+contour1 = Contour(registrationName='Contour1', Input=hyperTreeGridToDualGrid1)
+contour1.ContourBy = ['POINTS', 'fs']
+contour1.Isosurfaces = [0.5]
+contour1.PointMergeMethod = 'Uniform Binning'
 
 # create a new 'Contour'
 contour2 = Contour(registrationName='Contour2', Input=hyperTreeGridToDualGrid1)
@@ -114,36 +114,13 @@ contour2.PointMergeMethod = 'Uniform Binning'
 # setup the visualization in view 'renderView1'
 # ----------------------------------------------------------------
 
-# show data from output_respvd
-output_respvdDisplay = Show(output_respvd, renderView1, 'GeometryRepresentation')
+# show data from hyperTreeGridToDualGrid1
+hyperTreeGridToDualGrid1Display = Show(hyperTreeGridToDualGrid1, renderView1, 'UnstructuredGridRepresentation')
 
 # get color transfer function/color map for 'u'
 uLUT = GetColorTransferFunction('u')
 uLUT.RGBPoints = [0.0, 0.231373, 0.298039, 0.752941, 1.5, 0.865003, 0.865003, 0.865003, 3.0, 0.705882, 0.0156863, 0.14902]
 uLUT.ScalarRangeInitialized = 1.0
-
-# trace defaults for the display properties.
-output_respvdDisplay.Representation = 'Surface'
-output_respvdDisplay.ColorArrayName = ['CELLS', 'u']
-output_respvdDisplay.LookupTable = uLUT
-output_respvdDisplay.SelectTCoordArray = 'None'
-output_respvdDisplay.SelectNormalArray = 'None'
-output_respvdDisplay.SelectTangentArray = 'None'
-output_respvdDisplay.OSPRayScaleFunction = 'PiecewiseFunction'
-output_respvdDisplay.SelectOrientationVectors = 'None'
-output_respvdDisplay.SelectScaleArray = 'fs_face'
-output_respvdDisplay.GlyphType = 'Arrow'
-output_respvdDisplay.GlyphTableIndexArray = 'fs_face'
-output_respvdDisplay.GaussianRadius = 0.05
-output_respvdDisplay.SetScaleArray = [None, '']
-output_respvdDisplay.ScaleTransferFunction = 'PiecewiseFunction'
-output_respvdDisplay.OpacityArray = [None, '']
-output_respvdDisplay.OpacityTransferFunction = 'PiecewiseFunction'
-output_respvdDisplay.DataAxesGrid = 'GridAxesRepresentation'
-output_respvdDisplay.PolarAxes = 'PolarAxesRepresentation'
-
-# show data from hyperTreeGridToDualGrid1
-hyperTreeGridToDualGrid1Display = Show(hyperTreeGridToDualGrid1, renderView1, 'UnstructuredGridRepresentation')
 
 # get opacity transfer function/opacity map for 'u'
 uPWF = GetOpacityTransferFunction('u')
@@ -585,47 +562,6 @@ contour8Display.PolarAxes.Translation = [10.2, 0.0, 0.0]
 
 # setup the color legend parameters for each legend in this view
 
-# get color transfer function/color map for 'fs_face'
-fs_faceLUT = GetColorTransferFunction('fs_face')
-fs_faceLUT.RGBPoints = [0.0, 0.231373, 0.298039, 0.752941, 0.7071067811865476, 0.865003, 0.865003, 0.865003, 1.4142135623730951, 0.705882, 0.0156863, 0.14902]
-fs_faceLUT.ScalarRangeInitialized = 1.0
-
-# get color legend/bar for fs_faceLUT in view renderView1
-fs_faceLUTColorBar = GetScalarBar(fs_faceLUT, renderView1)
-fs_faceLUTColorBar.WindowLocation = 'AnyLocation'
-fs_faceLUTColorBar.Position = [0.8002439591078067, 0.5472673559822747]
-fs_faceLUTColorBar.Title = 'fs_face'
-fs_faceLUTColorBar.ComponentTitle = 'Magnitude'
-fs_faceLUTColorBar.ScalarBarLength = 0.33000000000000007
-
-# set color bar visibility
-fs_faceLUTColorBar.Visibility = 0
-
-# get color transfer function/color map for 'Phi_src'
-phi_srcLUT = GetColorTransferFunction('Phi_src')
-phi_srcLUT.RGBPoints = [0.0, 0.231373, 0.298039, 0.752941, 0.035971757024526596, 0.865003, 0.865003, 0.865003, 0.07194351404905319, 0.705882, 0.0156863, 0.14902]
-phi_srcLUT.ScalarRangeInitialized = 1.0
-
-# get color legend/bar for phi_srcLUT in view renderView1
-phi_srcLUTColorBar = GetScalarBar(phi_srcLUT, renderView1)
-phi_srcLUTColorBar.Title = 'Phi_src'
-phi_srcLUTColorBar.ComponentTitle = ''
-
-# set color bar visibility
-phi_srcLUTColorBar.Visibility = 0
-
-# get color transfer function/color map for 'f'
-fLUT = GetColorTransferFunction('f')
-fLUT.ScalarRangeInitialized = 1.0
-
-# get color legend/bar for fLUT in view renderView1
-fLUTColorBar = GetScalarBar(fLUT, renderView1)
-fLUTColorBar.Title = 'f'
-fLUTColorBar.ComponentTitle = ''
-
-# set color bar visibility
-fLUTColorBar.Visibility = 0
-
 # get color legend/bar for uLUT in view renderView1
 uLUTColorBar = GetScalarBar(uLUT, renderView1)
 uLUTColorBar.WindowLocation = 'AnyLocation'
@@ -638,20 +574,6 @@ uLUTColorBar.ScalarBarLength = 0.3300000000000002
 
 # set color bar visibility
 uLUTColorBar.Visibility = 1
-
-# get color transfer function/color map for 'fs'
-fsLUT = GetColorTransferFunction('fs')
-fsLUT.RGBPoints = [0.5, 0.231373, 0.298039, 0.752941, 0.50006103515625, 0.865003, 0.865003, 0.865003, 0.5001220703125, 0.705882, 0.0156863, 0.14902]
-fsLUT.ScalarRangeInitialized = 1.0
-
-# get color legend/bar for fsLUT in view renderView1
-fsLUTColorBar = GetScalarBar(fsLUT, renderView1)
-fsLUTColorBar.WindowLocation = 'UpperRightCorner'
-fsLUTColorBar.Title = 'fs'
-fsLUTColorBar.ComponentTitle = ''
-
-# set color bar visibility
-fsLUTColorBar.Visibility = 0
 
 # get color legend/bar for tLUT in view renderView1
 tLUTColorBar = GetScalarBar(tLUT, renderView1)
@@ -691,26 +613,6 @@ mu_cellLUTColorBar.LabelFontFamily = 'Times'
 # set color bar visibility
 mu_cellLUTColorBar.Visibility = 1
 
-# get color transfer function/color map for 'rhov'
-rhovLUT = GetColorTransferFunction('rhov')
-rhovLUT.RGBPoints = [0.0, 0.231373, 0.298039, 0.752941, 1.0666667222976685, 0.865003, 0.865003, 0.865003, 2.133333444595337, 0.705882, 0.0156863, 0.14902]
-rhovLUT.ScalarRangeInitialized = 1.0
-
-# get color legend/bar for rhovLUT in view renderView1
-rhovLUTColorBar = GetScalarBar(rhovLUT, renderView1)
-rhovLUTColorBar.WindowLocation = 'UpperLeftCorner'
-rhovLUTColorBar.Title = 'rhov'
-rhovLUTColorBar.ComponentTitle = ''
-
-# set color bar visibility
-rhovLUTColorBar.Visibility = 0
-
-# show color legend
-output_respvdDisplay.SetScalarBarVisibility(renderView1, True)
-
-# hide data in view
-Hide(output_respvd, renderView1)
-
 # show color legend
 hyperTreeGridToDualGrid1Display.SetScalarBarVisibility(renderView1, True)
 
@@ -728,33 +630,9 @@ hyperTreeGridToDualGrid4Display.SetScalarBarVisibility(renderView1, True)
 # note: the Get..() functions create a new object, if needed
 # ----------------------------------------------------------------
 
-# get opacity transfer function/opacity map for 'Phi_src'
-phi_srcPWF = GetOpacityTransferFunction('Phi_src')
-phi_srcPWF.Points = [0.0, 0.0, 0.5, 0.0, 0.07194351404905319, 1.0, 0.5, 0.0]
-phi_srcPWF.ScalarRangeInitialized = 1
-
-# get opacity transfer function/opacity map for 'fs'
-fsPWF = GetOpacityTransferFunction('fs')
-fsPWF.Points = [0.5, 0.0, 0.5, 0.0, 0.5001220703125, 1.0, 0.5, 0.0]
-fsPWF.ScalarRangeInitialized = 1
-
-# get opacity transfer function/opacity map for 'fs_face'
-fs_facePWF = GetOpacityTransferFunction('fs_face')
-fs_facePWF.Points = [0.0, 0.0, 0.5, 0.0, 1.4142135623730951, 1.0, 0.5, 0.0]
-fs_facePWF.ScalarRangeInitialized = 1
-
-# get opacity transfer function/opacity map for 'f'
-fPWF = GetOpacityTransferFunction('f')
-fPWF.ScalarRangeInitialized = 1
-
-# get opacity transfer function/opacity map for 'rhov'
-rhovPWF = GetOpacityTransferFunction('rhov')
-rhovPWF.Points = [0.0, 0.0, 0.5, 0.0, 2.133333444595337, 1.0, 0.5, 0.0]
-rhovPWF.ScalarRangeInitialized = 1
-
 # ----------------------------------------------------------------
 # restore active source
-SetActiveSource(hyperTreeGridToDualGrid4)
+SetActiveSource(hyperTreeGridToDualGrid1)
 # ----------------------------------------------------------------
 
 

@@ -6,7 +6,7 @@ dimensional_vars:
   Uin: 0.01
   Tin: 330
   Tam: 330
-  T_solid: 400
+  T_solid: 330
   Sigma: 0.040
   Grav: [0, 0, 0]
   Htr: 355000 # J/kg
@@ -15,13 +15,13 @@ dimensional_vars:
   n_degree: 1.2
   Eeta_by_Rg: 4524.669 # Kelvin Epon 9310,Safonov page 10
   chi: 20 # Resin, Air, E-Glass Fibre https://www.azom.com/properties.aspx?ArticleID=764
-  Rho: [1200, 1.092, 2560] # FiberGlass Chachad, Y. R., Roux, J. A., Vaughan, J. G., & Arafat, E. S. (1996). Thermal Model for Three-Dimensional Irregular Shaped Pultruded Fiberglass Composites. Journal of Composite Materials, 30(6), 692–721. doi:10.1177/002199839603000604
-  CP: [1255, 1006, 670] # J/(kg*K)
+  Rho: [1200, 1.092, 2560] # 1200, 1.092, 2560 # Rhosolid is modified. FiberGlass Chachad, Y. R., Roux, J. A., Vaughan, J. G., & Arafat, E. S. (1996). Thermal Model for Three-Dimensional Irregular Shaped Pultruded Fiberglass Composites. Journal of Composite Materials, 30(6), 692–721. doi:10.1177/002199839603000604
+  CP: [1255, 1006, 670] # J/(kg*K) 1255, 1006, 670 # CPsolid is modified.
   Kappa: [0.2, 0.02535, 1.04] # W/(m*K)
 #  Mu: [3.85e-7, 1, 1.963e-5, 1] # W/(m*K)
 
 non_dimensional_vars:
-  domain_size: 12
+#  domain_size: 12
   ratio_front_x: 100
   ratio_dist_x: 2
   ratio_dist_y: 2
@@ -35,16 +35,17 @@ non_dimensional_vars:
   devely: 0
   Nb: 9
   Ncx: 5 #5
-  Ncy: 6 #6
+  Ncy: 11 #6
   non_saturated: 0
 
 num_params:
   minlevel: 5
   LEVEL: 7
-  maxlevel: 8
-  time: 10
+  maxlevel: 9
+  time: 100
   iter_fp: 0
   snapshot_i: 1000
+  report_i: 1000
   snapshot_t: 0.5
   dt_vtk: 0.1
   N_smooth: 2
@@ -66,4 +67,4 @@ num_params:
   Teps: 1e-2
   aeps: 1e-2
   mueps: 1e-2
-  viscDissipation: 1
+  viscDissipation: 0
