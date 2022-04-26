@@ -130,7 +130,7 @@ renderView1.InteractionMode = '2D'
 renderView1.CameraPosition = [-0.8, 0, 10]
 renderView1.CameraFocalPoint = [-0.8, 0, 0.0]
 # renderView1.CameraFocalDisk = 1.0
-renderView1.CameraParallelScale = 5
+
 renderView1.OrientationAxesVisibility = 0
 # renderView1.BackEnd = 'OSPRay raycaster'
 renderView1.OSPRayMaterialLibrary = materialLibrary1
@@ -145,9 +145,8 @@ boundsDomain = output_respvd.GetDataInformation().GetBounds()
 
 lDomain = boundsDomain[1] - boundsDomain[0]
 print("boundsDomain of my source=", boundsDomain, " lDomain=", lDomain)
-
-
-# renderView1.Update()
+renderView1.CameraParallelScale = lDomain/4.4;
+renderView1.Update()
 # ----------------------------------------------------------------
 # setup view layouts
 # ----------------------------------------------------------------

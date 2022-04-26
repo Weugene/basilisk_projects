@@ -104,7 +104,7 @@ print('Found pvd files in:',dirnames2)
 for dirn in dirnames2:
     print('Dirname:', dirn)
     if genPic:
-        command = f"cd {dirn}/ && (ln -s ../one_by_one.py . || echo 'Note: one_by_one.py link exists!') && pvpython one_by_one.py -filenames {output_res}.pvd >out 2>err"
+        command = f"cd {dirn}/ && (ln -s ../one_by_one.py . || echo 'Note: one_by_one.py link exists!') && pvpython one_by_one.py -filename {output_res}.pvd >out 2>err"
         print(command)
         subprocess.run(command, capture_output=True, shell=True)
     for fieldName in ['u', 'T', 'alpha_doc', 'mu_cell']:
