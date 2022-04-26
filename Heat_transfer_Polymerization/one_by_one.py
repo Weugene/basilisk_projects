@@ -192,6 +192,8 @@ for i in timeList:
         contour2.Isosurfaces = [0.5]
         contour2.PointMergeMethod = 'Uniform Binning'
 
+        # create a new 'Annotate Time Filter'
+        annotateTimeFilter1 = AnnotateTimeFilter(registrationName='AnnotateTimeFilter1', Input=hyperTreeGridToDualGrid1)
         # ----------------------------------------------------------------
         # setup the visualization in view 'renderView1'
         # ----------------------------------------------------------------
@@ -352,7 +354,24 @@ for i in timeList:
         featureLUTColorBar.TitleFontSize = fontsize
         featureLUTColorBar.LabelFontSize = fontsize
 
-        # set color bar visibility
+        # show data in view
+        annotateTimeFilter1Display = Show(annotateTimeFilter1, renderView1, 'TextSourceRepresentation')
+
+        # Properties modified on annotateTimeFilter1Display
+        annotateTimeFilter1Display.FontFamily = 'Times'
+        annotateTimeFilter1Display.FontSize = fontsize
+
+        # Properties modified on annotateTimeFilter1
+        annotateTimeFilter1.Shift = 0.0
+        annotateTimeFilter1.Scale = 2.0
+
+        # Properties modified on annotateTimeFilter1Display
+        annotateTimeFilter1Display.WindowLocation = 'LowerLeftCorner'
+
+        # Properties modified on annotateTimeFilter1
+        annotateTimeFilter1.Format = 'Time: %6.3g'
+
+# set color bar visibility
         featureLUTColorBar.Visibility = 1
 
         # show color legend
