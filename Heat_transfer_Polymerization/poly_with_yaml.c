@@ -809,9 +809,9 @@ double time_prev = 0;
 //}
 
 
-//event report(i += report_i){
+event report(i += report_i){
 //event report(t += dt_vtk){
-event report(i += 2){
+//event report(i += 2){
     char path[]="res"; // no slash at the end!!
     char prefix[] = "data";
     scalar l[], dpdx[];

@@ -45,7 +45,7 @@ num_params:
   time: 100
   iter_fp: 0
   snapshot_i: 1000
-  report_i: 1000
+  report_i: 100
   snapshot_t: 0.5
   dt_vtk: 0.1
   N_smooth: 2
@@ -57,7 +57,7 @@ num_params:
   NITERMAX: 100
   CFL: 0.4
   CFL_ARR: 0.5
-  maxDT: 1e-3
+  maxDT: 1e-6
   DT: 1e-6
   m_bp: 2
   m_bp_T: 2

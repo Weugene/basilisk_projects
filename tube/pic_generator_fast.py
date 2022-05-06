@@ -143,6 +143,8 @@ parser.add_argument("-maxlevel", type=int, help="Provide the maximum level of re
                     nargs='?', default=12)
 parser.add_argument("-lDomain", type=float, help="Provide the length of the channel",
                     nargs='?', default=30)
+parser.add_argument("-uxScale", type=float, help="Provide the scale of velocity magnitude",
+                    nargs='?', default=None)
 
 
 parser.add_argument("-viewSize", type=int, help="Provide the view size of the output pictures, please",
@@ -164,6 +166,7 @@ frameRate = args.frameRate
 frameWindow = args.frameWindow
 maxlevel = args.maxlevel
 lDomain = args.lDomain
+uxScale = args.uxScale
 viewSize = args.viewSize
 noVideo = args.noVideo
 noPic = args.noPic
@@ -172,6 +175,8 @@ timeList = args.timeList
 nt = args.nt
 
 scale_size = 1.38#2048./1078.
+fontsize = 32
+fontsize_axis = 20
 if len(frameWindow) != 2 or frameWindow[0]<0 or frameWindow[1] < 0:
     eprint('Error in frameWindow' + frameWindow)
     sys.exit()
@@ -259,12 +264,12 @@ axesGrid.Visibility = 1
 axesGrid.XTitle = 'X'
 axesGrid.YTitle = 'Y'
 axesGrid.ZTitle = 'Z'
-axesGrid.XTitleFontSize = 20
-axesGrid.YTitleFontSize = 20
-axesGrid.ZTitleFontSize = 20
-axesGrid.XLabelFontSize = 20
-axesGrid.YLabelFontSize = 20
-axesGrid.ZLabelFontSize = 20
+axesGrid.XTitleFontSize = fontsize_axis
+axesGrid.YTitleFontSize = fontsize_axis
+axesGrid.ZTitleFontSize = fontsize_axis
+axesGrid.XLabelFontSize = fontsize_axis
+axesGrid.YLabelFontSize = fontsize_axis
+axesGrid.ZLabelFontSize = fontsize_axis
 
 # Edit the Properties of the AxesGrid
 axesGrid.XAxisUseCustomLabels = 1    # 1 means true
@@ -456,6 +461,9 @@ if not noPic:
             range_max = np.sqrt(rgX**2 + rgY**2 + rgZ**2)
             print("velocity range_max= ", range_max)
             print("velocity range_xyz= ", range0, range1, range2)
+            if uxScale:
+                range_max = uxScale
+                print(f'Fixed range_max {range_max}')
             uxLUT.RescaleTransferFunction(0, range_max)
             op = GetOpacityTransferFunction("ux")
             op.RescaleTransferFunction(0, range_max)
@@ -494,35 +502,120 @@ if not noPic:
 
             # init the 'PiecewiseFunction' selected for 'OpacityTransferFunction'
             calculator0Display.OpacityTransferFunction.Points = [0.005237827916105199, 0.0, 0.5, 0.0, 0.46907547386229526, 1.0, 0.5, 0.0]
+            # create a new 'Annotate Time Filter'
+            annotateTimeFilter1 = AnnotateTimeFilter(registrationName='AnnotateTimeFilter1', Input=my_source)
 
-            axesGrid.XTitleFontSize = 20
-            axesGrid.YTitleFontSize = 20
-            axesGrid.ZTitleFontSize = 20
-            axesGrid.XLabelFontSize = 20
-            axesGrid.YLabelFontSize = 20
-            axesGrid.ZLabelFontSize = 20
+
+            # show data in view
+            annotateTimeFilter1Display = Show(annotateTimeFilter1, renderView1, 'TextSourceRepresentation')
+
+            # Properties modified on annotateTimeFilter1Display
+            annotateTimeFilter1Display.FontFamily = 'Times'
+            annotateTimeFilter1Display.FontSize = fontsize
+
+            # Properties modified on annotateTimeFilter1
+            annotateTimeFilter1.Shift = 0.0
+            annotateTimeFilter1.Scale = 2.0
+
+            # Properties modified on annotateTimeFilter1Display
+            annotateTimeFilter1Display.WindowLocation = 'UpperLeftCorner'
+
+            # Properties modified on annotateTimeFilter1
+            annotateTimeFilter1.Format = f'Time: {round(timesteps[i],4)}'
+            # annotateTimeFilter1.Format = 'Time: %6.3g'
+
+            axesGrid.XTitleFontSize = fontsize_axis
+            axesGrid.YTitleFontSize = fontsize_axis
+            axesGrid.ZTitleFontSize = fontsize_axis
+            axesGrid.XLabelFontSize = fontsize_axis
+            axesGrid.YLabelFontSize = fontsize_axis
+            axesGrid.ZLabelFontSize = fontsize_axis
             renderView1.CameraViewUp = [0.2, 1, 0]
-            renderView1.CameraParallelScale = 1. #1.4 0.5
+            renderView1.CameraParallelScale = 1.6 #1.4 0.5
             renderView1.CenterOfRotation = center
             renderView1.CameraFocalPoint = center
             renderView1.CameraPosition = [center[0] - 4, 0.6, 4.5]
+            # renderView1.ResetCamera(bounds[0], bounds[1], -0.5, 0.5, -0.5, 0.5)
+
             # update the view to ensure updated data information
             renderView1.Update()
-
 
 #****************** CONNECTIVITY(f) AND U MAGNITUDE ********************
             # show data from connectivity1
             fn = path + "/" + picName +  '_t=' + str(timesteps[i]) +'ux.png'
             SaveScreenshot( fn, renderView1,
-                ImageResolution=[1900, 1078],
+                ImageResolution=viewSize,
                 TransparentBackground=0,
                 CompressionLevel='2' )
             print('File=' + fn + ' generated succesfully')
             # break
 
+            # create a new 'Clip'
+            clip1 = Clip(registrationName='Clip1', Input=calculator0)
+            clip1.ClipType = 'Plane'
+            clip1.HyperTreeGridClipper = 'Plane'
+            clip1.Scalars = ['POINTS', 'u.x']
+            clip1.Value = 0.23676400086005145
 
+            # init the 'Plane' selected for 'HyperTreeGridClipper'
+            clip1.HyperTreeGridClipper.Origin = [0, 0, 0]
 
-#***************** Like in the article SIDE SLICE and contour(f)*********************
+            # Properties modified on clip1.ClipType
+            clip1.ClipType.Origin = [0.0, 0.0, 0.0]
+            clip1.ClipType.Normal = [0.0, 0.0, 1.0]
+
+            # show data in view
+            clip1Display = Show(clip1, renderView1, 'UnstructuredGridRepresentation')
+
+            # trace defaults for the display properties.
+            clip1Display.Representation = 'Surface'
+            clip1Display.ColorArrayName = ['POINTS', 'u.x']
+            clip1Display.LookupTable = uxLUT
+            clip1Display.SelectTCoordArray = 'None'
+            clip1Display.SelectNormalArray = 'None'
+            clip1Display.SelectTangentArray = 'None'
+            clip1Display.OSPRayScaleArray = 'u.x'
+            clip1Display.OSPRayScaleFunction = 'PiecewiseFunction'
+            clip1Display.SelectOrientationVectors = 'None'
+            clip1Display.ScaleFactor = 0.7117527008056641
+            clip1Display.SelectScaleArray = 'u.x'
+            clip1Display.GlyphType = 'Arrow'
+            clip1Display.GlyphTableIndexArray = 'u.x'
+            clip1Display.GaussianRadius = 0.03558763504028321
+            clip1Display.SetScaleArray = ['POINTS', 'u.x']
+            clip1Display.ScaleTransferFunction = 'PiecewiseFunction'
+            clip1Display.OpacityArray = ['POINTS', 'u.x']
+            clip1Display.OpacityTransferFunction = 'PiecewiseFunction'
+            clip1Display.DataAxesGrid = 'GridAxesRepresentation'
+            clip1Display.PolarAxes = 'PolarAxesRepresentation'
+            # clip1Display.ScalarOpacityFunction = uxPWF
+            clip1Display.ScalarOpacityUnitDistance = 0.07765220592966535
+            clip1Display.OpacityArrayName = ['POINTS', 'u.x']
+
+            # init the 'PiecewiseFunction' selected for 'ScaleTransferFunction'
+            clip1Display.ScaleTransferFunction.Points = [0, 0.0, 0.5, 0.0, 0.45, 1.0, 0.5, 0.0]
+
+            # init the 'PiecewiseFunction' selected for 'OpacityTransferFunction'
+            clip1Display.OpacityTransferFunction.Points = [0, 0.0, 0.5, 0.0, 0.45, 1.0, 0.5, 0.0]
+
+            # hide data in view
+            Hide(calculator0, renderView1)
+
+            # show color bar/color legend
+            clip1Display.SetScalarBarVisibility(renderView1, True)
+
+#****************** CONNECTIVITY(f) AND U MAGNITUDE ********************
+            # show data from connectivity1
+            fn = path + "/" + picName +  '_t=' + str(timesteps[i]) +'ux_slice.png'
+            SaveScreenshot( fn, renderView1,
+                            ImageResolution=viewSize,
+                            TransparentBackground=0,
+                            CompressionLevel='2' )
+            print('File=' + fn + ' generated succesfully')
+            # hide data in view
+            Hide(clip1, renderView1)
+            Show(calculator0, renderView1)
+        #***************** Like in the article SIDE SLICE and contour(f)*********************
         # create a new 'Slice'
         # slice3 = Slice(Input=calculator0)
         # slice3.SliceType = 'Plane'
@@ -568,22 +661,23 @@ if not noPic:
 
             uxLUTColorBar.Position = [0.5 - 0.5*len_bar, 0.02]
             uxLUTColorBar.Visibility = 1
-            uxLUTColorBar.ScalarBarThickness = int(16*scale_size)
-            uxLUTColorBar.TitleFontSize = int(16*scale_size)
-            uxLUTColorBar.LabelFontSize = int(16*scale_size)
-            print("RenderView update..")
-            axesGrid.XTitleFontSize = int(20*scale_size)
-            axesGrid.YTitleFontSize = int(20*scale_size)
-            axesGrid.ZTitleFontSize = int(20*scale_size)
-            axesGrid.XLabelFontSize = int(20*scale_size)
-            axesGrid.YLabelFontSize = int(20*scale_size)
-            axesGrid.ZLabelFontSize = int(20*scale_size)
-            renderView1.CameraPosition = [center[0]-3, 0.0, 0.0]
+            uxLUTColorBar.ScalarBarThickness = fontsize
+            uxLUTColorBar.TitleFontSize = fontsize
+            uxLUTColorBar.LabelFontSize = fontsize
+            annotateTimeFilter1Display.FontSize = 2*fontsize
+            axesGrid.XTitleFontSize = fontsize
+            axesGrid.YTitleFontSize = fontsize
+            axesGrid.ZTitleFontSize = fontsize
+            axesGrid.XLabelFontSize = fontsize
+            axesGrid.YLabelFontSize = fontsize
+            axesGrid.ZLabelFontSize = fontsize
+            renderView1.CameraPosition = [bounds[0], 0.0, 0.0]
             renderView1.CameraFocalPoint = [center[0], 0.0, 0.0]
             renderView1.CameraViewUp = [0.0, 0.0, 1.0]
-            renderView1.CameraParallelScale = 1.9
+            renderView1.CameraParallelScale = 1.5
             # renderView1.ViewSize = [2048, 2048]
-            renderView1.ResetCamera(center[0], center[0], -0.5, 0.5, -0.5, 0.5)
+            renderView1.ResetCamera(bounds[0], bounds[0], -0.5, 0.5, -0.5, 0.5)
+            # renderView1.ResetCamera(center[0]-shift, center[0]-shift, -0.5, 0.5, -0.5, 0.5)
             # update the view to ensure updated data information
             renderView1.Update()
             print ("end")
@@ -600,15 +694,38 @@ if not noPic:
 
             # Freeing Memory
 
-
+            Delete(clip1)
+            del clip1
             # Delete(slice3)
             # del slice3
+            Delete(annotateTimeFilter1)
+            del annotateTimeFilter1
             Delete(calculator0)
             del calculator0
             Delete(cellDatatoPointData1)
             del cellDatatoPointData1
         except:
             print('ERROR: the time step does not exist')
+            try:
+                Delete(clip1)
+                del clip1
+            except:
+                pass
+            try:
+                Delete(annotateTimeFilter1)
+                del annotateTimeFilter1
+            except:
+                pass
+            try:
+                Delete(calculator0)
+                del calculator0
+            except:
+                pass
+            try:
+                Delete(cellDatatoPointData1)
+                del cellDatatoPointData1
+            except:
+                pass
 
 
 
