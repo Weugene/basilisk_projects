@@ -550,6 +550,47 @@ if not noPic:
             print('File=' + fn + ' generated succesfully')
             # break
 
+            # create a new 'Slice'
+            slice1 = Slice(registrationName='Slice1', Input=calculator0)
+            slice1.SliceType = 'Plane'
+            slice1.HyperTreeGridSlicer = 'Plane'
+            slice1.SliceOffsetValues = [0.0]
+
+            # init the 'Plane' selected for 'SliceType'
+            slice1.SliceType.Origin = [0, 0, 0]
+
+            # init the 'Plane' selected for 'HyperTreeGridSlicer'
+            slice1.HyperTreeGridSlicer.Origin = [0, 0, 0]
+
+            # Properties modified on slice1.SliceType
+            slice1.SliceType.Normal = [0.0, 0.0, 1.0]
+
+
+            # show data in view
+            slice1Display = Show(slice1, renderView1, 'GeometryRepresentation')
+            Hide(slice1, renderView1)
+
+            # create new layout object 'Layout #2'
+            layout2 = CreateLayout(name='Layout #2')
+
+            # set active view
+            SetActiveView(None)
+
+            # Create a new 'SpreadSheet View'
+            spreadSheetView1 = CreateView('SpreadSheetView')
+            spreadSheetView1.ColumnToSort = ''
+            spreadSheetView1.BlockSize = 1024
+
+            # show data in view
+            slice1Display_1 = Show(slice1, spreadSheetView1, 'SpreadSheetRepresentation')
+
+            # assign view to a particular cell in the layout
+            AssignViewToLayout(view=spreadSheetView1, layout=layout2, hint=0)
+
+            # export view
+            fn = path +'/slice_t=' + str(timesteps[i]) + '.csv'
+            ExportView(fn, view=spreadSheetView1)
+
             # create a new 'Clip'
             clip1 = Clip(registrationName='Clip1', Input=calculator0)
             clip1.ClipType = 'Plane'
