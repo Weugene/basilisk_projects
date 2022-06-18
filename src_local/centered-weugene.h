@@ -85,6 +85,7 @@ for which inertia is negligible compared to viscosity. */
 mgstats mgp, mgpf, mgu;
 bool stokes = false;
 bool stokes_heat = false;
+bool chorin_modified = false;
 /**
 ## Boundary conditions
 
@@ -167,17 +168,18 @@ event defaults (i = 0)
     face vector alphamv = alpham;
     foreach_face(){
       alphav.x[] = fm.x[];
-      alphamv.x[] = fm.x[];
+      if (chorin_modified){
+        alphamv.x[] = fm.x[];
+      }
     }
   }
-
+  if (!chorin_modified)
+    alpham = alpha;
   /**
   On trees, refinement of the face-centered velocity field needs to
   preserve the divergence-free condition. */
-
 #if TREE
   uf.x.refine = refine_face_solenoidal;
-
   /**
   When using [embedded boundaries](/src/embed.h), the restriction and
   prolongation operators need to take the boundary into account. */

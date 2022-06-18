@@ -47,14 +47,14 @@ void MinMaxValues(scalar * list, double * arr_eps) {// for each scalar min and m
 }
 
 int count_cells(double t, int i){
-    int tnc = 0, maxlev=0;
+    int tnc = 0, maxlev = 0;
     foreach( reduction(+:tnc) reduction(max:maxlev) ){
         tnc++;
         if (level > maxlev) maxlev = level;
     }
 #if _MPI
     int nc = 0;
-    foreach(serial)
+    foreach(serial, noauto)
         nc++;
     int rank, h_len;
     char hostname[MPI_MAX_PROCESSOR_NAME];

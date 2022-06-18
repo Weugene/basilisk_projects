@@ -68,3 +68,4 @@ num_params:
   aeps: 1e-2
   mueps: 1e-2
   viscDissipation: 0
+  chorin_modified: 1

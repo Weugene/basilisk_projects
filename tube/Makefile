@@ -30,6 +30,10 @@ convert_single_tar:
 #    mpirun -np 4 ./convert_single_p 10 30 1 0
 	qcc  $(CFLAG) convertD2P_single.c -lm -o convert_single
 #    ./convert_single 10 30 1 0
+convert_reduce_maxl:
+	rm -rf convert_reduce_maxlevel
+	qcc  $(CFLAG) convert_single_reduce_maxlevel.c -lm -g -o convert_reduce_maxlevel
+#    ./convert_reduce_maxlevel 10 30 1 0
 tube_bp_rel:
 #	qcc  $(CFLAG) tube_bp_rel.c -lm
 #	./a.out > out_bp 2> log_bp

@@ -126,6 +126,7 @@ struct numerical_params {
     double aeps;
     double mueps;
     int viscDissipation;
+    int chorin_modified;
 };
 
 struct input_yaml {
@@ -246,6 +247,7 @@ static const cyaml_schema_field_t numerical_params_fields[] = {
         CYAML_FIELD_FLOAT("aeps", CYAML_FLAG_OPTIONAL, struct numerical_params, aeps),
         CYAML_FIELD_FLOAT("mueps", CYAML_FLAG_OPTIONAL, struct numerical_params, mueps),
         CYAML_FIELD_FLOAT("viscDissipation", CYAML_FLAG_OPTIONAL, struct numerical_params, viscDissipation),
+        CYAML_FIELD_FLOAT("chorin_modified", CYAML_FLAG_OPTIONAL, struct numerical_params, chorin_modified),
         CYAML_FIELD_END
 };
 
@@ -412,6 +414,7 @@ struct input_yaml* read_config(int argc, char *argv[])
     if (!input->num_params.aeps) numpar->aeps = 1e-2;
     if (!input->num_params.mueps) numpar->mueps = 1e-2;
     if (!input->num_params.viscDissipation) numpar->viscDissipation = 0;
+    if (!input->num_params.chorin_modified) numpar->chorin_modified = 0;
 
     fprintf(fout, "%s============ Dimensional params ============\n%s", KRED, KNRM);
     fprintf(fout, "characteristic_size=%g [m] ", dv->characteristic_size);
@@ -484,6 +487,7 @@ struct input_yaml* read_config(int argc, char *argv[])
     fprintf(fout, "layer_velocity=%g layer_heat=%g\n", 1.0/sqrt(input->nums.Re), 1.0/sqrt(input->nums.Pe));
     fprintf(fout, "feps=%g ueps=%g rhoeps=%g Teps=%g aeps=%g mueps=%g\n", numpar->feps, numpar->ueps, numpar->rhoeps, numpar->Teps, numpar->aeps, numpar->mueps);
     fprintf(fout, "viscDissipation=%s\n", numpar->viscDissipation ? "true" : "false");
+    fprintf(fout, "chorin_modified=%s\n", numpar->chorin_modified ? "true" : "false");
 
     /* Free the data */
 //    cyaml_free(&config, &top_schema, input, 0);
@@ -513,6 +517,7 @@ struct input_yaml* read_config_and_assign_global_vars(int argc, char *argv[])
     aeps = input->num_params.aeps;
     mueps = input->num_params.mueps;
     viscDissipation = input->num_params.viscDissipation;
+    chorin_modified = input->num_params.chorin_modified;
     TOLERANCE = input->num_params.TOLERANCE;
     TOLERANCE_P = input->num_params.TOLERANCE_P;
     TOLERANCE_V = input->num_params.TOLERANCE_V;

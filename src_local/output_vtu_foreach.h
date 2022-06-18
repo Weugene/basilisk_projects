@@ -132,14 +132,14 @@ void output_vtu_ascii_foreach (scalar * list, vector * vlist, vector * fvlist, i
 
   vertex scalar marker[];
   long long int no_points = 0, no_cells=0 ;
-  foreach_vertex(){
+  foreach_vertex(serial, noauto){
     if (MY_BOX_CONDITION) {
       marker[] = no_points++;
     }else{
 	  marker[] = -1;
     }
   }
-  foreach(){
+  foreach(serial, noauto){
     if (MY_BOX_CONDITION) no_cells += 1;
   }
 
@@ -151,7 +151,7 @@ void output_vtu_ascii_foreach (scalar * list, vector * vlist, vector * fvlist, i
 #ifndef PRINT_ALL_VALUES
   for (scalar s in list) {
     fprintf (fp,"\t\t\t\t <DataArray type=\"Float64\" Name=\"%s\" format=\"ascii\">\n", s.name);
-    foreach(){
+    foreach(serial, noauto){
       if (MY_BOX_CONDITION)
         fprintf (fp, "\t\t\t\t\t %g\n", val(s));
     }
@@ -159,7 +159,7 @@ void output_vtu_ascii_foreach (scalar * list, vector * vlist, vector * fvlist, i
   }
   for (vector v in vlist) {
     fprintf (fp,"\t\t\t\t <DataArray type=\"Float64\" NumberOfComponents=\"3\" Name=\"%s\" format=\"ascii\">\n", v.x.name);
-    foreach(){
+    foreach(serial, noauto){
       if (MY_BOX_CONDITION){
 #if dimension == 1
           fprintf (fp, "\t\t\t\t\t %g 0 0.\n", val(v.x));
@@ -178,7 +178,7 @@ void output_vtu_ascii_foreach (scalar * list, vector * vlist, vector * fvlist, i
   for (scalar s in list) {
       for (long long int i=0; i<LISTDIM; i++){
           fprintf (fp,"\t\t\t\t <DataArray type=\"Float64\" Name=\"%s_%s\" format=\"ascii\">\n", s.name, array_subname[i]);
-          foreach(){
+          foreach(serial, noauto){
               if (MY_BOX_CONDITION)
                 fprintf (fp, "\t\t\t\t\t %g \n",s[aid[i][0], aid[i][1], aid[i][2]]);
           }
@@ -188,7 +188,7 @@ void output_vtu_ascii_foreach (scalar * list, vector * vlist, vector * fvlist, i
   for (vector v in vlist) {
       for (long long int i=0; i<LISTDIM; i++){
           fprintf (fp,"\t\t\t\t <DataArray type=\"Float64\" NumberOfComponents=\"%d\" Name=\"%s_%s\" format=\"ascii\">\n", 3, v.x.name, array_subname[i]);
-          foreach(){
+          foreach(serial, noauto){
               if (MY_BOX_CONDITION){
                   #if dimension == 1
                     fprintf (fp, "\t\t\t\t\t %g 0 0.\n", v.x[aid[i][0],aid[i][1],aid[i][2]]);
@@ -207,7 +207,7 @@ void output_vtu_ascii_foreach (scalar * list, vector * vlist, vector * fvlist, i
 #endif
   for (vector v in fvlist) {
     fprintf (fp,"\t\t\t\t <DataArray type=\"Float64\" NumberOfComponents=\"%d\" %s Name=\"%s\" format=\"ascii\">\n", FVLISTDIM, components_name, v.x.name);
-    foreach(){
+    foreach(serial, noauto){
       if (MY_BOX_CONDITION){
 #if dimension == 1
         double arr[FVLISTDIM]={v.x[], v.x[1]};
@@ -239,7 +239,7 @@ void output_vtu_ascii_foreach (scalar * list, vector * vlist, vector * fvlist, i
   fputs ("\t\t\t </CellData>\n", fp);
   fputs ("\t\t\t <Points>\n", fp);
   fputs ("\t\t\t\t <DataArray type=\"Float64\" NumberOfComponents=\"3\" format=\"ascii\">\n", fp);
-  foreach_vertex(){
+  foreach_vertex(serial, noauto){
     if (MY_BOX_CONDITION)
         fprintf (fp, "\t\t\t\t\t %g %g %g\n", x, y, z);
   }
@@ -247,7 +247,7 @@ void output_vtu_ascii_foreach (scalar * list, vector * vlist, vector * fvlist, i
   fputs ("\t\t\t </Points>\n", fp);
   fputs ("\t\t\t <Cells>\n", fp);
   fputs ("\t\t\t\t <DataArray type=\"Int64\" Name=\"connectivity\" format=\"ascii\">\n", fp);
-  foreach(){
+  foreach(serial, noauto){
     if (MY_BOX_CONDITION)
     #if dimension == 1
       fprintf (fp, "\t\t\t\t\t %d %d \n", (int)marker[], (int)marker[1]);
@@ -272,7 +272,7 @@ void output_vtu_ascii_foreach (scalar * list, vector * vlist, vector * fvlist, i
   }
   fputs ("\t\t\t\t </DataArray>\n", fp);
   fputs ("\t\t\t\t <DataArray type=\"UInt8\" Name=\"types\" format=\"ascii\">\n", fp);
-  foreach(){
+  foreach(serial, noauto){
     if (MY_BOX_CONDITION)
     #if dimension == 1
       fputs ("\t\t\t\t\t 3 \n", fp); //VTK_LINE (=3)
@@ -357,16 +357,16 @@ void output_vtu_bin_foreach (scalar * list, vector * vlist, vector * fvlist, int
 #endif
   vertex scalar marker[];
   long long int no_points = 0, no_cells = 0;
-  foreach_vertex(){
-    if (MY_BOX_CONDITION) {
-      marker[] = no_points++;// locally for each CPU counting the number of points
-    }else{
-    	marker[] = -1; //if you see -1 in vtu file=> there is a mistake
-    	fprintf(ferr, "marker[] = -1, x=%g y=%g\n", x, y);
-    }
+  foreach_vertex(serial, noauto){
+        if (MY_BOX_CONDITION) {
+          marker[] = no_points++;// locally for each CPU counting the number of points
+        }else{
+            marker[] = -1; //if you see -1 in vtu file=> there is a mistake
+            fprintf(ferr, "marker[] = -1, x=%g y=%g\n", x, y);
+        }
   }
-  foreach(){
-    if (MY_BOX_CONDITION) no_cells++;// locally for each CPU counting the number of cells
+  foreach(serial, noauto){
+        if (MY_BOX_CONDITION) no_cells++;// locally for each CPU counting the number of cells
   }
   fputs ("<?xml version=\"1.0\"?>\n"
   "<VTKFile type=\"UnstructuredGrid\" version=\"1.0\" byte_order=\"LittleEndian\" header_type=\"UInt64\">\n", fp);
@@ -414,7 +414,7 @@ void output_vtu_bin_foreach (scalar * list, vector * vlist, vector * fvlist, int
   fputs ("\t\t\t </Points>\n", fp);
   fputs ("\t\t\t <Cells>\n", fp);
   fputs ("\t\t\t\t <DataArray type=\"Int64\" Name=\"connectivity\" format=\"ascii\">\n", fp);
-  foreach(){
+  foreach(serial, noauto){
     if (MY_BOX_CONDITION) {
 #if dimension == 1
 	    fprintf (fp, "\t\t\t\t\t %d %d \n", (int)marker[], (int)marker[1]);
@@ -442,7 +442,7 @@ void output_vtu_bin_foreach (scalar * list, vector * vlist, vector * fvlist, int
   }
   fputs ("\t\t\t\t </DataArray>\n", fp);
   fputs ("\t\t\t\t <DataArray type=\"UInt8\" Name=\"types\" format=\"ascii\">\n", fp);
-  foreach(){
+  foreach(serial, noauto){
     if (MY_BOX_CONDITION)
     #if dimension == 1
       fputs ("3 \n", fp); //VTK_LINE (=3)
@@ -471,14 +471,14 @@ void output_vtu_bin_foreach (scalar * list, vector * vlist, vector * fvlist, int
 #ifndef PRINT_ALL_VALUES
   for (scalar s in list) {
     fwrite (&block_len, sizeof (unsigned long long), 1, fp);
-    foreach()
+    foreach(serial, noauto)
       if (MY_BOX_CONDITION)
         fwrite (&val(s), sizeof (double), 1, fp);
   }
   block_len=no_cells*8*3;
   for (vector v in vlist) {
     fwrite (&block_len, sizeof (unsigned long long), 1, fp);
-    foreach(){
+    foreach(serial, noauto){
       if (MY_BOX_CONDITION){
       #if dimension == 1
         fwrite (&val(v.x), sizeof (double), 1, fp);
@@ -502,7 +502,7 @@ void output_vtu_bin_foreach (scalar * list, vector * vlist, vector * fvlist, int
   for (scalar s in list) {
       for (long long int i=0; i<LISTDIM; i++){
           fwrite (&block_len, sizeof (unsigned long long), 1, fp);
-          foreach()
+          foreach(serial, noauto)
             if (MY_BOX_CONDITION)
                 fwrite (&val(s, aid[i][0], aid[i][1], aid[i][2]), sizeof (double), 1, fp);
     }
@@ -512,7 +512,7 @@ void output_vtu_bin_foreach (scalar * list, vector * vlist, vector * fvlist, int
       for (long long int i=0; i<LISTDIM; i++){
         long long int ai=aid[i][0], aj=aid[i][1], ak=aid[i][2];
         fwrite (&block_len, sizeof (unsigned long long), 1, fp);
-        foreach(){
+        foreach(serial, noauto){
           if (MY_BOX_CONDITION){
           #if dimension == 1
             fwrite (&val(v.x, ai, aj, ak), sizeof (double), 1, fp);
@@ -537,7 +537,7 @@ void output_vtu_bin_foreach (scalar * list, vector * vlist, vector * fvlist, int
   block_len=no_cells*8*FVLISTDIM;
   for (vector v in fvlist) {
     fwrite (&block_len, sizeof (unsigned long long), 1, fp);
-    foreach(){
+    foreach(serial, noauto){
       if (MY_BOX_CONDITION){
 #if dimension == 1
         double arr[FVLISTDIM]={v.x[], v.x[1]};
@@ -566,7 +566,7 @@ void output_vtu_bin_foreach (scalar * list, vector * vlist, vector * fvlist, int
   }
   block_len=no_points*8*3;
   fwrite (&block_len, sizeof (unsigned long long), 1, fp);
-  foreach_vertex(){
+  foreach_vertex(serial, noauto){
     if (MY_BOX_CONDITION){
       fwrite (&x, sizeof (double), 1, fp);
       fwrite (&y, sizeof (double), 1, fp);

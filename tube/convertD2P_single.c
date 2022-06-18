@@ -25,7 +25,9 @@ scalar l2[];
 #include "poisson.h"
 #include "utils.h"
 #include "lambda2.h"
-#include "../src_local/output_vtu_foreach.h"
+//#include "output_vtu_foreach_original.h"
+#include "utils-weugene.h"
+#include "output_htg.h"
 scalar fs[], f[], p[];
 vector u[];
 scalar l[], omega[], l2[];
@@ -225,16 +227,18 @@ void calculate_aux_fields(vector u, scalar l, scalar omega, scalar l2){
 event vtk_file (i++)
 {
     calculate_aux_fields(u, l, omega, l2);
+    vector gradp[];
 
-    double xcg = 0, dvtmp, volume = 0, volumeg = 0 ;
+    double xcg = 0, volume = 0, volumeg = 0 ;
     length_min = 1e+30, length_max = -1e+30, length = 0;
     foreach( reduction(+:xcg) reduction(+:volume) reduction(+:volumeg)) {
         if (fs[]<1){
-        dvtmp = (1.0 - f[])*(1.0 - fs[])*dv(); // gas volume
+        double dvtmp = (1.0 - f[])*(1.0 - fs[])*dv(); // gas volume
         volumeg += dvtmp;//gas liquid
         volume += (1.0 - fs[])*dv();//channel volume
         xcg   += x*dvtmp;// Along x
         }
+        foreach_dimension() gradp.x[] = (p[] - p[-1])/Delta;
     }
     xcg /= volumeg;
     length_min = xcg - shiftm;
@@ -245,70 +249,17 @@ event vtk_file (i++)
                     "volume= %g volumeg= %g\n",
                     xcg, length_min, length_max, length, iter_fp,
                     volume, volumeg);
-    unrefine ( (x < length_min || x > length_max) && level >= 1);
-    unrefine ( (sq(y) + sq(z) > sq(0.55)) && level >= 1);
-/*
-    face vector uf[], alpha[];
-    scalar p[];
-    #ifdef FILTERED
-        scalar sf[];
-    #else
-        #define sf f
-    #endif
+//    unrefine ( (x < length_min || x > length_max) && level >= 1);
+//    unrefine ( (sq(y) + sq(z) > sq(0.55)) && level >= 1);
 
-    #ifndef sf
-    #if dimension <= 2
-        foreach()
-            sf[] = (4.*f[] +
-                2.*(f[0,1] + f[0,-1] + f[1,0] + f[-1,0]) +
-                f[-1,-1] + f[1,-1] + f[1,1] + f[-1,1])/16.;
-    #else // dimension == 3
-        foreach()
-            sf[] = (8.*f[] +
-                4.*(f[-1] + f[1] + f[0,1] + f[0,-1] + f[0,0,1] + f[0,0,-1]) +
-                2.*(f[-1,1] + f[-1,0,1] + f[-1,0,-1] + f[-1,-1] +
-                f[0,1,1] + f[0,1,-1] + f[0,-1,1] + f[0,-1,-1] +
-                f[1,1] + f[1,0,1] + f[1,-1] + f[1,0,-1]) +
-                f[1,-1,1] + f[-1,1,1] + f[-1,1,-1] + f[1,1,1] +
-                f[1,1,-1] + f[-1,-1,-1] + f[1,-1,-1] + f[-1,-1,1])/64.;
-    #endif
-    #endif
-    foreach_face(){
-        double ff = (sf[] + sf[-1])/2.;
-        uf.x[] = face_value (u.x, 0);
-        alpha.x[] = 1.0/rho(ff);
-    }
-    boundary ((scalar *){uf});
-    fprintf(ferr, "dt=%g DT=%g\n", dt, DT);
-    mgstats mgp;
-    mgp = project (uf, p, alpha, dt, mgp.nrelax);
-
-    if(0){
-        char filename[80];
-        sprintf(filename, "Conv_contour-%g.csv", t);
-        FILE *fpc = fopen (filename, "w");
-        fprintf(fpc, "x,y,z,f,u.x,u.y,u.z,omega,p\n");
-        foreach(){
-            if (f[]>0 && f[]<1) {
-                fprintf(fpc, "%g,%g,%g,%g,%g,%g,%g,%g,%g\n",x,y,z,f[],u.x[],u.y[],u.z[],omega[],p[]);
-            }
-        }
-        fclose (fpc);
-    }else if(0){
-        char filename[80];
-        sprintf(filename, "Conv_contour_short-%g.csv\n", t);
-        FILE *fpc = fopen (filename, "w");
-        fprintf(fpc, "x,y,z,f");
-        foreach(){
-            if (f[]>0 && f[]<1) {
-                fprintf(fpc, "%g,%g,%g,%g\n",x,y,z,f[]);
-            }
-        }
-        fclose (fpc);
-    }
-    */
-    char subname[80]; sprintf(subname, "dump2pvd_compressed");
-    output_vtu_MPI( subname, myt, (scalar *) {fs, f, l, l2, omega, p}, (vector *) {u});
+//    char subname[80]; sprintf(subname, "dump2pvd_compressed");
+//    output_vtu_MPI( subname, myt, (scalar *) {fs, f, l, l2, omega, p}, (vector *) {u, gradp});
+    char path[]="res"; // no slash at the end!!
+    char prefix[] = "dump2pvd_compressed";
+    output_htg(path, prefix, (iter_fp) ? t + dt : 0, (scalar *) {fs, f, l, l2, omega, p},
+               (vector *){u, gradp});
+    fprintf(ferr, "ended adapt\n");
+    count_cells(t, i);
     return 0;
 }
 

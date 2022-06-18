@@ -1,7 +1,7 @@
 #define BRINKMAN_PENALIZATION 1
 #define DEBUG_MINMAXVALUES
 //#define DEBUG_BRINKMAN_PENALIZATION
-#define DEBUG_MODE_POISSON
+//#define DEBUG_MODE_POISSON
 //#define DEBUG_OUTPUT_VTU_MPI
 #define FILTERED
 #define JACOBI 1
@@ -12,8 +12,6 @@
 
 scalar fs[];
 face vector fs_face=zerof;
-scalar omega[];
-scalar l2[];
 #include "grid/octree.h"
 #include "centered-weugene.h"
 #include "two-phase.h"
@@ -439,6 +437,8 @@ event snapshot (i += snapshot_i)
 {
     char name[80];
     scalar ppart[];
+    scalar omega[];
+    scalar l2[];
     sprintf(name, "dump-%04g",t);
     vorticity (u, omega);
     lambda2 (u, l2);
@@ -464,18 +464,19 @@ void exact(vector ue)
     boundary((scalar *){ue});
 }
 //event vtk_file (i += 1)
-event vtk_file (t += dt_vtk)
-{
-    char subname[80]; sprintf(subname, "tube_bp");
-    scalar l[]; foreach() l[] = level;
-    scalar np[]; foreach() np[] = pid();
-    vorticity (u, omega);
-    lambda2 (u, l2);
-//    output_vtu_MPI( subname, (iter_fp) ? t + dt : 0, (scalar *) {p, fs, f, np, l}, (vector *) {u, a});
-    output_vtu_MPI( subname, (iter_fp) ? t + dt : 0, (scalar *) {p, fs, f, np, l, omega, l2}, (vector *) {u});
-//    fprintf(ferr, "end:snapshot_vtk");
-//    event("snapshot_vtk");
-}
+//event vtk_file (t += dt_vtk)
+//{
+//    char subname[80]; sprintf(subname, "tube_bp");
+//    scalar l[], l2[], omega[];
+//    foreach() l[] = level;
+//    scalar np[]; foreach() np[] = pid();
+//    vorticity (u, omega);
+//    lambda2 (u, l2);
+////    output_vtu_MPI( subname, (iter_fp) ? t + dt : 0, (scalar *) {p, fs, f, np, l}, (vector *) {u, a});
+//    output_vtu_MPI( subname, (iter_fp) ? t + dt : 0, (scalar *) {p, fs, f, np, l, omega, l2}, (vector *) {u});
+////    fprintf(ferr, "end:snapshot_vtk");
+////    event("snapshot_vtk");
+//}
 
 
 
@@ -488,7 +489,6 @@ event adapt (i++)
 {
     double eps_arr[] = ADAPT_EPS_SCALARS;
     fprintf(ferr, "beginning adapt\n");
-    vorticity (u, omega);
 //    MinMaxValues (ADAPT_SCALARS, eps_arr);
     if (adapt_method == 0)
         adapt_wavelet ((scalar *) ADAPT_SCALARS, (double []) ADAPT_EPS_SCALARS, maxlevel = maxlevel, minlevel = minlevel);
