@@ -78,8 +78,10 @@ astats adapt_wavelet_limited (struct Adapt_limited p)
 	bool local = is_local(cell);
 	if (!local)
 	  foreach_child()
-	    if (is_local(cell))
-	      local = true, break;
+	    if (is_local(cell)){
+	      local = true;
+	      break;
+	    }
 	if (local) {
 	  int i = 0;
 	  static const int just_fine = 1 << (user + 3);

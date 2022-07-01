@@ -122,7 +122,7 @@ static void relax_viscosity (scalar*a, scalar*b, int l, void*data)
     double dt = p->dt;
     vector u = vector(a[0]), r = vector(b[0]), res = vector(resl[0]);
     double maxres = 0, maxb = p->maxb;
-    coord LU;
+
     #ifndef DEBUG_BRINKMAN_PENALIZATION
     vector divtauu[];// added: Weugene
     #endif
@@ -160,6 +160,7 @@ static void relax_viscosity (scalar*a, scalar*b, int l, void*data)
          * b = u^n + chi*dt*Ut/eta
          * b is set in viscosity function at the very beginning
          * */
+        coord LU;
         foreach_dimension(){
             LU.x = lambda.x*u.x[] - frhs*divtauu.x[]*dt/rho[]
                      -(PLUS_VARIABLE_BRINKMAN_RHS)*dt;

@@ -240,6 +240,8 @@ event vtk_file (i++)
         }
         foreach_dimension() gradp.x[] = (p[] - p[-1])/Delta;
     }
+    scalar sf[];
+    filter_scalar_N_times(f, sf, 10);
     xcg /= volumeg;
     length_min = xcg - shiftm;
     length_max = xcg + shiftp;
@@ -256,7 +258,7 @@ event vtk_file (i++)
 //    output_vtu_MPI( subname, myt, (scalar *) {fs, f, l, l2, omega, p}, (vector *) {u, gradp});
     char path[]="res"; // no slash at the end!!
     char prefix[] = "dump2pvd_compressed";
-    output_htg(path, prefix, (iter_fp) ? t + dt : 0, (scalar *) {fs, f, l, l2, omega, p},
+    output_htg(path, prefix, (iter_fp) ? t + dt : 0, (scalar *) {fs, f, l, l2, omega, p, sf},
                (vector *){u, gradp});
     fprintf(ferr, "ended adapt\n");
     count_cells(t, i);

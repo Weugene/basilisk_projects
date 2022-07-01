@@ -136,8 +136,8 @@ def plot_graph(list_x, list_y, names, xtitle, ytitle, image_name, list_x_fill=[]
     if len(yrange) == 2:
         fig.update_yaxes(range=yrange)
 
-    fig.update_xaxes(type="log")
-    fig.update_yaxes(type="log")
+    # fig.update_xaxes(type="log")
+    # fig.update_yaxes(type="log")
 
     #fig.show()
     fn = path + image_name
@@ -159,7 +159,8 @@ plot_graph([df['t'].values, df['t'].values], [df['x_nose'].values, df['x_mean'].
            marker_size=1, width=1000, height=500, path=path, yanchor='bottom', y0_anchor=0.01, xanchor='right', x0_anchor=0.99)
 
 fn = "u_nose_mean_estim.png"
-plot_graph([df['t'].values, df['t'].values], [np.diff(df['x_nose'].values)/np.diff(df['t'].values), np.diff(df['x_mean'].values)/np.diff(df['t'].values)], \
+umean_estim = np.diff(df['x_mean'].values)/np.diff(df['t'].values)
+plot_graph([df['t'].values, df['t'].values], [np.diff(df['x_nose'].values)/np.diff(df['t'].values), umean_estim], \
            ['U nose', 'U mean'], \
            dash=['solid', 'dot', 'dot'], \
            xtitle="t", ytitle="U", image_name=fn[:-3]+'pdf', mode=['lines', 'lines', 'lines'], \
@@ -184,9 +185,27 @@ for ifile, file in enumerate(csvnames):
     list_unose.append(row['u.x_0'])
     list_t.append(float(time))
 
-print(list_t, list_unose)
 fn = "u_nose_mean_markers.png"
-plot_graph([list_t, df['t'].values], [list_unose, np.diff(df['x_mean'].values)/np.diff(df['t'].values)], \
+plot_graph([list_t, df['t'].values], [list_unose, df['UmeanV'].values], \
+           ['U nose', 'U mean'], \
+           dash=['solid', 'dot', 'dot'], \
+           xtitle="t", ytitle="U", image_name=fn[:-3]+'pdf', mode=['markers', 'markers', 'lines+markers'], \
+           colors=['red', 'black', 'black' ], \
+           marker_size=5, width=1000, height=500, path=path, yanchor='top', y0_anchor=0.99, xanchor='right', x0_anchor=0.99, logx=False, logy=False)
+
+list_unose=np.asarray(list_unose)
+fn = "u_nose_markers.png"
+plot_graph([list_t], [list_unose - 1.6], \
+           ['$U_{\\text{nose}} - \\hat{U}$'], \
+           dash=['solid', 'dot', 'dot'], \
+           xtitle="t", ytitle='$U_{\\text{nose}} - \\hat{U}$', image_name=fn[:-3]+'pdf', mode=['lines+markers', 'lines+markers', 'lines+markers'], \
+           colors=['red', 'black', 'black' ], \
+           marker_size=5, width=1000, height=500, path=path, yanchor='top', y0_anchor=0.99, xanchor='right', x0_anchor=0.99, logx=False, logy=False)
+
+
+print(list_t, list_unose)
+fn = "u_nose_mean_markers_log.png"
+plot_graph([list_t, df['t'].values], [list_unose, df['UmeanV'].values], \
            ['U nose', 'U mean'], \
            dash=['solid', 'dot', 'dot'], \
            xtitle="t", ytitle="U", image_name=fn[:-3]+'pdf', mode=['lines+markers', 'lines+markers', 'lines+markers'], \
@@ -194,7 +213,7 @@ plot_graph([list_t, df['t'].values], [list_unose, np.diff(df['x_mean'].values)/n
            marker_size=5, width=1000, height=500, path=path, yanchor='top', y0_anchor=0.99, xanchor='right', x0_anchor=0.99, logx=True, logy=True)
 
 list_unose=np.asarray(list_unose)
-fn = "u_nose_markers.png"
+fn = "u_nose_markers_log.png"
 plot_graph([list_t], [list_unose - 1.6], \
            ['$U_{\\text{nose}} - \\hat{U}$'], \
            dash=['solid', 'dot', 'dot'], \

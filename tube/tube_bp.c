@@ -24,7 +24,11 @@ face vector fs_face=zerof;
 #include "utils-weugene.h"
 #include "utils.h"
 #include "lambda2.h"
-#include "output_vtu_foreach.h"
+#if 0
+    #include "output_vtu_foreach.h"
+#else
+    int iter_fp = 0;
+#endif
 #include "maxruntime.h"
 #include "tag.h"
 
@@ -78,8 +82,10 @@ double G;
 double Umean, UMEAN;
 double x_init = 2;
 int maxlevel = 8;
+int maxlevel_init = 13;
 int minlevel = 5;
 int LEVEL = 7;
+int init_i = 1; // each restart it is equal to 1
 int adapt_method = 1; // 0 - traditional, 1 - using limitation, 2 - using array for maxlevel
 int snapshot_i = 100;
 double fseps = 1e-3, ueps = 1e-2;
@@ -135,7 +141,10 @@ int main (int argc, char * argv[]) {
         dt_vtk = atof (argv[6]);
     if (argc > 7)
         snapshot_i = atoi (argv[7]);
-
+    if (argc > 8)
+        TOLERANCE_P = atof (argv[8]);
+    if (argc > 9)
+        TOLERANCE_V = atof (argv[9]);
     size (lDomain);
     origin (0., -L0/2., -L0/2.);
     init_grid (1 << LEVEL);
@@ -163,7 +172,7 @@ int main (int argc, char * argv[]) {
     x_init = 1.7*l_bub;
 
     fprintf(ferr,"BP:             eta_s=%g,     DT=%g\n"
-                 "Solver:         NITERMIN=%d   NITERMAX=%d      TOLERANCE=%g  relative_residual_poisson=%d relative_residual_viscous=%d\n"
+                 "Solver:         NITERMIN=%d   NITERMAX=%d      TOLERANCE_P=%g TOLERANCE_V=%g TOLERANCE=%g  relative_residual_poisson=%d relative_residual_viscous=%d\n"
                  "OUTPUT:         dt_vtk=%g number of procs=%d\n"
                  "ADAPT:          minlevel=%d,  maxlevel=%d      adapt_meth=%d fseps=%g ueps=%g\n"
                  "Bubble case: %d\n"
@@ -171,7 +180,7 @@ int main (int argc, char * argv[]) {
                  "Apparatus:      diam_tube=%g  tube_length=%g\n"
                  "Bubble:         Vd=%g deq=%g  ellipse_shape=%d cylinder_shape=%d\n",
                  eta_s, DT,
-                 NITERMIN, NITERMAX, TOLERANCE, relative_residual_poisson, relative_residual_viscous,
+                 NITERMIN, NITERMAX, TOLERANCE_P, TOLERANCE_V, TOLERANCE, relative_residual_poisson, relative_residual_viscous,
                  dt_vtk, npe(),
                  minlevel, maxlevel, adapt_method, fseps, ueps,
                  bubcase,
@@ -285,10 +294,12 @@ event init (t = 0) {
             if (s.nf == 0  || it > 5) break;
             it++;
         } while(1);
-        event("vtk_file");
+//        event("vtk_file");
     }else{
-        fprintf(ferr, "file is read\n");
+        fprintf(ferr, "file is read with maxlevel_init=%d\n", grid->maxdepth);
     }
+    maxlevel_init = grid->maxdepth;
+
 }
 event advection_term(i++){
     TOLERANCE = TOLERANCE_P;
@@ -312,12 +323,9 @@ designed to solve this problem. Any connected region for which *f[] < 0.999*
  */
 event logfile (i +=1)
 {
-    double x_mean = 0, velamean = 0, dvtmp, delta_min=1e+9, delta_mean=0, delta_max=-1e+9, r, r_min=1e+9;
-    double x_min = 1e+9, x_max = -1e+9, length = 0, volume_clip = 0, volumeg = 0, f_p_min;
+    double x_mean = 0, delta_min=1e+9, delta_mean=0, delta_max=-1e+9, r_min=1e+9;
+    double x_min = 1e+9, x_max = -1e+9, length = 0, volume_clip = 0, volumeg = 0;
     double vel_bubx=0, vel_buby=0, vel_bubz=0;
-    coord p_min, coord_tail;
-//    face vector f_face[];
-//    face_fraction (f, f_face);
 
     scalar m[];
     foreach() m[] = f[] < 0.999; // m is 0 and 1 array
@@ -336,7 +344,7 @@ event logfile (i +=1)
     double vol_sum = 0;
     foreach_leaf()
         if (m[] > 0) {
-            int j = m[] - 1;
+            int j = m[] - 1; // j is index of a bubble
             v[j] += dv()*f[];
             vol_sum += v[j];
             coord p = {x,y,z};
@@ -355,7 +363,7 @@ event logfile (i +=1)
     /**
     Finally we output the volume and position of each bubble to
     standard output. */
-    int i_vol_max;
+    int i_vol_max; // index of the largest bubble
     double vol_max=-1e+9;
     for (int j = 0; j < n; j++){
         if (v[j] > vol_max) {
@@ -367,21 +375,17 @@ event logfile (i +=1)
     }
     fprintf(ferr, "i_vol_max= %d vol_max= %g\n", i_vol_max, vol_max);
     foreach(reduction(+:x_mean) reduction(+:volumeg)
-            reduction(+:vel_bubx) reduction(+:vel_buby) reduction(+:vel_bubz) reduction(+:velamean)
-            reduction(min:delta_min) reduction(min:x_min) reduction(max:x_max)) {
-        if (fs[]<1 && m[] == 1 + i_vol_max){
-            dvtmp = (1.0 - f[])*(1.0 - fs[])*dv(); // gas volume
+            reduction(+:vel_bubx) reduction(+:vel_buby) reduction(+:vel_bubz)
+            reduction(min:delta_min) reduction(min:x_min) reduction(max:x_max)
+            ) {
+        if (fs[]<1 && m[] == 1 + i_vol_max){ // inside of the largest bubble
+            double dvtmp = (1.0 - f[])*dv(); // gas volume
             volumeg += dvtmp;
             x_mean   += x*dvtmp;// Along x
-            velamean += norm(u)*dvtmp;//mean velocity of gas
             vel_bubx += u.x[]*dvtmp; vel_buby += u.y[]*dvtmp; vel_bubz += u.z[]*dvtmp;//mean velocity of gas Ox,Oy,Oz
-            if (f[] > 0 && f[] < 1) {
-                r = sqrt(sq(y) + sq(z)) + Delta*(0.5 - f[]);
+            if (f[] > 0 && f[] < 1) { // in bubble interface
+                double r = sqrt(sq(y) + sq(z)) + Delta*(0.5 - f[]);
                 if (0.5 - r < delta_min) {
-                    p_min.x = x;
-                    p_min.y = y;
-                    p_min.z = z;
-                    f_p_min = f[];
                     delta_min = 0.5 - r;
                 }
                 if (x < x_min) x_min = x;
@@ -390,12 +394,14 @@ event logfile (i +=1)
         }
     }
     vel_bubx /= volumeg; vel_buby /= volumeg; vel_buby /= volumeg;
-    x_mean /= volumeg; velamean /= volumeg; length = x_max - x_min;
+    x_mean /= volumeg; length = x_max - x_min;
 
+    // Clip the largest bubble between xmin and x_mean
     foreach(reduction(+:volume_clip) reduction(max:delta_max) reduction(min:r_min)) {
         if ( f[] < 1 && m[] == 1 + i_vol_max){
-            if (x > p_min.x && x < x_mean && m[] == 1 + i_vol_max){ // look inside a clipped bubble
-                volume_clip += (1.0 - f[])*dv(); // gas volume in the slice
+            double r;
+            if (x > x_min && x < x_mean && m[] == 1 + i_vol_max){ // look inside a clipped bubble
+                volume_clip += (1.0 - f[])*dv(); // gas volume in the clipped volume
                 if (f[] > 0 && 0.5 - r > delta_max) { // look at an interface of the clipped volume
                     r = sqrt(sq(y) + sq(z)) + Delta * (0.5 - f[]);
                     delta_max = 0.5 - r;
@@ -405,29 +411,30 @@ event logfile (i +=1)
                 r = sqrt(sq(y) + sq(z));
                 if (r < r_min) {
                     r_min = r;
-                    coord_tail.x = x;
-                    coord_tail.y = y;
-                    coord_tail.z = z;
+//                    coord_tail.x = x;
+//                    coord_tail.y = y;
+//                    coord_tail.z = z;
                 }
             }
         }
     }
-    delta_mean = 0.5 - sqrt(volume_clip/(pi*(x_mean - p_min.x)));
-        fprintf (ferr, "maxlevel= %d i= %d t= %g dt= %g volumeg= %g volume_clip= %g vel_bub= %g %g %g velamean= %g vel_bubx/U0-1= %g\n"
-                   "x_min= %g x_peak_max= %g %g %g coord_tail= %g %g %g x_mean= %g x_max= %g\n"
-                   "delta_min= %g delta_mean(NOTE:x_mean_x_of_max_y)= %g delta_max= %g length= %g f_p_min(full_cell?)= %g it_fp= %d\n",
-            maxlevel, i, t, dt, volumeg, volume_clip, vel_bubx, vel_buby, vel_bubz, velamean, (vel_bubx/Umean - 1),
-            x_min, p_min.x, p_min.y, p_min.z, coord_tail.x, coord_tail.y, coord_tail.z, x_mean, x_max,
-            delta_min, delta_mean, delta_max, x_max - x_min, f_p_min, iter_fp);
+    delta_mean = 0.5 - sqrt(volume_clip/(pi*(x_mean - x_min)));
+        fprintf (ferr, "maxlevel= %d i= %d t= %g dt= %g volumeg= %g volume_clip= %g vel_bub= %g %g %g vel_bubx/U0-1= %g\n"
+                   "x_min= %g x_mean= %g x_max= %g\n"
+                   "delta_min= %g delta_mean(NOTE:x_mean_x_of_max_y)= %g delta_max= %g length= %g it_fp= %d\n",
+            maxlevel, i, t, dt, volumeg, volume_clip, vel_bubx, vel_buby, vel_bubz, (vel_bubx/Umean - 1),
+            x_min, x_mean, x_max,
+            delta_min, delta_mean, delta_max, x_max - x_min, iter_fp);
     fprintf(ferr, "Ca\tUflow_m_s\tU_meanVT\tU_meanVT_m_s\tdelta_minVT\tdelta_meanVT\tdelta_maxVT\tmaxlevel\tlDomain\tdx\tN_per_delta\n");
     double dx_min = lDomain/pow(2., maxlevel);
    fprintf(ferr, "%8.5g\t%8.5g\t%8.5g\t%8.5g\t%8.5g\t%8.5g\t%8.5g\t%8d\t%8.5g\t%8.5g\t%8.5g\n",
             mu1*vel_bubx/f.sigma, UMEAN, vel_bubx, vel_bubx*UMEAN, delta_min, delta_mean, delta_max,
             maxlevel, lDomain, dx_min, delta_min/dx_min);
-    if (i==0) fprintf(stdout, "t\tx_tail\tx_peak\tr_peak\tx_mean\tx_nose\tx_nose_ISC\tvolume\tUmeanV\tdelta_min\tdelta_mean\tdelta_max\tdelta_min_smooth\tdelta_max_smooth\n");
+    if (i==0) fprintf(stdout, "t\tx_tail\tr_peak\tx_mean\tx_nose\tx_nose_ISC\tvolume\tUmeanV\t"
+                              "delta_min\tdelta_mean\tdelta_max\tdelta_min_smooth\tdelta_max_smooth\n");
     fprintf (stdout, "%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\n",
-    t, coord_tail.x,  p_min.x, 0.5 - delta_min, x_mean, x_max, 0.0, volumeg, vel_bubx,
-    delta_min, delta_mean, delta_max);
+    t, x_min, 0.5 - delta_min, x_mean, x_max, 0.0, volumeg, vel_bubx,
+    delta_min, delta_mean, delta_max, 0, 0);
     fflush(stdout);
 }
 
@@ -444,13 +451,6 @@ event snapshot (i += snapshot_i)
     lambda2 (u, l2);
     foreach() ppart[] = pid();
     p.nodump = false;
-    dump (file = name);
-}
-
-event snapshot_vtk (i += 10000)
-{
-    char name[80];
-    sprintf(name, "dump-%04g", t);
     dump (file = name);
 }
 
@@ -478,7 +478,11 @@ void exact(vector ue)
 ////    event("snapshot_vtk");
 //}
 
-
+int signnum(int x) {
+    if (x > 0) return 1;
+    if (x < 0) return -1;
+    return 0;
+}
 
 #define ADAPT_SCALARS {f, u.x, u.y, u.z}
 #define ADAPT_EPS_SCALARS {fseps, ueps, ueps, ueps}
@@ -487,16 +491,20 @@ void exact(vector ue)
 //#define ADAPT_EPS_SCALARS {fseps, fseps, ueps, ueps, ueps}
 event adapt (i++)
 {
+    if (init_i % 100 == 0){
+        maxlevel_init += signnum(maxlevel - maxlevel_init);
+        fprintf(ferr, "Adaptation with maxlevel_init=%d", maxlevel_init);
+    }
     double eps_arr[] = ADAPT_EPS_SCALARS;
     fprintf(ferr, "beginning adapt\n");
 //    MinMaxValues (ADAPT_SCALARS, eps_arr);
     if (adapt_method == 0)
-        adapt_wavelet ((scalar *) ADAPT_SCALARS, (double []) ADAPT_EPS_SCALARS, maxlevel = maxlevel, minlevel = minlevel);
+        adapt_wavelet ((scalar *) ADAPT_SCALARS, (double []) ADAPT_EPS_SCALARS, maxlevel = maxlevel_init, minlevel = minlevel);
     else if (adapt_method == 1)
-//        adapt_wavelet_limited  ((scalar *) {f, u_mag}, (double []) {fseps, ueps}, maXlevel, minlevel);
-        adapt_wavelet_limited  ((scalar *) ADAPT_SCALARS, (double []) ADAPT_EPS_SCALARS, maXlevel, minlevel);
+//        adapt_wavelet_limited  ((scalar *) {f, u_mag}, (double []) {fseps, ueps}, maxlevel_init, minlevel);
+        adapt_wavelet_limited  ((scalar *) ADAPT_SCALARS, (double []) ADAPT_EPS_SCALARS, maxlevel_init, minlevel);
     else if (adapt_method == 2)
-        adapt_wavelet2((scalar *)ADAPT_SCALARS, (double []) ADAPT_EPS_SCALARS,(int []){maxlevel, maxlevel-1, maxlevel-2, maxlevel-2, maxlevel-2}, minlevel);
+        adapt_wavelet2((scalar *)ADAPT_SCALARS, (double []) ADAPT_EPS_SCALARS,(int []){maxlevel_init, maxlevel_init-1, maxlevel_init-2, maxlevel_init-2, maxlevel_init-2}, minlevel);
 
     fprintf(ferr, "ended adapt\n");
     count_cells(t, i);

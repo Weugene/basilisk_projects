@@ -54,8 +54,9 @@ int count_cells(double t, int i){
     }
 #if _MPI
     int nc = 0;
-    foreach(serial, noauto)
+    foreach(serial, noauto){
         nc++;
+    }
     int rank, h_len;
     char hostname[MPI_MAX_PROCESSOR_NAME];
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -174,14 +175,22 @@ void filter_scalar(scalar f, scalar sf){
 #endif
 }
 
+void filter_scalar_N_times(scalar f, scalar sf, int N_smooth){
+    scalar sf_s[];
+    filter_scalar(f, sf);
+    for (int i_smooth=2; i_smooth<=N_smooth; i_smooth++){
+        filter_scalar(sf, sf_s);
+        foreach() sf[] = sf_s[];
+    }
+}
+
 /**
 Calculate scalar from face vector. compute viscosity in a cell
 */
 
 void calc_scalar_from_face(const face vector vf, scalar vs){
-    double vsum = 0;
     foreach() {
-        vsum = 0;
+        double vsum = 0;
         foreach_dimension() {
             vsum += vf.x[] + vf.x[1];
         }
