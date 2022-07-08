@@ -22,7 +22,7 @@ from scipy import interpolate
 from sklearn.cluster import KMeans
 from scipy.optimize import curve_fit
 from numpy import linalg as LA
-
+# from scipy.stats import norm
 SMALL_SIZE = 20
 MEDIUM_SIZE = 25
 BIGGER_SIZE = 30
@@ -38,17 +38,23 @@ matplotlib.pyplot.title(r'ABC123 vs $\mathrm{ABC123}^{123}$')
 
 # set tight margins
 plt.margins(0.015, tight=True)
-from scipy.stats import norm
 
+def get_time(string):
+    return float(re.findall("\d+\.\d+", string)[0])
 
 def sort_names(image_files):
     file_names = [os.path.basename(string) for string in image_files]
-    times = [(float(re.findall("\d+\.\d+", string)[0]), string) for string in file_names]
+    times = [get_time(string) for string in file_names]
     times = sorted(times, key=lambda x: x[0])
     print(f"Time: {times[0][0]} -- {times[-1][0]}")
     image_files = [t[1] for t in times]
     return image_files
 
+#
+# dX/dpsi=sin(psi)/Q
+# dSigma/spsi = -cos(psi)/Q
+# Q = sin(psi)/Sigma + s1*s2*X/l**2 - B
+# X(0)=Sigma(0)=0
 def fun_psi(psi, z, s1, s2, l, B):
     X, Sigma = z
     if psi < 1e-4:
@@ -56,6 +62,9 @@ def fun_psi(psi, z, s1, s2, l, B):
     Q = sin(psi)/Sigma + s1*s2*X/l**2 - B
     return [sin(psi)/Q, -cos(psi)/Q]
 
+#
+#w'=f''=(1 + w**2)*(1/f + np.sqrt(1 + w**2)*(s1*s2*x/l**2 - B))
+#f'=w
 def fun_x(x, z, s1, s2, l, B):
     w, f = z
     return [-(1 + w**2)*(1/f + np.sqrt(1 + w**2)*(-s1*s2*x/l**2 - B)), -w]
@@ -70,11 +79,6 @@ def target_fun(X, Sigma, Vd):
     Phi = np.abs(Vd_comp - Vd)/Vd
     # print(f'Vd_comp={Vd_comp} Vd={Vd} Phi={Phi}')
     return Phi
-#
-# dX/dpsi=sin(psi)/Q
-# dSigma/spsi = -cos(psi)/Q
-# Q = sin(psi)/Sigma + s1*s2*X/l**2 - B
-# X(0)=Sigma(0)=0
 
 def shape_psi(B_, alpha, s1, s2, l):
     B = B_[0]
@@ -90,9 +94,7 @@ def compute_shape_psi(B_, alpha, s1, s2, l, Vd):
     X_psi, Sigma_psi = shape_psi(B_, alpha, s1, s2, l)
     return target_fun(X_psi, Sigma_psi, Vd)
 
-#
-#w'=f''=(1 + w**2)*(1/f + np.sqrt(1 + w**2)*(s1*s2*x/l**2 - B))
-#f'=w
+
 def shape_full(d_, B, s1, s2, l):
     X_psi, Sigma_psi = shape_psi([B], pi/6, s1, s2, l)
     d = d_[0]
@@ -183,6 +185,7 @@ def find_df_centers(res):
     return df, centers
 
 def compute_curvature(index, row, df, a):
+    phi = np.linspace(0, 2*np.pi, 100)
     center_x, center_y = row['x'], row['y']
     df_label = df[df['label'] == index]
     res = minimize(func_curvature, x0=[center_x, 0, 25*a], args=(df_label['x'].values, df_label['y'].values), method='L-BFGS-B', jac=None,
@@ -318,137 +321,134 @@ def fit_curve(par0, props, coords):
     plt.cla()
     return X_psi/diam, Sigma_psi/diam, X_x/diam, Sigma_x/diam, props
 
+if __name__ == "__main__":
+    csvPattern = "slice_t=*.csv"
+    xmin = -4
+    xmax = 4
+    ymax = 1.5
+    picScale = 4
+    picScale1 = 16
 
-csvPattern = "slice_t=*.csv"
-xmin = -4
-xmax = 4
-ymax = 1.5
-picScale = 4
-picScale1 = 16
+    props = {}
+    props['mu1'] = 0.88e-3
+    props['mu2'] = 0.019e-3
+    props['rho1'] = 997
+    props['rho2'] = 1.204
+    props['sigma'] = 72.8e-3
+    props['diam'] = 0.514e-3
+    props['grav'] = 9.8 #variable parameter
+    props['alpha'] = 110*np.pi/180  #variable parameter
+    props['d/diam'] = 1.295828280810274  #variable parameter
+    props['s1'] = -1
+    props['s2'] = 1
+    df = pd.read_csv('/Users/weugene/Desktop/toDelete/points_drop.csv', sep=',', usecols=['Points_0','Points_1'])
+    df = df[df['Points_1'] > 0]
+    left_x = df['Points_0'].min()
+    df['Points_0'] -= left_x
+    df = df.sort_values('Points_0')
+    df = df.reset_index(drop=True)
+    # print(df)
+    props['Vd'] = volume(df['Points_0'].values, df['Points_1'].values)*props['diam']**3 #0.2179e-9
+    print(f'props={props}')
 
-props = {}
-props['mu1'] = 0.88e-3
-props['mu2'] = 0.019e-3
-props['rho1'] = 997
-props['rho2'] = 1.204
-props['sigma'] = 72.8e-3
-props['diam'] = 0.514e-3
-props['grav'] = 9.8 #variable parameter
-props['alpha'] = 110*np.pi/180  #variable parameter
-props['d/diam'] = 1.295828280810274  #variable parameter
-props['s1'] = -1
-props['s2'] = 1
-df = pd.read_csv('/Users/weugene/Desktop/toDelete/points_drop.csv', sep=',', usecols=['Points_0','Points_1'])
-df = df[df['Points_1'] > 0]
-left_x = df['Points_0'].min()
-df['Points_0'] -= left_x
-df = df.sort_values('Points_0')
-df = df.reset_index(drop=True)
-# print(df)
-props['Vd'] = volume(df['Points_0'].values, df['Points_1'].values)*props['diam']**3 #0.2179e-9
-print(f'props={props}')
+    pendant_drop(props, picScale1)
 
-pendant_drop(props, picScale1)
-a = props["a"]
-print("a=", a)
+    csvnames = glob.glob(f'./{csvPattern}', recursive = False)
+    csvnames = sort_names(csvnames)
+    print('Found pvd files in:',csvnames)
 
+    dpdx = (0.428276-0.510173)/(3.95884-5.19025)
+    # props['grav'] = dpdx/(props['rho1'] - props['rho2'])
+    props['l'] = np.sqrt(props['sigma']/((props['rho1'] - props['rho2'])*props['grav'])) #???? TODO: see here
 
-csvnames = glob.glob(f'./{csvPattern}', recursive = False)
-csvnames = sort_names(csvnames)
-print('Found pvd files in:',csvnames)
+    for ifile, file in enumerate(csvnames):
+        time = get_time(file)
+        # if ifile != 2:
+        #     continue
+        print(f'file: {file} time: {time}')
+        res = pd.read_csv(file, sep = ',', usecols=['Points_0','Points_1','u.x_0','u.x_1','u.x_2','u.x_Magnitude'])
+        left_x = res['Points_0'].min()
+        right_x = res['Points_0'].max()
+        length = right_x - left_x
+        res['Points_0'] -= left_x
+        plt.figure(figsize=(8*picScale, 1.3*picScale))
+        x = res['Points_0'].values
+        y = res['Points_1'].values
+        df, centers = find_df_centers(res)
+        # draw all centers
+        # for index, row in centers.iterrows():
+        #     x_circle, y_circle, curvature = compute_curvature(index, row, df, props["a"])
+        #     plt.plot(x_circle, y_circle, 'c.', ms=2)
+        # draw the second circle from right
+        index, row = list(centers.index)[-2], centers.iloc[-2]
+        print('row', row, 'index', index)
+        x_circle, y_circle, curvature = compute_curvature(index, row, df, props["a"])
 
-dpdx = (0.428276-0.510173)/(3.95884-5.19025)
-# props['grav'] = dpdx/(props['rho1'] - props['rho2'])
-props['l'] = np.sqrt(props['sigma']/((props['rho1'] - props['rho2'])*props['grav'])) #???? TODO: see here
+        # find the start point
+        df_cluster = df[(df['label'] == index)]
+        df_ind = df[(df['label'] == index) & (df['y'] > 0)]
+        start = list(sorted(zip(df_ind['x'].values, df_ind['y'].values), key = lambda x: x[0])[-1])
+        print(f'start:{start}')
+        # shift bubble to the beginning
+        x_tip = start[0]
+        x_circle -= x_tip
+        x -= x_tip
+        df['x'] -= x_tip
+        df_cluster['x'] -= x_tip
+        start[0] -= x_tip
 
-phi = np.linspace(0, 2*np.pi, 100)
-for ifile, file in enumerate(csvnames):
-    # if ifile != 2:
-    #     continue
-    print(f'file: {file}')
-    res = pd.read_csv(file, sep = ',', usecols=['Points_0','Points_1','u.x_0','u.x_1','u.x_2','u.x_Magnitude'])
-    left_x = res['Points_0'].min()
-    right_x = res['Points_0'].max()
-    length = right_x - left_x
-    res['Points_0'] -= left_x
-    plt.figure(figsize=(8*picScale, 1.3*picScale))
-    x = res['Points_0'].values
-    y = res['Points_1'].values
-    df, centers = find_df_centers(res)
-    # draw all centers
-    # for index, row in centers.iterrows():
-    #     x_circle, y_circle, curvature = compute_curvature(index, row, df, a)
-    #     plt.plot(x_circle, y_circle, 'c.', ms=2)
-    # draw the second circle from right
-    index, row = list(centers.index)[-2], centers.iloc[-2]
-    print('row', row, 'index', index)
-    x_circle, y_circle, curvature = compute_curvature(index, row, df, a)
+        coords = np.c_[x,y]
+        coords = coords[coords[:,1] > 0]
+        clustering = DBSCAN(eps=0.02, min_samples=2).fit(coords)
+        print(f'Found N={clustering} clusters')
+        df_compare = pd.DataFrame({'x': coords[:,0], 'y': coords[:,1], 'label': clustering.labels_} )
+        # print(f'df: {df_compare}')
+        label = df_compare[(df_compare['x'] == start[0]) & (df_compare['y'] == start[1])]['label'].values[0]
+        print(f'label: {label}')
+        ind = df_compare['label'] == label
+        coords = np.c_[df_compare['x'][ind].values, df_compare['y'][ind].values]
+        coords = optimized_path(coords, start)
+        # print(f'coords = {coords}')
+        # Find
 
-    # find the start point
-    df_cluster = df[(df['label'] == index)]
-    df_ind = df[(df['label'] == index) & (df['y'] > 0)]
-    start = list(sorted(zip(df_ind['x'].values, df_ind['y'].values), key = lambda x: x[0])[-1])
-    print(f'start:{start}')
-    # shift bubble to the beginning
-    x_tip = start[0]
-    x_circle -= x_tip
-    x -= x_tip
-    df['x'] -= x_tip
-    df_cluster['x'] -= x_tip
-    start[0] -= x_tip
+        props['d/diam'] = 1#1.3#0.8801273617937209  #variable parameter 2.2
+        props['tail_y/diam'] = 0.2
+        props['l'] = 2.54107886e-04#0.00020038 #0.00020039#0.00019
+        # props['Vd'] = 8e-1 #3.642e-11
+        d0 = props['d/diam']*props['diam']
+        tail_y = props['tail_y/diam']*props['diam']
+        B0 = curvature/props['diam']
+        l0 = props['l']
+        props['B'] = curvature/props['diam']
+        props['d'] = props['d/diam']*props['diam']
+        X_psi_theor, Sigma_psi_theor, X_x_theor, Sigma_x_theor, props = fit_curve((tail_y, B0, l0), props, coords)
+        # print([a for a in zip(X_psi_theor, Sigma_psi_theor)])
+        # print([a for a in zip(X_x_theor, Sigma_x_theor)])
 
-    coords = np.c_[x,y]
-    coords = coords[coords[:,1] > 0]
-    clustering = DBSCAN(eps=0.02, min_samples=2).fit(coords)
-    print(f'Found N={clustering} clusters')
-    df_compare = pd.DataFrame({'x': coords[:,0], 'y': coords[:,1], 'label': clustering.labels_} )
-    # print(f'df: {df_compare}')
-    label = df_compare[(df_compare['x'] == start[0]) & (df_compare['y'] == start[1])]['label'].values[0]
-    print(f'label: {label}')
-    ind = df_compare['label'] == label
-    coords = np.c_[df_compare['x'][ind].values, df_compare['y'][ind].values]
-    coords = optimized_path(coords, start)
-    # print(f'coords = {coords}')
-    # Find
+        print(f"props[d/diam] {props['d/diam']}")
 
-    props['d/diam'] = 1#1.3#0.8801273617937209  #variable parameter 2.2
-    props['tail_y/diam'] = 0.2
-    props['l'] = 2.54107886e-04#0.00020038 #0.00020039#0.00019
-    # props['Vd'] = 8e-1 #3.642e-11
-    d0 = props['d/diam']*props['diam']
-    tail_y = props['tail_y/diam']*props['diam']
-    B0 = curvature/props['diam']
-    l0 = props['l']
-    props['B'] = curvature/props['diam']
-    props['d'] = props['d/diam']*props['diam']
-    X_psi_theor, Sigma_psi_theor, X_x_theor, Sigma_x_theor, props = fit_curve((tail_y, B0, l0), props, coords)
-    # print([a for a in zip(X_psi_theor, Sigma_psi_theor)])
-    # print([a for a in zip(X_x_theor, Sigma_x_theor)])
-    a = props['a']
-    print(f"props[d/diam] {props['d/diam']}")
+        df = df.values
+        df_cluster = df_cluster.values
 
-    df = df.values
-    df_cluster = df_cluster.values
+        width = np.abs(xmax - xmin)
+        height = 1
+        plt.figure(figsize=(picScale1, (height/width)*picScale1))
+        plt.plot(x_circle, y_circle, 'c.', ms=2)
+        # plt.plot(coords[::5,0], coords[::5,1], '-', lw=4)
+        plt.plot(x, y, '.', ms=2) #all points
+        plt.plot(X_psi_theor, Sigma_psi_theor, 'y-')
+        plt.plot(X_x_theor, Sigma_x_theor, 'y-')
+        plt.plot(X_psi_theor, -Sigma_psi_theor, 'y-')
+        plt.plot(X_x_theor, -Sigma_x_theor, 'y-')
+        plt.plot(df_cluster[:,0], df_cluster[:,1], 'r.', ms=2) #chosen only 1 cluster
+        # plt.plot(df[:,0], df[:,1], 'r.', ms=2) #chosen for clustering |y| <0.1
 
-    width = np.abs(xmax - xmin)
-    height = 1
-    plt.figure(figsize=(picScale1, (height/width)*picScale1))
-    plt.plot(x_circle, y_circle, 'c.', ms=2)
-    # plt.plot(coords[::5,0], coords[::5,1], '-', lw=4)
-    plt.plot(x, y, '.', ms=2) #all points
-    plt.plot(X_psi_theor, Sigma_psi_theor, 'y-')
-    plt.plot(X_x_theor, Sigma_x_theor, 'y-')
-    plt.plot(X_psi_theor, -Sigma_psi_theor, 'y-')
-    plt.plot(X_x_theor, -Sigma_x_theor, 'y-')
-    plt.plot(df_cluster[:,0], df_cluster[:,1], 'r.', ms=2) #chosen only 1 cluster
-    # plt.plot(df[:,0], df[:,1], 'r.', ms=2) #chosen for clustering |y| <0.1
-
-    plt.plot([xmin,xmax],[-0.5,-0.5], c='0.55')
-    plt.plot([xmin,xmax],[ 0.5, 0.5], c='0.55')
-    plt.xlim(xmin, xmax)
-    plt.ylim(-0.5, 0.5)
-    # plt.axis('equal')
-    plt.grid(True)
-    plt.savefig(file[:-3]+'eps', bbox_inches='tight')
-    plt.savefig(file[:-3]+'png', bbox_inches='tight')
-    plt.cla()
+        plt.plot([xmin,xmax],[-0.5,-0.5], c='0.55')
+        plt.plot([xmin,xmax],[ 0.5, 0.5], c='0.55')
+        plt.xlim(xmin, xmax)
+        plt.ylim(-0.5, 0.5)
+        # plt.axis('equal')
+        plt.grid(True)
+        plt.savefig(file[:-3]+'eps', bbox_inches='tight')
+        plt.savefig(file[:-3]+'png', bbox_inches='tight')
+        plt.cla()
