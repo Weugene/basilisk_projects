@@ -15,7 +15,7 @@ tube_bp:
 #	qcc  $(CFLAG) tube_bp.c -lm
 #$(OPENGLIBS)
 #	./a.out > out_bp 2> log_bp
-	CC99='mpicc -std=c99' qcc -O2 -D_MPI=1 -events tube_bp.c -lm
+	CC99='mpicc -std=c99' qcc -O3 -D_MPI=1 -events tube_bp.c -lm
 #$(OPENGLIBS)
 #mpirun -np 4 ./a.out  > out_bp 2> log_bp
 convertD2P_tar:

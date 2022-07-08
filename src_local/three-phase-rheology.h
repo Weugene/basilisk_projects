@@ -147,7 +147,9 @@ jump. */
 #endif
 
 
-event tracer_advection (i++) {
+event tracer_advection (i++)
+{
+
     /**
     When using smearing of the density jump, we initialise *sf* with the
     vertex-average of *f*. */
@@ -157,14 +159,19 @@ event tracer_advection (i++) {
     for (int i_smooth=2; i_smooth<=N_smooth; i_smooth++){
         filter_scalar(sf1, sf_s);
         foreach() sf1[] = sf_s[];
-        boundary ({sf1});
     }
     filter_scalar(fs, sf2);
 		for (int i_smooth=2; i_smooth<=N_smooth; i_smooth++){
 			filter_scalar(sf2, sf_s);
 			foreach() sf2[] = sf_s[];
-			boundary ({sf2});
 		}
+#endif
+
+#if TREE
+  sf1.prolongation = refine_bilinear;
+  sf2.prolongation = refine_bilinear;
+  sf1.dirty = true; // boundary conditions need to be updated
+  sf2.dirty = true; // boundary conditions need to be updated
 #endif
 }
 
@@ -196,7 +203,8 @@ event properties (i++) {
 #if TREE
     sf1.prolongation = fraction_refine; //after changing we restore prolongation operator
     sf2.prolongation = fraction_refine;
-    boundary ({sf1,sf2});
+    sf1.dirty = true; // boundary conditions need to be updated
+    sf2.dirty = true; // boundary conditions need to be updated
 #endif
 }
 

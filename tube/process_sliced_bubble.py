@@ -363,8 +363,8 @@ props['l'] = np.sqrt(props['sigma']/((props['rho1'] - props['rho2'])*props['grav
 
 phi = np.linspace(0, 2*np.pi, 100)
 for ifile, file in enumerate(csvnames):
-    if ifile != 2:
-        continue
+    # if ifile != 2:
+    #     continue
     print(f'file: {file}')
     res = pd.read_csv(file, sep = ',', usecols=['Points_0','Points_1','u.x_0','u.x_1','u.x_2','u.x_Magnitude'])
     left_x = res['Points_0'].min()

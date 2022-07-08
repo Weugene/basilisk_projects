@@ -10,7 +10,7 @@
 #define mu(f)  (1./(clamp(f,0,1)*(1./mu1 - 1./mu2) + 1./mu2))
 //#define STOKES
 
-scalar fs[];
+scalar fs[], un[];
 face vector fs_face=zerof;
 #include "grid/octree.h"
 #include "centered-weugene.h"
@@ -19,8 +19,6 @@ face vector fs_face=zerof;
     #include "navier-stokes/conserving.h"
 #endif
 #include "tension.h"
-#include "adapt_wavelet_limited.h"
-#include "adapt2.h"
 #include "utils-weugene.h"
 #include "utils.h"
 #include "lambda2.h"
@@ -85,8 +83,8 @@ int maxlevel = 8;
 int maxlevel_init = 13;
 int minlevel = 5;
 int LEVEL = 7;
-int init_i = 1; // each restart it is equal to 1
-int adapt_method = 1; // 0 - traditional, 1 - using limitation, 2 - using array for maxlevel
+int init_i = 1; // each restart it is equal to 1 it smoothly changes the maxlevel from init_maxlevel to target maxlevel
+int adapt_method = 0; // a dummy variable
 int snapshot_i = 100;
 double fseps = 1e-3, ueps = 1e-2;
 double TOLERANCE_P = 1e-5, TOLERANCE_V = 1e-5;
@@ -206,6 +204,7 @@ int main (int argc, char * argv[]) {
             mu1, mu2, rho1, rho2, f.sigma, G, Umean,
             Re, Ca, Ca_mod,
             Vdst, dst, rst, r_bub, l_bub, (ellipse_shape || dst < 0.9) ? l_bub : l_bub + 2*r_bub, x_init);
+#if _MPI
     int rank, psize, h_len;
     char hostname[MPI_MAX_PROCESSOR_NAME];
     // get rank of this proces
@@ -214,7 +213,9 @@ int main (int argc, char * argv[]) {
     MPI_Comm_size(MPI_COMM_WORLD, &psize);
     MPI_Get_processor_name(hostname, &h_len);
     printf("rank:%d size: %d at %s h_len %d\n", rank, psize, hostname, h_len);
-
+#endif
+    fs.prolongation = fraction_refine;
+    fs.dirty = true; // boundary conditions need to be updated
     run();
 }
 //BCs
@@ -260,17 +261,21 @@ void bubble(scalar f)
     fractions (phi, f);
 }
 
-int maXlevel(double x,double y, double z){
-    double x0 = fabs(x - x_init - Umean*t);
-    int n = ceil(max(0, 0.5*(x0/l_bub - 3)));
-    return max(maxlevel-n, 10);
+event defaults (i = 0)
+{
+    fs.prolongation = fraction_refine;
+    fs.dirty = true; // boundary conditions need to be updated
 }
 
 #define ADAPT_INIT {f, fs, u.x}
 #define ADAPT_INIT_EPS {fseps, fseps, ueps}
-#define ADAPT_INIT_MAXLEVEL {maxlevel, maxlevel, maxlevel-2}
 event init (t = 0) {
-    if (!restore (file = "restart")) {
+    scalar my_kappa[], residual_of_p[], divutmp[], divutmpAfter[];
+    scalar ppart[], omega[], l2[], p[];
+
+    if (!restore (file = "restart",
+                  list = { un, f, fs, my_kappa, u, g, rhov, sf, residual_of_p, divutmp, divutmpAfter, p, ppart, omega, l2}
+                  )) {
         int it = 1;
         astats s;
         do {
@@ -283,23 +288,22 @@ event init (t = 0) {
                 u.y[] = 0;
                 u.z[] = 0;
             }
-            boundary((scalar *){u});
-            if (adapt_method == 0)
-                s = adapt_wavelet((scalar *) ADAPT_INIT, (double[]) ADAPT_INIT_EPS, maxlevel, minlevel);
-            else if (adapt_method == 1)
-                s = adapt_wavelet_limited((scalar *) ADAPT_INIT, (double []) ADAPT_INIT_EPS, maXlevel, minlevel);
-            else if (adapt_method == 2)
-                s = adapt_wavelet2((scalar *) ADAPT_INIT, (double[]) ADAPT_INIT_EPS, (int[]) ADAPT_INIT_MAXLEVEL, minlevel);
+            s = adapt_wavelet((scalar *) ADAPT_INIT, (double[]) ADAPT_INIT_EPS, maxlevel, minlevel);
             fprintf(ferr, "Adaptation: nf=%d nc=%d\n", s.nf, s.nc);
             if (s.nf == 0  || it > 5) break;
             it++;
         } while(1);
 //        event("vtk_file");
     }else{
-        fprintf(ferr, "file is read with maxlevel_init=%d\n", grid->maxdepth);
+        fprintf(ferr, "file is read with grid->maxdepth=%d\n", grid->maxdepth);
     }
-    maxlevel_init = grid->maxdepth;
-
+    double dmin = HUGE;
+    foreach_face (reduction(min:dmin))
+    if (fm.x[] > 0.) {
+        if (Delta < dmin) dmin = Delta;
+    }
+    maxlevel_init = log2(L0/dmin);
+    fprintf(ferr, "file is read with maxlevel_init=%d dmin=%g\n", maxlevel_init, dmin);
 }
 event advection_term(i++){
     TOLERANCE = TOLERANCE_P;
@@ -321,15 +325,16 @@ This is not a quantity which is trivial to compute. The *tag()* function is
 designed to solve this problem. Any connected region for which *f[] < 0.999*
 (i.e. a bubble) will be identified by a unique "tag" value between 0 and *n-1*.
  */
-event logfile (i +=1)
+event logfile (i += 100)
 {
     double x_mean = 0, delta_min=1e+9, delta_mean=0, delta_max=-1e+9, r_min=1e+9;
     double x_min = 1e+9, x_max = -1e+9, length = 0, volume_clip = 0, volumeg = 0;
     double vel_bubx=0, vel_buby=0, vel_bubz=0;
 
     scalar m[];
-    foreach() m[] = f[] < 0.999; // m is 0 and 1 array
+    foreach() m[] = f[] < 0.9999; // m is 0 and 1 array
     int n = tag (m); // m is modified filled be indices
+    fprintf(ferr, "n=%d\n", n);
     /**
     Once each cell is tagged with a unique droplet index, we can easily
     compute the volume *v* and position *b* of each droplet. Note that
@@ -337,19 +342,18 @@ event logfile (i +=1)
     parallel traversal when using OpenMP. This is because we don't have
     reduction operations for the *v* and *b* arrays (yet).
      */
-    double v[n];
-    coord b[n];
+    double v[n]; // volume of bubble j
+    coord b[n]; // center of mass of bubble j
     for (int j = 0; j < n; j++)
         v[j] = b[j].x = b[j].y = b[j].z = 0.;
-    double vol_sum = 0;
-    foreach_leaf()
+    // v[n] and b[n] for each proc
+    foreach (serial)
         if (m[] > 0) {
             int j = m[] - 1; // j is index of a bubble
-            v[j] += dv()*f[];
-            vol_sum += v[j];
+            v[j] += dv()*(1 - f[]);
             coord p = {x,y,z};
             foreach_dimension()
-                b[j].x += dv()*f[]*p.x;
+                b[j].x += dv()*(1 - f[])*p.x;
         }
     /**
     When using MPI we need to perform a global reduction to get the
@@ -365,15 +369,19 @@ event logfile (i +=1)
     standard output. */
     int i_vol_max; // index of the largest bubble
     double vol_max=-1e+9;
+    double vol_sum = 0;
     for (int j = 0; j < n; j++){
         if (v[j] > vol_max) {
             vol_max = v[j];
             i_vol_max = j;
         }
-        fprintf (stdout, "statistics: %d %g %d %g %g %g\n",
-        i, t, j, v[j], b[j].x/v[j], b[j].y/v[j]);
+        vol_sum += v[j];
+        if (v[j] > 1e-9)
+            fprintf (stdout, "statistics: %d %g %d %g %g %g\n",
+                              i, t, j, v[j], b[j].x/v[j], b[j].y/v[j]);
     }
-    fprintf(ferr, "i_vol_max= %d vol_max= %g\n", i_vol_max, vol_max);
+
+    fprintf(ferr, "vol_sum= %g i_vol_max= %d vol_max= %g\n", vol_sum, i_vol_max, vol_max);
     foreach(reduction(+:x_mean) reduction(+:volumeg)
             reduction(+:vel_bubx) reduction(+:vel_buby) reduction(+:vel_bubz)
             reduction(min:delta_min) reduction(min:x_min) reduction(max:x_max)
@@ -411,15 +419,12 @@ event logfile (i +=1)
                 r = sqrt(sq(y) + sq(z));
                 if (r < r_min) {
                     r_min = r;
-//                    coord_tail.x = x;
-//                    coord_tail.y = y;
-//                    coord_tail.z = z;
                 }
             }
         }
     }
     delta_mean = 0.5 - sqrt(volume_clip/(pi*(x_mean - x_min)));
-        fprintf (ferr, "maxlevel= %d i= %d t= %g dt= %g volumeg= %g volume_clip= %g vel_bub= %g %g %g vel_bubx/U0-1= %g\n"
+    fprintf (ferr, "maxlevel= %d i= %d t= %g dt= %g volumeg= %g volume_clip= %g vel_bub= %g %g %g vel_bubx/U0-1= %g\n"
                    "x_min= %g x_mean= %g x_max= %g\n"
                    "delta_min= %g delta_mean(NOTE:x_mean_x_of_max_y)= %g delta_max= %g length= %g it_fp= %d\n",
             maxlevel, i, t, dt, volumeg, volume_clip, vel_bubx, vel_buby, vel_bubz, (vel_bubx/Umean - 1),
@@ -427,15 +432,15 @@ event logfile (i +=1)
             delta_min, delta_mean, delta_max, x_max - x_min, iter_fp);
     fprintf(ferr, "Ca\tUflow_m_s\tU_meanVT\tU_meanVT_m_s\tdelta_minVT\tdelta_meanVT\tdelta_maxVT\tmaxlevel\tlDomain\tdx\tN_per_delta\n");
     double dx_min = lDomain/pow(2., maxlevel);
-   fprintf(ferr, "%8.5g\t%8.5g\t%8.5g\t%8.5g\t%8.5g\t%8.5g\t%8.5g\t%8d\t%8.5g\t%8.5g\t%8.5g\n",
+    fprintf(ferr, "%8.5g\t%8.5g\t%8.5g\t%8.5g\t%8.5g\t%8.5g\t%8.5g\t%8d\t%8.5g\t%8.5g\t%8.5g\n",
             mu1*vel_bubx/f.sigma, UMEAN, vel_bubx, vel_bubx*UMEAN, delta_min, delta_mean, delta_max,
             maxlevel, lDomain, dx_min, delta_min/dx_min);
     if (i==0) fprintf(stdout, "t\tx_tail\tr_peak\tx_mean\tx_nose\tx_nose_ISC\tvolume\tUmeanV\t"
                               "delta_min\tdelta_mean\tdelta_max\tdelta_min_smooth\tdelta_max_smooth\n");
-    fprintf (stdout, "%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\n",
-    t, x_min, 0.5 - delta_min, x_mean, x_max, 0.0, volumeg, vel_bubx,
-    delta_min, delta_mean, delta_max, 0, 0);
-    fflush(stdout);
+    fprintf (stdout, "%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t0\t0\n",
+             t, x_min, 0.5 - delta_min, x_mean, x_max, 0.0, volumeg, vel_bubx,
+             delta_min, delta_mean, delta_max);
+    fflush(fout);
 }
 
 
@@ -486,27 +491,16 @@ int signnum(int x) {
 
 #define ADAPT_SCALARS {f, u.x, u.y, u.z}
 #define ADAPT_EPS_SCALARS {fseps, ueps, ueps, ueps}
-#define ADAPT_MAXLEVEL {maxlevel, max(maxlevel-2,10), max(maxlevel-2,10), max(maxlevel-2,10)}
-//#define ADAPT_SCALARS {fs, f, u}
-//#define ADAPT_EPS_SCALARS {fseps, fseps, ueps, ueps, ueps}
 event adapt (i++)
 {
-    if (init_i % 100 == 0){
+    if (init_i % 50 == 0){
         maxlevel_init += signnum(maxlevel - maxlevel_init);
-        fprintf(ferr, "Adaptation with maxlevel_init=%d", maxlevel_init);
+        fprintf(ferr, "Adaptation with maxlevel_init=%d\n", maxlevel_init);
     }
     double eps_arr[] = ADAPT_EPS_SCALARS;
-    fprintf(ferr, "beginning adapt\n");
-//    MinMaxValues (ADAPT_SCALARS, eps_arr);
-    if (adapt_method == 0)
-        adapt_wavelet ((scalar *) ADAPT_SCALARS, (double []) ADAPT_EPS_SCALARS, maxlevel = maxlevel_init, minlevel = minlevel);
-    else if (adapt_method == 1)
-//        adapt_wavelet_limited  ((scalar *) {f, u_mag}, (double []) {fseps, ueps}, maxlevel_init, minlevel);
-        adapt_wavelet_limited  ((scalar *) ADAPT_SCALARS, (double []) ADAPT_EPS_SCALARS, maxlevel_init, minlevel);
-    else if (adapt_method == 2)
-        adapt_wavelet2((scalar *)ADAPT_SCALARS, (double []) ADAPT_EPS_SCALARS,(int []){maxlevel_init, maxlevel_init-1, maxlevel_init-2, maxlevel_init-2, maxlevel_init-2}, minlevel);
-
-    fprintf(ferr, "ended adapt\n");
+    MinMaxValues (ADAPT_SCALARS, eps_arr);
+    adapt_wavelet ((scalar *) ADAPT_SCALARS, (double []) ADAPT_EPS_SCALARS, maxlevel = maxlevel_init, minlevel = minlevel);
+    init_i++;
     count_cells(t, i);
     geometry(fs);
     double eps_arr2[] = {1, 1, 1, 1}; //u.x, u.y, u.z, p
