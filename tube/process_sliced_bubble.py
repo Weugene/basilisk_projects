@@ -31,6 +31,7 @@ plt.rc('font', size=SMALL_SIZE)          # controls default text sizes
 plt.rc('xtick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
 plt.rc('ytick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
 
+Debug_plot = True
 matplotlib.rcParams['mathtext.fontset'] = 'stix'
 matplotlib.rcParams['font.family'] = 'STIXGeneral'
 # matplotlib.rcParams['font.size'] = 25
@@ -44,7 +45,7 @@ def get_time(string):
 
 def sort_names(image_files):
     file_names = [os.path.basename(string) for string in image_files]
-    times = [get_time(string) for string in file_names]
+    times = [(get_time(string), string) for string in file_names]
     times = sorted(times, key=lambda x: x[0])
     print(f"Time: {times[0][0]} -- {times[-1][0]}")
     image_files = [t[1] for t in times]
@@ -136,7 +137,7 @@ def pendant_drop(props, picScale, mode=None):
     print(f'Ba_guess={B*a}, d/diam={d/diam}, a={a}, l/diam={l/diam}, a/Bo={iBo*a}')
     if not mode:
         # res = minimize(compute_shape_full, x0=[d], args=(B, s1, s2, l, Vd), method='L-BFGS-B', jac=None,
-        #                options={'gtol': 1e-5, 'disp': True})
+        #                options={'gtol': 1e-5, 'disp': Debug_plot})
         # d = res.x[0]
         print(f'Ba_res={B} d_res/diam={d/diam}')
         # X, Sigma = shape_full([d], B, s1, s2, l)
@@ -154,7 +155,7 @@ def pendant_drop(props, picScale, mode=None):
         plt.cla()
     else:
         res = minimize(compute_shape_psi, x0=[B], args=(alpha, s1, s2, l, Vd), method='L-BFGS-B', jac=None,
-                       options={'gtol': 1e-6, 'disp': True})
+                       options={'gtol': 1e-6, 'disp': Debug_plot})
         B = res.x[0]
         X, Sigma = shape_psi([B], alpha, s1, s2, l)
 
@@ -171,28 +172,29 @@ def func_curvature(pars, x, y):
     xc, yc, R = pars
     return sum([np.abs((xi - xc)**2 + (yi - yc)**2 - R**2) for xi, yi in zip(x, y)])
 
-def find_df_centers(res):
+def find_df_centers(res, width=0.1):
     x = res['Points_0'].values
     y = res['Points_1'].values
+    U = res['u.x_Magnitude'].values
     points = np.c_[x, y]
 
-    ind = np.abs(y) < 0.1
+    ind = np.abs(y) < width
+
     clustering = DBSCAN(eps=0.01, min_samples=2).fit(points[ind])
-    df = pd.DataFrame({'x': points[ind][:,0], 'y': points[ind][:,1], 'label': clustering.labels_} )
+    df = pd.DataFrame({'x': points[ind][:,0], 'y': points[ind][:,1], 'label': clustering.labels_, 'U': U[ind]})
     centers = df.groupby('label').mean() #label becomes as an index
     centers.sort_values(by=['x'], inplace=True)
     print(f'centers: {centers}')
     return df, centers
 
 def compute_curvature(index, row, df, a):
-    phi = np.linspace(0, 2*np.pi, 100)
+    phi = np.linspace(0, 2*np.pi, 1000)
     center_x, center_y = row['x'], row['y']
     df_label = df[df['label'] == index]
     res = minimize(func_curvature, x0=[center_x, 0, 25*a], args=(df_label['x'].values, df_label['y'].values), method='L-BFGS-B', jac=None,
-                   options={'gtol': 1e-6, 'disp': True})
-    print(res.x)
+                   options={'gtol': 1e-7, 'disp': Debug_plot})
     curvature = 2/res.x[2]
-    print(f'RES: center_x={res.x[0]}, center_y={res.x[1]}, R={res.x[2]}, curvature={curvature}')
+    print(f'RES: center_x={res.x[0]} center_y={res.x[1]} R={res.x[2]}, R={res.x[2]} curvature={curvature} using {df_label.shape[0]} points')
     x_circle, y_circle = res.x[0] + res.x[2]*np.cos(phi), res.x[1] + res.x[2]*np.sin(phi)
     return x_circle, y_circle, curvature
 
@@ -305,7 +307,7 @@ def fit_curve(par0, props, coords):
     res = dict({'x': par0})
     res = minimize(fit_curve_err, x0=par0, args=(props, coords), method='Nelder-Mead'
                    )
-                   # options={'gtol': 1e-4, 'disp': False})
+                   # options={'gtol': 1e-4, 'disp': Debug_plot})
     d = props['d']
     print(res['x'])
     tail_y, B0, l = res['x']
@@ -374,7 +376,7 @@ if __name__ == "__main__":
         plt.figure(figsize=(8*picScale, 1.3*picScale))
         x = res['Points_0'].values
         y = res['Points_1'].values
-        df, centers = find_df_centers(res)
+        df, centers = find_df_centers(res, width=0.1)
         # draw all centers
         # for index, row in centers.iterrows():
         #     x_circle, y_circle, curvature = compute_curvature(index, row, df, props["a"])

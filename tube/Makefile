@@ -32,7 +32,7 @@ convert_single_tar:
 #    ./convert_single 10 30 1 0
 convert_reduce_maxl:
 	rm -rf convert_reduce_maxlevel
-	qcc  $(CFLAG) convert_single_reduce_maxlevel.c -lm -g -o convert_reduce_maxlevel
+	qcc  $(CFLAG) convert_single_reduce_maxlevel.c -lm -o convert_reduce_maxlevel
 #    ./convert_reduce_maxlevel 10 30 1 0
 tube_bp_rel:
 #	qcc  $(CFLAG) tube_bp_rel.c -lm
@@ -40,16 +40,3 @@ tube_bp_rel:
 	CC99='mpicc -std=c99' qcc -O2 -D_MPI=1 -events tube_bp_rel.c -lm
 #	mpirun -np 8 ./a.out
 #   > out_bp 2> log_bp
-tube_bp_rel_buggy:
-#	qcc  $(CFLAG) tube_bp_rel_buggy.c -lm
-#	./a.out > out_bp 2> log_bp
-	CC99='mpicc -std=c99' qcc -O2 -D_MPI=1 -events tube_bp_rel_buggy.c -lm
-#	mpirun -np 8 ./a.out
-#   > out_bp 2> log_bp
-tube_bp_rel_server:
-	path="$(HOME)/wbasilisk/tube"
-	rsync -av tube_bp_rel.c Makefile h:$(path)
-#	ssh h "source /home/e.sharaborin/.bash_profile && cd  ~/wbasilisk/tube/ && make tube_bp_rel &"
-#	ssh h "cd ~/wbasilisk/tube/ && tail -n 20 log_bp"
-#	clear && echo -en '\''\e[3J'\'''
-#	ssh h "while sleep 5; do cd ~/wbasilisk/tube/; tail -n 5 log_bp; done &"
