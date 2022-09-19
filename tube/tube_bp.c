@@ -86,13 +86,14 @@ int LEVEL = 7;
 int init_i = 1; // each restart it is equal to 1 it smoothly changes the maxlevel from init_maxlevel to target maxlevel
 int adapt_method = 0; // a dummy variable
 int snapshot_i = 100;
-double fseps = 1e-3, ueps = 1e-2;
+double timeend = 100000;
+double fseps = 1e-5, ueps = 1e-4;
 double TOLERANCE_P = 1e-5, TOLERANCE_V = 1e-5;
 bool ellipse_shape = false, cylinder_shape = true;
 
 int main (int argc, char * argv[]) {
-    fprintf(ferr, "./a.out maxlevel bubcase adapt_method iter_fp lDomain dt_vtk snapshot_i\n");
-//    maxruntime (&argc, argv);
+    fprintf(ferr, "./a.out maxlevel bubcase adapt_method iter_fp lDomain dt_vtk snapshot_i --maxruntime H:M:S\n");
+    maxruntime (&argc, argv);
     eta_s = 1e-5;
     TOLERANCE = 1e-6;
     NITERMIN = 1;
@@ -143,6 +144,8 @@ int main (int argc, char * argv[]) {
         TOLERANCE_P = atof (argv[8]);
     if (argc > 9)
         TOLERANCE_V = atof (argv[9]);
+    if (argc > 10)
+        timeend = atof(argv[10]);
     size (lDomain);
     origin (0., -L0/2., -L0/2.);
     init_grid (1 << LEVEL);
@@ -169,7 +172,7 @@ int main (int argc, char * argv[]) {
     }
     x_init = 1.7*l_bub;
 
-    fprintf(ferr,"BP:             eta_s=%g,     DT=%g\n"
+    fprintf(ferr,"BP:             eta_s=%g,     DT=%g timeend=%g\n"
                  "Solver:         NITERMIN=%d   NITERMAX=%d      TOLERANCE_P=%g TOLERANCE_V=%g TOLERANCE=%g  relative_residual_poisson=%d relative_residual_viscous=%d\n"
                  "OUTPUT:         dt_vtk=%g number of procs=%d\n"
                  "ADAPT:          minlevel=%d,  maxlevel=%d      adapt_meth=%d fseps=%g ueps=%g\n"
@@ -177,7 +180,7 @@ int main (int argc, char * argv[]) {
                  "Properties(SI): Mu1=%g Mu2=%g Rho1=%g Rho2=%g  Sigma=%g G=%g UMEAN=%g\n"
                  "Apparatus:      diam_tube=%g  tube_length=%g\n"
                  "Bubble:         Vd=%g deq=%g  ellipse_shape=%d cylinder_shape=%d\n",
-                 eta_s, DT,
+                 eta_s, DT, timeend,
                  NITERMIN, NITERMAX, TOLERANCE_P, TOLERANCE_V, TOLERANCE, relative_residual_poisson, relative_residual_viscous,
                  dt_vtk, npe(),
                  minlevel, maxlevel, adapt_method, fseps, ueps,
@@ -507,4 +510,6 @@ event adapt (i++)
     if (i % 10 == 0 || i < 5) MinMaxValues ({u, p}, eps_arr2);
 }
 
-event stop(t=L0/Umean);
+event stop(t=timeend){
+    event("snapshot");
+};
