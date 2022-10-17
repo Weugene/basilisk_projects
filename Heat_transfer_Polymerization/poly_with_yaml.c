@@ -277,11 +277,73 @@ void solid_func(scalar fs, face vector fs_face){
 
 /*
  * Here we solve the problem:
- * $\nabla\cdot\left(\mu\left(\mathbf{u}+\mathbf{u}^T\right)\right) = \chi\frac{u - U}{\eta}$
+ * $- \frac{1}{\rho}\nabla p + \nabla\vdot\left(\mu\left(\mathbf{u}+\mathbf{u}^T\right)\right) - \chi\frac{\mathbf{u} - \mathbf{U}}{\eta} = 0$
+ * $\nabla \vdot \mathbf{u} = 0$
  * in order to set physical initial conditions which are consistent with the boundary conditions
+ * Here we set homogeneous medium. It is already defined scalar u.
  */
-void velocity_initialization(scalar u, face vector muv, double eta_s){
+void velocity_initialization(scalar u, scalar fs, double DT_loc){
+//    trash ({uf});
+//    foreach_face()
+//        uf.x[] = fm.x[]*face_value (u.x, 0);
+//
+//    /**
+//    We update fluid properties. */
+//
+//    foreach() {
+//        if (rho1 || rho2){
+//            rhov[] = var_hom(1, fs_smoothed[], rho1, rho2, rho3);
+//        }
+//    }
+//    foreach_face(){
+//        double ff1 = 1;
+//        double ff2 = (fs_smoothed[] + fs_smoothed[-1])/2.; //solid
+//        if (mu1 || mu2) {
+//            double Tf = (T[] + T[-1])/2.;
+//            double alphaf = (alpha_doc[] + alpha_doc[-1])/2.;
+//            face vector muv = mu;
+//            muv.x[] = fm.x[] * mu(ff1, ff2, alphaf, Tf);
+//        }
+//    }
+    /**
+    We set the initial timestep (this is useful only when restoring from
+    a previous run). */
 
+//    dtmax = DT_loc;
+//    event ("stability");
+//    bool converged = true;
+//    while(converged){
+////        event ("set_dtmax");
+////        event ("stability");
+//        /**
+//        When using smearing of the density jump, we initialise *sf* with the
+//        vertex-average of *f*. */
+////        event ("tracer_advection");
+////        event ("properties");
+//        /**
+//        The viscous term is computed implicitly. We first add the pressure
+//        gradient and acceleration terms, as computed at time $t$, then call
+//        the implicit viscosity solver. We then remove the acceleration and
+//        pressure gradient terms as they will be replaced by their values at
+//        time $t+\Delta t$. */
+//
+//        if (constant(mu.x) != 0.) {
+//            correction (DT_loc);
+//            mgu = viscosity (u, mu, rho, DT_loc, mgu.nrelax);
+//            correction (-DT_loc);
+//        }
+//        /**
+//        To get the pressure field at time $t + \Delta t$ we project the face
+//        velocity field (which will also be used for tracer advection at the
+//        next timestep). Then compute the centered gradient field *g*. */
+//        mgp = project (uf, p, alpham, DT_loc, mgp.nrelax);
+//        centered_gradient (p, g); //calc gf^{n+1}, g^{n+1} using p^{n+1}, a^{n+1/2}
+//        /**
+//        We add the gradient field *g* to the centered velocity field. */
+//        correction (DT_loc);
+////        event ("properties");
+////        event("vtk_file");
+//    }
 }
 
 event init (t = 0) {
@@ -308,7 +370,7 @@ event init (t = 0) {
             filter_scalar(f, f_smoothed);
             filter_scalar(fs, fs_smoothed);
             foreach() {
-                T[] = var_hom(f[], fs[], Tin, Tam, T_solid);
+                T[] = var_hom(f_smoothed[], fs_smoothed[], Tin, Tam, T_solid);
                 alpha_doc[] = 0;
                 u.x[] = u_BC*(1 - fs[]); //u_BC*f[];// 0; // penalization will work
                 u.y[] = 0;
@@ -320,21 +382,18 @@ event init (t = 0) {
             foreach_face(){
                 double ff1 = (f_smoothed[] + f_smoothed[-1])/2.;
                 double ff2 = (fs_smoothed[] + fs_smoothed[-1])/2.; //solid
-                if (kappa1 || kappa2)
-                    kappav.x[] = var_hom(ff1, ff2, kappa1, kappa2, kappa3);
                 if (mu1 || mu2) {
                     double Tf = (T[] + T[-1])/2.;
                     double alphaf = (alpha_doc[] + alpha_doc[-1])/2.;
                     face vector muv = mu;
                     muv.x[] = fm.x[] * mu(ff1, ff2, alphaf, Tf); //((1 - clamp(fs,0.,1.)) < SEPS);//
                 }
+                if (kappa1 || kappa2)
+                    kappav.x[] = var_hom(ff1, ff2, kappa1, kappa2, kappa3);
             }
-//            event("report");
-//            mgstats mgu;
-//            mgu = viscosity (u, mu, rho, 0.1, nrelax = 4);
-//            fprintf (ferr, "mgu: i=%d nrelax=%d sum=%g", mgu.i, mgu.nrelax, mgu.sum);
         } while (adapt_wavelet({f_smoothed, fs_smoothed}, (double []){feps, feps}, maxlevel=maxlevel, minlevel=minlevel).nf != 0 && ++it <= 10);
-            event("report");
+//        velocity_initialization(u, fs, DT_loc=0.001);
+        event("report");
     }
     else
     {
@@ -404,7 +463,12 @@ unity. */
 
 event acceleration (i++) {
   if (gravityModule){
-  	foreach_face()	av.x[] = Ggrav_ndim.x;
+    if (Ggrav_ndim.x)
+  	    foreach_face(x)	av.x[] = Ggrav_ndim.x;
+    if (Ggrav_ndim.y)
+        foreach_face(y)	av.y[] = Ggrav_ndim.y;
+    if (Ggrav_ndim.z)
+        foreach_face(z)	av.z[] = Ggrav_ndim.z;
   }
 }
 
@@ -789,24 +853,24 @@ double time_prev = 0;
 
 //event vtk_file (i += 1)
 //event vtk_file (t += dt_vtk)
-//event vtk_file (i += 1000)
-//{
-//    char name[300];
-//    sprintf (name, "vtk_%s", subname);
-//    scalar l[], dpdx[];
-//    foreach() {
-//        l[] = level;
-//        dpdx[] = (p[1] - p[-1])/(2*Delta);
-//    }
-//
-//#ifdef DEBUG_BRINKMAN_PENALIZATION
-//    output_vtu_MPI(name, (iter_fp) ? t + dt : 0, list = (scalar *) {T, alpha_doc, p, dpdx, fs, f, l, rhov, mu_cell, my_kappa, which_meth, Phi_visc},
-//    vlist = (vector *) {u, g, uf, av, dbp, total_rhs, residual_of_u, divtauu, fs_face});
-//#else
-//    output_vtu_MPI(name, (iter_fp) ? t + dt : 0, list = (scalar *) {T, dpdx, alpha_doc, p, fs, f, l, rhov, mu_cell, m, Phi_visc},
-//    vlist = (vector *) {u, av});
-//#endif
-//}
+event vtk_file (i += 1000)
+{
+    char name[300];
+    sprintf (name, "vtk_%s", subname);
+    scalar l[], dpdx[];
+    foreach() {
+        l[] = level;
+        dpdx[] = (p[1] - p[-1])/(2*Delta);
+    }
+
+#ifdef DEBUG_BRINKMAN_PENALIZATION
+    output_vtu_MPI(name, (iter_fp) ? t + dt : 0, list = (scalar *) {T, alpha_doc, p, dpdx, fs, f, l, rhov, mu_cell, my_kappa, which_meth, Phi_visc},
+    vlist = (vector *) {u, g, uf, av, dbp, total_rhs, residual_of_u, divtauu, fs_face});
+#else
+    output_vtu_MPI(name, (iter_fp) ? t + dt : 0, list = (scalar *) {T, dpdx, alpha_doc, p, fs, f, l, rhov, mu_cell, m, Phi_visc},
+    vlist = (vector *) {u, av});
+#endif
+}
 
 
 event report(i += report_i){

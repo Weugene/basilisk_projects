@@ -591,7 +591,12 @@ unity. */
 
 event acceleration (i++) {
   if (gravityModule){
-  	foreach_face(x)	av.x[] = Ggrav_ndim;
+      if (Ggrav_ndim.x)
+  	    foreach_face(x)	av.x[] = Ggrav_ndim.x;
+    if (Ggrav_ndim.y)
+        foreach_face(y)	av.y[] = Ggrav_ndim.y;
+    if (Ggrav_ndim.z)
+        foreach_face(z)	av.z[] = Ggrav_ndim.z;
   }
 }
 
