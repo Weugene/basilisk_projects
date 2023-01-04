@@ -23,6 +23,7 @@ out*
 log_*
 out_*
 log-*
+err*
 *.log
 *log
 .idea
@@ -76,7 +77,7 @@ mass
 *.mp4
 *.mpg
 *.avi
-#*.gif
+*.gif
 *.wmv
 *.aux
 *.bbl

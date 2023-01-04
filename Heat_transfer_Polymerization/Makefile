@@ -1,9 +1,12 @@
 CFLAGS=-DDUMP=1 -Wall -O2 -events
-CLIBS=-L/usr/local/lib/ -L/home/e.sharaborin/opt/lib/ \
--L/trinity/home/e.sharaborin/opt/lib \
--L/trinity/home/e.sharaborin/opt/trinity/shared/opt/rh/gcc-8.3.0/lib64 \
--lcyaml -lm
-C_INCLUDE_PATH=-I$(HOME)/opt/include
+CLIBS=-lcyaml -lm
+CXXFLAGS:=-I/usr/local/include\
+		  -I$(HOME)/opt/include
+LDFLAGS:=-L/usr/local/lib/ \
+		 -L/home/e.sharaborin/opt/lib/ \
+		 -L/trinity/home/e.sharaborin/opt/lib \
+		 -L/trinity/home/e.sharaborin/opt/trinity/shared/opt/rh/gcc-8.3.0/lib64
+
 Tcyl=330
 Tin=330
 maxlevel=8
@@ -39,7 +42,7 @@ $(cyl_x) $(Nb) $(Ncx) $(Ncy) $(TOLERANCE_P) $(TOLERANCE_V) $(TOLERANCE_T) \
 $(Htr) $(Arrhenius_const) $(Ea_by_R) $(dev_r) $(dev_x) $(dev_y) $(shift_x) $(shift_y) $(non_saturated) $(ind)
 
 run:=mpirun -np $(parallel)  ./a.out $(args) > out$(ind) 2> log$(ind)
-compile:=CC99='mpicc -std=c99' qcc -O3 -D_MPI=1 -events $(C_INCLUDE_PATH)
+compile:=CC99='mpicc -std=c99' qcc -O3 -D_MPI=1 -events $(CXXFLAGS) $(LDFLAGS)
 remove:=rm -rf .qcc*
 
 all: heat_polymerization_front
@@ -53,7 +56,8 @@ heat_polymerization_front:
 poly_with_yaml:
 	$(remove)
 	$(compile)  poly_with_yaml.c $(CLIBS)
-	mpirun -np 2  ./a.out test.yml > out_yaml_$(ind) 2> log_yaml_$(ind)
+	mpirun -np 2  ./a.out test.yml
+# > out_yaml_$(ind) 2> log_yaml_$(ind)
 debug:
 	mpirun -np 2 xterm -hold -e gdb -ex run --args ./a.out $(args)
 convert:

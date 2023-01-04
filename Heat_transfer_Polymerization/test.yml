@@ -33,9 +33,9 @@ non_dimensional_vars:
   dev_r: 0
   develx: 0
   devely: 0
-  Nb: 9
-  Ncx: 5 #5
-  Ncy: 11 #6
+  Nb: 5
+  Ncx: 3 #5
+  Ncy: 5 #6
   non_saturated: 0
 
 num_params:

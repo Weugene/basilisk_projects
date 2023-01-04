@@ -1,29 +1,27 @@
-#define BRINKMAN_PENALIZATION 1
-#define DEBUG_MINMAXVALUES
-#define DEBUG_BRINKMAN_PENALIZATION
-#define DEBUG_MODE_TENSION
-#define DEBUG_MODE_POISSON
-#define DEBUG_MULTIGRID
+#define BRINKMAN_PENALIZATION 1 //(penalization.h)
+#define DEBUG_MINMAXVALUES // MinMaxValues: name, min, max, eps
+#define DEBUG_BRINKMAN_PENALIZATION // visc: maxres, maxb, maxres/maxb. Vars: utau, dbp, total_rhs, residual_of_u, divtauu, utau, grad_utau_n,
+#define DEBUG_MODE_TENSION // my_kappa = \kappa*\sigma
+#define DEBUG_MODE_POISSON // Projection MAX{div uf}: Vars: residual_of_p, divutmp, divutmpAfter
+#define DEBUG_MULTIGRID // Residual. Print: maxres, maxb, maxres/maxb
 #define REACTION_MODEL REACTION_MODEL_NON_AUTOCATALYTIC
-//#define IGNORE_SOLID_MU
-//#define DEBUG_OUTPUT_VTU_MPI
-#define FILTERED
-#define JACOBI 1
-//#define CORRECT_UF_FLUXES 1
-//#define STICKY_SOLID 1
-#define CURV_PARTSTR 1// use Petr Karnakov's module
-#define RELATIVE_RES
+//#define IGNORE_SOLID_MU // homogenization: neglect solid
+//#define DEBUG_OUTPUT_VTU_MPI // print: iter_fp, t, dt
+#define FILTERED // "smearing" of the density/viscosity (three-phase-rheology)
+#define JACOBI 1 // Vars: c
+//#define CORRECT_UF_FLUXES 1 // uf correction
+//#define STICKY_SOLID 1 // fs>0: uf=Uf
+//#define CURV_PARTSTR 1// use Petr Karnakov's module
+#define RELATIVE_RES // use additional convergence check: relative residual
 #define EPS_MAXA 2 // adapt based on Max-Min value
-//#define PRINT_ALL_VALUES
-#ifdef DEBUG_MODE_TENSION
+#ifdef DEBUG_MODE_TENSION // my_kappa=sigma*kappa
 scalar f_hat[];
 #endif
-//#define STOKES
-//#define T_DIRICHLET_BC 1
+//#define STOKES // advection velocity: stokes=true
+//#define T_DIRICHLET_BC 1 // Dirichlet BC for solids
 
 scalar mu_cell[];
-scalar Phi_visc[], Phi_src[];
-scalar which_meth[];
+scalar Phi_visc[], Phi_src[]; // viscous heat, source term in energy equation
 scalar un[];
 face vector fs_face[];
 face vector av[];
@@ -35,7 +33,6 @@ static coord vel_s = {0, 0, 0};
 #include "rheology_model.h"
 #include "tension.h"
 #include "utils-weugene.h"
-//#include "output_vtu_foreach.h"
 #include "output_htg.h"
 #include "tag.h"
 
@@ -51,17 +48,19 @@ double cyl_diam, domain_size, dist_x, dist_y, cyl_x, front_x, Rbmin, Rbmax;
 double dev_r, develx, devely;
 double shift_x, shift_y;
 int non_saturated;
+int is_front; // mode for resin front. 1: bubbles without front, 2: bubbles with front, 3: no bubbles (non_saturated)
 bool gravityModule = false;
 int Ncx, Ncy; //number of cylinders along Ox, Oy
 int Nb; //number of bubbles
-double layer_velocity, layer_heat;
-double x_init = 2;
+double layer_velocity; // 1/sqrt(Re)
+double layer_heat; // 1/sqrt(Pe)
 int maxlevel = 9;
 int minlevel = 5;
 int LEVEL = 7;
 double maxDT;
-double mindelta;
-double mu_max = 0, nu_max = 0;
+double mindelta; // L0/2^maxlevel
+double mu_max = 0; // maximum dynamic viscosity
+doubel nu_max = 0; // maximum kinematic viscosity
 int adapt_method = 1; // 0 - traditional, 1 - using limitation, 2 - using array for maxlevel
 double feps = 1e-10, ueps = 1e-2, rhoeps = 1e-10, Teps = 3e-2, aeps = 3e-2, mueps=1e-2;
 double TOLERANCE_P = 1e-7, TOLERANCE_V = 1e-8, TOLERANCE_T = 1e-7;
@@ -126,7 +125,7 @@ pf[left]   = neumann(0.);
 f[left]    = dirichlet(1);
 T[left]    = dirichlet(Tin);
 fs[left]   = dirichlet(0);
-alpha_doc[left] = dirichlet(0);//inflow is fresh resin
+alpha_doc[left] = dirichlet(0); // inflow is fresh resin
 
 u.n[right] = neumann(0);
 p[right]   = dirichlet(0);
@@ -144,8 +143,7 @@ alpha_doc[right] = neumann(0);
 #endif
 
 double sphere(double x, double y, double z, coord center, double radius) {
-    return ( sq(x - center.x) + sq (y - center.y) + sq (z - center.z)
-             - sq (radius));
+    return ( sq(x - center.x) + sq(y - center.y) + sq(z - center.z) - sq(radius) );
 }
 
 double bubbles (double x, double y, double z)
@@ -188,16 +186,18 @@ double bubbles (double x, double y, double z)
 // generating volume fraction f
     double phi = HUGE;
     for (int i = 0; i < Nb; i++) {
-        //printf("i=%d x=%g y=%g R=%g\n", i, centers[i].x, centers[i].y, R[i] );
+        // printf("i=%d x=%g y=%g R=%g\n", i, centers[i].x, centers[i].y, R[i] );
         foreach_dimension()
         pnt_dist.x = mypoint.x - centers[i].x;
         phi = min(phi, (mynorm(pnt_dist) - R[i]));
     }
     free(R);
     free(centers);
-    return min(phi, front_x - x); // with front
-//    return phi; // no front
-//    return (non_saturated > 0)? front_x - x : 1; // with front
+    switch (is_front) {
+        case 1: return phi; // no front
+        case 2: return min(phi, front_x - x); // bubbles with front
+        case 3: return (non_saturated > 0)? front_x - x : 1; // no bubbles
+    }
 }
 double xmin_center = 0, xmax_center = 0;
 void calc_centers(coord * centers, double * R){
@@ -413,10 +413,10 @@ event init (t = 0) {
             exit(EXIT_FAILURE);
         }
         int k = 0;
-        while (fgets(result, sizeof(result), cmd)) {
-            printf ("%s", result);
-            file_timesteps[k++] = atof(result);
-        }
+//        while (fgets(result, sizeof(result), cmd)) {
+//            printf ("%s", result);
+//            file_timesteps[k++] = atof(result);
+//        }
         cmd_str[0] = 0;
         strcpy(cmd_str, "grep \"vtk: iter_fp\" ");
         strcat(cmd_str, logname);
@@ -429,8 +429,8 @@ event init (t = 0) {
             exit(EXIT_FAILURE);
         }
         fgets(result, sizeof(result), cmd);
-        iter_fp = atoi(result) + 1;
-        fprintf(ferr, "Read last iter_fp: %d, new iter_fp: %d\n", atoi(result), iter_fp);
+//        iter_fp = atoi(result) + 1;
+//        fprintf(ferr, "Read last iter_fp: %d, new iter_fp: %d\n", atoi(result), iter_fp);
         pclose(cmd);
     }
 }
@@ -463,12 +463,7 @@ unity. */
 
 event acceleration (i++) {
   if (gravityModule){
-    if (Ggrav_ndim.x)
-  	    foreach_face(x)	av.x[] = Ggrav_ndim.x;
-    if (Ggrav_ndim.y)
-        foreach_face(y)	av.y[] = Ggrav_ndim.y;
-    if (Ggrav_ndim.z)
-        foreach_face(z)	av.z[] = Ggrav_ndim.z;
+    foreach_face()	av.x[] = Ggrav_ndim.x;
   }
 }
 
@@ -853,24 +848,24 @@ double time_prev = 0;
 
 //event vtk_file (i += 1)
 //event vtk_file (t += dt_vtk)
-event vtk_file (i += 1000)
-{
-    char name[300];
-    sprintf (name, "vtk_%s", subname);
-    scalar l[], dpdx[];
-    foreach() {
-        l[] = level;
-        dpdx[] = (p[1] - p[-1])/(2*Delta);
-    }
-
-#ifdef DEBUG_BRINKMAN_PENALIZATION
-    output_vtu_MPI(name, (iter_fp) ? t + dt : 0, list = (scalar *) {T, alpha_doc, p, dpdx, fs, f, l, rhov, mu_cell, my_kappa, which_meth, Phi_visc},
-    vlist = (vector *) {u, g, uf, av, dbp, total_rhs, residual_of_u, divtauu, fs_face});
-#else
-    output_vtu_MPI(name, (iter_fp) ? t + dt : 0, list = (scalar *) {T, dpdx, alpha_doc, p, fs, f, l, rhov, mu_cell, m, Phi_visc},
-    vlist = (vector *) {u, av});
-#endif
-}
+//event vtk_file (i += 1000)
+//{
+//    char name[300];
+//    sprintf (name, "vtk_%s", subname);
+//    scalar l[], dpdx[];
+//    foreach() {
+//        l[] = level;
+//        dpdx[] = (p[1] - p[-1])/(2*Delta);
+//    }
+//
+//#ifdef DEBUG_BRINKMAN_PENALIZATION
+//    output_vtu_MPI(name, (iter_fp) ? t + dt : 0, list = (scalar *) {T, alpha_doc, p, dpdx, fs, f, l, rhov, mu_cell, my_kappa, Phi_visc},
+//    vlist = (vector *) {u, g, uf, av, dbp, total_rhs, residual_of_u, divtauu, fs_face});
+//#else
+//    output_vtu_MPI(name, (iter_fp) ? t + dt : 0, list = (scalar *) {T, dpdx, alpha_doc, p, fs, f, l, rhov, mu_cell, m, Phi_visc},
+//    vlist = (vector *) {u, av});
+//#endif
+//}
 
 
 event report(i += report_i){
@@ -886,7 +881,7 @@ event report(i += report_i){
     }
     dissipation (Phi_visc, u, mu = mu);
 
-    output_htg(path, prefix, (iter_fp) ? t + dt : 0, (scalar *) {T, alpha_doc, p, dpdx, fs, f, l, rhov, mu_cell, my_kappa, which_meth, Phi_visc, Phi_src},
+    output_htg(path, prefix, (iter_fp) ? t + dt : 0, (scalar *) {T, alpha_doc, p, dpdx, fs, f, l, rhov, mu_cell, my_kappa, Phi_visc, Phi_src},
            (vector *){u, g, uf, av, dbp, total_rhs, residual_of_u, divtauu, fs_face});
 }
 

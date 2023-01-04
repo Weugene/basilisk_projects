@@ -22,8 +22,10 @@ face vector fs_face=zerof;
 #include "utils-weugene.h"
 #include "utils.h"
 #include "lambda2.h"
-#if 0
-    #include "output_vtu_foreach.h"
+
+#if 1
+    #include "output_htg.h"
+//    #include "output_vtu_foreach.h"
 #else
     int iter_fp = 0;
 #endif
