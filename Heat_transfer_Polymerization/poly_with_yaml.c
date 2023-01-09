@@ -60,7 +60,7 @@ int LEVEL = 7;
 double maxDT;
 double mindelta; // L0/2^maxlevel
 double mu_max = 0; // maximum dynamic viscosity
-doubel nu_max = 0; // maximum kinematic viscosity
+double nu_max = 0; // maximum kinematic viscosity
 int adapt_method = 1; // 0 - traditional, 1 - using limitation, 2 - using array for maxlevel
 double feps = 1e-10, ueps = 1e-2, rhoeps = 1e-10, Teps = 3e-2, aeps = 3e-2, mueps=1e-2;
 double TOLERANCE_P = 1e-7, TOLERANCE_V = 1e-8, TOLERANCE_T = 1e-7;
@@ -455,11 +455,6 @@ event set_dtmax (i++) {
     DT = min(DT, maxDT);
     fprintf(ferr, "TIMEMAX i=%d set_dtmax: tnext= %g, t=%g, DT=%g, dt=%g\n", i, tnext, t, DT, dt);
 }
-
-
-/**
-The gravity vector is aligned with the channel and viscosity is
-unity. */
 
 event acceleration (i++) {
   if (gravityModule){
