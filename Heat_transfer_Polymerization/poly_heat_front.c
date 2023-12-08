@@ -467,6 +467,7 @@ double geometry(double x, double y, double z){
 	}
     return phi;
 }
+
 void solid_func(scalar fs, face vector fs_face){
     vertex scalar phi[];
     foreach_vertex() {

@@ -28,13 +28,13 @@ event init (i = 0)
 }
 
 event plot (t<tmax;t+=0.1) {
-printf("set title 'Vague sur une plage 1D ----- t= %.1lf '\n"
-"p[%g:%g][-0.1:1.5]  '-' u 1:($2+$4) t'free surface (m)' w l lt 3,"
-"'' u 1:3 t'velocity (m/s)' w l lt 4,"
-"'' u 1:4 t'topo' w l lt 1\n",t,X0+1,X0+L0);
-foreach()
-printf (" %g %g %g %g %g \n", x, h[], u.x[], zb[], t);
-printf ("e\n\n");
+    printf("set title 'Vague sur une plage 1D ----- t= %.1lf '\n"
+    "p[%g:%g][-0.1:1.5]  '-' u 1:($2+$4) t'free surface (m)' w l lt 3,"
+    "'' u 1:3 t'velocity (m/s)' w l lt 4,"
+    "'' u 1:4 t'topo' w l lt 1\n",t,X0+1,X0+L0);
+    foreach()
+        printf (" %g %g %g %g %g \n", x, h[], u.x[], zb[], t);
+    printf ("e\n\n");
 }
 
 
