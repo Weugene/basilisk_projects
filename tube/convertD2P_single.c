@@ -1,33 +1,13 @@
-/*#define BRINKMAN_PENALIZATION 1
-#define DEBUG_MODE_POISSON
-#define FILTERED
-#define JACOBI 1
-#define mu(f)  (1./(clamp(f,0,1)*(1./mu1 - 1./mu2) + 1./mu2))
-
-scalar fs[];
-scalar omega[];
-scalar l2[];
-#include "grid/octree.h"
-#include "../src_local/centered-weugene.h"
-#include "two-phase.h"
-#include "tension.h"
-#include "../src_local/utils-weugene.h"
-#include "utils.h"
-#include "lambda2.h"
-#include "../src_local/output_vtu_foreach.h"
-#include "maxruntime.h"
-*/
-
 //No centered.h
 #include "grid/octree.h"
 #include "run.h"
 #include "timestep.h"
 #include "poisson.h"
-#include "utils.h"
+//#include "utils.h"
 #include "lambda2.h"
-//#include "output_vtu_foreach_original.h"
 #include "utils-weugene.h"
 #include "output_htg.h"
+#include <ctype.h>
 scalar fs[], f[], p[];
 vector u[];
 scalar l[], omega[], l2[];
@@ -44,7 +24,6 @@ attribute {
 #endif
 //end No centered.h
 
-#include <ctype.h>
 
 double length_min = 1e+30, length_max = -1e+30, length = 1;
 double myt = 0, shiftm = 30, shiftp = 30;
@@ -87,7 +66,7 @@ Cases cases[28]={
         {0.0455, 0.2179e-9, 2.575, 3.165, 1e-9},  // 24 Air-Water Ud, delta - garbage
         {0.056,  0.2179e-9, 3.09,  4.65,   1e-9},  // 25 Air-Water Ud, delta - garbage
         {0.065,  0.2179e-9, 3.602, 5.40,   1e-9},  // 26 Air-Water Ud, delta - garbage
-        {0.074,  0.2179e-9, 4.117, 6.17,   1e-9}  // 27 Air-Water Ud, delta - garbage
+        {0.074,  0.2179e-9, 4.117, 6.17,   1e-9}  // 27 Air-Water Ud, delta - garbage Paper: 3
 };
 
 double Ca; // Ca = Mu*Ud/sigma
