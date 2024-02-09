@@ -1,28 +1,21 @@
-//Bouncing Saint-Venant bump
-#include "conservation.h"
-scalar h[];
-vector q[];
-scalar * scalars = {h};
-vector * vectors = {q};
-#define LEVEL 7
+#include "saint-venant.h"
 
-double G = 1.;
+int LEVEL = 7;
 
-void flux (const double * s, double * f, double e[2])
+int main (int argc, char * argv[])
 {
-  double h = s[0], qx = s[1], u = qx/h, qy = s[2];
-  f[0] = qx;
-  f[1] = qx*u + G*h*h/2.;
-  f[2] = qy*u;
-  // min/max eigenvalues
-  double c = sqrt(G*h);
-  e[0] = u - c; // min
-  e[1] = u + c; // max
+  if (argc > 1)
+    LEVEL = atoi (argv[1]);
+  origin (-0.5, -0.5);
+  init_grid (1 << LEVEL);
+  run();
 }
+
 event init (i = 0)
 {
+  double a = 1., b = 200.;
   foreach()
-    h[] = 0.1 + 1.*exp(-200.*(x*x + y*y));
+    h[] = 0.1 + a*exp(- b*(x*x + y*y));
 }
 
 event logfile (i++) {
@@ -30,23 +23,18 @@ event logfile (i++) {
   fprintf (stderr, "%g %d %g %g %.8f\n", t, i, s.min, s.max, s.sum);
 }
 
-event graphs (i++) {
-  stats s = statsf (h);
-  fprintf (stderr, "%g %g %g\n", t, s.min, s.max);
-}
+event outputfile (t <= 2.5; t += 2.5/8) {
+#if !_MPI
+  static int nf = 0;
+  printf ("file: eta-%d\n", nf);
+  output_field ({eta}, linear = true);
 
-event end (t = 4) {
-  printf ("i = %d t = %g\n", i, t);
-}
-
-event outputfile (t+= 4./300.) {
-
-    output_ppm (h, linear = true);
-    scalar l[];
-    foreach()
+  scalar l[];
+  foreach()
     l[] = level;
-    static FILE * fp = fopen ("grid.ppm", "w");
-    output_ppm (l, fp, min = 0, max = LEVEL);
+  printf ("file: level-%d\n", nf++);
+  output_field ({l});
+
   /* check symmetry */
   foreach() {
     double h0 = h[];
@@ -58,20 +46,23 @@ event outputfile (t+= 4./300.) {
     point = locate (x, -y);
     assert (fabs(h0 - h[]) < 1e-12);
   }
+#endif
+    dump (file = "dump");
 }
 
-#if TREE
+#if _MPI
+event image(i++)
+{
+  scalar pid[];
+  foreach()
+    pid[] = pid();
+  static FILE * fp = fopen ("pid", "w");
+  output_ppm (pid, fp, min = 0, max = npe() - 1);
+}
+#endif
+
 event adapt (i++) {
   astats s = adapt_wavelet ({h}, (double[]){1e-3}, LEVEL);
   fprintf (stderr, "# refined %d cells, coarsened %d cells\n", s.nf, s.nc);
 }
-#endif
 
-
-
-int main()
-{
-    origin (-0.5, -0.5);
-    init_grid (1 << LEVEL);
-    run();
-}

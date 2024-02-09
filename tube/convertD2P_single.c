@@ -3,7 +3,7 @@
 #include "run.h"
 #include "timestep.h"
 #include "poisson.h"
-//#include "utils.h"
+#include "utils.h"
 #include "lambda2.h"
 #include "utils-weugene.h"
 #include "output_htg.h"
@@ -14,6 +14,7 @@ scalar l[], omega[], l2[];
 double rho1=1, rho2=1, mu1=1, mu2=1;
 double eta_s=1e-5; 
 int NITERMIN, NITERMAX;
+int iter_fp = 0;
 bool relative_residual_poisson=false, relative_residual_viscous=false;
 attribute {
   double sigma;
@@ -91,7 +92,7 @@ double get_double(const char *str)
     while (*str && !(isdigit(*str) || ((*str == '-' || *str == '+') && isdigit(*(str + 1)))))
         str++;
     /* The parse to a double */
-    return strtod(str, NULL);
+    return fabs(strtod(str, NULL));
 }
 
 int main (int argc, char * argv[]) {
@@ -226,21 +227,18 @@ event vtk_file (i++)
     length_max = xcg + shiftp;
     length = length_max - length_min;
 
-    fprintf (ferr, "x= %g length_min= %g length_max= %g length= %g it_fp= %d\n"
-                    "volume= %g volumeg= %g\n",
-                    xcg, length_min, length_max, length, iter_fp,
-                    volume, volumeg);
-//    unrefine ( (x < length_min || x > length_max) && level >= 1);
-//    unrefine ( (sq(y) + sq(z) > sq(0.55)) && level >= 1);
+    fprintf (
+        ferr, "x= %g length_min= %g length_max= %g length= %g it_fp= %d\n"
+            "volume= %g volumeg= %g\n",
+            xcg, length_min, length_max, length, iter_fp,
+            volume, volumeg
+    );
 
-//    char subname[80]; sprintf(subname, "dump2pvd_compressed");
-//    output_vtu_MPI( subname, myt, (scalar *) {fs, f, l, l2, omega, p}, (vector *) {u, gradp});
-    char path[]="res"; // no slash at the end!!
+    char path[] = "res"; // no slash at the end!!
     char prefix[] = "dump2pvd_compressed";
-    output_htg(path, prefix, (iter_fp) ? t + dt : 0, (scalar *) {fs, f, l, l2, omega, p, sf},
-               (vector *){u, gradp});
+    output_htg((scalar *){fs, f, l, l2, omega, p, sf}, (vector *){u, gradp}, path, prefix, iter_fp, myt);
     fprintf(ferr, "ended adapt\n");
-    count_cells(t, i);
+    count_cells(myt, i);
     return 0;
 }
 

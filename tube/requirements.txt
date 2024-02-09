@@ -1,0 +1,8 @@
+networkx
+numpy
+pandas
+matplotlib
+scipy
+statsmodels
+tsmoothie
+plotly
