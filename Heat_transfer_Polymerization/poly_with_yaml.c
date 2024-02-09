@@ -25,6 +25,9 @@ scalar Phi_visc[], Phi_src[]; // viscous heat, source term in energy equation
 scalar un[];
 face vector fs_face[];
 face vector av[];
+#ifdef DEBUG_BRINKMAN_PENALIZATION
+    vector divtauu[];
+#endif
 static coord vel_s = {0, 0, 0};
 #if CURV_PARTSTR==1
     #include "curvature_partstr.h"

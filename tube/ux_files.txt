@@ -1,1 +1,0 @@
-file 'lambda2_t=1.92127ux.png'
