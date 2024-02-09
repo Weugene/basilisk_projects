@@ -5,7 +5,7 @@ CXXFLAGS:=-I/usr/local/include\
 LDFLAGS:=-L/usr/local/lib/ \
 		 -L/home/e.sharaborin/opt/lib/ \
 		 -L/trinity/home/e.sharaborin/opt/lib \
-		 -L/trinity/home/e.sharaborin/opt/trinity/shared/opt/rh/gcc-8.3.0/lib64
+		 -L/trinity/home/e.sharaborin/opt/lib64
 
 Tcyl=330
 Tin=330
