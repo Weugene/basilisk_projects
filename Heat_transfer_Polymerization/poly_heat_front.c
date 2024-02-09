@@ -27,6 +27,9 @@ scalar which_meth[];
 scalar un[];
 face vector fs_face[];
 face vector av[];
+#ifdef DEBUG_BRINKMAN_PENALIZATION
+    vector divtauu[];
+#endif
 static coord vel_s = {0, 0, 0};
 #if CURV_PARTSTR==1
     #include "curvature_partstr.h"
@@ -591,14 +594,10 @@ The gravity vector is aligned with the channel and viscosity is
 unity. */
 
 event acceleration (i++) {
-  if (gravityModule){
-      if (Ggrav_ndim.x)
-  	    foreach_face(x)	av.x[] = Ggrav_ndim.x;
-    if (Ggrav_ndim.y)
-        foreach_face(y)	av.y[] = Ggrav_ndim.y;
-    if (Ggrav_ndim.z)
-        foreach_face(z)	av.z[] = Ggrav_ndim.z;
-  }
+    coord grav = {Ggrav_ndim, 0, 0};
+    if (gravityModule){
+        foreach_face() av.x[] = grav.x;
+    }
 }
 
 event advection_term(i++){

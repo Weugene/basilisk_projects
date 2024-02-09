@@ -1,1 +1,0 @@
-file 'lambda2_t=16.0059_uxSide.png'

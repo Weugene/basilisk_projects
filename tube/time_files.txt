@@ -1,9 +1,0 @@
-file 'fig/slice_t=0.989.png'
-duration 0.50000000000000000000
-file 'fig/slice_t=1.989.png'
-duration 3.00000000000000000000
-file 'fig/slice_t=7.989.png'
-duration 0.50000000000000000000
-file 'fig/slice_t=8.989.png'
-duration 0.50000000000000000000
-file 'fig/slice_t=9.989.png'
