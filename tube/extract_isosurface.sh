@@ -2,13 +2,13 @@
 set -x
 set -o nounset
 echo "NOTE: reads only dump2pvd_compressed file!!!"
-echo "Usage ./extract_isosurface.sh Ncase maxlevel volumetric_repr iter_cur"
+echo "Usage ./extract_isosurface.sh Ncase maxlevel iter_cur"
 module load visualization/vnc-server || continue
 bubcase=$1
 maxlevel=$2
-volumetric_repr=$3
-iter_cur=$4
-echo "in: Ncase=$bubcase maxlevel=$maxlevel volumetric_repr=$volumetric_repr"
+iter_cur=$3
+range_colorbar=$4 # 0 means automatic range for colorbar
+echo "in: Ncase=$bubcase maxlevel=$maxlevel iter_cur=$iter_cur range_colorbar=$range_colorbar"
 for f in convert_single extract_isosurface.py; do
     test -e ${f} && echo "${f} exists" || echo "${f} does not exist. exit" || exit;
 done
@@ -23,13 +23,8 @@ echo "DISPLAY=:${d}"
 
 pvd="dump2pvd.pvd"
 #subn="${pvd%.*}"
-if (($volumetric_repr==1)); then
-	subn_isovolume="save_isovolume"
-	format_out="pvtu"
-else
-	subn_isovolume="save_isosurface"
-	format_out="vtp"
-fi
+
+
 subn_pvd="dump2pvd_compressed"
 pvdconvertD2P="$subn_pvd.pvd"
 save_all_data=false
@@ -50,7 +45,6 @@ for (( i = $iter_cur; i < $length; i+=1 )); do
   # Wait for all jobs to complete
   wait
   sleep 5
-  DISPLAY=:${d} VTK_USE_LEGACY_DEPTH_PEELING=1 pvpython extract_isosurface.py -infn $pvdconvertD2P -outfn $subn_isovolume -maxlevel $maxlevel -iter $i -volumetric_repr $volumetric_repr
+  DISPLAY=:${d} VTK_USE_LEGACY_DEPTH_PEELING=1 pvpython extract_isosurface.py --infn $pvdconvertD2P --outPrefix $outPrefix --maxlevel $maxlevel --iter $i --rangeColorbar $range_colorbar
 
 done
-

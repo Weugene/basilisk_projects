@@ -5,6 +5,7 @@
 #include "poisson.h"
 #include "utils.h"
 #include "lambda2.h"
+#define DEBUG_MINMAXVALUES
 #include "utils-weugene.h"
 #include "output_htg.h"
 #include <ctype.h>
@@ -76,7 +77,8 @@ double Re; //Reynolds
 double G;
 double Umean;
 double lDomain=30, x_init = 2;
-int maxlevel = 10;
+int maxlevel_init = 0;
+int maxlevel = 8;
 int minlevel = 5;
 int LEVEL = 6;
 int adapt_method = 1; // 0 - traditional, 1 - using limitation, 2 - using array for maxlevel
@@ -190,12 +192,39 @@ int main (int argc, char * argv[]) {
 
 event init (t = 0) {
     bool success = restore (file = dump_name);
-    fprintf(ferr, "file has been read: L0=%g\n", L0);
-
+    foreach(reduction(max:maxlevel_init)){
+        maxlevel_init = max(maxlevel_init, l[]);
+    }
+    fprintf(ferr, "file has been read: L0=%g maxdepth=%d\n", L0, maxlevel_init);
     if (!success) {
         fprintf(ferr, "can't open the file %s. Missing this file, go to the next file\n", dump_name);
         return 0;
     }
+}
+
+#define ADAPT_SCALARS {fs, f, p, l, omega, l2, u}
+#define ADAPT_EPS_SCALARS {1e-4, 1e-4, 1e-2, 1e-2, 1e-2, 1e-2, 1e-2, 1e-2, 1e-2}
+event adapt (i++)
+{
+    if (maxlevel_init != maxlevel) {
+        double eps_arr[] = ADAPT_EPS_SCALARS;
+        MinMaxValues (ADAPT_SCALARS, eps_arr);
+        int it = 1;
+        astats s;
+        do {
+            fprintf(ferr, "iteration=%d\n", it);
+            s = adapt_wavelet (
+                    slist=ADAPT_SCALARS,
+                    max=(double[]) ADAPT_EPS_SCALARS,
+                    maxlevel=maxlevel,
+                    minlevel=1
+            );
+            fprintf(ferr, "Adaptation: nf=%d nc=%d\n", s.nf, s.nc);
+            if (s.nf == 0  || it > 5) break;
+            it++;
+        } while(1);
+    }
+    fprintf(ferr, "adapt with maxlevel=%d maxdepth=%d\n", maxlevel, grid->maxdepth);
 }
 
 void calculate_aux_fields(vector u, scalar l, scalar omega, scalar l2){
@@ -237,7 +266,7 @@ event vtk_file (i++)
     char path[] = "res"; // no slash at the end!!
     char prefix[] = "dump2pvd_compressed";
     output_htg((scalar *){fs, f, l, l2, omega, p, sf}, (vector *){u, gradp}, path, prefix, iter_fp, myt);
-    fprintf(ferr, "ended adapt\n");
+    fprintf(ferr, "ended output_htg\n");
     count_cells(myt, i);
     return 0;
 }
