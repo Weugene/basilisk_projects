@@ -8,6 +8,7 @@ bubcase=$1
 maxlevel=$2
 iter_cur=$3
 range_colorbar=$4 # 0 means automatic range for colorbar
+outPrefix=""
 echo "in: Ncase=$bubcase maxlevel=$maxlevel iter_cur=$iter_cur range_colorbar=$range_colorbar"
 for f in convert_single extract_isosurface.py; do
     test -e ${f} && echo "${f} exists" || echo "${f} does not exist. exit" || exit;
