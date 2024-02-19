@@ -879,11 +879,12 @@ paraview.simple._DisableFirstRenderCameraReset()
 
 # get animation scene
 animationScene1 = GetAnimationScene()
+print("AnimationTime=", animationScene1.AnimationTime)
 
 # get the time-keeper
 timeKeeper1 = GetTimeKeeper()
 timesteps = timeKeeper1.TimestepValues  # 0, 0.1, 0.2 ...
-print("timesteps=", timesteps, "timeKeeper1=")
+print("timesteps=", timesteps)
 try:
     NT = len(timesteps)
 except:
