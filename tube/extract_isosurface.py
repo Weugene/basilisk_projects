@@ -1802,8 +1802,8 @@ for timestep in timesteps:
         fn = "slice_t={}.csv".format(timestep)
         Save1DArraysToFile([xr[:, 0], xr[:, 1]], fn)
 
-    metadata["xp"] = xr[:, 0]
-    metadata["yp"] = xr[:, 1]
+    metadata["xp"] = xr[:, 0].tolist()
+    metadata["yp"] = xr[:, 1].tolist()
     metadata["contour_Np"] = Np
     SaveMetaData(data=metadata, fn=metadata_filename)
 
