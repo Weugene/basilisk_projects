@@ -685,7 +685,6 @@ def single_compute_area_volume(connectivity, threshold_value: float, time: float
     # create a new 'Threshold'
     threshold = Threshold(Input=connectivity, registrationName=f"IsoVolume_{threshold_value}")
     threshold.Scalars = ['CELLS', 'RegionId']
-    threshold.ComponentMode = 'Selected'
     threshold.SelectedComponent = ''
     threshold.LowerThreshold = threshold_value
     threshold.UpperThreshold = threshold_value
