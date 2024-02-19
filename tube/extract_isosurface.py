@@ -11,16 +11,16 @@
 
 #### import the simple module from the paraview
 from paraview.simple import *
-import logging
-import timeit
 import argparse
-
+import json
+import logging
+import scipy
+import timeit
 
 logging.basicConfig(format='%(message)s')
 log = logging.getLogger(__name__)
-import json
+
 from scipy.spatial import Delaunay
-from scipy.signal import find_peaks
 import plotly.graph_objects as go
 from pathlib import Path
 
@@ -496,7 +496,7 @@ def find_first_peak(x_fil, y_fil, x0, xmin, xmax, x_mean, time):
     print("sizes of ripple:{} {}".format(x_ripple.shape, y_ripple.shape))
     # return 0, 0, 0, 0, 0, 0, 0
     # find the first peak in a smoothed curve
-    peaks, props = find_peaks(y_ripple, prominence=0.0001)
+    peaks, props = scipy.signal.find_peaks(y_ripple, prominence=0.0001)
     print("peaks, props:", peaks, props)
     try:
         x_peak, y_peak = x_ripple[peaks[0]], y_ripple[peaks[0]]
