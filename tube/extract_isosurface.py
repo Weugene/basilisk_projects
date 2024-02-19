@@ -963,7 +963,8 @@ SetActiveView(renderView1)
 
 # defining of computational domains
 my_source.UpdatePipeline()
-# Show(my_source, renderView1)
+Show(my_source, renderView1)
+Hide(my_source, renderView1)
 
 bounds_domain = get_bounds(my_source)
 print({"info": "boundsDomain of cube", "bounds_domain": bounds_domain})
