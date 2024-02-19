@@ -195,6 +195,7 @@ event init (t = 0) {
     foreach(reduction(max:maxlevel_init)){
         maxlevel_init = max(maxlevel_init, l[]);
     }
+    count_cells(myt, i);
     fprintf(ferr, "file has been read: L0=%g maxdepth=%d\n", L0, maxlevel_init);
     if (!success) {
         fprintf(ferr, "can't open the file %s. Missing this file, go to the next file\n", dump_name);
