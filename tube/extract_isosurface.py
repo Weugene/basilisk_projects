@@ -1047,7 +1047,8 @@ if "create a new 'Cylinder'":
 
 for timestep in timesteps:
     print("timestep:", timestep)
-    # Properties modi bfied on animationScene1
+    # Properties modified on animationScene1
+    print("animationScene1.AnimationTime", animationScene1.AnimationTime)
     animationScene1.AnimationTime = timestep
     # Properties modified on timeKeeper1
     timeKeeper1.Time = timestep
