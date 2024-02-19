@@ -122,6 +122,16 @@ def Connectivity(*args, **kwargs):
 
 
 @my_custom_timer
+def Threshold(*args, **kwargs):
+    return paraview.simple.Threshold(*args, **kwargs)
+
+
+@my_custom_timer
+def Cylinder(*args, **kwargs):
+    return paraview.simple.Cylinder(*args, **kwargs)
+
+
+@my_custom_timer
 def PassArrays(*args, **kwargs):
     return paraview.simple.PassArrays(*args, **kwargs)
 
@@ -147,6 +157,11 @@ def Contour(*args, **kwargs):
 
 
 @my_custom_timer
+def ExtractSurface(*args, **kwargs):
+    return paraview.simple.ExtractSurface(*args, **kwargs)
+
+
+@my_custom_timer
 def IsoVolume(*args, **kwargs):
     return paraview.simple.IsoVolume(*args, **kwargs)
 
@@ -162,13 +177,93 @@ def ExtractSelection(*args, **kwargs):
 
 
 @my_custom_timer
+def IntegrateVariables(*args, **kwargs):
+    return paraview.simple.IntegrateVariables(*args, **kwargs)
+
+
+@my_custom_timer
 def Show(*args, **kwargs):
     return paraview.simple.Show(*args, **kwargs)
 
 
 @my_custom_timer
+def Hide(*args, **kwargs):
+    return paraview.simple.Hide(*args, **kwargs)
+
+
+@my_custom_timer
+def GetDisplayProperties(*args, **kwargs):
+    return paraview.simple.GetDisplayProperties(*args, **kwargs)
+
+
+@my_custom_timer
+def GetColorTransferFunction(*args, **kwargs):
+    return paraview.simple.GetColorTransferFunction(*args, **kwargs)
+
+
+@my_custom_timer
+def GetOpacityTransferFunction(*args, **kwargs):
+    return paraview.simple.GetOpacityTransferFunction(*args, **kwargs)
+
+
+@my_custom_timer
+def ColorBy(*args, **kwargs):
+    return paraview.simple.ColorBy(*args, **kwargs)
+
+
+@my_custom_timer
+def GetScalarBar(*args, **kwargs):
+    return paraview.simple.GetScalarBar(*args, **kwargs)
+
+
+@my_custom_timer
+def GetMaterialLibrary(*args, **kwargs):
+    return paraview.simple.GetMaterialLibrary(*args, **kwargs)
+
+
+@my_custom_timer
+def CreateView(*args, **kwargs):
+    return paraview.simple.CreateView(*args, **kwargs)
+
+
+@my_custom_timer
+def CreateLayout(*args, **kwargs):
+    return paraview.simple.CreateLayout(*args, **kwargs)
+
+
+@my_custom_timer
+def GetAnimationScene(*args, **kwargs):
+    return paraview.simple.GetAnimationScene(*args, **kwargs)
+
+
+@my_custom_timer
+def GetTimeKeeper(*args, **kwargs):
+    return paraview.simple.GetTimeKeeper(*args, **kwargs)
+
+
+@my_custom_timer
+def SetActiveView(*args, **kwargs):
+    return paraview.simple.SetActiveView(*args, **kwargs)
+
+
+@my_custom_timer
+def FindSource(*args, **kwargs):
+    return paraview.simple.FindSource(*args, **kwargs)
+
+
+@my_custom_timer
 def SaveData(*args, **kwargs):
     return paraview.simple.SaveData(*args, **kwargs)
+
+
+@my_custom_timer
+def SaveScreenshot(*args, **kwargs):
+    return paraview.simple.SaveScreenshot(*args, **kwargs)
+
+
+@my_custom_timer
+def Delete(*args, **kwargs):
+    return paraview.simple.Delete(*args, **kwargs)
 
 
 def plot_graph(list_x, list_y, names, xtitle, ytitle, image_name, list_x_fill=[], list_y_fill=[], mode=[], \
@@ -519,7 +614,7 @@ def get_x_over_R_array(input_data, fn, PointDataArrays, CellDataArrays):
     # update the view to ensure updated data information
     spreadSheetView1.Update()
 
-    ss_data = paraview.servermanager.Fetch(passArrays1)
+    ss_data = Fetch(passArrays1)
     Np = ss_data.GetNumberOfPoints()
     print('Np=', Np)
     xr = []
@@ -601,7 +696,7 @@ def compute_volume_averaged_vars(integrateVariables) -> dict:
     passArrays1.PointDataArrays = ['Points', 'u', 'f']
     passArrays1.CellDataArrays = ['Volume']
 
-    ss_data = paraview.servermanager.Fetch(passArrays1)
+    ss_data = Fetch(passArrays1)
     volume = ss_data.GetCellData().GetArray('Volume').GetValue(0)
     x_mean = ss_data.GetPoint(0)
     u_mean = [ss_data.GetPointData().GetArray('u').GetValue(i) / volume for i in range(3)]
@@ -660,7 +755,7 @@ def single_compute_area_volume(connectivity, threshold_value: float, time: float
     passArrays1.PointDataArrays = []
     passArrays1.CellDataArrays = ['Area']
 
-    ss_data = paraview.servermanager.Fetch(passArrays1)
+    ss_data = Fetch(passArrays1)
     mean_vars["Area"] = ss_data.GetCellData().GetArray('Area').GetValue(0)
 
     # Extract bounds of a bubble
@@ -679,7 +774,7 @@ def single_compute_area_volume(connectivity, threshold_value: float, time: float
     return mean_vars
 
 
-def compute_area_volume(input, time):
+def compute_area_volume(input, time) -> dict[int, dict]:
     hyperTreeGridToDualGrid = HyperTreeGridToDualGrid(Input=input)
 
     # create a new 'Iso Volume'
@@ -1156,7 +1251,7 @@ for timestep in timesteps:
     # update the view to ensure updated data information
     spreadSheetView1.Update()
 
-    ss_data = paraview.servermanager.Fetch(passArrays1)
+    ss_data = Fetch(passArrays1)
     print('clip2 N_points=', ss_data.GetNumberOfPoints())
     print('clip2  ss_data.GetPointData()=', ss_data.GetPointData())
     print('clip2  ss_data.GetCellData()=', ss_data.GetCellData())
@@ -1650,7 +1745,7 @@ for timestep in timesteps:
     # update the view to ensure updated data information
     spreadSheetView1.Update()
 
-    ss_data = paraview.servermanager.Fetch(passArrays1)
+    ss_data = Fetch(passArrays1)
     Np = ss_data.GetNumberOfPoints()
     print('Np=', Np)
     xr = []
