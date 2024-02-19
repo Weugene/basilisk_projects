@@ -130,7 +130,7 @@ int main (int argc, char * argv[]) {
         diam_tube = 494e-6;
         dt_vtk = 1e-2;
     }
-    fprintf(ferr, "dump_name=%s shiftm=%g shiftp=%g iter_fp=%d\n", dump_name, shiftm, shiftp, iter_fp);
+    fprintf(ferr, "dump_name=%s shiftm=%g shiftp=%g iter_fp=%d myt=%g\n", dump_name, shiftm, shiftp, iter_fp, myt);
     Ca = cases[bubcase].Ca; //Ca = Ud*Mu1/sigma
     Vd = cases[bubcase].Vd; // m^3
     Umean = cases[bubcase].Uc; // m/s
