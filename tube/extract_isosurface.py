@@ -11,58 +11,24 @@
 
 #### import the simple module from the paraview
 from paraview.simple import *
-# from paraview.vtk.util import numpy_support # provides unique()
-# from vtkmodules.numpy_interface.algorithms import * # provides volume()
-import vtk
-import numpy as np
-import glob, os, sys
 import logging
 import timeit
 import argparse
-import re
 
 
 logging.basicConfig(format='%(message)s')
 log = logging.getLogger(__name__)
-import matplotlib.pyplot as plt
-# from scipy.signal import butter,filtfilt # for fft filtering
-# from scipy.ndimage import gaussian_filter1d # gaussian filtering
-# from scipy.signal import savgol_filter
 import json
 from scipy.spatial import Delaunay
-
-import functools
-
-# import __builtin__
-# from inspect import getmodule
-#
-# print(getmodule(Show))
-vtk_from_pvpython = True  # pvpython reads from file, otherwise from paraview GUI
-# vtk_from_pvpython=False # pvpython reads from file, otherwise from paraview GUI
-
-from matplotlib.pyplot import *
-from scipy import interpolate
-
-import numpy as np
-import matplotlib.pyplot as plt
-from scipy import interpolate, ndimage
-
-import networkx as nx
-import statsmodels.api as sm
-import random
-
-
-import itertools
-import operator
 from scipy.signal import find_peaks
-from tsmoothie.smoother import *
-from fractions import Fraction  # convert a decimal number into fraction
 import plotly.graph_objects as go
 from pathlib import Path
 
 from matplotlib.pyplot import *
-from scipy import interpolate
 
+
+vtk_from_pvpython = True  # pvpython reads from file, otherwise from paraview GUI
+# vtk_from_pvpython=False # pvpython reads from file, otherwise from paraview GUI
 
 def my_custom_timer(func):
     @functools.wraps(func)
@@ -1141,7 +1107,7 @@ for timestep in timesteps:
     connectivity1.ExtractionMode = 'Extract All Regions'
 
     # UpdatePipeline(time=timestep, proxy=connectivity1)
-    connectivity1.UpdatePipeline()
+    # connectivity1.UpdatePipeline()
 
     # create a new 'Calculator'
     calculator1 = Calculator(Input=connectivity1)
