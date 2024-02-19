@@ -14,6 +14,7 @@ from paraview.simple import *
 import argparse
 import json
 import logging
+import os
 import scipy
 import timeit
 
@@ -746,7 +747,8 @@ def single_compute_area_volume(connectivity, threshold_value: float, time: float
     return mean_vars
 
 
-def compute_area_volume(input, time) -> dict[int, dict]:
+# return dict[int, dict]
+def compute_area_volume(input, time):
     hyperTreeGridToDualGrid = HyperTreeGridToDualGrid(Input=input)
 
     # create a new 'Iso Volume'
@@ -1023,7 +1025,7 @@ for timestep in timesteps:
     print("timestep:", timestep)
     # Properties modified on animationScene1
     print("animationScene1.AnimationTime", animationScene1.AnimationTime)
-    animationScene1.AnimationTime = timestep
+    # animationScene1.AnimationTime = timestep
     # Properties modified on timeKeeper1
     timeKeeper1.Time = timestep
 
