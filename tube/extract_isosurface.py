@@ -605,6 +605,12 @@ def Save1DArraysToFile(numpy_arrays, fn):
         print('Successfully save file:', fn)
 
 
+def SaveMetaData(data, fn):
+    with open(fn, 'w') as fp:
+        json.dump(data, fp, indent=4)
+    print(f"Saved metadata: {fn}")
+
+
 def get_x_over_R_array(input_data, fn, PointDataArrays, CellDataArrays):
     # create a new 'Pass Arrays'
     passArrays1 = PassArrays(Input=input_data)
@@ -1058,9 +1064,13 @@ for timestep in timesteps:
     ############################################################################################
     ### Compute averaged velocity, coordinate, area and volumes for each connectivity region ###
     ############################################################################################
-
+    metadata_filename = f"{path}/{out_prefix}metadata_t={timestep}.json"
+    metadata = dict()
     threshold_result = compute_area_volume(my_source, timestep)
+    metadata["timestep"] = timestep
+    metadata["parts"] = threshold_result
     print("threshold_result", threshold_result)
+    SaveMetaData(data=metadata, fn=metadata_filename)
     # get the largest bubble
     first_bubble = threshold_result[0]
     bounds = first_bubble["bounds"]
@@ -1087,6 +1097,13 @@ for timestep in timesteps:
     x_mean = first_bubble["x_mean"][2]  # ONLY FOR HTG format, channel along Z axis
     u_mean = first_bubble["u_mean"]
     print(f"First bubble: x_mean: {x_mean} u_mean: {u_mean} area: {area}")
+
+    metadata["lDomain"] = lDomain
+    metadata["center"] = center
+    metadata["len_min"] = len_min
+    metadata["len_max"] = len_max
+    metadata["length"] = length
+    SaveMetaData(data=metadata, fn=metadata_filename)
 
     # ***************** SAVE ISOVOLUME ****************************
     hyperTreeGridToDualGrid1 = HyperTreeGridToDualGrid(Input=my_source)
@@ -1182,6 +1199,11 @@ for timestep in timesteps:
     rgX, rgY, rgZ = np.max([abs(range0[0]), abs(range0[1])]), np.max([abs(range1[0]), abs(range1[1])]), np.max(
         [abs(range2[0]), abs(range2[1])])
     range_max = np.sqrt(rgX ** 2 + rgY ** 2 + rgZ ** 2)
+    metadata["range0"] = range0
+    metadata["range1"] = range1
+    metadata["range2"] = range2
+    metadata["range_max"] = range_max
+    SaveMetaData(data=metadata, fn=metadata_filename)
     print(f"Colorbar: mag(u): [0, {range_max}]")
     print(f"Colorbar: Ux: {range0} Uy: {range1} Uz: {range2}")
     if range_colorbar:
@@ -1210,6 +1232,19 @@ for timestep in timesteps:
 
     fn = "r_over_x_t={}.csv".format(timestep)
     Save1DArraysToFile([x, y, lower_hull, upper_hull], fn)
+
+    # metadata["lower_hull"] = lower_hull
+    # metadata["upper_hull"] = upper_hull
+    metadata["x_peak"] = x_peak
+    metadata["y_peak"] = y_peak
+    metadata["length_x_peak_mean"] = length_x_peak_mean
+    metadata["delta_min"] = delta_min
+    metadata["delta_max"] = delta_max
+    metadata["xy0"] = xy0
+    metadata["xyN"] = xyN
+    metadata["xmin"] = xmin
+    metadata["xmax"] = xmax
+    SaveMetaData(data=metadata, fn=metadata_filename)
     # read files as below:
     # with open(fn, 'r') as f:
     #	lists = json.load(f)
@@ -1263,6 +1298,10 @@ for timestep in timesteps:
     delta_mean = 0.5 - rB
 
     print('delta_min=', delta_min, 'delta_mean=', delta_mean, 'delta_max=', delta_max)
+
+    metadata["delta_mean"] = delta_mean
+    metadata["volume_clipped"] = volumeB
+    SaveMetaData(data=metadata, fn=metadata_filename)
 
     fn = "for_excel_table.txt"
     if not Path(fn).exists():
@@ -1762,6 +1801,11 @@ for timestep in timesteps:
     if xr.size:
         fn = "slice_t={}.csv".format(timestep)
         Save1DArraysToFile([xr[:, 0], xr[:, 1]], fn)
+
+    metadata["xp"] = xr[:, 0]
+    metadata["yp"] = xr[:, 1]
+    metadata["contour_Np"] = Np
+    SaveMetaData(data=metadata, fn=metadata_filename)
 
     # Freeing Memory
     Delete(slice1)
