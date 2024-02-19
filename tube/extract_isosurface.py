@@ -112,6 +112,16 @@ def Clip(*args, **kwargs):
 
 
 @my_custom_timer
+def HyperTreeGridToDualGrid(*args, **kwargs):
+    return paraview.simple.HyperTreeGridToDualGrid(*args, **kwargs)
+
+
+@my_custom_timer
+def Connectivity(*args, **kwargs):
+    return paraview.simple.Connectivity(*args, **kwargs)
+
+
+@my_custom_timer
 def PassArrays(*args, **kwargs):
     return paraview.simple.PassArrays(*args, **kwargs)
 
@@ -940,9 +950,8 @@ if "create a new 'Cylinder'":
     transform1Display.OpacityTransferFunction.Points = [-2.220446049250313e-16, 0.0, 0.5, 0.0, 2.220446049250313e-16, 1.0,
                                                         0.5, 0.0]
 
-    # Show(transform1, renderView1)
-
 for timestep in timesteps:
+    print("timestep:", timestep)
     # Properties modi bfied on animationScene1
     animationScene1.AnimationTime = timestep
     # Properties modified on timeKeeper1
@@ -953,7 +962,7 @@ for timestep in timesteps:
     ############################################################################################
 
     threshold_result = compute_area_volume(my_source, timestep)
-    print(threshold_result)
+    print("threshold_result", threshold_result)
     # get the largest bubble
     first_bubble = threshold_result[0]
     bounds = first_bubble["bounds"]
