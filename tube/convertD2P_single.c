@@ -193,10 +193,11 @@ int main (int argc, char * argv[]) {
 event init (t = 0) {
     bool success = restore (file = dump_name);
     foreach(reduction(max:maxlevel_init)){
-        maxlevel_init = max(maxlevel_init, l[]);
+        maxlevel_init = max(maxlevel_init, level);
     }
+    maxlevel = (maxlevel == 0) ? maxlevel_init : maxlevel;
     count_cells(myt, i);
-    fprintf(ferr, "file has been read: L0=%g maxdepth=%d\n", L0, maxlevel_init);
+    fprintf(ferr, "file has been read: L0=%g maxlevel_init=%d\n", L0, maxlevel_init);
     if (!success) {
         fprintf(ferr, "can't open the file %s. Missing this file, go to the next file\n", dump_name);
         return 0;
@@ -221,7 +222,7 @@ event adapt (i++)
                     minlevel=1
             );
             fprintf(ferr, "Adaptation: nf=%d nc=%d\n", s.nf, s.nc);
-            if (s.nf == 0  || it > 5) break;
+            if (s.nf == 0  || it > 2) break;
             it++;
         } while(1);
     }
