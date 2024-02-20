@@ -228,6 +228,7 @@ def SaveData(*args, **kwargs):
 def SaveScreenshot(fn, *args, **kwargs):
     res = paraview.simple.SaveScreenshot(fn, *args, **kwargs)
     print(f"File={fn} generated successfully")
+    return res
 
 
 @my_custom_timer
@@ -769,7 +770,7 @@ def compute_area_volume(input, time):
     arrayInfo = info.GetArrayInformation("RegionId")
     print("arrayInfo of connectivity in compute_area_volume:", arrayInfo)
     region_id_range = arrayInfo.GetComponentRange(0)
-    region_id_range = int(region_id_range[0]), int(region_id_range[1]),
+    region_id_range = int(region_id_range[0]), int(region_id_range[1]) + 1,
     threshold_result = dict()
     for threshold_value in range(*region_id_range):
         print("threshold by RegionId", threshold_value)
