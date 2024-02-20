@@ -1050,7 +1050,7 @@ for timestep in timesteps:
     bounds = first_bubble["bounds"]
 
     # compare with the second bubble
-    if threshold_result[1]["Volume"] / first_bubble["Volume"] > 0.1:
+    if len(threshold_result) > 1 and threshold_result[1]["Volume"] / first_bubble["Volume"] > 0.1:
         bounds2 = threshold_result[1]["bounds"]
         bounds = min(bounds[0], bounds2[0]), max(bounds[1], bounds2[1]), \
             min(bounds[2], bounds2[2]), max(bounds[3], bounds2[3]), \
