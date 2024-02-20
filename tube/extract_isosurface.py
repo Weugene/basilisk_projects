@@ -1667,13 +1667,14 @@ for timestep in timesteps:
     threshold2Display.Representation = 'Surface'
     threshold2Display.ColorArrayName = ['CELLS', 'u']
     threshold2Display.LookupTable = uLUT
-    threshold2Display.Opacity = 0.8
+    threshold2Display.Opacity = 1
     threshold2Display.Specular = 1
+    threshold2Display.AmbientColor = [1.0, 1.0, 1.0]  # RGB for white
+    threshold2Display.DiffuseColor = [1.0, 1.0, 1.0]  # RGB for white
 
     threshold2Display.OSPRayScaleArray = 'u'
     threshold2Display.OSPRayScaleFunction = 'PiecewiseFunction'
     threshold2Display.SelectOrientationVectors = 'None'
-    threshold2Display.ScaleFactor = 0.25
     threshold2Display.SelectScaleArray = 'u'
     threshold2Display.GlyphType = 'Arrow'
     threshold2Display.GlyphTableIndexArray = 'u'
