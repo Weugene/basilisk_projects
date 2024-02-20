@@ -821,7 +821,7 @@ parser.add_argument("--picName", type=str, help="Provide the name for the output
 args = parser.parse_args()
 print(f"args: {args}")
 infn = args.infn
-out_prefix = args.outPrefix
+out_prefix = args.outPrefix if args.outPrefix else ""
 maxlevel = args.maxlevel
 iter = args.iter
 range_colorbar = args.rangeColorbar
