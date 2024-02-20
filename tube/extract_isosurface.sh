@@ -8,7 +8,8 @@ bubcase=$1
 maxlevel=$2
 iter_cur=$3
 range_colorbar=$4 # 0 means automatic range for colorbar
-outPrefix=" "
+outPrefix=""
+dumpPattern="dump-*"
 echo "in: Ncase=$bubcase maxlevel=$maxlevel iter_cur=$iter_cur range_colorbar=$range_colorbar"
 for f in convert_single extract_isosurface.py; do
     test -e ${f} && echo "${f} exists" || echo "${f} does not exist. exit" || exit;
@@ -46,6 +47,6 @@ for (( i = $iter_cur; i < $length; i+=1 )); do
   # Wait for all jobs to complete
   wait
   sleep 5
-  DISPLAY=:${d} VTK_USE_LEGACY_DEPTH_PEELING=1 pvpython extract_isosurface.py --infn $pvdconvertD2P --outPrefix $outPrefix --maxlevel $maxlevel --iter $i --rangeColorbar $range_colorbar
+  DISPLAY=:${d} VTK_USE_LEGACY_DEPTH_PEELING=1 pvpython extract_isosurface.py --infn "$pvdconvertD2P" --dumpPattern "$dumpPattern" --maxlevel $maxlevel --iter $i --rangeColorbar $range_colorbar
 
 done

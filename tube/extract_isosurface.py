@@ -1,4 +1,5 @@
 # state file generated using paraview version 5.8.0
+import glob
 
 # ----------------------------------------------------------------
 # setup views used in the visualization
@@ -614,7 +615,7 @@ def simplify_fraction(x, y):
     return x // gcd(x, y), y // gcd(x, y)
 
 
-def SavePvdFile(fn, source, print_text, times, three_dimension=0):
+def SavePvdFile(fn, source, print_text, times):
     # Split the extension from the path and normalise it to lowercase.
     file_extension = os.path.splitext(fn)[1].lower()
     # Regular expression to match the pattern
@@ -636,10 +637,7 @@ def SavePvdFile(fn, source, print_text, times, three_dimension=0):
         f.write(text1)
         f.write(text2)
         f.write(text3)
-    if three_dimension:
-        SaveData(fn, proxy=source)
-    else:
-        SaveData(fn, proxy=source)
+    SaveData(fn, proxy=source)
     print("Saved", print_text, ':', fn)
 
 
@@ -809,6 +807,8 @@ optional.add_argument("--infn", type=str, help="Provide the name of the input pa
                       nargs='?', default='*.pvd')
 optional.add_argument("--outPrefix", type=str, help="Provide the name of the output paraview files, please",
                       nargs='?', default='')
+optional.add_argument("--dumpPattern", type=str, help="Provide the dump files pattern, please",
+                      nargs='?', default='dump-*')
 required.add_argument("--maxlevel", type=int, help="Provide the maximum level of refinement",
                       default=10, required=True)
 required.add_argument("--iter", type=int, help="Provide the iter argument level of refinement",
@@ -822,6 +822,7 @@ args = parser.parse_args()
 print(f"args: {args}")
 infn = args.infn
 out_prefix = args.outPrefix if args.outPrefix else ""
+dump_pattern = args.dumpPattern
 maxlevel = args.maxlevel
 iter = args.iter
 range_colorbar = args.rangeColorbar
@@ -856,13 +857,18 @@ print("AnimationTime=", animationScene1.AnimationTime)
 # get the time-keeper
 timeKeeper1 = GetTimeKeeper()
 timesteps = timeKeeper1.TimestepValues  # 0, 0.1, 0.2 ...
-print("timesteps=", timesteps)
+print(f"timesteps in {infn}:", timesteps)
 try:
     NT = len(timesteps)
 except:
     NT = 1
     timesteps = [timesteps]
 
+timesteps_dump = []
+for file in glob.glob(dump_pattern):
+    timesteps_dump.append(float(os.path.basename(file).split('-')[-1]))
+timesteps_dump = sorted(timesteps_dump)
+print("timesteps_dump:", timesteps_dump)
 print("renderViews, axesGrid, SpreadSheetViews, layouts.. ")
 # Create a new 'Render View'
 # get the material library
@@ -1082,7 +1088,7 @@ for timestep in timesteps:
     isoVolume1.UpdatePipeline()
 
     fn = f"{path}/res/{out_prefix}iso_volume_0_{iter:04d}.vtu"
-    SavePvdFile(fn, isoVolume1, 'volumetric data of bubble', timesteps, three_dimension=1)
+    SavePvdFile(fn, isoVolume1, 'volumetric data of bubble', timesteps_dump)
 
     # ***************** SAVE ISOSURFACE ****************************
     # create a new 'Iso Volume'
@@ -1118,7 +1124,7 @@ for timestep in timesteps:
     calculator1.UpdatePipeline()
 
     fn = f"{path}/res/{out_prefix}iso_surface_0_{iter:04d}.vtp"
-    SavePvdFile(fn, calculator1, 'surface data of bubble', timesteps)
+    SavePvdFile(fn, calculator1, 'surface data of bubble', timesteps_dump)
 
     # color 'calculator1'
     calculator1Display = GetDisplayProperties(calculator1, renderView1)
@@ -1305,18 +1311,34 @@ for timestep in timesteps:
     extractSurface1 = ExtractSurface(Input=transform2)
 
     fn = f"{path}/res/{out_prefix}iso_surface_tail_0_{iter:04d}.vtp"
-    SavePvdFile(fn, extractSurface1, 'tail surface data of bubble', timesteps)
+    SavePvdFile(fn, extractSurface1, 'tail surface data of bubble', timesteps_dump)
 
     # ***************** SAVE ISOSURFACE PNG ****************************
     Show(calculator1, renderView1)
     renderView1.CameraViewUp = [1, 0, 0]  # ONLY FOR HTG format, channel along Z axis
-    renderView1.CameraParallelScale = 1.3  # 1.4 0.5
+    renderView1.CameraParallelScale = 1.4
     renderView1.CenterOfRotation = center
     renderView1.CameraFocalPoint = center
     renderView1.CameraPosition = [1.56, 4.5, center[2] - 4]  # ONLY FOR HTG format, channel along Z axis
     # update the view to ensure updated data information
     renderView1.Update()
     fn = path + "/" + picName + '_t=' + str(timestep) + '_ux.png'
+    SaveScreenshot(fn, renderView1,
+                   ImageResolution=[1900, 1077],
+                   TransparentBackground=0,
+                   CompressionLevel='2')
+
+    renderView1.CameraParallelScale = 1.6
+    renderView1.Update()
+    fn = path + "/" + picName + '_t=' + str(timestep) + '_ux_medium_zoom_out.png'
+    SaveScreenshot(fn, renderView1,
+                   ImageResolution=[1900, 1077],
+                   TransparentBackground=0,
+                   CompressionLevel='2')
+
+    renderView1.CameraParallelScale = 2
+    renderView1.Update()
+    fn = path + "/" + picName + '_t=' + str(timestep) + '_ux_large_zoom_out.png'
     SaveScreenshot(fn, renderView1,
                    ImageResolution=[1900, 1077],
                    TransparentBackground=0,
@@ -1340,6 +1362,8 @@ for timestep in timesteps:
     clip_halfDisplay.ColorArrayName = ['POINTS', 'u']
     clip_halfDisplay.LookupTable = uLUT
     clip_halfDisplay.Opacity = 1
+    clip_halfDisplay.AmbientColor = [1.0, 1.0, 1.0]  # RGB for white
+    clip_halfDisplay.DiffuseColor = [1.0, 1.0, 1.0]  # RGB for white
     uLUTColorBar.Visibility = 1
 
     renderView1.CameraViewUp = [1, 0, 0]  # ONLY FOR HTG format, channel along Z axis
@@ -1355,6 +1379,25 @@ for timestep in timesteps:
                    ImageResolution=[1900, 1077],
                    TransparentBackground=0,
                    CompressionLevel='2')
+
+    renderView1.CameraParallelScale = 1.6  # 1.4 0.5
+    renderView1.Update()
+
+    fn = path + "/" + picName + '_t=' + str(timestep) + '_ux_half_medium_zoom_out.png'
+    SaveScreenshot(fn, renderView1,
+                   ImageResolution=[1900, 1077],
+                   TransparentBackground=0,
+                   CompressionLevel='2')
+
+    renderView1.CameraParallelScale = 2  # 1.4 0.5
+    renderView1.Update()
+
+    fn = path + "/" + picName + '_t=' + str(timestep) + '_ux_half_large_zoom_out.png'
+    SaveScreenshot(fn, renderView1,
+                   ImageResolution=[1900, 1077],
+                   TransparentBackground=0,
+                   CompressionLevel='2')
+
     Hide(clip_half)
     # ***************** CONTOUR2 for LAMBDA2 l2 in whole domain ****************************
 
@@ -1381,7 +1424,7 @@ for timestep in timesteps:
     extractSurface2 = ExtractSurface(Input=clip4)
 
     fn = f"{path}/res/{out_prefix}lambda2_0_{iter:04d}.vtp"
-    SavePvdFile(fn, extractSurface2, 'lambda2 surface data', timesteps)
+    SavePvdFile(fn, extractSurface2, 'lambda2 surface data', timesteps_dump)
 
     # ***************** LAMBDA2 l2 inside bubble ****************************
 
@@ -1406,7 +1449,7 @@ for timestep in timesteps:
     extractSurface3 = ExtractSurface(Input=threshold1)
 
     fn = f"{path}/res/{out_prefix}lambda2_in_bubble_0_{iter:04d}.vtp"
-    SavePvdFile(fn, extractSurface3, 'lambda2 in bubble', timesteps)
+    SavePvdFile(fn, extractSurface3, 'lambda2 in bubble', timesteps_dump)
 
     # ****************** CONNECTIVITY1(f) as bubble contour AND CONTOUR2 (lambda2) ********************
     # get color transfer function/color map for 'l2'
@@ -1426,6 +1469,8 @@ for timestep in timesteps:
     connectivity1Display.Opacity = 0.2
     connectivity1Display.Specular = 1.0
     connectivity1Display.SpecularPower = 1.0
+    connectivity1Display.AmbientColor = [1.0, 1.0, 1.0]  # RGB for white
+    connectivity1Display.DiffuseColor = [1.0, 1.0, 1.0]  # RGB for white
     # connectivity1Display.Ambient = 0.21
     connectivity1Display.OSPRayScaleArray = 'f'
     connectivity1Display.OSPRayScaleFunction = 'PiecewiseFunction'
@@ -1452,6 +1497,8 @@ for timestep in timesteps:
     contour2Display.LookupTable = l2LUT
     contour2Display.Opacity = 0.5
     contour2Display.Specular = 1.0
+    contour2Display.AmbientColor = [1.0, 1.0, 1.0]  # RGB for white
+    contour2Display.DiffuseColor = [1.0, 1.0, 1.0]  # RGB for white
     contour2Display.OSPRayScaleArray = 'l2'
     contour2Display.OSPRayScaleFunction = 'PiecewiseFunction'
     contour2Display.SelectOrientationVectors = 'None'
@@ -1477,7 +1524,7 @@ for timestep in timesteps:
 
     # update the view to ensure updated data information
     renderView1.CameraViewUp = [1, 0, 0]
-    renderView1.CameraParallelScale = 1.8
+    renderView1.CameraParallelScale = 2
     renderView1.CenterOfRotation = center
     renderView1.CameraFocalPoint = [0, 0, center[2] - 0.5]
     renderView1.CameraPosition = [1.56, 4.5, center[2] - 4]
@@ -1538,6 +1585,8 @@ for timestep in timesteps:
     threshold1Display.LookupTable = l2LUT
     threshold1Display.Opacity = 0.5
     threshold1Display.Specular = 1.0
+    threshold1Display.AmbientColor = [1.0, 1.0, 1.0]  # RGB for white
+    threshold1Display.DiffuseColor = [1.0, 1.0, 1.0]  # RGB for white
     threshold1Display.OSPRayScaleArray = 'l2'
     threshold1Display.OSPRayScaleFunction = 'PiecewiseFunction'
     threshold1Display.SelectOrientationVectors = 'None'
@@ -1567,7 +1616,7 @@ for timestep in timesteps:
     l2PWF.ScalarRangeInitialized = 1
 
     renderView1.CameraViewUp = [1, 0, 0]
-    renderView1.CameraParallelScale = 1.3
+    renderView1.CameraParallelScale = 1.5
     renderView1.CenterOfRotation = center
     renderView1.CameraFocalPoint = center
     renderView1.CameraPosition = [1.56, 4.5, center[2] - 4]
@@ -1612,7 +1661,7 @@ for timestep in timesteps:
     print("slice1 before:", get_bounds(slice1))
 
     fn = f"{path}/res/{out_prefix}slice_0_{iter:04d}.vtp"
-    SavePvdFile(fn, slice1, 'slice1 data', timesteps)
+    SavePvdFile(fn, slice1, 'slice1 data', timesteps_dump)
 
     # print("slice1 after SavePvdFile:", get_bounds(slice1))
 
@@ -1726,9 +1775,8 @@ for timestep in timesteps:
 
     print("slice1 after:", get_bounds(slice1))
 
-    renderView1.InteractionMode = '2D'
     renderView1.CameraViewUp = [1, 0, 0]
-    renderView1.CameraParallelScale = 1.2
+    renderView1.CameraParallelScale = 1.4
     renderView1.CenterOfRotation = center
     renderView1.CameraFocalPoint = [-0.2, 0, center[2] - 1.8]
     renderView1.CameraPosition = [-0.2, 4.5, center[2] - 1.8]
@@ -1737,6 +1785,30 @@ for timestep in timesteps:
     renderView1.Update()
 
     fn = path + "/" + picName + '_t=' + str(timestep) + '_ux_slice.png'
+    SaveScreenshot(
+        fn, renderView1,
+        ImageResolution=[1900, 500],
+        TransparentBackground=0,
+        CompressionLevel='2'
+    )
+    print('File=' + fn + ' generated successfully')
+
+    renderView1.CameraParallelScale = 1.6
+    renderView1.Update()
+
+    fn = path + "/" + picName + '_t=' + str(timestep) + '_ux_slice_medium_zoom_out.png'
+    SaveScreenshot(
+        fn, renderView1,
+        ImageResolution=[1900, 500],
+        TransparentBackground=0,
+        CompressionLevel='2'
+    )
+    print('File=' + fn + ' generated successfully')
+
+    renderView1.CameraParallelScale = 2
+    renderView1.Update()
+
+    fn = path + "/" + picName + '_t=' + str(timestep) + '_ux_slice_large_zoom_out.png'
     SaveScreenshot(
         fn, renderView1,
         ImageResolution=[1900, 500],
