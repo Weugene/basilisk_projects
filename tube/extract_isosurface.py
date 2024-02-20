@@ -225,8 +225,9 @@ def SaveData(*args, **kwargs):
 
 
 @my_custom_timer
-def SaveScreenshot(*args, **kwargs):
-    return paraview.simple.SaveScreenshot(*args, **kwargs)
+def SaveScreenshot(fn, *args, **kwargs):
+    res = paraview.simple.SaveScreenshot(fn, *args, **kwargs)
+    print(f"File={fn} generated successfully")
 
 
 @my_custom_timer
@@ -1327,7 +1328,7 @@ for timestep in timesteps:
                    ImageResolution=[1900, 1077],
                    TransparentBackground=0,
                    CompressionLevel='2')
-
+    print(fn)
     renderView1.CameraParallelScale = 1.6
     renderView1.Update()
     fn = path + "/" + picName + '_t=' + str(timestep) + '_ux_medium_zoom_out.png'
@@ -1537,7 +1538,6 @@ for timestep in timesteps:
         TransparentBackground=0,
         CompressionLevel='2'
     )
-    print('File=' + fn + ' generated successfully')
 
     renderView1.CameraFocalPoint = [0, 0, center[2] - 1]
     renderView1.CameraPosition = [1.56, 4.5, center[2] - 5]
@@ -1549,8 +1549,6 @@ for timestep in timesteps:
         TransparentBackground=0,
         CompressionLevel='2'
     )
-    print('File=' + fn + ' generated successfully')
-
 
     renderView1.CameraFocalPoint = [0, 0, center[2] - 2]
     renderView1.CameraPosition = [1.56, 4.5, center[2] - 6]
@@ -1562,7 +1560,6 @@ for timestep in timesteps:
         TransparentBackground=0,
         CompressionLevel='2'
     )
-    print('File=' + fn + ' generated successfully')
 
     print("Showing connectivity1 and hiding contour2.. ")
     Hide(threshold0, renderView1)  # hide lambda2 in whole domain
@@ -1627,7 +1624,6 @@ for timestep in timesteps:
                    ImageResolution=[1900, 1077],
                    TransparentBackground=0,
                    CompressionLevel='2')
-    print('File=' + fn + ' generated successfully')
     Hide(transform1, renderView1)  # hide cylinder
     Hide(extractSurface3, renderView1)  # hide lambda2 in bubble
     Hide(threshold1, renderView1)  # hide lambda2 in bubble
@@ -1791,7 +1787,6 @@ for timestep in timesteps:
         TransparentBackground=0,
         CompressionLevel='2'
     )
-    print('File=' + fn + ' generated successfully')
 
     renderView1.CameraParallelScale = 1.6
     renderView1.Update()
@@ -1803,7 +1798,6 @@ for timestep in timesteps:
         TransparentBackground=0,
         CompressionLevel='2'
     )
-    print('File=' + fn + ' generated successfully')
 
     renderView1.CameraParallelScale = 2
     renderView1.Update()
@@ -1815,7 +1809,6 @@ for timestep in timesteps:
         TransparentBackground=0,
         CompressionLevel='2'
     )
-    print('File=' + fn + ' generated successfully')
     Show(transform1, renderView1)  # turn on cylinder
 
     # create a new 'Pass Arrays'
