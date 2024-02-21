@@ -12,6 +12,7 @@ import glob
 
 #### import the simple module from the paraview
 from paraview.simple import *
+from paraview.vtk.util.numpy_support import vtk_to_numpy
 import argparse
 import json
 import logging
@@ -681,6 +682,62 @@ def compute_volume_averaged_vars(integrateVariables) -> dict:
         "f_mean": f_mean
     }
 
+def single_compute_area(connectivity, threshold_value: float, time: float):
+    # create a new 'Threshold'
+    threshold = Threshold(Input=connectivity, registrationName=f"IsoVolume_{threshold_value}")
+    threshold.Scalars = ['POINTS', 'RegionId']
+    threshold.LowerThreshold = threshold_value
+    threshold.UpperThreshold = threshold_value
+    threshold.ThresholdMethod = 'Between'
+    threshold.AllScalars = 1
+    threshold.UseContinuousCellRange = 0
+    threshold.Invert = 0
+    threshold.MemoryStrategy = 'Mask Input'
+    threshold.UpdatePipeline()
+
+    # create a new 'Integrate Variables'
+    integrateSurfaceVariables = IntegrateVariables(Input=threshold)
+    integrateSurfaceVariables.DivideCellDataByVolume = 0
+
+    # UpdatePipeline(time=time, proxy=integrateSurfaceVariables)
+    integrateSurfaceVariables.UpdatePipeline()
+
+    passArrays1 = PassArrays(Input=integrateSurfaceVariables)
+    passArrays1.PointDataArrays = []
+    passArrays1.CellDataArrays = ['Area']
+    ss_data = Fetch(passArrays1)
+    area = ss_data.GetCellData().GetArray('Area').GetValue(0)
+
+    Delete(threshold)
+    del threshold
+    Delete(integrateSurfaceVariables)
+    del integrateSurfaceVariables
+    return area
+
+
+def compute_area(connectivity, time):
+    info = connectivity.GetDataInformation().GetPointDataInformation()
+    arrayInfo = info.GetArrayInformation("RegionId")
+    print("arrayInfo of connectivity in compute_area_volume:", arrayInfo)
+    region_id_range = arrayInfo.GetComponentRange(0)
+    region_id_range = int(region_id_range[0]), int(region_id_range[1]) + 1,
+    threshold_result = dict()
+    for threshold_value in range(*region_id_range):
+        print("threshold by RegionId", threshold_value)
+        threshold_result[threshold_value] = single_compute_area(
+            connectivity=connectivity, threshold_value=threshold_value, time=time
+        )
+
+    # Sort result by volume of regions
+    # Sort the dictionary by volume in descending order
+    sorted_data = sorted(threshold_result.items(), key=lambda x: x[1], reverse=True)
+
+    # Convert sorted list back to dictionary if needed
+    threshold_result = {k: v for k, v in sorted_data}
+
+    return threshold_result
+
+
 def single_compute_area_volume(connectivity, threshold_value: float, time: float):
     # create a new 'Threshold'
     threshold = Threshold(Input=connectivity, registrationName=f"IsoVolume_{threshold_value}")
@@ -692,8 +749,6 @@ def single_compute_area_volume(connectivity, threshold_value: float, time: float
     threshold.UseContinuousCellRange = 0
     threshold.Invert = 0
     threshold.MemoryStrategy = 'Mask Input'
-
-    # UpdatePipeline(time=time, proxy=threshold)
     threshold.UpdatePipeline()
 
     # create a new 'Integrate Variables'
@@ -747,6 +802,7 @@ def single_compute_area_volume(connectivity, threshold_value: float, time: float
 
 # return dict[int, dict]
 def compute_area_volume(input, time):
+
     hyperTreeGridToDualGrid = HyperTreeGridToDualGrid(Input=input)
 
     # create a new 'Iso Volume'
@@ -1113,9 +1169,16 @@ for timestep in timesteps:
     connectivity1.ColorRegions = 1
     connectivity1.RegionIdAssignmentMode = 'Cell Count Descending'
     connectivity1.ExtractionMode = 'Extract All Regions'
-
     # UpdatePipeline(time=timestep, proxy=connectivity1)
-    # connectivity1.UpdatePipeline()
+    connectivity1.UpdatePipeline()
+
+    areas = compute_area(connectivity1, time)
+
+    for k, v in metadata["parts"].items():
+        metadata["parts"][k]["DirectArea"] = areas[k]
+    SaveMetaData(data=metadata, fn=metadata_filename)
+
+
 
     # create a new 'Calculator'
     calculator1 = Calculator(Input=connectivity1)
@@ -1406,7 +1469,7 @@ for timestep in timesteps:
     # create a new 'Contour'
     contour2 = Contour(Input=my_source)
     contour2.ContourBy = ['POINTS', 'l2']
-    contour2.Isosurfaces = [-4, -2.0, -1.0, -0.5, -0.25, -0.125]
+    contour2.Isosurfaces = [-4, -2.0, -1.0, -0.5, -0.25]
     contour2.PointMergeMethod = 'Uniform Binning'
     contour2.PointMergeMethod.Divisions = [50, 50, 50]
     contour2.PointMergeMethod.Numberofpointsperbucket = 8
@@ -1434,21 +1497,57 @@ for timestep in timesteps:
     threshold0 = Threshold(Input=clip4)
     threshold0.Scalars = ['POINTS', 'l2']
     # -2.0, -0.5
-    threshold0.LowerThreshold = -2.0
+    threshold0.LowerThreshold = -0.5
     threshold0.UpperThreshold = -0.5
     threshold0.ThresholdMethod = 'Between'
     threshold0.AllScalars = 1
 
-    # create a new 'Threshold'
-    threshold1 = Threshold(Input=threshold0)
-    threshold1.Scalars = ['POINTS', 'f']
+    # create a new 'Connectivity'
+    connectivity2 = Connectivity(Input=threshold0)
+    connectivity2.ColorRegions = 1
+    connectivity2.RegionIdAssignmentMode = 'Cell Count Descending'
+    connectivity2.ExtractionMode = 'Extract All Regions'
+    # UpdatePipeline(time=timestep, proxy=connectivity1)
+    connectivity2.UpdatePipeline()
+
+
+    # create a new 'Pass Arrays'
+    passArrays1 = PassArrays(Input=connectivity2)
+    passArrays1.PointDataArrays = ['RegionId']
+    passArrays1.CellDataArrays = []
+
+    # update the view to ensure updated data information
+    spreadSheetView1.Update()
+
+    ss_data = Fetch(passArrays1)
+    # Get the 'RegionId' array from the point data
+    region_ids = ss_data.GetPointData().GetArray('RegionId')
+
+    # Count the occurrences of each region ID
+    unique, counts = np.unique(vtk_to_numpy(region_ids), return_counts=True)
+    region_counts = dict(zip(unique, counts))
+
+    # Filter regions where the count is greater than 1000
+    filtered_region_counts = {region_id: count for region_id, count in region_counts.items() if count > 500}
+
+    # create a new 'Threshold' lambda in whole domain
+    threshold1 = Threshold(Input=connectivity2)
+    threshold1.Scalars = ['POINTS', 'RegionId']
     threshold1.LowerThreshold = 0
-    threshold1.UpperThreshold = 0.5
+    threshold1.UpperThreshold = len(filtered_region_counts)
     threshold1.ThresholdMethod = 'Between'
     threshold1.AllScalars = 1
 
+    # create a new 'Threshold' lambda2 in bubble
+    threshold2 = Threshold(Input=threshold1)
+    threshold2.Scalars = ['POINTS', 'f']
+    threshold2.LowerThreshold = 0
+    threshold2.UpperThreshold = 0.5
+    threshold2.ThresholdMethod = 'Between'
+    threshold2.AllScalars = 1
+
     # create a new 'Extract Surface' convert vtu -> vtp
-    extractSurface3 = ExtractSurface(Input=threshold1)
+    extractSurface3 = ExtractSurface(Input=threshold2)
 
     fn = f"{path}/res/{out_prefix}lambda2_in_bubble_0_{iter:04d}.vtp"
     SavePvdFile(fn, extractSurface3, 'lambda2 in bubble', timesteps_dump)
@@ -1492,7 +1591,7 @@ for timestep in timesteps:
 
     # show data from contour2
     print("Showing contour2.. ")
-    contour2Display = Show(threshold0, renderView1, 'GeometryRepresentation')
+    contour2Display = Show(threshold1, renderView1, 'GeometryRepresentation')
     # trace defaults for the display properties.
     contour2Display.Representation = 'Surface'
     contour2Display.ColorArrayName = ['POINTS', 'l2']
@@ -1562,51 +1661,46 @@ for timestep in timesteps:
         CompressionLevel='2'
     )
 
-    print("Showing connectivity1 and hiding contour2.. ")
-    Hide(threshold0, renderView1)  # hide lambda2 in whole domain
+    print("Showing connectivity1 and hiding threshold1.. ")
+    Hide(threshold1, renderView1)  # hide lambda2 in whole domain
     # ****************** LAMBDA2 inside a bubble  ********************
     # trace defaults for the display properties.
     connectivity1Display.Representation = 'Surface'
     connectivity1Display.Opacity = 0.2
 
-    # show data from threshold1
-    print("Showing threshold1.. ")
-    threshold1Display = Show(threshold1, renderView1, 'GeometryRepresentation')
+    # show data from threshold2
+    print("Showing threshold2.. ")
+    threshold2Display = Show(threshold2, renderView1, 'GeometryRepresentation')
     # get color transfer function/color map for 'l2'
     # l2LUT = GetColorTransferFunction('l2')
     # l2LUT.RGBPoints = [-1.0, 0.054901960784313725, 0.9411764705882353, 0.12941176470588237, -0.75, 0.865, 0.865, 0.865,
     #                    -0.5, 1.0, 1.0, 0.0]
     # l2LUT.ScalarRangeInitialized = 1.0
     # trace defaults for the display properties.
-    threshold1Display.Representation = 'Surface'
-    threshold1Display.ColorArrayName = ['POINTS', 'l2']
-    threshold1Display.LookupTable = l2LUT
-    threshold1Display.Opacity = 0.5
-    threshold1Display.Specular = 1.0
-    threshold1Display.AmbientColor = [1.0, 1.0, 1.0]  # RGB for white
-    threshold1Display.DiffuseColor = [1.0, 1.0, 1.0]  # RGB for white
-    threshold1Display.OSPRayScaleArray = 'l2'
-    threshold1Display.OSPRayScaleFunction = 'PiecewiseFunction'
-    threshold1Display.SelectOrientationVectors = 'None'
-    threshold1Display.ScaleFactor = 0.2388025760650635
-    threshold1Display.SelectScaleArray = 'l2'
-    threshold1Display.GlyphType = 'Arrow'
-    threshold1Display.GlyphTableIndexArray = 'l2'
-    # threshold1Display.GaussianRadius = 0.011940128803253174
-    threshold1Display.SetScaleArray = ['POINTS', 'l2']
-    threshold1Display.ScaleTransferFunction = 'PiecewiseFunction'
-    threshold1Display.OpacityArray = ['POINTS', 'l2']
-    threshold1Display.OpacityTransferFunction = 'PiecewiseFunction'
-    threshold1Display.DataAxesGrid = 'GridAxesRepresentation'
-    threshold1Display.PolarAxes = 'PolarAxesRepresentation'
-    # init the 'PiecewiseFunction' selected for 'OSPRayScaleFunction'
-    threshold1Display.OSPRayScaleFunction.Points = [0.001414213562373095, 0.0, 0.5, 0.0, 1.4142135623730951, 1.0, 0.5, 0.0]
-    # init the 'PiecewiseFunction' selected for 'ScaleTransferFunction'
-    threshold1Display.ScaleTransferFunction.Points = [-1.0, 0.0, 0.5, 0.0, -0.9998779296875, 1.0, 0.5, 0.0]
-    # init the 'PiecewiseFunction' selected for 'OpacityTransferFunction'
-    threshold1Display.OpacityTransferFunction.Points = [-1.0, 0.0, 0.5, 0.0, -0.9998779296875, 1.0, 0.5, 0.0]
-    # show color legend
-    threshold1Display.SetScalarBarVisibility(renderView1, False)
+    threshold2Display.Representation = 'Surface'
+    threshold2Display.ColorArrayName = ['POINTS', 'l2']
+    threshold2Display.LookupTable = l2LUT
+    threshold2Display.Opacity = 0.5
+    threshold2Display.Specular = 1.0
+    threshold2Display.AmbientColor = [1.0, 1.0, 1.0]  # RGB for white
+    threshold2Display.DiffuseColor = [1.0, 1.0, 1.0]  # RGB for white
+    threshold2Display.OSPRayScaleArray = 'l2'
+    threshold2Display.OSPRayScaleFunction = 'PiecewiseFunction'
+    threshold2Display.SelectOrientationVectors = 'None'
+    threshold2Display.ScaleFactor = 0.2388025760650635
+    threshold2Display.SelectScaleArray = 'l2'
+    threshold2Display.GlyphType = 'Arrow'
+    threshold2Display.GlyphTableIndexArray = 'l2'
+    threshold2Display.SetScaleArray = ['POINTS', 'l2']
+    threshold2Display.ScaleTransferFunction = 'PiecewiseFunction'
+    threshold2Display.OpacityArray = ['POINTS', 'l2']
+    threshold2Display.OpacityTransferFunction = 'PiecewiseFunction'
+    threshold2Display.DataAxesGrid = 'GridAxesRepresentation'
+    threshold2Display.PolarAxes = 'PolarAxesRepresentation'
+    threshold2Display.OSPRayScaleFunction.Points = [0.001414213562373095, 0.0, 0.5, 0.0, 1.4142135623730951, 1.0, 0.5, 0.0]
+    threshold2Display.ScaleTransferFunction.Points = [-1.0, 0.0, 0.5, 0.0, -0.9998779296875, 1.0, 0.5, 0.0]
+    threshold2Display.OpacityTransferFunction.Points = [-1.0, 0.0, 0.5, 0.0, -0.9998779296875, 1.0, 0.5, 0.0]
+    threshold2Display.SetScalarBarVisibility(renderView1, False)
     connectivity1Display.SetScalarBarVisibility(renderView1, False)
 
     l2PWF = GetOpacityTransferFunction('l2')
@@ -1627,7 +1721,7 @@ for timestep in timesteps:
                    CompressionLevel='2')
     Hide(transform1, renderView1)  # hide cylinder
     Hide(extractSurface3, renderView1)  # hide lambda2 in bubble
-    Hide(threshold1, renderView1)  # hide lambda2 in bubble
+    Hide(threshold2, renderView1)  # hide lambda2 in bubble
     Hide(connectivity1, renderView1)  # hide bubble contour
 
     # ******************************SLICE bubble*******************************************
@@ -1702,42 +1796,42 @@ for timestep in timesteps:
 
     print("clip5:", get_bounds(clip5))
 
-    threshold2 = Threshold(Input=clip5)
-    threshold2.Scalars = ['POINTS', 'fs']
-    threshold2.LowerThreshold = 0
-    threshold2.UpperThreshold = 0.5
-    threshold2.ThresholdMethod = 'Between'
-    threshold2.AllScalars = 1
+    threshold3 = Threshold(Input=clip5)
+    threshold3.Scalars = ['POINTS', 'fs']
+    threshold3.LowerThreshold = 0
+    threshold3.UpperThreshold = 0.5
+    threshold3.ThresholdMethod = 'Between'
+    threshold3.AllScalars = 1
 
-    threshold2Display = Show(threshold2, renderView1, 'GeometryRepresentation')
-    threshold2Display.Representation = 'Surface'
-    threshold2Display.ColorArrayName = ['CELLS', 'u']
-    threshold2Display.LookupTable = uLUT
-    threshold2Display.Opacity = 1
-    threshold2Display.Specular = 1
-    threshold2Display.AmbientColor = [1.0, 1.0, 1.0]  # RGB for white
-    threshold2Display.DiffuseColor = [1.0, 1.0, 1.0]  # RGB for white
+    threshold3Display = Show(threshold3, renderView1, 'GeometryRepresentation')
+    threshold3Display.Representation = 'Surface'
+    threshold3Display.ColorArrayName = ['CELLS', 'u']
+    threshold3Display.LookupTable = uLUT
+    threshold3Display.Opacity = 1
+    threshold3Display.Specular = 1
+    threshold3Display.AmbientColor = [1.0, 1.0, 1.0]  # RGB for white
+    threshold3Display.DiffuseColor = [1.0, 1.0, 1.0]  # RGB for white
 
-    threshold2Display.OSPRayScaleArray = 'u'
-    threshold2Display.OSPRayScaleFunction = 'PiecewiseFunction'
-    threshold2Display.SelectOrientationVectors = 'None'
-    threshold2Display.SelectScaleArray = 'u'
-    threshold2Display.GlyphType = 'Arrow'
-    threshold2Display.GlyphTableIndexArray = 'u'
-    threshold2Display.SetScaleArray = ['CELLS', 'u']
-    threshold2Display.ScaleTransferFunction = 'PiecewiseFunction'
-    threshold2Display.OpacityArray = ['CELLS', 'u']
-    threshold2Display.OpacityTransferFunction = 'PiecewiseFunction'
-    threshold2Display.DataAxesGrid = 'GridAxesRepresentation'
-    threshold2Display.PolarAxes = 'PolarAxesRepresentation'
-    threshold2Display.OSPRayScaleFunction.Points = [0.001414213562373095, 0.0, 0.5, 0.0, 1.4142135623730951, 1.0, 0.5, 0.0]
-    threshold2Display.ScaleTransferFunction.Points = [-1.0, 0.0, 0.5, 0.0, -0.9998779296875, 1.0, 0.5, 0.0]
-    threshold2Display.OpacityTransferFunction.Points = [-1.0, 0.0, 0.5, 0.0, -0.9998779296875, 1.0, 0.5, 0.0]
-    threshold2Display.SetScalarBarVisibility(renderView1, True)
+    threshold3Display.OSPRayScaleArray = 'u'
+    threshold3Display.OSPRayScaleFunction = 'PiecewiseFunction'
+    threshold3Display.SelectOrientationVectors = 'None'
+    threshold3Display.SelectScaleArray = 'u'
+    threshold3Display.GlyphType = 'Arrow'
+    threshold3Display.GlyphTableIndexArray = 'u'
+    threshold3Display.SetScaleArray = ['CELLS', 'u']
+    threshold3Display.ScaleTransferFunction = 'PiecewiseFunction'
+    threshold3Display.OpacityArray = ['CELLS', 'u']
+    threshold3Display.OpacityTransferFunction = 'PiecewiseFunction'
+    threshold3Display.DataAxesGrid = 'GridAxesRepresentation'
+    threshold3Display.PolarAxes = 'PolarAxesRepresentation'
+    threshold3Display.OSPRayScaleFunction.Points = [0.001414213562373095, 0.0, 0.5, 0.0, 1.4142135623730951, 1.0, 0.5, 0.0]
+    threshold3Display.ScaleTransferFunction.Points = [-1.0, 0.0, 0.5, 0.0, -0.9998779296875, 1.0, 0.5, 0.0]
+    threshold3Display.OpacityTransferFunction.Points = [-1.0, 0.0, 0.5, 0.0, -0.9998779296875, 1.0, 0.5, 0.0]
+    threshold3Display.SetScalarBarVisibility(renderView1, True)
 
     # uLUTColorBar.Visibility = 1
 
-    print("clip5 after:", get_bounds(threshold2))
+    print("clip5 after:", get_bounds(threshold3))
 
     # create a new 'Slice'
     slice1 = Slice(Input=contour1)
@@ -1843,14 +1937,18 @@ for timestep in timesteps:
     # Freeing Memory
     Delete(slice1)
     del slice1
-    Delete(threshold2)
-    del threshold2
+    Delete(threshold3)
+    del threshold3
     Delete(clip5)
     del clip5
     Delete(extractSurface3)
     del extractSurface3
+    Delete(threshold2)
+    del threshold2
     Delete(threshold1)
     del threshold1
+    Delete(connectivity2)
+    del connectivity2
     Delete(threshold0)
     del threshold0
     Delete(extractSurface2)
