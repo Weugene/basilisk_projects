@@ -1510,31 +1510,30 @@ for timestep in timesteps:
     # UpdatePipeline(time=timestep, proxy=connectivity1)
     connectivity2.UpdatePipeline()
 
-
-    # create a new 'Pass Arrays'
-    passArrays1 = PassArrays(Input=connectivity2)
-    passArrays1.PointDataArrays = ['RegionId']
-    passArrays1.CellDataArrays = []
-
-    # update the view to ensure updated data information
-    spreadSheetView1.Update()
-
-    ss_data = Fetch(passArrays1)
-    # Get the 'RegionId' array from the point data
-    region_ids = ss_data.GetPointData().GetArray('RegionId')
-
-    # Count the occurrences of each region ID
-    unique, counts = np.unique(vtk_to_numpy(region_ids), return_counts=True)
-    region_counts = dict(zip(unique, counts))
-
-    # Filter regions where the count is greater than 1000
-    filtered_region_counts = {region_id: count for region_id, count in region_counts.items() if count > 500}
+    # # create a new 'Pass Arrays'
+    # passArrays1 = PassArrays(Input=connectivity2)
+    # passArrays1.PointDataArrays = ['RegionId']
+    # passArrays1.CellDataArrays = []
+    #
+    # # update the view to ensure updated data information
+    # spreadSheetView1.Update()
+    #
+    # ss_data = Fetch(passArrays1)
+    # # Get the 'RegionId' array from the point data
+    # region_ids = ss_data.GetPointData().GetArray('RegionId')
+    #
+    # # Count the occurrences of each region ID
+    # unique, counts = np.unique(vtk_to_numpy(region_ids), return_counts=True)
+    # region_counts = dict(zip(unique, counts))
+    #
+    # # Filter regions where the count is greater than 1000
+    # filtered_region_counts = {region_id: count for region_id, count in region_counts.items() if count > 500}
 
     # create a new 'Threshold' lambda in whole domain
     threshold1 = Threshold(Input=connectivity2)
     threshold1.Scalars = ['POINTS', 'RegionId']
     threshold1.LowerThreshold = 0
-    threshold1.UpperThreshold = len(filtered_region_counts)
+    threshold1.UpperThreshold = 11  # len(filtered_region_counts)
     threshold1.ThresholdMethod = 'Between'
     threshold1.AllScalars = 1
 
