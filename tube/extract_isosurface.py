@@ -19,17 +19,14 @@ import logging
 import os
 import scipy
 import timeit
+import plotly.graph_objects as go
+from scipy.spatial import Delaunay
+from pathlib import Path
+from matplotlib.pyplot import *
+from numpy import linalg as LA
 
 logging.basicConfig(format='%(message)s')
 log = logging.getLogger(__name__)
-
-from scipy.spatial import Delaunay
-import plotly.graph_objects as go
-from pathlib import Path
-
-from matplotlib.pyplot import *
-
-
 vtk_from_pvpython = True  # pvpython reads from file, otherwise from paraview GUI
 # vtk_from_pvpython=False # pvpython reads from file, otherwise from paraview GUI
 
@@ -1174,7 +1171,8 @@ for timestep in timesteps:
 
     areas = compute_area(connectivity1, time)
 
-    for k, v in metadata["parts"].items():
+    for k, v in areas.items():
+        metadata["parts"].setdefault(k, {})
         metadata["parts"][k]["DirectArea"] = areas[k]
     SaveMetaData(data=metadata, fn=metadata_filename)
 
@@ -1783,6 +1781,8 @@ for timestep in timesteps:
     # streamTracer3Display = Show(streamTracer3, renderView1, 'GeometryRepresentation')
     # streamTracer3.UpdatePipeline()
 
+    Delete(slice1)
+    del slice1
     clip5 = Clip(Input=my_source)
     clip5.Scalars = ['CELLS', 'u']
     clip5.ClipType = 'Plane'
@@ -1907,29 +1907,36 @@ for timestep in timesteps:
 
     # create a new 'Pass Arrays'
     passArrays1 = PassArrays(Input=slice1)
-    passArrays1.PointDataArrays = ['Points']
+    passArrays1.PointDataArrays = ['Points', 'u']
     passArrays1.CellDataArrays = []
 
     # update the view to ensure updated data information
     spreadSheetView1.Update()
 
     ss_data = Fetch(passArrays1)
+    # Extract the Points array
+    points_array = ss_data.GetPoints().GetData()
+    u_array = ss_data.GetPointData().GetArray('u')
     Np = ss_data.GetNumberOfPoints()
+
     print('Np=', Np)
     xr = []
     for ip in range(Np):
-        xp = ss_data.GetPoint(ip)[0]
-        yp = ss_data.GetPoint(ip)[1]
-        xr.append((xp, yp))
+        xvec = ss_data.GetPoint(ip)
+        uvec = u_array.GetTuple(ip)
+        uvec_mag = LA.norm(uvec)
+        xr.append((xvec[2], xvec[0], *uvec, uvec_mag))
     xr = np.array(xr)
     print('processing data size of x and y:', xr.shape[0])
 
     if xr.size:
         fn = "slice_t={}.csv".format(timestep)
-        Save1DArraysToFile([xr[:, 0], xr[:, 1]], fn)
+        Save1DArraysToFile(xr, fn)
 
     metadata["xp"] = xr[:, 0].tolist()
     metadata["yp"] = xr[:, 1].tolist()
+    metadata["ux"] = xr[:, 4].tolist()
+    metadata["umag"] = xr[:, -1].tolist()
     metadata["contour_Np"] = Np
     SaveMetaData(data=metadata, fn=metadata_filename)
 
