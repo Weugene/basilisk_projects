@@ -489,7 +489,7 @@ def find_first_peak(x_fil, y_fil, x0, xmin, xmax, x_mean, time):
         x_fil = x_fil[::-1]
         y_fil = y_fil[::-1]
     ind = np.argmax(y_fil)
-    print("max ={} {}".format(x_fil[ind], y_fil[ind]))
+    print("max={} {}".format(x_fil[ind], y_fil[ind]))
     # choose some points if they are:
     args = (y_fil >= 0.3) & (x_fil <= x_mean)
     x_ripple = x_fil[args]
@@ -552,13 +552,14 @@ def find_smooth_curve_and_bounds(x, y, x_mean, alpha=0.01):
     print("lower_hull and upper_hull minmax<><><><>", min(lower_hull[:, 0]), max(lower_hull[:, 0]),
           min(upper_hull[:, 0]), max(upper_hull[:, 0]))
 
-    x_peak, y_peak, length_x_peak_mean = find_first_peak(upper_hull[:, 0], upper_hull[:, 1], xy0[0], xmin, xmax, x_mean,
-                                                         0)
+    x_peak, y_peak, length_x_peak_mean = find_first_peak(
+        upper_hull[:, 0], upper_hull[:, 1], xy0[0], xmin, xmax, x_mean, 0
+    )
 
-    delta_min_lw, delta_max_lw, delta_avg_lw, delta_avg_std_lw = calc_thickness(lower_hull[:, 0], lower_hull[:, 1],
-                                                                                x_peak, x_mean, 'lower_hull')
-    delta_min_up, delta_max_up, delta_avg_up, delta_avg_std_up = calc_thickness(upper_hull[:, 0], upper_hull[:, 1],
-                                                                                x_peak, x_mean, 'upper_hull')
+    # delta_min_lw, delta_max_lw, delta_avg_lw, delta_avg_std_lw = calc_thickness(lower_hull[:, 0], lower_hull[:, 1],
+    #                                                                             x_peak, x_mean, 'lower_hull')
+    # delta_min_up, delta_max_up, delta_avg_up, delta_avg_std_up = calc_thickness(upper_hull[:, 0], upper_hull[:, 1],
+    #                                                                             x_peak, x_mean, 'upper_hull')
     delta_min, delta_max, delta_avg, delta_avg_std = calc_thickness(x, y, x_peak, x_mean, 'sliced_x_y')
 
     return lower_hull, upper_hull, x_peak, y_peak, length_x_peak_mean, delta_min, delta_max, xy0, xyN, xmin, xmax
@@ -595,9 +596,9 @@ def get_x_over_R_array(input_data, fn, PointDataArrays, CellDataArrays):
     for ip in range(Np):
         regionId = ss_data.GetPointData().GetArray('RegionId').GetValue(ip)
         if regionId == 0:
-            xp = ss_data.GetPoint(ip)[2]  # ONLY FOR HTG format, channel along Z axis
+            zp = ss_data.GetPoint(ip)[2]  # ONLY FOR HTG format, channel along Z axis
             rp = ss_data.GetPointData().GetArray('Result').GetValue(ip)
-            xr.append((xp, rp))
+            xr.append((zp, rp))
     xr = np.array(xr)
     print('processing data size of x and y:', len(xr))
 
@@ -626,7 +627,7 @@ def SavePvdFile(fn, source, print_text, times):
         subn = match.group(1)
     else:
         subn = ""
-    print('e:', subn)
+    print('Saving:', subn)
     text1 = '''<VTKFile type="Collection" version="1.0" byte_order="LittleEndian" header_type="UInt64">\n\t<Collection>\n'''
     text3 = '''\t</Collection>
 </VTKFile>'''
@@ -1087,6 +1088,16 @@ for timestep in timesteps:
     # animationScene1.AnimationTime = timestep
     # Properties modified on timeKeeper1
     timeKeeper1.Time = timestep
+    # my_source = Threshold(Input=my_source)
+    # my_source.Scalars = ['POINTS', 'f']
+    # my_source.LowerThreshold = 0
+    # my_source.UpperThreshold = 0.9999
+    # my_source.ThresholdMethod = 'Between'
+    # my_source.AllScalars = 1
+    # my_source.UseContinuousCellRange = 0
+    # my_source.Invert = 0
+    # my_source.MemoryStrategy = 'Mask Input'
+    # my_source.UpdatePipeline()
 
     ############################################################################################
     ### Compute averaged velocity, coordinate, area and volumes for each connectivity region ###
@@ -1169,14 +1180,69 @@ for timestep in timesteps:
     # UpdatePipeline(time=timestep, proxy=connectivity1)
     connectivity1.UpdatePipeline()
 
+    # create a new 'Slice'
+    slice1 = Slice(Input=connectivity1)
+    slice1.SliceType = 'Plane'
+    slice1.HyperTreeGridSlicer = 'Plane'
+    slice1.Triangulatetheslice = 1
+    slice1.SliceOffsetValues = [0.0]
+    slice1.PointMergeMethod = 'Uniform Binning'
+    # init the 'Plane' selected for 'SliceType'
+    slice1.SliceType.Origin = [0.0, 0, 0.5 * (len_min + len_max)]
+    slice1.SliceType.Normal = [0.0, 1.0, 0.0]
+    slice1.SliceType.Offset = 0.1
+    # init the 'Plane' selected for 'HyperTreeGridSlicer'
+    slice1.HyperTreeGridSlicer.Origin = [0.0, 0, 0.5 * (len_min + len_max)]
+    slice1.HyperTreeGridSlicer.Normal = [0.0, 1.0, 0.0]
+    slice1.HyperTreeGridSlicer.Offset = 0.1
+    # init the 'Uniform Binning' selected for 'PointMergeMethod'
+    slice1.PointMergeMethod.Divisions = [50, 50, 50]
+    slice1.PointMergeMethod.Numberofpointsperbucket = 32
+    slice1.UpdatePipeline()
+
+    # create a new 'Pass Arrays'
+    passArrays1 = PassArrays(Input=slice1)
+    passArrays1.PointDataArrays = ['Points', 'u']
+    passArrays1.CellDataArrays = []
+
+    # update the view to ensure updated data information
+    spreadSheetView1.Update()
+
+    ss_data = Fetch(passArrays1)
+    # Extract the Points array
+    points_array = ss_data.GetPoints().GetData()
+    u_array = ss_data.GetPointData().GetArray('u')
+    Np = ss_data.GetNumberOfPoints()
+
+    print('Np=', Np)
+    xr = []
+    for ip in range(Np):
+        xvec = ss_data.GetPoint(ip)
+        uvec = u_array.GetTuple(ip)
+        uvec_mag = LA.norm(uvec)
+        xr.append((xvec[2], xvec[0], *uvec, uvec_mag))
+    xr = np.array(xr)
+    print('processing data size of x and y:', xr.shape[0])
+
+    if xr.size:
+        fn = "slice_t={}.csv".format(timestep)
+        Save1DArraysToFile(xr, fn)
+
+    metadata["xp"] = xr[:, 0].tolist()
+    metadata["yp"] = xr[:, 1].tolist()
+    metadata["ux"] = xr[:, 4].tolist()
+    metadata["umag"] = xr[:, -1].tolist()
+    metadata["contour_Np"] = Np
+    SaveMetaData(data=metadata, fn=metadata_filename)
+    ind_pos = xr[:, 1] >= 0
+    x, y = xr[ind_pos, 0], xr[ind_pos, 1]
+
     areas = compute_area(connectivity1, time)
 
     for k, v in areas.items():
         metadata["parts"].setdefault(k, {})
         metadata["parts"][k]["DirectArea"] = areas[k]
     SaveMetaData(data=metadata, fn=metadata_filename)
-
-
 
     # create a new 'Calculator'
     calculator1 = Calculator(Input=connectivity1)
@@ -1259,24 +1325,37 @@ for timestep in timesteps:
     # *********************** Find the x coordinate of the first peak x_peak only for RegionId=0 ****************************
     xy0 = [0, 0]
     xyN = [0, 0]
-    x, y = get_x_over_R_array(calculator1, fn="r_over_x_total_t={}.csv".format(timestep),
-                              PointDataArrays=['Points', 'Result', "RegionId"], CellDataArrays=["Volume"])
+    # x, y = get_x_over_R_array(slice1, fn="r_over_x_total_t={}.csv".format(timestep),
+    #                           PointDataArrays=['Points', 'Result', "RegionId"], CellDataArrays=["Volume"])
 
-    lower_hull, upper_hull, x_peak, y_peak, length_x_peak_mean, delta_min, delta_max, xy0, xyN, xmin, xmax = find_smooth_curve_and_bounds(
-        x, y, x_mean, alpha=0.05)
+    # fn = f"r_over_x_total_t={timestep}.pdf"
+    # plot_graph([x], [y], \
+    #            ["slice"], \
+    #            dash=['solid', 'dot', 'dot'], \
+    #            xtitle="x", ytitle="y", image_name=fn, mode=['lines', 'lines', 'lines'], \
+    #            colors=['red', 'black', 'black'], yrange=[0, 0.5], xrange=[x.min() - 0.1, x.max() + 0.1], \
+    #            marker_size=1, width=1000, height=500, path='./', yanchor='bottom', y0_anchor=0.01, xanchor='left',
+    #            x0_anchor=0.3)
 
-    fn = "r_over_x_t={}.csv".format(timestep)
-    Save1DArraysToFile([x, y, lower_hull, upper_hull], fn)
 
-    # metadata["lower_hull"] = lower_hull
-    # metadata["upper_hull"] = upper_hull
+    # lower_hull, upper_hull, x_peak, y_peak, length_x_peak_mean, delta_min, delta_max, xy0, xyN, xmin, xmax = find_smooth_curve_and_bounds(
+    #     x, y, x_mean, alpha=0.05)
+    xmin = x.min()
+    xmax = x.max()
+    ymin = 0
+    ymax = y.max()
+    delta_min = 0.5 - ymax
+    delta_max = 0.5 - ymin
+    x_peak = xmin + 0.1*len_bub
+    index_nearest = np.argmin(np.abs(x - x_peak))
+    y_peak = y[index_nearest]
+    length_x_peak_mean = x_mean - x_peak
+
     metadata["x_peak"] = x_peak
     metadata["y_peak"] = y_peak
     metadata["length_x_peak_mean"] = length_x_peak_mean
     metadata["delta_min"] = delta_min
     metadata["delta_max"] = delta_max
-    metadata["xy0"] = xy0
-    metadata["xyN"] = xyN
     metadata["xmin"] = xmin
     metadata["xmax"] = xmax
     SaveMetaData(data=metadata, fn=metadata_filename)
@@ -1724,34 +1803,34 @@ for timestep in timesteps:
     # ******************************SLICE bubble*******************************************
     # *************************************************************************************
     # create a new 'Slice'
-    slice1 = Slice(Input=hyperTreeGridToDualGrid1)
-    slice1.SliceType = 'Plane'
-    slice1.HyperTreeGridSlicer = 'Plane'
-    # slice1.UseDual = 0
-    # slice1.Crinkleslice = 1
-    slice1.Triangulatetheslice = 1
-    slice1.SliceOffsetValues = [0.0]
-    slice1.PointMergeMethod = 'Uniform Binning'
+    slice2 = Slice(Input=hyperTreeGridToDualGrid1)
+    slice2.SliceType = 'Plane'
+    slice2.HyperTreeGridSlicer = 'Plane'
+    # slice2.UseDual = 0
+    # slice2.Crinkleslice = 1
+    slice2.Triangulatetheslice = 1
+    slice2.SliceOffsetValues = [0.0]
+    slice2.PointMergeMethod = 'Uniform Binning'
     # init the 'Plane' selected for 'SliceType'
-    slice1.SliceType.Origin = [0.0, 0.0, 0.5 * (len_min + len_max)]
-    slice1.SliceType.Normal = [0.0, 1.0, 0.0]
-    slice1.SliceType.Offset = 0.0
+    slice2.SliceType.Origin = [0.0, 0.0, 0.5 * (len_min + len_max)]
+    slice2.SliceType.Normal = [0.0, 1.0, 0.0]
+    slice2.SliceType.Offset = 0.0
     # init the 'Plane' selected for 'HyperTreeGridSlicer'
-    slice1.HyperTreeGridSlicer.Origin = [0.0, 0.0, 0.5 * (len_min + len_max)]
-    slice1.HyperTreeGridSlicer.Normal = [0.0, 1.0, 0.0]
-    slice1.HyperTreeGridSlicer.Offset = 0.0
+    slice2.HyperTreeGridSlicer.Origin = [0.0, 0.0, 0.5 * (len_min + len_max)]
+    slice2.HyperTreeGridSlicer.Normal = [0.0, 1.0, 0.0]
+    slice2.HyperTreeGridSlicer.Offset = 0.0
     # init the 'Uniform Binning' selected for 'PointMergeMethod'
-    slice1.PointMergeMethod.Divisions = [50, 50, 50]
-    slice1.PointMergeMethod.Numberofpointsperbucket = 8
-    slice1.UpdatePipeline()
+    slice2.PointMergeMethod.Divisions = [50, 50, 50]
+    slice2.PointMergeMethod.Numberofpointsperbucket = 8
+    slice2.UpdatePipeline()
 
     print("hyperTreeGridToDualGrid1:", get_bounds(hyperTreeGridToDualGrid1))
-    print("slice1 before:", get_bounds(slice1))
+    print("slice2 before:", get_bounds(slice2))
 
     fn = f"{path}/res/{out_prefix}slice_0_{iter:04d}.vtp"
-    SavePvdFile(fn, slice1, 'slice1 data', timesteps_dump)
+    SavePvdFile(fn, slice2, 'slice2 data', timesteps_dump)
 
-    # print("slice1 after SavePvdFile:", get_bounds(slice1))
+    # print("slice2 after SavePvdFile:", get_bounds(slice2))
 
     # pointSource = PointSource()
     # pointSource.Center = [0, 0, xmin]  # Center of the point cloud
@@ -1759,7 +1838,7 @@ for timestep in timesteps:
     # pointSource.Radius = 0.5  # Radius of the point cloud
     #
     # # create a new 'Stream Tracer'
-    # streamTracer3 = StreamTracer(Input=slice1, SeedType=pointSource)
+    # streamTracer3 = StreamTracer(Input=slice2, SeedType=pointSource)
     # streamTracer3.Vectors = ['POINTS', 'u']
     # streamTracer3.InterpolatorType = 'Interpolator with Point Locator'
     # streamTracer3.SurfaceStreamlines = 1
@@ -1776,13 +1855,13 @@ for timestep in timesteps:
     # streamTracer3.ComputeVorticity = 1
 
     # print("streamTracer3:", get_bounds(streamTracer3))
-    # print("slice1:", get_bounds(slice1))
+    # print("slice2:", get_bounds(slice2))
     # # show data in view
     # streamTracer3Display = Show(streamTracer3, renderView1, 'GeometryRepresentation')
     # streamTracer3.UpdatePipeline()
 
-    Delete(slice1)
-    del slice1
+    Delete(slice2)
+    del slice2
     clip5 = Clip(Input=my_source)
     clip5.Scalars = ['CELLS', 'u']
     clip5.ClipType = 'Plane'
@@ -1832,25 +1911,7 @@ for timestep in timesteps:
 
     print("clip5 after:", get_bounds(threshold3))
 
-    # create a new 'Slice'
-    slice1 = Slice(Input=contour1)
-    slice1.SliceType = 'Plane'
-    slice1.HyperTreeGridSlicer = 'Plane'
-    slice1.Triangulatetheslice = 1
-    slice1.SliceOffsetValues = [0.0]
-    slice1.PointMergeMethod = 'Uniform Binning'
-    # init the 'Plane' selected for 'SliceType'
-    slice1.SliceType.Origin = [0.0, 0, 0.5 * (len_min + len_max)]
-    slice1.SliceType.Normal = [0.0, 1.0, 0.0]
-    slice1.SliceType.Offset = 0.1
-    # init the 'Plane' selected for 'HyperTreeGridSlicer'
-    slice1.HyperTreeGridSlicer.Origin = [0.0, 0, 0.5 * (len_min + len_max)]
-    slice1.HyperTreeGridSlicer.Normal = [0.0, 1.0, 0.0]
-    slice1.HyperTreeGridSlicer.Offset = 0.1
-    # init the 'Uniform Binning' selected for 'PointMergeMethod'
-    slice1.PointMergeMethod.Divisions = [50, 50, 50]
-    slice1.PointMergeMethod.Numberofpointsperbucket = 32
-    slice1.UpdatePipeline()
+
 
     print("Showing slice1Display of bubble.. ")
     slice1Display = Show(slice1, renderView1, 'GeometryRepresentation')
@@ -1903,42 +1964,22 @@ for timestep in timesteps:
         TransparentBackground=0,
         CompressionLevel='2'
     )
+    renderView1.CameraParallelScale = 1.4
+    renderView1.CenterOfRotation = center
+    renderView1.CameraFocalPoint = [-0.2, 0, center[2]]
+    renderView1.CameraPosition = [-0.2, 4.5, center[2]]
+    # renderView1.OrientationAxesVisibility = 1
+    # Hide(transform1, renderView1)  # turn off cylinder
+    renderView1.Update()
+
+    fn = path + "/" + picName + '_t=' + str(timestep) + '_ux_slice.png'
+    SaveScreenshot(
+        fn, renderView1,
+        ImageResolution=[1900, 500],
+        TransparentBackground=0,
+        CompressionLevel='2'
+    )
     Show(transform1, renderView1)  # turn on cylinder
-
-    # create a new 'Pass Arrays'
-    passArrays1 = PassArrays(Input=slice1)
-    passArrays1.PointDataArrays = ['Points', 'u']
-    passArrays1.CellDataArrays = []
-
-    # update the view to ensure updated data information
-    spreadSheetView1.Update()
-
-    ss_data = Fetch(passArrays1)
-    # Extract the Points array
-    points_array = ss_data.GetPoints().GetData()
-    u_array = ss_data.GetPointData().GetArray('u')
-    Np = ss_data.GetNumberOfPoints()
-
-    print('Np=', Np)
-    xr = []
-    for ip in range(Np):
-        xvec = ss_data.GetPoint(ip)
-        uvec = u_array.GetTuple(ip)
-        uvec_mag = LA.norm(uvec)
-        xr.append((xvec[2], xvec[0], *uvec, uvec_mag))
-    xr = np.array(xr)
-    print('processing data size of x and y:', xr.shape[0])
-
-    if xr.size:
-        fn = "slice_t={}.csv".format(timestep)
-        Save1DArraysToFile(xr, fn)
-
-    metadata["xp"] = xr[:, 0].tolist()
-    metadata["yp"] = xr[:, 1].tolist()
-    metadata["ux"] = xr[:, 4].tolist()
-    metadata["umag"] = xr[:, -1].tolist()
-    metadata["contour_Np"] = Np
-    SaveMetaData(data=metadata, fn=metadata_filename)
 
     # Freeing Memory
     Delete(slice1)

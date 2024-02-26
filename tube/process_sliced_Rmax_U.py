@@ -87,7 +87,7 @@ print(f'props={props}')
 
 csvnames = glob.glob(f'./{csvPattern}', recursive = False)
 csvnames = sort_names(csvnames)
-print('Found pvd files in:',csvnames)
+print('Found pvd files in:', csvnames)
 
 outputs = {'t':[], 'curvature_tip': [], 'U_tip':[], 'x_tip':[], 'rmax':[]}
 
@@ -99,7 +99,10 @@ for ifile, file in enumerate(csvnames):
     # if time > 7.61:
     #     continue
     print(f'file: {file} time: {time}')
-    res = pd.read_csv(file, sep = ',', usecols=['Points_0','Points_1','u.x_0','u.x_1','u.x_2','u.x_Magnitude'])
+    try:
+        res = pd.read_csv(file, sep = ',', usecols=['Points_0','Points_1','u.x_0','u.x_1','u.x_2','u.x_Magnitude'])
+    except:
+        continue
     left_x = res['Points_0'].min()
     right_x = res['Points_0'].max()
     length = right_x - left_x

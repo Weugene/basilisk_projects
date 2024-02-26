@@ -240,29 +240,38 @@ event vtk_file (i++)
     calculate_aux_fields(u, l, omega, l2);
     vector gradp[];
 
-    double xcg = 0, volume = 0, volumeg = 0 ;
+    double xcg = 0, Ek = 0, Ekl = 0, Ekg = 0, volume = 0, volumeg = 0;
     length_min = 1e+30, length_max = -1e+30, length = 0;
-    foreach( reduction(+:xcg) reduction(+:volume) reduction(+:volumeg)) {
+    foreach(
+        reduction(+:xcg) reduction(+:volume) reduction(+:volumeg)
+        reduction(+:Ek) reduction(+:Ekl) reduction(+:Ekg)
+    ) {
         if (fs[]<1){
-        double dvtmp = (1.0 - f[])*(1.0 - fs[])*dv(); // gas volume
-        volumeg += dvtmp;//gas liquid
-        volume += (1.0 - fs[])*dv();//channel volume
-        xcg   += x*dvtmp;// Along x
+            double dvv = (1.0 - fs[])*dv();
+            double dvg = (1.0 - f[])*dvv; // gas volume
+            volumeg += dvg;//gas liquid
+            volume += dvv;//channel volume
+            xcg   += x*dvg;// Along x
+            double magu = norm(u); // speed
+            Ek += 0.5*rho(f[])*dvv*sq(magu);
+            Ekl += 0.5*rho1*f[]*dvv*sq(magu);
+            Ekg += 0.5*rho2*(1.0 - f[])*dvv*sq(magu);
         }
         foreach_dimension() gradp.x[] = (p[] - p[-1])/Delta;
     }
     scalar sf[];
     filter_scalar_N_times(f, sf, 10);
     xcg /= volumeg;
+    Ek /= volume;
+    Ekl /= volume;
+    Ekg /= volume;
     length_min = xcg - shiftm;
     length_max = xcg + shiftp;
     length = length_max - length_min;
 
     fprintf (
-        ferr, "x= %g length_min= %g length_max= %g length= %g it_fp= %d\n"
-            "volume= %g volumeg= %g\n",
-            xcg, length_min, length_max, length, iter_fp,
-            volume, volumeg
+        ferr, "x= %g length_min= %g length_max= %g length= %g it_fp= %d volume= %g volumeg= %g Ek= %g Ekl= %g Ekg= %g\n",
+        xcg, length_min, length_max, length, iter_fp, volume, volumeg, Ek, Ekl, Ekg
     );
 
     char path[] = "res"; // no slash at the end!!
