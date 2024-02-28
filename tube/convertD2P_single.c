@@ -9,6 +9,7 @@
 #include "utils-weugene.h"
 #include "output_htg.h"
 #include <ctype.h>
+#include <dirent.h> // Directory entry
 scalar fs[], f[], p[];
 vector u[];
 scalar l[], omega[], l2[];
@@ -85,6 +86,8 @@ int adapt_method = 1; // 0 - traditional, 1 - using limitation, 2 - using array 
 int snapshot_i = 100;
 double fseps = 1e-3, ueps = 1e-2;
 double TOLERANCE_P = 1e-5, TOLERANCE_V = 1e-5;
+double timesteps[1000];
+int timesteps_count = 0;
 
 //get time from dump name (dump-1.1234 => 1.1234)
 double get_double(const char *str)
@@ -96,6 +99,41 @@ double get_double(const char *str)
     /* The parse to a double */
     return fabs(strtod(str, NULL));
 }
+
+// Comparison function for qsort
+int compare(const void *a, const void *b) {
+    double diff = *(double*)a - *(double*)b;
+    return (diff < 0) ? -1 : (diff > 0);
+}
+
+void get_timesteps(){
+    DIR *d; // Directory stream
+    struct dirent *dir; // Pointer for directory entry
+
+    // Open the current directory
+    d = opendir(".");
+    if (d) {
+        while ((dir = readdir(d)) != NULL) { // Read each directory entry
+            // Check if the file name starts with "dump-"
+            if (strncmp(dir->d_name, "dump-", 5) == 0) {
+                double time = get_double(dir->d_name);
+                timesteps[timesteps_count++] = time;
+            }
+        }
+        closedir(d); // Close the directory
+        // Sort the times array
+        qsort(timesteps, timesteps_count, sizeof(double), compare);
+
+        // Print the sorted times
+        for (int i = 0; i < timesteps_count; i++) {
+            printf("sorted time=%f\n", timesteps[i]);
+        }
+    } else {
+        perror("opendir() failed");
+    }
+
+}
+
 
 int main (int argc, char * argv[]) {
     // set which dump files will be converted: each $(i_take)th
@@ -202,12 +240,12 @@ event init (t = 0) {
         fprintf(ferr, "can't open the file %s. Missing this file, go to the next file\n", dump_name);
         return 0;
     }
+    get_timesteps();
 }
 
 #define ADAPT_SCALARS {fs, f, p, l, omega, l2, u}
 #define ADAPT_EPS_SCALARS {1e-4, 1e-4, 1e-2, 1e-2, 1e-2, 1e-2, 1e-2, 1e-2, 1e-2}
-event adapt (i++)
-{
+event adapt (i++){
     if (maxlevel_init != maxlevel) {
         double eps_arr[] = ADAPT_EPS_SCALARS;
         MinMaxValues (ADAPT_SCALARS, eps_arr);
@@ -235,8 +273,7 @@ void calculate_aux_fields(vector u, scalar l, scalar omega, scalar l2){
     lambda2 (u, l2);
 }
 
-event vtk_file (i++)
-{
+event vtk_file (i++){
     calculate_aux_fields(u, l, omega, l2);
     vector gradp[];
 
