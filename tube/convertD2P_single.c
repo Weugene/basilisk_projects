@@ -298,10 +298,11 @@ event vtk_file (i++){
     }
     scalar sf[];
     filter_scalar_N_times(f, sf, 10);
+    double volumel = volume - volumeg;
     xcg /= volumeg;
     Ek /= volume;
-    Ekl /= volume;
-    Ekg /= volume;
+    Ekl /= volumel;
+    Ekg /= volumeg;
     length_min = xcg - shiftm;
     length_max = xcg + shiftp;
     length = length_max - length_min;

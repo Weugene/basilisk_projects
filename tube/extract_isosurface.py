@@ -1,4 +1,4 @@
-# state file generated using paraview version 5.8.0
+# state file generated using paraview version 5.12.0-RC2
 import glob
 
 # ----------------------------------------------------------------
@@ -574,9 +574,16 @@ def Save1DArraysToFile(numpy_arrays, fn):
         print('Successfully save file:', fn)
 
 
+class NumpyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        return json.JSONEncoder.default(self, obj)
+
+
 def SaveMetaData(data, fn):
     with open(fn, 'w') as fp:
-        json.dump(data, fp, indent=4)
+        json.dump(data, fp, indent=4, cls=NumpyEncoder)
     print(f"Saved metadata: {fn}")
 
 
@@ -663,21 +670,63 @@ def get_bounds(input) -> dict:
     }
 
 
-def compute_volume_averaged_vars(integrateVariables) -> dict:
-    passArrays1 = PassArrays(Input=integrateVariables)
-    passArrays1.PointDataArrays = ['Points', 'u', 'f']
-    passArrays1.CellDataArrays = ['Volume']
+def calculate_volume(integrate_variables) -> float:
+    pass_arrays = PassArrays(Input=integrate_variables)
+    pass_arrays.CellDataArrays = ['Volume']
+    ss_data = Fetch(pass_arrays)
+    return ss_data.GetCellData().GetArray('Volume').GetValue(0)
 
-    ss_data = Fetch(passArrays1)
+
+def calculate_averages(integrate_variables, point_data_arrays, volume: float, postfix="") -> dict:
+    """
+    Calculate averages for given volume of domain, liquid or gas
+    :param integrate_variables:
+    :param point_data_arrays:
+    :param volume:
+    :return:
+    """
+    pass_arrays = PassArrays(Input=integrate_variables)
+    pass_arrays.PointDataArrays = point_data_arrays
+    scalar_fields = list(set(point_data_arrays).difference(["u"]))
+    ss_data = Fetch(pass_arrays)
+    averages = dict()
+    for field in scalar_fields:
+        averages[f"{field}_mean_{postfix}"] = ss_data.GetPointData().GetArray(field).GetValue(0) / volume
+    if "u" in point_data_arrays:
+        averages[f"u_mean_{postfix}"] = np.asarray([ss_data.GetPointData().GetArray('u').GetValue(i) / volume for i in range(3)])
+    return averages
+
+
+def compute_volume_averaged_vars(integrate_variables, point_data_arrays=None) -> dict:
+    """
+    Compute average variables for bubbles
+    :param integrate_variables:
+    :param point_data_arrays:
+    :return: dict of means
+    """
+    if point_data_arrays is None:
+        point_data_arrays = ['Points', 'u', 'f']
+    else:
+        point_data_arrays = list(set(point_data_arrays + ['Points', 'u', 'f']))
+    pass_arrays = PassArrays(Input=integrate_variables)
+    pass_arrays.PointDataArrays = point_data_arrays
+    pass_arrays.CellDataArrays = ['Volume']
+
+    ss_data = Fetch(pass_arrays)
     volume = ss_data.GetCellData().GetArray('Volume').GetValue(0)
     x_mean = ss_data.GetPoint(0)
     u_mean = [ss_data.GetPointData().GetArray('u').GetValue(i) / volume for i in range(3)]
-    f_mean = ss_data.GetPointData().GetArray('f').GetValue(0) / volume
+
+    scalar = list(set(point_data_arrays).difference(['Points', 'u']))
+    scalar_mean = dict()
+    for field in scalar:
+        scalar_mean[f"{field}_mean"] = ss_data.GetPointData().GetArray(field).GetValue(0) / volume
+
     return {
         "Volume": volume,
         "x_mean": x_mean,
         "u_mean": u_mean,
-        "f_mean": f_mean
+        **scalar_mean
     }
 
 def single_compute_area(connectivity, threshold_value: float, time: float):
@@ -749,17 +798,21 @@ def single_compute_area_volume(connectivity, threshold_value: float, time: float
     threshold.MemoryStrategy = 'Mask Input'
     threshold.UpdatePipeline()
 
-    # create a new 'Integrate Variables'
-    integrateVolumetricVariables = IntegrateVariables(Input=threshold)
-    integrateVolumetricVariables.DivideCellDataByVolume = 0
+    rho2 = 1.204/997.
+    calculatorEkg = Calculator(Input=threshold)
+    calculatorEkg.Function = f'(1.0 - f)*{rho2}*mag(u)^2/2'
+    calculatorEkg.ResultArrayName = 'Ekg'
+    calculatorEkg.UpdatePipeline()
 
-    # UpdatePipeline(time=time, proxy=integrateVolumetricVariables)
+    # create a new 'Integrate Variables'
+    integrateVolumetricVariables = IntegrateVariables(Input=calculatorEkg)
+    integrateVolumetricVariables.DivideCellDataByVolume = 0
     integrateVolumetricVariables.UpdatePipeline()
 
-    mean_vars = compute_volume_averaged_vars(integrateVolumetricVariables)
+    mean_vars = compute_volume_averaged_vars(integrateVolumetricVariables, point_data_arrays=['Points', 'u', 'f', 'Ekg'])
 
     # create a new 'Extract Surface'
-    extractSurface = ExtractSurface(Input=threshold)
+    extractSurface = ExtractSurface(Input=calculatorEkg)
     extractSurface.PieceInvariant = 1
     extractSurface.NonlinearSubdivisionLevel = 1
     extractSurface.FastMode = 0
@@ -783,41 +836,83 @@ def single_compute_area_volume(connectivity, threshold_value: float, time: float
     mean_vars["Area"] = ss_data.GetCellData().GetArray('Area').GetValue(0)
 
     # Extract bounds of a bubble
-    mean_vars.update(get_bounds(threshold))
+    mean_vars.update(get_bounds(calculatorEkg))
 
-    # Do not delete volumetric representation for the biggest volume
-    if threshold_value != 0:
-        Delete(threshold)
-        del threshold
-    Delete(integrateVolumetricVariables)
-    del integrateVolumetricVariables
-    Delete(extractSurface)
-    del extractSurface
     Delete(integrateSurfaceVariables)
     del integrateSurfaceVariables
+    Delete(extractSurface)
+    del extractSurface
+    Delete(integrateVolumetricVariables)
+    del integrateVolumetricVariables
+    # Do not delete volumetric representation for the biggest volume
+    if threshold_value != 0:
+        Delete(calculatorEkg)
+        del calculatorEkg
+
     return mean_vars
 
 
 # return dict[int, dict]
 def compute_area_volume(input, time):
-
+    averaged = dict()
     hyperTreeGridToDualGrid = HyperTreeGridToDualGrid(Input=input)
 
     # create a new 'Iso Volume'
-    isoVolume = IsoVolume(Input=hyperTreeGridToDualGrid)
+    isoVolumefs = IsoVolume(Input=hyperTreeGridToDualGrid)
+    isoVolumefs.InputScalars = ['POINTS', 'fs']
+    isoVolumefs.ThresholdRange = [0.0, 0.5]
+
+    # create a new 'Calculator'
+    rho1, rho2 = 1, 1.204/997.
+    calculatorEk = Calculator(Input=isoVolumefs)
+    calculatorEk.Function = f'(f*({rho1} - {rho2}) + {rho2})*mag(u)^2/2'
+    calculatorEk.ResultArrayName = 'Ek'
+    calculatorEk.UpdatePipeline()
+
+    calculatorEkl = Calculator(Input=calculatorEk)
+    calculatorEkl.Function = f'f*{rho1}*mag(u)^2/2'
+    calculatorEkl.ResultArrayName = 'Ekl'
+    calculatorEkl.UpdatePipeline()
+
+    calculatorEkg = Calculator(Input=calculatorEkl)
+    calculatorEkg.Function = f'(1.0 - f)*{rho2}*mag(u)^2/2'
+    calculatorEkg.ResultArrayName = 'Ekg'
+    calculatorEkg.UpdatePipeline()
+    # create a new 'Integrate Variables'
+    integrate_tube_variables = IntegrateVariables(Input=calculatorEkg)
+    integrate_tube_variables.DivideCellDataByVolume = 0
+    integrate_tube_variables.UpdatePipeline()
+    volume_tube = calculate_volume(integrate_tube_variables)
+    averaged["volume_tube"] = volume_tube
+    averaged.update(calculate_averages(integrate_tube_variables, ["Ek", "Ekl", "Ekg", "u"], volume_tube, "tube"))
+
+    # create a new 'Iso Volume'
+    isoVolume = IsoVolume(Input=calculatorEkg)
     isoVolume.InputScalars = ['POINTS', 'f']
     isoVolume.ThresholdRange = [0.0, 0.5]
-
-    # UpdatePipeline(time=time, proxy=isoVolume)
     isoVolume.UpdatePipeline()
+
+    # create a new 'Integrate Variables'
+    integrate_gas_variables = IntegrateVariables(Input=isoVolume)
+    integrate_gas_variables.DivideCellDataByVolume = 0
+    integrate_gas_variables.UpdatePipeline()
+    volume_gas = calculate_volume(integrate_gas_variables)
+    volume_liquid = volume_tube - volume_gas
+    averaged["Ekg_mean_gas"] = averaged["Ekg_mean_tube"]*volume_tube/volume_gas
+    averaged["Ekl_mean_liquid"] = averaged["Ekl_mean_tube"]*volume_tube/volume_liquid
+    averaged["volume_gas"] = volume_gas
+    averaged["volume_liquid"] = volume_liquid
+    averaged.update(calculate_averages(integrate_gas_variables, ["u"], volume_gas, postfix="gas"))
+    Ekl_mean_liquid = (averaged["Ek_mean_tube"]*volume_tube - averaged["Ekg_mean_gas"]*volume_gas)/volume_liquid
+    print("Averaged theor vs pract", averaged["Ekl_mean_liquid"], Ekl_mean_liquid)
+
+    averaged["u_mean_liquid"] = (averaged["u_mean_tube"]*volume_tube - averaged["u_mean_gas"]*volume_gas)/volume_liquid
 
     # create a new 'Connectivity'
     connectivity = Connectivity(Input=isoVolume)
     connectivity.ExtractionMode = 'Extract All Regions'
     connectivity.ColorRegions = 1
     connectivity.RegionIdAssignmentMode = 'Cell Count Descending'
-
-    # UpdatePipeline(time=time, proxy=connectivity)
     connectivity.UpdatePipeline()
 
     info = connectivity.GetDataInformation().GetPointDataInformation()
@@ -841,12 +936,14 @@ def compute_area_volume(input, time):
 
     Delete(hyperTreeGridToDualGrid)
     del hyperTreeGridToDualGrid
+    Delete(isoVolumefs)
+    del isoVolumefs
     Delete(isoVolume)
     del isoVolume
     Delete(connectivity)
     del connectivity
 
-    return threshold_result
+    return {"parts": threshold_result, **averaged}
 
 # Read from arguments
 # 2 pvd file name (by defaults in the first file in a current directory)
@@ -1088,34 +1185,23 @@ for timestep in timesteps:
     # animationScene1.AnimationTime = timestep
     # Properties modified on timeKeeper1
     timeKeeper1.Time = timestep
-    # my_source = Threshold(Input=my_source)
-    # my_source.Scalars = ['POINTS', 'f']
-    # my_source.LowerThreshold = 0
-    # my_source.UpperThreshold = 0.9999
-    # my_source.ThresholdMethod = 'Between'
-    # my_source.AllScalars = 1
-    # my_source.UseContinuousCellRange = 0
-    # my_source.Invert = 0
-    # my_source.MemoryStrategy = 'Mask Input'
-    # my_source.UpdatePipeline()
 
     ############################################################################################
     ### Compute averaged velocity, coordinate, area and volumes for each connectivity region ###
     ############################################################################################
     metadata_filename = f"{path}/{out_prefix}metadata_t={timestep}.json"
-    metadata = dict()
-    threshold_result = compute_area_volume(my_source, timestep)
+
+    metadata: dict = compute_area_volume(my_source, timestep)
     metadata["timestep"] = timestep
-    metadata["parts"] = threshold_result
-    print("threshold_result", threshold_result)
+    print("threshold_result", metadata["parts"])
     SaveMetaData(data=metadata, fn=metadata_filename)
     # get the largest bubble
-    first_bubble = threshold_result[0]
+    first_bubble = metadata["parts"][0]
     bounds = first_bubble["bounds"]
 
     # compare with the second bubble
-    if len(threshold_result) > 1 and threshold_result[1]["Volume"] / first_bubble["Volume"] > 0.1:
-        bounds2 = threshold_result[1]["bounds"]
+    if len(metadata["parts"]) > 1 and metadata["parts"][1]["Volume"] / first_bubble["Volume"] > 0.1:
+        bounds2 = metadata["parts"][1]["bounds"]
         bounds = min(bounds[0], bounds2[0]), max(bounds[1], bounds2[1]), \
             min(bounds[2], bounds2[2]), max(bounds[3], bounds2[3]), \
             min(bounds[4], bounds2[4]), max(bounds[5], bounds2[5])
@@ -1124,7 +1210,7 @@ for timestep in timesteps:
     center = [(bounds[0] + bounds[1]) / 2, (bounds[2] + bounds[3]) / 2, (bounds[4] + bounds[5]) / 2]
     print("center", center)
 
-    len_bub = threshold_result[0]["len_z"]
+    len_bub = metadata["parts"][0]["len_z"]
     len_min = max([bounds[0] - 3, 0])
     len_max = min([bounds[1] + 1, lDomain])
     length = len_max - len_min
@@ -1134,7 +1220,7 @@ for timestep in timesteps:
     volume = first_bubble["Volume"]
     x_mean = first_bubble["x_mean"][2]  # ONLY FOR HTG format, channel along Z axis
     u_mean = first_bubble["u_mean"]
-    print(f"First bubble: x_mean: {x_mean} u_mean: {u_mean} area: {area}")
+    print(f"First bubble: x_mean: {x_mean} u_mean: {u_mean} area: {area} volume: {volume}")
 
     metadata["lDomain"] = lDomain
     metadata["center"] = center
@@ -1982,12 +2068,12 @@ for timestep in timesteps:
     Show(transform1, renderView1)  # turn on cylinder
 
     # Freeing Memory
-    Delete(slice1)
-    del slice1
     Delete(threshold3)
     del threshold3
     Delete(clip5)
     del clip5
+    # Delete(slice2)  # already deleted
+    # del slice2
     Delete(extractSurface3)
     del extractSurface3
     Delete(threshold2)
@@ -2012,12 +2098,16 @@ for timestep in timesteps:
     del transform2
     Delete(clip3)
     del clip3
+    Delete(integrateVariables1)
+    del integrateVariables1
     Delete(clip2)
     del clip2
     Delete(first_bubble_threshold)
     del first_bubble_threshold
     Delete(calculator1)
     del calculator1
+    Delete(slice1)
+    del slice1
     Delete(connectivity1)
     del connectivity1
     Delete(contour1)
